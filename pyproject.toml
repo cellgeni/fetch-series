@@ -18,6 +18,10 @@ build-backend = "uv_build"
 dev = [
     "pytest>=9.0.2",
 ]
+notebooks = [
+    "jupyter>=1.1.1",
+    "python-irodsclient>=3.2.0",
+]
 
 [project.scripts]
 fetch = "fetch_series.__main__:main"
