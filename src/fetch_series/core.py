@@ -176,3 +176,76 @@ def ae2biosamples(series: str) -> List[str]:
         if "Comment[BioSD_SAMPLE]" in row
     ]
     return biosamples
+
+
+def read_enaruns(
+    series: str,
+    format: Literal["json", "tsv"] = "json",
+    fields: str = "study_accession,experiment_accession,run_accession",
+    limit: int | None = None,
+) -> List[Dict[str, Any]] | None:
+    """
+    Retrieves ENA run accessions associated with a given series from the EBI ENA database
+    Args:
+        series (str): series identifier to retrieve ENA run accessions for (e.g., E-MTAB-10018)
+        format (Literal['json', 'tsv']): format to return the results in (default: 'json')
+        fields (str): comma-separated list of fields to include in the results (default: 'study_accession,experiment_accession,run_accession')
+
+    Returns:
+        List[Dict[str, Any]] | None: A list of dictionaries containing ENA run information, or None if no runs are found
+    """
+    base = "https://www.ebi.ac.uk/ena/portal/api/filereport"
+    params = {
+        "accession": series,
+        "result": "read_run",
+        "format": format,
+        "fields": fields,
+        "limit": limit,
+    }
+    with httpx.Client(transport=transport) as client:
+        response = client.get(base, params=params, timeout=10.0, follow_redirects=True)
+    response.raise_for_status()
+
+    if format == "json":
+        return response.json()
+    elif format == "tsv":
+        reader = csv.DictReader(io.StringIO(response.text), delimiter="\t")
+        return list(reader)
+
+
+def ena2bioproject(series: str) -> str | None:
+    """
+    Retrieves the BioProject ID associated with a given ENA series from the EBI ENA database
+    Args:
+        series (str): series identifier to retrieve the BioProject ID for (e.g., E-MTAB-10018)
+
+    Returns:
+        str | None: The BioProject ID associated with the series, or None if no BioProject is found
+    """
+    runs = read_enaruns(series=series, format="json", fields="study_accession")
+    if not runs or "study_accession" not in runs[0]:
+        logging.warning("No BioProject found for %s", series)
+        return None
+    return runs[0]["study_accession"]
+
+
+def query_ae(query: str, pagesize: int = 100) -> Dict[str, Any]:
+    """
+    Queries the EBI BioStudies database for datasets matching the given query string
+    Args:
+        query (str): query string to search for (e.g., "E-MTAB-10018[ACCN]")
+        pagesize (int): number of results to return per page (default: 100)
+    Returns:
+        Dict[str, Any]: A dictionary containing the search results
+    """
+    base = "https://www.ebi.ac.uk/biostudies/api/v1/search"
+    params = {
+        "query": query,
+        "collection": "arrayexpress",
+        "pageSize": pagesize,
+    }
+
+    with httpx.Client(transport=transport) as client:
+        response = client.get(base, params=params, timeout=10.0, follow_redirects=True)
+    response.raise_for_status()
+    return response.json()
