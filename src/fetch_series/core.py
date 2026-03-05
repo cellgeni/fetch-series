@@ -229,23 +229,35 @@ def ena2bioproject(series: str) -> str | None:
     return runs[0]["study_accession"]
 
 
-def query_ae(query: str, pagesize: int = 100) -> Dict[str, Any]:
+def bioproject2ena(series: str) -> List[str] | None:
     """
-    Queries the EBI BioStudies database for datasets matching the given query string
+    Retrieves the ENA series accessions associated with a given BioProject ID from the EBI ENA database
     Args:
-        query (str): query string to search for (e.g., "E-MTAB-10018[ACCN]")
-        pagesize (int): number of results to return per page (default: 100)
-    Returns:
-        Dict[str, Any]: A dictionary containing the search results
-    """
-    base = "https://www.ebi.ac.uk/biostudies/api/v1/search"
-    params = {
-        "query": query,
-        "collection": "arrayexpress",
-        "pageSize": pagesize,
-    }
+        series (str): BioProject ID to retrieve ENA series accessions for (e.g., PRJEB12345)
 
-    with httpx.Client(transport=transport) as client:
-        response = client.get(base, params=params, timeout=10.0, follow_redirects=True)
-    response.raise_for_status()
-    return response.json()
+    Returns:
+        List[str] | None: A list of ENA series accessions associated with the BioProject, or None if no accessions are found
+    """
+    runs = read_enaruns(
+        series=series, format="json", fields="secondary_study_accession"
+    )
+    if not runs or "secondary_study_accession" not in runs[0]:
+        logging.warning("No ENA series found for %s", series)
+        return None
+    return runs[0]["secondary_study_accession"]
+
+
+def ena2ae(series: str) -> List[str] | None:
+    """
+    Retrieves the ArrayExpress accessions associated with a given ENA series from the EBI BioStudies database
+    Args:
+        series (str): series identifier to retrieve ArrayExpress accessions for (e.g., E-MTAB-10018)
+    Returns:
+        List[str] | None: A list of ArrayExpress accessions associated with the series, or None if no accessions are found
+    """
+    results = query_ae(query=f"{series}", pagesize=100)
+    if "totalHits" not in results or results["totalHits"] == 0:
+        logging.warning("No ArrayExpress accessions found for %s", series)
+        return None
+    accessions = [hit["accession"] for hit in results["hits"]]
+    return accessions
