@@ -1,5 +1,7 @@
 import io
+import re
 import csv
+from urllib import response
 import httpx
 from httpx_retries import Retry, RetryTransport
 import logging
@@ -131,27 +133,25 @@ def geo_dataset_id(
         return search_results["esearchresult"]["idlist"][0]
 
 
-def ae2ena(series: str) -> List[str]:
+def ae2secondary(series: str) -> List[str]:
     """
-    Retrieves ENA accessions associated with a given series from the EBI BioStudies database
+    Retrieves SecondaryAccession values associated with a given series from the EBI BioStudies database
     Args:
-        series (str): series identifier to retrieve ENA accessions for (e.g., E-MTAB-10018)
+        series (str): series identifier to retrieve SecondaryAccession values for (e.g., E-MTAB-10018)
 
     Returns:
-        List[str]: A list of ENA accessions associated with the series
+        List[str]: A list of SecondaryAccession values associated with the series
     """
-    # Get ERP from idf file
+    # Get SecondaryAccession values from idf file
     base = f"https://www.ebi.ac.uk/biostudies/files/{series}/{series}.idf.txt"
     with httpx.Client(transport=transport) as client:
         response = client.get(base, follow_redirects=True, timeout=30)
     response.raise_for_status()
 
-    # Check if there are ERP accessions in the idf file
-    erps = []
-    for line in response.text.splitlines():
-        if line.startswith("Comment[SecondaryAccession]"):
-            erps.append(line.split("\t")[1].strip())
-    return erps
+    # Check if there are SecondaryAccession values in the idf file
+    pattern = re.compile(r"Comment\s*\[SecondaryAccession\]\s*((?:ERP|EGA\w)\d+)")
+    matches = re.findall(pattern, response.text)
+    return matches
 
 
 def ae2biosamples(series: str) -> List[str]:
@@ -245,6 +245,28 @@ def bioproject2ena(series: str) -> List[str] | None:
         logging.warning("No ENA series found for %s", series)
         return None
     return runs[0]["secondary_study_accession"]
+
+
+def query_ae(query: str, pagesize: int = 100) -> Dict[str, Any]:
+    """
+    Queries the EBI BioStudies database for datasets matching the given query string
+    Args:
+        query (str): query string to search for (e.g., "E-MTAB-10018")
+        pagesize (int): number of results to return per page (default: 100)
+    Returns:
+        Dict[str, Any]: A dictionary containing the search results
+    """
+    base = "https://www.ebi.ac.uk/biostudies/api/v1/search"
+    params = {
+        "query": query,
+        "collection": "arrayexpress",
+        "pageSize": pagesize,
+    }
+
+    with httpx.Client(transport=transport) as client:
+        response = client.get(base, params=params, timeout=10.0, follow_redirects=True)
+    response.raise_for_status()
+    return response.json()
 
 
 def ena2ae(series: str) -> List[str] | None:
