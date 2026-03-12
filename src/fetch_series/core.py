@@ -150,8 +150,29 @@ def ae2secondary(series: str) -> List[str]:
 
     # Check if there are SecondaryAccession values in the idf file
     pattern = re.compile(r"Comment\s*\[SecondaryAccession\]\s*((?:ERP|EGA\w)\d+)")
-    matches = re.findall(pattern, response.text)
-    return matches
+    secondary = re.findall(pattern, response.text)
+
+    # Try to get secondary accesssions from ENA if not found in idf file
+    if not secondary:
+        biosamples = ae2biosamples(series=series)
+        if not biosamples:
+            logging.warning(
+                "No biosamples found for %s, cannot retrieve secondary accessions",
+                series,
+            )
+            return []
+
+        # Attempt to retrieve secondary accessions from ENA for each biosample
+        for biosample in biosamples:
+            secondary_accessions = ena2bioproject(series=biosample)
+            if secondary_accessions:
+                secondary.extend(secondary_accessions)
+
+        secondary = list(set(secondary))  # Remove duplicates
+
+    if not secondary:
+        logging.warning("No secondary accessions found for %s", series)
+    return secondary
 
 
 def ae2biosamples(series: str) -> List[str]:
@@ -171,10 +192,11 @@ def ae2biosamples(series: str) -> List[str]:
     biosamples = []
     reader = csv.DictReader(io.StringIO(response.text), delimiter="\t")
     biosamples = [
-        row.get("Comment[BioSD_SAMPLE]")
+        row.get("Comment[BioSD_SAMPLE]").strip()
         for row in reader
         if "Comment[BioSD_SAMPLE]" in row
     ]
+    biosamples = list(filter(None, biosamples))  # Remove empty strings
     return biosamples
 
 
@@ -213,20 +235,21 @@ def read_enaruns(
         return list(reader)
 
 
-def ena2bioproject(series: str) -> str | None:
+def ena2bioproject(series: str) -> List[str]:
     """
     Retrieves the BioProject ID associated with a given ENA series from the EBI ENA database
     Args:
         series (str): series identifier to retrieve the BioProject ID for (e.g., E-MTAB-10018)
 
     Returns:
-        str | None: The BioProject ID associated with the series, or None if no BioProject is found
+        List[str]: A list of BioProject IDs associated with the series, or an empty list if no BioProjects are found
     """
     runs = read_enaruns(series=series, format="json", fields="study_accession")
     if not runs or "study_accession" not in runs[0]:
         logging.warning("No BioProject found for %s", series)
-        return None
-    return runs[0]["study_accession"]
+        return []
+    accessions = set(run["study_accession"] for run in runs if "study_accession" in run)
+    return list(accessions)
 
 
 def bioproject2ena(series: str) -> List[str] | None:
