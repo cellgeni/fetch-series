@@ -87,6 +87,47 @@ def eutils_summary(
     return response.json()
 
 
+def eutils_link(
+    dbfrom: str,
+    db: str,
+    ids: str | None = None,
+    webenv: str | None = None,
+    query_key: str | None = None,
+    retmode: str = "json",
+    cmd: str = "neighbor_history",
+) -> Dict[str, Any]:
+    """
+    Search for linked items in a target database using the E-utilities API.
+    Args:
+        dbfrom (str): database to search from
+        db (str): database to search in
+        id (str): ID of the item to link
+        retmode (str): return mode for the response
+
+    Returns:
+        Dict[str, Any]: JSON response from the E-utilities API containing search results
+    """
+    # Check that either ids or webenv and query_key are specified
+    if (ids is None) == (webenv is None or query_key is None):
+        raise ValueError("Must specify either ids OR webenv and query_key")
+
+    # Retrieve linked items using the E-utilities API
+    base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi"
+    params = {
+        "dbfrom": dbfrom,
+        "db": db,
+        "id": ids,
+        "retmode": retmode,
+        "WebEnv": webenv,
+        "query_key": query_key,
+        "cmd": cmd,
+    }
+    with httpx.Client(transport=transport) as client:
+        response = client.get(base, params=params, timeout=10)
+    response.raise_for_status()
+    return response.json()
+
+
 def geo_dataset_id(
     series: str,
     stype: Literal["gse", "bioproject"] = "gse",
