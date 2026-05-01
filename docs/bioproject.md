@@ -753,3 +753,83 @@ eutils_summary(
   }
 }
 ```
+
+Finally let's try to fetch ENA records linked to this BioProject using the second link:
+```python
+fields = [
+    "study_accession", 
+    "secondary_study_accession", 
+    "sample_accession", 
+    "sample_alias", 
+    "secondary_sample_accession", 
+    "experiment_accession",
+    "experiment_alias", 
+    "run_accession", 
+    "run_alias"
+]
+
+read_enaruns(
+    series="PRJNA988806",
+    format="json",
+    fields=",".join(fields),
+)
+```
+```json
+[
+  {
+    "run_accession": "SRR25056226",
+    "study_accession": "PRJNA988806",
+    "secondary_study_accession": "SRP446371",
+    "sample_accession": "SAMN36028298",
+    "sample_alias": "GSM7518068",
+    "secondary_sample_accession": "SRS18093900",
+    "experiment_accession": "SRX20810435",
+    "experiment_alias": "GSM7518068_r1",
+    "run_alias": "GSM7518068_r1"
+  },
+  {
+    "run_accession": "SRR25056229",
+    "study_accession": "PRJNA988806",
+    "secondary_study_accession": "SRP446371",
+    "sample_accession": "SAMN36028301",
+    "sample_alias": "GSM7518065",
+    "secondary_sample_accession": "SRS18093896",
+    "experiment_accession": "SRX20810432",
+    "experiment_alias": "GSM7518065_r1",
+    "run_alias": "GSM7518065_r1"
+  },
+  {
+    "run_accession": "SRR25056227",
+    "study_accession": "PRJNA988806",
+    "secondary_study_accession": "SRP446371",
+    "sample_accession": "SAMN36028299",
+    "sample_alias": "GSM7518067",
+    "secondary_sample_accession": "SRS18093898",
+    "experiment_accession": "SRX20810434",
+    "experiment_alias": "GSM7518067_r1",
+    "run_alias": "GSM7518067_r1"
+  },
+  {
+    "run_accession": "SRR25056228",
+    "study_accession": "PRJNA988806",
+    "secondary_study_accession": "SRP446371",
+    "sample_accession": "SAMN36028300",
+    "sample_alias": "GSM7518066",
+    "secondary_sample_accession": "SRS18093897",
+    "experiment_accession": "SRX20810433",
+    "experiment_alias": "GSM7518066_r1",
+    "run_alias": "GSM7518066_r1"
+  },
+  {
+    "run_accession": "SRR25056225",
+    "study_accession": "PRJNA988806",
+    "secondary_study_accession": "SRP446371",
+    "sample_accession": "SAMN36028297",
+    "sample_alias": "GSM7518069",
+    "secondary_sample_accession": "SRS18093899",
+    "experiment_accession": "SRX20810436",
+    "experiment_alias": "GSM7518069_r1",
+    "run_alias": "GSM7518069_r1"
+  }
+]
+```
