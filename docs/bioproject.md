@@ -149,67 +149,6 @@ Moreover, we can look at the links that are indexed in the BioProject database:
 
 ---
 
-In the same way, we can also look at the BioSample database:
-
-```json
-{
-  "header": {
-    "type": "einfo",
-    "version": "0.3"
-  },
-  "einforesult": {
-    "dbinfo": [
-      {
-        "dbname": "biosample",
-        "menuname": "BioSample",
-        "description": "BioSample Database",
-        "dbbuild": "Build260430-0301m.1",
-        "count": "54057175",
-        "lastupdate": "2026/04/30 07:11"
-      }
-    ]
-  }
-}
-```
-
-The fields that are indexed in the BioSample database are:
-
-
-| # | name | fullname | description | termcount | isdate | isnumerical | singletoken | hierarchy | ishidden |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | ALL | All Fields | All terms from all searchable fields | 462127089 | N | N | N | N | N |
-| 1 | UID | UID | Unique number assigned to publication | 0 | N | Y | Y | N | Y |
-| 2 | FILT | Filter | Limits the records | 296 | N | N | Y | N | N |
-| 3 | ACCN | Accession | Accession number of sequence | 100585623 | N | N | Y | N | N |
-| 4 | TITL | Title | Words in definition line | 19553227 | N | N | N | N | N |
-| 5 | PROP | Properties | Classification by source qualifiers and molecular types | 4224 | N | N | Y | N | N |
-| 6 | WORD | Text Word | Free text associated with record | 313550255 | N | N | N | N | N |
-| 7 | ORGN | Organism | Scientific and common names of organism, and a... | 1740903 | N | N | Y | Y | N |
-| 8 | AUTH | Author | Author(s) of publication | 192502 | N | N | Y | N | N |
-| 9 | PDAT | Publication Date | Date sequence added to GenBank | 9824 | Y | N | Y | N | N |
-| 10 | MDAT | Modification Date | Date of last update | 5038 | Y | N | Y | N | N |
-| 11 | ATNM | Attribute Name | Attribute Name | 84737 | N | N | Y | N | N |
-| 12 | ATTR | Attribute | Attribute | 145899988 | N | N | Y | N | N |
-| 13 | CEN | Submitter Organization | Submitter Organization(s) | 128391 | N | N | Y | N | N |
-
-
-The links that are indexed in the BioSample database are:
-
-| # | name | menu | description | dbto |
-| --- | --- | --- | --- | --- |
-| 0 | biosample_assembly | Assembly links | Assembly | assembly |
-| 1 | biosample_biocollections | BioCollections | BioCollections | biocollections |
-| 2 | biosample_bioproject | BioProject Links | BioProject links | bioproject |
-| 3 | biosample_dbvar | dbVar Links | Links to dbVar | dbvar |
-| 4 | biosample_gap | dbGaP Links | Links to dbGap Studies | gap |
-| 5 | biosample_gds | GEO DataSets Links | GEO DataSets links | gds |
-| 6 | biosample_nuccore | Nucleotide Links | Nucleotide links | nuccore |
-| 7 | biosample_omim | OMIM links | OMIM links | omim |
-| 8 | biosample_pubmed | PubMed Links | PubMed links | pubmed |
-| 9 | biosample_snp | SNP Links | Related SNP record | snp |
-| 10 | biosample_sra | SRA Links | Links to SRA experiments | sra |
-| 11 | biosample_taxonomy | Taxonomy Links | Links to Taxonomy | taxonomy |
-
 ## Fetching directions from BioProject series
 
 We are particularly interested in fetching sequencing data from BioProject and BioSample records. So we will focus on the links to GEO, SRA, ENA and ArrayExpress databases.
@@ -219,6 +158,8 @@ From a BioProject accession we should be able to find:
 - BioSamples linked to the BioProject
 - SRA experiments linked to the BioProject
 - ENA experiments linked to the BioProject
+
+### Query BioProject Accessions
 
 Let's try to fetch the linked GEO datasets and SRA experiments for a specific BioProject. Let's go with `PRJNA988806`, which is a lung metastasis study in mice. Let's start by searching for the BioProject accession in the BioProject database. `e-search` query `eutils_search(query="PRJNA988806[PRJA]", db=db)` will give us the following results:
 
@@ -312,7 +253,10 @@ We can see that the search returned one result, which is the BioProject with acc
 }
 ```
 
-From the summary, we can confirm that this BioProject is a transcriptome study of lung metastases in mice. Now we can look at the links that are indexed in the BioProject database. Let's start with GEO datasets linked to this BioProject.
+From the summary, we can confirm that this BioProject is a transcriptome study of lung metastases in mice. Now we can look at the links that are indexed in the BioProject database. 
+
+### BioProject to GEO 
+Let's start with GEO datasets linked to this BioProject.
 
 ```python
 eutils_link(
@@ -424,6 +368,7 @@ eutils_summary(
 }
 ```
 
+### BioProject to SRA
 In the same way we can also fetch the linked SRA experiments for this BioProject, let's try that:
 
 ```python
@@ -533,75 +478,49 @@ eutils_summary(
 
 We can see that there are 5 SRA experiments linked to this BioProject, which correspond to the 5 samples that were sequenced in the study. Each experiment has a unique accession number (SRX20810432, SRX20810433, SRX20810434, SRX20810435, SRX20810436) and contains information about the library construction protocol, the instrument used for sequencing, the number of runs, spots, bases and size of the data, as well as links to the corresponding BioSample and BioProject records.
 
-Let's also try to fetch the SRA experiments using the second link, which should give us the same results:
-
+We can also try fetching the SRA experiments in the `csv` format
 ```python
-eutils_summary(
+eutils_fetch(
+    db="sra",
     webenv=links["linksets"][0]["webenv"],
     query_key=links["linksets"][0]["linksetdbhistories"][1]["querykey"],
-    db="gds",
+    api_key=NCBI_API_KEY,
+    rettype="runinfo",
+    retmode="text",
 )
 ```
-```json
-{
-  "header": {
-    "type": "esummary",
-    "version": "0.3"
-  },
-  "result": {
-    "uids": [
-      "28241758",
-      "28241757",
-      "28241756",
-      "28241755",
-      "28241754"
-    ],
-    "28241758": {
-      "uid": "28241758",
-      "expxml": "  <Summary><Title>GSM7518069: TSF2, Lungs from TSF Injection, Metastatic Colonization (d16); Mus musculus; RNA-Seq</Title><Platform instrument_model=\"Illumina NovaSeq 6000\">ILLUMINA</Platform><Statistics total_runs=\"1\" total_spots=\"332639939\" total_bases=\"39584152741\" total_size=\"13332204657\" load_done=\"true\" cluster_name=\"public\"/></Summary><Submitter acc=\"SRA1663813\" center_name=\"Laboratory of Cellular Metabolism and Metabolic Re\" contact_name=\"GEO Group\" lab_name=\"\"/><Experiment acc=\"SRX20810436\" ver=\"2\" status=\"public\" name=\"GSM7518069: TSF2, Lungs from TSF Injection, Metastatic Colonization (d16); Mus musculus; RNA-Seq\"/><Study acc=\"SRP446371\" name=\"Aspartate signaling increases the aggressiveness of lung metastases by inducing eIF5A-mediated translation (scRNA-Seq)\"/><Organism taxid=\"10090\" ScientificName=\"Mus musculus\"/><Sample acc=\"SRS18093899\" name=\"\"/><Instrument ILLUMINA=\"Illumina NovaSeq 6000\"/><Library_descriptor><LIBRARY_NAME>GSM7518069</LIBRARY_NAME><LIBRARY_STRATEGY>RNA-Seq</LIBRARY_STRATEGY><LIBRARY_SOURCE>TRANSCRIPTOMIC SINGLE CELL</LIBRARY_SOURCE><LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION><LIBRARY_LAYOUT><PAIRED/></LIBRARY_LAYOUT><LIBRARY_CONSTRUCTION_PROTOCOL>Upon mice euthanasia, lungs were extracted and washed in blood bank saline, dried, and minced for ~ 2 minutes using blades. Minced lung tissues were then incubated with Liberase (0.3 mg/mL) and DNAse1 (1 \u03bcg/mL) for 45 min at 37\u00b0C, with occasional vortexing. The reaction was then quenched with PBS + 3% FBS + 2mM EDTA, after which cells were filtered through a 70\u03bcm cell strainer, washed once, and incubated with Red Blood Cell Lysis buffer. After red blood cell lysis, cells were washed once more and transferred through a 40 \u03bcm cell strainer. Cells were then pooled together from the 3 independent lung dissociations performed per group, resuspended in cell-culture medium at a density of 10^6 cells/mL, and kept on ice for immediate processing into single-cell cDNA libraries. Cell suspensions for each sample were converted to barcoded single-cell cDNA libraries using the Chromium Single Cell 5' v1.1 Library Kit, following the manufacturer's guidelines, and aiming for a total of 10,000 cells per library.</LIBRARY_CONSTRUCTION_PROTOCOL></Library_descriptor><Bioproject>PRJNA988806</Bioproject><Biosample>SAMN36028297</Biosample>  ",
-      "runs": "                                <Run acc=\"SRR25056225\" total_spots=\"332639939\" total_bases=\"39584152741\" load_done=\"true\" is_public=\"true\" cluster_name=\"public\" static_data_available=\"true\"/>                                ",
-      "extlinks": "",
-      "createdate": "2024/10/04",
-      "updatedate": "2023/06/28"
-    },
-    "28241757": {
-      "uid": "28241757",
-      "expxml": "  <Summary><Title>GSM7518068: TSF1b, Lungs from TSF Injection, Metastatic Seeding (d11), Replicate b; Mus musculus; RNA-Seq</Title><Platform instrument_model=\"Illumina NovaSeq 6000\">ILLUMINA</Platform><Statistics total_runs=\"1\" total_spots=\"321922508\" total_bases=\"38308778452\" total_size=\"12983749287\" load_done=\"true\" cluster_name=\"public\"/></Summary><Submitter acc=\"SRA1663813\" center_name=\"Laboratory of Cellular Metabolism and Metabolic Re\" contact_name=\"GEO Group\" lab_name=\"\"/><Experiment acc=\"SRX20810435\" ver=\"2\" status=\"public\" name=\"GSM7518068: TSF1b, Lungs from TSF Injection, Metastatic Seeding (d11), Replicate b; Mus musculus; RNA-Seq\"/><Study acc=\"SRP446371\" name=\"Aspartate signaling increases the aggressiveness of lung metastases by inducing eIF5A-mediated translation (scRNA-Seq)\"/><Organism taxid=\"10090\" ScientificName=\"Mus musculus\"/><Sample acc=\"SRS18093900\" name=\"\"/><Instrument ILLUMINA=\"Illumina NovaSeq 6000\"/><Library_descriptor><LIBRARY_NAME>GSM7518068</LIBRARY_NAME><LIBRARY_STRATEGY>RNA-Seq</LIBRARY_STRATEGY><LIBRARY_SOURCE>TRANSCRIPTOMIC SINGLE CELL</LIBRARY_SOURCE><LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION><LIBRARY_LAYOUT><PAIRED/></LIBRARY_LAYOUT><LIBRARY_CONSTRUCTION_PROTOCOL>Upon mice euthanasia, lungs were extracted and washed in blood bank saline, dried, and minced for ~ 2 minutes using blades. Minced lung tissues were then incubated with Liberase (0.3 mg/mL) and DNAse1 (1 \u03bcg/mL) for 45 min at 37\u00b0C, with occasional vortexing. The reaction was then quenched with PBS + 3% FBS + 2mM EDTA, after which cells were filtered through a 70\u03bcm cell strainer, washed once, and incubated with Red Blood Cell Lysis buffer. After red blood cell lysis, cells were washed once more and transferred through a 40 \u03bcm cell strainer. Cells were then pooled together from the 3 independent lung dissociations performed per group, resuspended in cell-culture medium at a density of 10^6 cells/mL, and kept on ice for immediate processing into single-cell cDNA libraries. Cell suspensions for each sample were converted to barcoded single-cell cDNA libraries using the Chromium Single Cell 5' v1.1 Library Kit, following the manufacturer's guidelines, and aiming for a total of 10,000 cells per library.</LIBRARY_CONSTRUCTION_PROTOCOL></Library_descriptor><Bioproject>PRJNA988806</Bioproject><Biosample>SAMN36028298</Biosample>  ",
-      "runs": "                                <Run acc=\"SRR25056226\" total_spots=\"321922508\" total_bases=\"38308778452\" load_done=\"true\" is_public=\"true\" cluster_name=\"public\" static_data_available=\"true\"/>                                ",
-      "extlinks": "",
-      "createdate": "2024/10/04",
-      "updatedate": "2023/06/28"
-    },
-    "28241756": {
-      "uid": "28241756",
-      "expxml": "  <Summary><Title>GSM7518067: TSF1a, Lungs from TSF Injection, Metastatic Seeding (d11), Replicate a; Mus musculus; RNA-Seq</Title><Platform instrument_model=\"Illumina NovaSeq 6000\">ILLUMINA</Platform><Statistics total_runs=\"1\" total_spots=\"362167958\" total_bases=\"43097987002\" total_size=\"14474390207\" load_done=\"true\" cluster_name=\"public\"/></Summary><Submitter acc=\"SRA1663813\" center_name=\"Laboratory of Cellular Metabolism and Metabolic Re\" contact_name=\"GEO Group\" lab_name=\"\"/><Experiment acc=\"SRX20810434\" ver=\"2\" status=\"public\" name=\"GSM7518067: TSF1a, Lungs from TSF Injection, Metastatic Seeding (d11), Replicate a; Mus musculus; RNA-Seq\"/><Study acc=\"SRP446371\" name=\"Aspartate signaling increases the aggressiveness of lung metastases by inducing eIF5A-mediated translation (scRNA-Seq)\"/><Organism taxid=\"10090\" ScientificName=\"Mus musculus\"/><Sample acc=\"SRS18093898\" name=\"\"/><Instrument ILLUMINA=\"Illumina NovaSeq 6000\"/><Library_descriptor><LIBRARY_NAME>GSM7518067</LIBRARY_NAME><LIBRARY_STRATEGY>RNA-Seq</LIBRARY_STRATEGY><LIBRARY_SOURCE>TRANSCRIPTOMIC SINGLE CELL</LIBRARY_SOURCE><LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION><LIBRARY_LAYOUT><PAIRED/></LIBRARY_LAYOUT><LIBRARY_CONSTRUCTION_PROTOCOL>Upon mice euthanasia, lungs were extracted and washed in blood bank saline, dried, and minced for ~ 2 minutes using blades. Minced lung tissues were then incubated with Liberase (0.3 mg/mL) and DNAse1 (1 \u03bcg/mL) for 45 min at 37\u00b0C, with occasional vortexing. The reaction was then quenched with PBS + 3% FBS + 2mM EDTA, after which cells were filtered through a 70\u03bcm cell strainer, washed once, and incubated with Red Blood Cell Lysis buffer. After red blood cell lysis, cells were washed once more and transferred through a 40 \u03bcm cell strainer. Cells were then pooled together from the 3 independent lung dissociations performed per group, resuspended in cell-culture medium at a density of 10^6 cells/mL, and kept on ice for immediate processing into single-cell cDNA libraries. Cell suspensions for each sample were converted to barcoded single-cell cDNA libraries using the Chromium Single Cell 5' v1.1 Library Kit, following the manufacturer's guidelines, and aiming for a total of 10,000 cells per library.</LIBRARY_CONSTRUCTION_PROTOCOL></Library_descriptor><Bioproject>PRJNA988806</Bioproject><Biosample>SAMN36028299</Biosample>  ",
-      "runs": "                                <Run acc=\"SRR25056227\" total_spots=\"362167958\" total_bases=\"43097987002\" load_done=\"true\" is_public=\"true\" cluster_name=\"public\" static_data_available=\"true\"/>                                ",
-      "extlinks": "",
-      "createdate": "2024/10/04",
-      "updatedate": "2023/06/28"
-    },
-    "28241755": {
-      "uid": "28241755",
-      "expxml": "  <Summary><Title>GSM7518066: CM2, Lungs from CM Injection, Metastatic Colonization (d16); Mus musculus; RNA-Seq</Title><Platform instrument_model=\"Illumina NovaSeq 6000\">ILLUMINA</Platform><Statistics total_runs=\"1\" total_spots=\"339308480\" total_bases=\"40377709120\" total_size=\"13796528558\" load_done=\"true\" cluster_name=\"public\"/></Summary><Submitter acc=\"SRA1663813\" center_name=\"Laboratory of Cellular Metabolism and Metabolic Re\" contact_name=\"GEO Group\" lab_name=\"\"/><Experiment acc=\"SRX20810433\" ver=\"2\" status=\"public\" name=\"GSM7518066: CM2, Lungs from CM Injection, Metastatic Colonization (d16); Mus musculus; RNA-Seq\"/><Study acc=\"SRP446371\" name=\"Aspartate signaling increases the aggressiveness of lung metastases by inducing eIF5A-mediated translation (scRNA-Seq)\"/><Organism taxid=\"10090\" ScientificName=\"Mus musculus\"/><Sample acc=\"SRS18093897\" name=\"\"/><Instrument ILLUMINA=\"Illumina NovaSeq 6000\"/><Library_descriptor><LIBRARY_NAME>GSM7518066</LIBRARY_NAME><LIBRARY_STRATEGY>RNA-Seq</LIBRARY_STRATEGY><LIBRARY_SOURCE>TRANSCRIPTOMIC SINGLE CELL</LIBRARY_SOURCE><LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION><LIBRARY_LAYOUT><PAIRED/></LIBRARY_LAYOUT><LIBRARY_CONSTRUCTION_PROTOCOL>Upon mice euthanasia, lungs were extracted and washed in blood bank saline, dried, and minced for ~ 2 minutes using blades. Minced lung tissues were then incubated with Liberase (0.3 mg/mL) and DNAse1 (1 \u03bcg/mL) for 45 min at 37\u00b0C, with occasional vortexing. The reaction was then quenched with PBS + 3% FBS + 2mM EDTA, after which cells were filtered through a 70\u03bcm cell strainer, washed once, and incubated with Red Blood Cell Lysis buffer. After red blood cell lysis, cells were washed once more and transferred through a 40 \u03bcm cell strainer. Cells were then pooled together from the 3 independent lung dissociations performed per group, resuspended in cell-culture medium at a density of 10^6 cells/mL, and kept on ice for immediate processing into single-cell cDNA libraries. Cell suspensions for each sample were converted to barcoded single-cell cDNA libraries using the Chromium Single Cell 5' v1.1 Library Kit, following the manufacturer's guidelines, and aiming for a total of 10,000 cells per library.</LIBRARY_CONSTRUCTION_PROTOCOL></Library_descriptor><Bioproject>PRJNA988806</Bioproject><Biosample>SAMN36028300</Biosample>  ",
-      "runs": "                                <Run acc=\"SRR25056228\" total_spots=\"339308480\" total_bases=\"40377709120\" load_done=\"true\" is_public=\"true\" cluster_name=\"public\" static_data_available=\"true\"/>                                ",
-      "extlinks": "",
-      "createdate": "2024/10/04",
-      "updatedate": "2023/06/28"
-    },
-    "28241754": {
-      "uid": "28241754",
-      "expxml": "  <Summary><Title>GSM7518065: CM1, Lungs from CM Injection, Metastatic Seeding (d11); Mus musculus; RNA-Seq</Title><Platform instrument_model=\"Illumina NovaSeq 6000\">ILLUMINA</Platform><Statistics total_runs=\"1\" total_spots=\"325016382\" total_bases=\"38676949458\" total_size=\"13072276347\" load_done=\"true\" cluster_name=\"public\"/></Summary><Submitter acc=\"SRA1663813\" center_name=\"Laboratory of Cellular Metabolism and Metabolic Re\" contact_name=\"GEO Group\" lab_name=\"\"/><Experiment acc=\"SRX20810432\" ver=\"2\" status=\"public\" name=\"GSM7518065: CM1, Lungs from CM Injection, Metastatic Seeding (d11); Mus musculus; RNA-Seq\"/><Study acc=\"SRP446371\" name=\"Aspartate signaling increases the aggressiveness of lung metastases by inducing eIF5A-mediated translation (scRNA-Seq)\"/><Organism taxid=\"10090\" ScientificName=\"Mus musculus\"/><Sample acc=\"SRS18093896\" name=\"\"/><Instrument ILLUMINA=\"Illumina NovaSeq 6000\"/><Library_descriptor><LIBRARY_NAME>GSM7518065</LIBRARY_NAME><LIBRARY_STRATEGY>RNA-Seq</LIBRARY_STRATEGY><LIBRARY_SOURCE>TRANSCRIPTOMIC SINGLE CELL</LIBRARY_SOURCE><LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION><LIBRARY_LAYOUT><PAIRED/></LIBRARY_LAYOUT><LIBRARY_CONSTRUCTION_PROTOCOL>Upon mice euthanasia, lungs were extracted and washed in blood bank saline, dried, and minced for ~ 2 minutes using blades. Minced lung tissues were then incubated with Liberase (0.3 mg/mL) and DNAse1 (1 \u03bcg/mL) for 45 min at 37\u00b0C, with occasional vortexing. The reaction was then quenched with PBS + 3% FBS + 2mM EDTA, after which cells were filtered through a 70\u03bcm cell strainer, washed once, and incubated with Red Blood Cell Lysis buffer. After red blood cell lysis, cells were washed once more and transferred through a 40 \u03bcm cell strainer. Cells were then pooled together from the 3 independent lung dissociations performed per group, resuspended in cell-culture medium at a density of 10^6 cells/mL, and kept on ice for immediate processing into single-cell cDNA libraries. Cell suspensions for each sample were converted to barcoded single-cell cDNA libraries using the Chromium Single Cell 5' v1.1 Library Kit, following the manufacturer's guidelines, and aiming for a total of 10,000 cells per library.</LIBRARY_CONSTRUCTION_PROTOCOL></Library_descriptor><Bioproject>PRJNA988806</Bioproject><Biosample>SAMN36028301</Biosample>  ",
-      "runs": "                                <Run acc=\"SRR25056229\" total_spots=\"325016382\" total_bases=\"38676949458\" load_done=\"true\" is_public=\"true\" cluster_name=\"public\" static_data_available=\"true\"/>                                ",
-      "extlinks": "",
-      "createdate": "2024/10/04",
-      "updatedate": "2023/06/28"
-    }
-  }
-}
+```csv
+Run,ReleaseDate,LoadDate,spots,bases,spots_with_mates,avgLength,size_MB,AssemblyName,download_path,Experiment,LibraryName,LibraryStrategy,LibrarySelection,LibrarySource,LibraryLayout,InsertSize,InsertDev,Platform,Model,SRAStudy,BioProject,Study_Pubmed_id,ProjectID,Sample,BioSample,SampleType,TaxID,ScientificName,SampleName,g1k_pop_code,source,g1k_analysis_group,Subject_ID,Sex,Disease,Tumor,Affection_Status,Analyte_Type,Histological_Type,Body_Site,CenterName,Submission,dbgap_study_accession,Consent,RunHash,ReadHash
+SRR25056229,2024-10-04 14:39:07,2023-06-28 20:50:33,325016382,38676949458,325016382,119,12466,,https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos4/sra-pub-zq-7/SRR025/25056/SRR25056229/SRR25056229.lite.1,SRX20810432,GSM7518065,RNA-Seq,cDNA,TRANSCRIPTOMIC SINGLE CELL,PAIRED,0,0,ILLUMINA,Illumina NovaSeq 6000,SRP446371,PRJNA988806,3,988806,SRS18093896,SAMN36028301,simple,10090,Mus musculus,GSM7518065,,,,,,,no,,,,,"LABORATORY OF CELLULAR METABOLISM AND METABOLIC REGULATION, VIB-KU LEUVEN CENTER FOR CANCER BIOLOGY, VIB/KU LEUVEN",SRA1663699,,public,12A0013D89E3EA09D732E909D80A4EA0,16565C220BB5BF8C76B09379099F5662
+SRR25056228,2024-10-04 14:39:07,2023-06-28 20:52:00,339308480,40377709120,339308480,119,13157,,https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos4/sra-pub-zq-7/SRR025/25056/SRR25056228/SRR25056228.lite.1,SRX20810433,GSM7518066,RNA-Seq,cDNA,TRANSCRIPTOMIC SINGLE CELL,PAIRED,0,0,ILLUMINA,Illumina NovaSeq 6000,SRP446371,PRJNA988806,3,988806,SRS18093897,SAMN36028300,simple,10090,Mus musculus,GSM7518066,,,,,,,no,,,,,"LABORATORY OF CELLULAR METABOLISM AND METABOLIC REGULATION, VIB-KU LEUVEN CENTER FOR CANCER BIOLOGY, VIB/KU LEUVEN",SRA1663699,,public,EF36BDA7FDE7BCB3B903A1CA26F62A1B,81566D41964391F8570324D21223A27A
+SRR25056227,2024-10-04 14:39:07,2023-06-28 21:20:29,362167958,43097987002,362167958,119,13803,,https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos4/sra-pub-zq-7/SRR025/25056/SRR25056227/SRR25056227.lite.1,SRX20810434,GSM7518067,RNA-Seq,cDNA,TRANSCRIPTOMIC SINGLE CELL,PAIRED,0,0,ILLUMINA,Illumina NovaSeq 6000,SRP446371,PRJNA988806,3,988806,SRS18093898,SAMN36028299,simple,10090,Mus musculus,GSM7518067,,,,,,,no,,,,,"LABORATORY OF CELLULAR METABOLISM AND METABOLIC REGULATION, VIB-KU LEUVEN CENTER FOR CANCER BIOLOGY, VIB/KU LEUVEN",SRA1663699,,public,6671EE3C3CDAEE4DED10C126D99F2866,1C19A18F04FAC05BCFC819827271AB51
+SRR25056226,2024-10-04 14:39:08,2023-06-28 21:26:02,321922508,38308778452,321922508,119,12382,,https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos4/sra-pub-zq-7/SRR025/25056/SRR25056226/SRR25056226.lite.1,SRX20810435,GSM7518068,RNA-Seq,cDNA,TRANSCRIPTOMIC SINGLE CELL,PAIRED,0,0,ILLUMINA,Illumina NovaSeq 6000,SRP446371,PRJNA988806,3,988806,SRS18093900,SAMN36028298,simple,10090,Mus musculus,GSM7518068,,,,,,,no,,,,,"LABORATORY OF CELLULAR METABOLISM AND METABOLIC REGULATION, VIB-KU LEUVEN CENTER FOR CANCER BIOLOGY, VIB/KU LEUVEN",SRA1663699,,public,31E9A4D84C4AFA2EAF45F87434E3FF59,1F37CFEF2DD30C50C859D5B0B39E485B
+SRR25056225,2024-10-04 14:39:08,2023-06-28 21:08:06,332639939,39584152741,332639939,119,12714,,https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos4/sra-pub-zq-7/SRR025/25056/SRR25056225/SRR25056225.lite.1,SRX20810436,GSM7518069,RNA-Seq,cDNA,TRANSCRIPTOMIC SINGLE CELL,PAIRED,0,0,ILLUMINA,Illumina NovaSeq 6000,SRP446371,PRJNA988806,3,988806,SRS18093899,SAMN36028297,simple,10090,Mus musculus,GSM7518069,,,,,,,no,,,,,"LABORATORY OF CELLULAR METABOLISM AND METABOLIC REGULATION, VIB-KU LEUVEN CENTER FOR CANCER BIOLOGY, VIB/KU LEUVEN",SRA1663699,,public,07FB912346833E77F21C3F0D0C3B8935,C6ECC1BDE321FD04338FFC225F6EBF73
 ```
 
-We can see that the results are the same as before, which confirms that both links in the LinkOut section of the BioProject record point to the same set of SRA experiments.
+We can also get `csv` output using `sra-db-be` API, which is more efficient for fetching large number of records:
 
+```python
+base = "https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/sra-"
+params = {
+    "WebEnv": links["linksets"][0]["webenv"],
+    "rettype": "runinfo",
+    "query_key": links["linksets"][0]["linksetdbhistories"][1]["querykey"],
+}
+response = httpx.get(base, params=params)
+response.raise_for_status()
+print(response.text)
+```
+```csv
+Run,ReleaseDate,LoadDate,spots,bases,spots_with_mates,avgLength,size_MB,AssemblyName,download_path,Experiment,LibraryName,LibraryStrategy,LibrarySelection,LibrarySource,LibraryLayout,InsertSize,InsertDev,Platform,Model,SRAStudy,BioProject,Study_Pubmed_id,ProjectID,Sample,BioSample,SampleType,TaxID,ScientificName,SampleName,g1k_pop_code,source,g1k_analysis_group,Subject_ID,Sex,Disease,Tumor,Affection_Status,Analyte_Type,Histological_Type,Body_Site,CenterName,Submission,dbgap_study_accession,Consent,RunHash,ReadHash
+SRR25056229,2024-10-04 14:39:07,2023-06-28 20:50:33,325016382,38676949458,325016382,119,12466,,https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos4/sra-pub-zq-7/SRR025/25056/SRR25056229/SRR25056229.lite.1,SRX20810432,GSM7518065,RNA-Seq,cDNA,TRANSCRIPTOMIC SINGLE CELL,PAIRED,0,0,ILLUMINA,Illumina NovaSeq 6000,SRP446371,PRJNA988806,3,988806,SRS18093896,SAMN36028301,simple,10090,Mus musculus,GSM7518065,,,,,,,no,,,,,"LABORATORY OF CELLULAR METABOLISM AND METABOLIC REGULATION, VIB-KU LEUVEN CENTER FOR CANCER BIOLOGY, VIB/KU LEUVEN",SRA1663699,,public,12A0013D89E3EA09D732E909D80A4EA0,16565C220BB5BF8C76B09379099F5662
+SRR25056228,2024-10-04 14:39:07,2023-06-28 20:52:00,339308480,40377709120,339308480,119,13157,,https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos4/sra-pub-zq-7/SRR025/25056/SRR25056228/SRR25056228.lite.1,SRX20810433,GSM7518066,RNA-Seq,cDNA,TRANSCRIPTOMIC SINGLE CELL,PAIRED,0,0,ILLUMINA,Illumina NovaSeq 6000,SRP446371,PRJNA988806,3,988806,SRS18093897,SAMN36028300,simple,10090,Mus musculus,GSM7518066,,,,,,,no,,,,,"LABORATORY OF CELLULAR METABOLISM AND METABOLIC REGULATION, VIB-KU LEUVEN CENTER FOR CANCER BIOLOGY, VIB/KU LEUVEN",SRA1663699,,public,EF36BDA7FDE7BCB3B903A1CA26F62A1B,81566D41964391F8570324D21223A27A
+SRR25056227,2024-10-04 14:39:07,2023-06-28 21:20:29,362167958,43097987002,362167958,119,13803,,https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos4/sra-pub-zq-7/SRR025/25056/SRR25056227/SRR25056227.lite.1,SRX20810434,GSM7518067,RNA-Seq,cDNA,TRANSCRIPTOMIC SINGLE CELL,PAIRED,0,0,ILLUMINA,Illumina NovaSeq 6000,SRP446371,PRJNA988806,3,988806,SRS18093898,SAMN36028299,simple,10090,Mus musculus,GSM7518067,,,,,,,no,,,,,"LABORATORY OF CELLULAR METABOLISM AND METABOLIC REGULATION, VIB-KU LEUVEN CENTER FOR CANCER BIOLOGY, VIB/KU LEUVEN",SRA1663699,,public,6671EE3C3CDAEE4DED10C126D99F2866,1C19A18F04FAC05BCFC819827271AB51
+SRR25056226,2024-10-04 14:39:08,2023-06-28 21:26:02,321922508,38308778452,321922508,119,12382,,https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos4/sra-pub-zq-7/SRR025/25056/SRR25056226/SRR25056226.lite.1,SRX20810435,GSM7518068,RNA-Seq,cDNA,TRANSCRIPTOMIC SINGLE CELL,PAIRED,0,0,ILLUMINA,Illumina NovaSeq 6000,SRP446371,PRJNA988806,3,988806,SRS18093900,SAMN36028298,simple,10090,Mus musculus,GSM7518068,,,,,,,no,,,,,"LABORATORY OF CELLULAR METABOLISM AND METABOLIC REGULATION, VIB-KU LEUVEN CENTER FOR CANCER BIOLOGY, VIB/KU LEUVEN",SRA1663699,,public,31E9A4D84C4AFA2EAF45F87434E3FF59,1F37CFEF2DD30C50C859D5B0B39E485B
+SRR25056225,2024-10-04 14:39:08,2023-06-28 21:08:06,332639939,39584152741,332639939,119,12714,,https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos4/sra-pub-zq-7/SRR025/25056/SRR25056225/SRR25056225.lite.1,SRX20810436,GSM7518069,RNA-Seq,cDNA,TRANSCRIPTOMIC SINGLE CELL,PAIRED,0,0,ILLUMINA,Illumina NovaSeq 6000,SRP446371,PRJNA988806,3,988806,SRS18093899,SAMN36028297,simple,10090,Mus musculus,GSM7518069,,,,,,,no,,,,,"LABORATORY OF CELLULAR METABOLISM AND METABOLIC REGULATION, VIB-KU LEUVEN CENTER FOR CANCER BIOLOGY, VIB/KU LEUVEN",SRA1663699,,public,07FB912346833E77F21C3F0D0C3B8935,C6ECC1BDE321FD04338FFC225F6EBF73
+```
+
+### BioProject to BioSample
 Next we can try to fetch biosamples linked to this BioProject using the first link:
 
 ```python
@@ -754,6 +673,8 @@ eutils_summary(
 }
 ```
 
+### BioProject to ENA
+
 Finally let's try to fetch ENA records linked to this BioProject using the second link:
 ```python
 fields = [
@@ -833,3 +754,11 @@ read_enaruns(
   }
 ]
 ```
+
+### BioProject to SRA via SRA query
+
+
+### BioProject to GEO via GEO query
+
+
+## Test fetching on a list of BioProjects
