@@ -10,7 +10,7 @@ from typing import Any, Dict
 import httpx
 import pandas as pd
 from dotenv import load_dotenv
-from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
+from tenacity import RetryError, retry, retry_if_exception, stop_after_attempt, wait_exponential
 from tqdm.asyncio import tqdm_asyncio
 
 load_dotenv()
@@ -328,6 +328,8 @@ async def main():
             httpx.HTTPStatusError,
             httpx.TransportError,
             httpx.TimeoutException,
+            MalformedResponseError,
+            RetryError,
         ) as e:
             logging.error("Failed to fetch %r: %s", acc, e)
             return None
