@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "dotenv>=0.9.9",
     "httpx>=0.28.1",
     "httpx-retries>=0.4.6",
     "typer>=0.24.1",
@@ -23,7 +24,10 @@ notebooks = [
     "jupyter>=1.1.1",
     "pandas>=3.0.1",
     "python-irodsclient>=3.2.0",
+    "tenacity>=9.1.4",
     "tqdm>=4.67.3",
+    "aiolimiter>=1.2.1",
+    "xmltodict>=1.0.4",
 ]
 
 [project.scripts]
