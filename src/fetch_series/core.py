@@ -27,12 +27,14 @@ transport = RetryTransport(retry=retry)
 def eutils_search(
     query: str,
     db: str,
+    api_key: str | None = None,
 ) -> Dict[str, Any]:
     """
     Searches the NCBI Entrez database using the E-utilities API
     Args:
         query (str): query string to search for
         db (str): database to search in
+        api_key (str | None): API key for the NCBI E-utilities API
 
     Returns:
         Dict[str, Any]: JSON response from the E-utilities API containing search results
@@ -43,6 +45,7 @@ def eutils_search(
         "term": query,
         "retmode": "json",
         "usehistory": "y",
+        "api_key": api_key,
     }
     with httpx.Client(transport=transport) as client:
         response = client.get(base, params=params, timeout=10)
@@ -55,6 +58,7 @@ def eutils_summary(
     ids: str | None = None,
     webenv: str | None = None,
     query_key: str | None = None,
+    api_key: str | None = None,
 ) -> Dict[str, Any]:
     """
     Retrieves summaries of records from the NCBI Entrez database using the E-utilities API
@@ -63,6 +67,7 @@ def eutils_summary(
         ids (str | None): comma-separated list of record IDs to retrieve summaries for (optional if webenv and query_key are provided)
         webenv (str | None): WebEnv string from a previous search to retrieve summaries for (optional if ids are provided)
         query_key (str | None): query key from a previous search to retrieve summaries for (optional if ids are provided)
+        api_key (str | None): API key for the NCBI E-utilities API
 
     Returns:
         Dict[str, Any]: JSON response from the E-utilities API containing summaries of records
@@ -79,12 +84,64 @@ def eutils_summary(
         "WebEnv": webenv,
         "query_key": query_key,
         "retmode": "json",
+        "api_key": api_key,
     }
 
     with httpx.Client(transport=transport) as client:
         response = client.get(base, params=params, timeout=10)
     response.raise_for_status()
     return response.json()
+
+
+def eutils_fetch(
+    db: str,
+    ids: str | None = None,
+    webenv: str | None = None,
+    query_key: str | None = None,
+    api_key: str | None = None,
+    rettype: str = "full",
+    retmode: str = "json",
+) -> Any:
+    """
+    Retrieves records from the NCBI Entrez database using the E-utilities API
+    Args:
+        db (str): database to retrieve records from
+        ids (str | None): comma-separated list of record IDs to retrieve (optional if webenv and query_key are provided)
+        webenv (str | None): WebEnv string from a previous search to retrieve records for (optional if ids are provided)
+        query_key (str | None): query key from a previous search to retrieve records for (optional if ids are provided)
+        api_key (str | None): API key for the NCBI E-utilities API
+        rettype (str): type of return format (default: "full")
+        retmode (str): mode of return format (default: "json")
+
+    Returns:
+        Dict[str, Any]: JSON response from the E-utilities API containing records
+    """
+    # Check that either ids or webenv and query_key are specified
+    if (ids is None) == (webenv is None or query_key is None):
+        raise ValueError("Must specify either ids OR webenv and query_key")
+
+    # Retrieve records
+    base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+    params = {
+        "db": db,
+        "retmode": retmode,
+        "rettype": rettype,
+        "api_key": api_key,
+    }
+
+    if ids is not None:
+        params["id"] = ids
+    if webenv is not None:
+        params["WebEnv"] = webenv
+    if query_key is not None:
+        params["query_key"] = query_key
+
+    with httpx.Client(transport=transport) as client:
+        response = client.get(base, params=params, timeout=10)
+    response.raise_for_status()
+    if retmode == "json":
+        return response.json()
+    return response.text
 
 
 def eutils_link(
@@ -95,6 +152,7 @@ def eutils_link(
     query_key: str | None = None,
     retmode: str = "json",
     cmd: str = "neighbor_history",
+    api_key: str | None = None,
 ) -> Dict[str, Any]:
     """
     Search for linked items in a target database using the E-utilities API.
@@ -103,6 +161,7 @@ def eutils_link(
         db (str): database to search in
         id (str): ID of the item to link
         retmode (str): return mode for the response
+        api_key (str | None): API key for the NCBI E-utilities API
 
     Returns:
         Dict[str, Any]: JSON response from the E-utilities API containing search results
@@ -121,6 +180,7 @@ def eutils_link(
         "WebEnv": webenv,
         "query_key": query_key,
         "cmd": cmd,
+        "api_key": api_key,
     }
     with httpx.Client(transport=transport) as client:
         response = client.get(base, params=params, timeout=10)
