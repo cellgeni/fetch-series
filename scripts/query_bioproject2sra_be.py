@@ -5,25 +5,74 @@ import os
 import httpx
 import pandas as pd
 from dotenv import load_dotenv
-from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
+from tenacity import (
+    RetryError,
+    retry,
+    retry_if_exception,
+    stop_after_attempt,
+    wait_exponential,
+)
 from tqdm.asyncio import tqdm_asyncio
 
 from query_bioproject2sra import (
     NCBI_API_KEY,
+    SRA_COLUMNS,
     MalformedResponseError,
     ThrottledGet,
     _is_retryable,
     _make_throttled_get,
-    configure_logging,
     eutils_link,
     eutils_search,
-    parse_sra_runinfo,
 )
+
+SRA_COLUMNS = SRA_COLUMNS + ["ScientificName"]
+
+
+def parse_sra_runinfo(accession: str, runinfo_text: str | None) -> list[dict]:
+    import csv
+    import io
+
+    failure_row = {col: None for col in SRA_COLUMNS}
+    failure_row["bioproject_accession"] = accession
+    failure_row["success"] = False
+
+    if runinfo_text is None:
+        return [failure_row]
+
+    text = runinfo_text.strip()
+    if not text:
+        return [failure_row]
+
+    reader = csv.DictReader(io.StringIO(text))
+    rows = []
+    for raw in reader:
+        if not raw.get("Run"):
+            continue
+        row = {"bioproject_accession": accession, "success": True}
+        for col in SRA_COLUMNS:
+            row[col] = raw.get(col) or None
+        rows.append(row)
+
+    return rows or [failure_row]
+
 
 load_dotenv()
 
-OUTPUT_DIR = "data/query_results"
-LOG_PATH = os.path.join(OUTPUT_DIR, "bioproject2sra_be.log")
+OUTPUT_DIR = "data/query"
+LOG_PATH = os.path.join(OUTPUT_DIR, "logs", "bioproject2sra_be.log")
+
+
+def configure_logging() -> None:
+    os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
+    logging.basicConfig(
+        level=logging.WARNING,
+        format="%(asctime)s %(levelname)s %(message)s",
+        handlers=[
+            logging.FileHandler(LOG_PATH, mode="w"),
+            logging.StreamHandler(),
+        ],
+        force=True,
+    )
 
 
 async def sra_be_fetch_runinfo(
@@ -167,6 +216,8 @@ async def main():
             httpx.HTTPStatusError,
             httpx.TransportError,
             httpx.TimeoutException,
+            MalformedResponseError,
+            RetryError,
         ) as e:
             logging.error("Failed to fetch %r: %s", acc, e)
             return None
@@ -181,7 +232,7 @@ async def main():
         rows.extend(parse_sra_runinfo(accession, runinfo_text))
 
     df = pd.DataFrame(rows)
-    output_path = os.path.join(OUTPUT_DIR, "bioproject2sra_be_summary.csv")
+    output_path = os.path.join(OUTPUT_DIR, "results", "bioproject2sra_be_summary.csv")
     df.to_csv(output_path, index=False)
     logging.info("Wrote %d rows to %s", len(df), output_path)
     print(f"Wrote {len(df)} rows to {output_path}")
