@@ -1,0 +1,21 @@
+2026-05-11 17:48:31,934 WARNING No SRA records found for 'PRJNA1190403'
+2026-05-11 17:51:06,376 WARNING Retry 1/5 for 'PRJNA739138[GPRJ]': Client error '429 Too Many Requests' for url 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=sra&term=PRJNA739138%5BGPRJ%5D&retmode=json&usehistory=y&api_key=61e038518e781de982cddacff077ec29ae09'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-05-11 17:51:36,041 WARNING No SRA records found for 'PRJNA658246'
+2026-05-11 17:55:07,707 WARNING No SRA records found for '-'
+2026-05-11 17:55:54,615 WARNING No SRA records found for 'PRJNA1244410'
+2026-05-11 17:56:29,294 WARNING No SRA records found for 'PRJNA1248477'
+2026-05-11 17:57:10,907 WARNING No SRA records found for 'PRJEB54580'
+2026-05-11 17:57:47,652 WARNING No SRA records found for 'PRJNA1103761'
+2026-05-11 18:00:59,575 WARNING No SRA records found for 'PRJNA857927'
+2026-05-11 18:01:21,610 WARNING No SRA records found for 'PRJEB100787'
+2026-05-11 18:01:38,556 WARNING No SRA records found for 'PRJEB102956'
+2026-05-11 18:05:05,753 WARNING No SRA records found for 'PRJNA1371863'
+2026-05-11 18:05:55,429 WARNING No SRA records found for 'PRJNA1136968'
+2026-05-11 18:09:14,585 WARNING No SRA records found for 'PRJNA1149772'
+2026-05-11 18:14:09,385 WARNING No SRA records found for 'PRJNA1173491'
+2026-05-11 18:14:21,672 WARNING No SRA records found for 'PRJNA1050789'
+2026-05-11 18:28:49,546 WARNING Retry 1/5 for 'PRJEB9859': peer closed connection without sending complete message body (incomplete chunked read)
+2026-05-11 18:39:48,000 WARNING Retry 1/5 for 'PRJNA1034583': Server error '502 Bad Gateway' for url 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=sra&WebEnv=MCID_6a020dc0632d9a5d34077d0f&query_key=1&rettype=runinfo&retmode=text&api_key=61e038518e781de982cddacff077ec29ae09'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502
+2026-05-11 18:45:01,059 WARNING Retry 1/5 for 'PRJNA438770': peer closed connection without sending complete message body (incomplete chunked read)

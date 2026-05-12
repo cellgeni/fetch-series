@@ -1,0 +1,1009 @@
+2026-05-11 16:05:08,010 WARNING No BioProject found for 'PRJNA1050789'
+2026-05-11 16:07:39,988 WARNING No BioProject found for 'PRJNA1190403'
+2026-05-11 16:14:20,362 WARNING No BioProject found for '-'
+2026-05-11 16:15:07,659 WARNING No BioProject found for 'PRJNA1244410'
+2026-05-11 16:15:42,464 WARNING No BioProject found for 'PRJNA1248477'
+2026-05-11 16:18:45,910 WARNING Retry 1/5 for 'PRJNA1266132[PRJNA]': Server error '502 Bad Gateway' for url 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=bioproject&term=PRJNA1266132%5BPRJNA%5D&retmode=json&usehistory=y&api_key=61e038518e781de982cddacff077ec29ae09'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502
+2026-05-11 16:20:15,195 WARNING No BioProject found for 'PRJNA857927'
+2026-05-11 16:23:33,321 WARNING Retry 1/5 for 'PRJNA1003473[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:33,871 WARNING Retry 1/5 for 'PRJNA731458[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:34,159 WARNING Retry 1/5 for 'PRJNA1003474[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:34,352 WARNING Retry 1/5 for 'PRJNA1130040[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:34,394 WARNING Retry 1/5 for 'PRJNA503255[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:34,416 WARNING Retry 1/5 for 'PRJNA1332739[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:34,523 WARNING Retry 1/5 for 'PRJNA731503[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:34,801 WARNING Retry 1/5 for 'PRJNA1130078[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:34,817 WARNING Retry 1/5 for 'PRJNA1003482[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:34,928 WARNING Retry 1/5 for 'PRJNA1332791[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:35,141 WARNING Retry 1/5 for 'PRJNA503437[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:35,382 WARNING Retry 1/5 for 'PRJNA731527[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:35,573 WARNING Retry 1/5 for 'PRJNA1003523[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:35,678 WARNING Retry 1/5 for 'PRJNA1130089[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:35,780 WARNING Retry 1/5 for 'PRJNA1321339[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:35,795 WARNING Retry 1/5 for 'PRJNA503896[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:36,057 WARNING Retry 1/5 for 'PRJNA731873[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:36,171 WARNING Retry 1/5 for 'PRJNA1130353[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:36,183 WARNING Retry 1/5 for 'PRJNA1003545[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:36,459 WARNING Retry 1/5 for 'PRJNA1333323[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:36,586 WARNING Retry 1/5 for 'PRJNA495666[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:36,851 WARNING Retry 1/5 for 'PRJNA1130408[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:36,856 WARNING Retry 1/5 for 'PRJNA1003788[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:36,893 WARNING Retry 1/5 for 'PRJNA731910[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:37,070 WARNING Retry 1/5 for 'PRJNA1333327[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:37,105 WARNING Retry 1/5 for 'PRJNA505312[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:37,450 WARNING Retry 1/5 for 'PRJNA732205[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:37,510 WARNING Retry 1/5 for 'PRJNA1130417[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:37,526 WARNING Retry 1/5 for 'PRJNA1003807[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:37,659 WARNING Retry 1/5 for 'PRJNA1332371[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:23:37,946 WARNING Retry 1/5 for 'PRJNA1129505[PRJNA]': 
+2026-05-11 16:23:38,083 WARNING Retry 1/5 for 'PRJNA732362[PRJNA]': Invalid control character at: line 1 column 95 (char 94)
+2026-05-11 16:24:23,107 WARNING No BioProject found for 'PRJNA1371863'
+2026-05-11 16:24:27,135 WARNING No BioProject found for 'PRJNA1372747'
+2026-05-11 16:25:13,331 WARNING No BioProject found for 'PRJNA1136968'
+2026-05-11 16:30:25,404 WARNING Retry 1/5 for 'PRJNA596807[PRJNA]': 
+2026-05-11 16:30:25,534 WARNING Retry 1/5 for 'PRJNA766554[PRJNA]': 
+2026-05-11 16:30:26,606 WARNING Retry 1/5 for 'PRJNA1055574[PRJNA]': 
+2026-05-11 16:30:27,144 WARNING Retry 1/5 for 'PRJNA1159203[PRJNA]': 
+2026-05-11 16:30:27,814 WARNING Retry 1/5 for 'PRJNA1159291[PRJNA]': 
+2026-05-11 16:30:28,348 WARNING Retry 1/5 for 'PRJNA1031970[PRJNA]': 
+2026-05-11 16:30:30,295 WARNING Retry 1/5 for 'PRJNA1032023[PRJNA]': 
+2026-05-11 16:30:30,970 WARNING Retry 1/5 for 'PRJNA1031995[PRJNA]': 
+2026-05-11 16:30:31,105 WARNING Retry 1/5 for 'PRJNA1159718[PRJNA]': 
+2026-05-11 16:30:31,240 WARNING Retry 1/5 for 'PRJNA1061469[PRJNA]': 
+2026-05-11 16:30:31,643 WARNING Retry 1/5 for 'PRJNA1032055[PRJNA]': 
+2026-05-11 16:30:32,321 WARNING Retry 1/5 for 'PRJNA1032112[PRJNA]': 
+2026-05-11 16:30:32,593 WARNING Retry 1/5 for 'PRJNA1064602[PRJNA]': 
+2026-05-11 16:30:33,268 WARNING Retry 1/5 for 'PRJNA1064628[PRJNA]': 
+2026-05-11 16:30:33,813 WARNING Retry 1/5 for 'PRJNA1160169[PRJNA]': 
+2026-05-11 16:30:40,102 WARNING Retry 1/3 for 'PRJNA1161391' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:30:44,048 WARNING Retry 1/3 for 'PRJNA1034080' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:30:44,652 WARNING Retry 1/3 for 'PRJNA1076139' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:30:44,827 WARNING Retry 1/3 for 'PRJNA768292' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:30:45,021 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["768274"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname"
+2026-05-11 16:30:45,022 WARNING Retry 1/3 for 'PRJNA768274' (full chain): Invalid control character at: line 1 column 297 (char 296)
+2026-05-11 16:30:46,223 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1032700"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink cal
+2026-05-11 16:30:46,224 WARNING Retry 1/3 for 'PRJNA1032700' (full chain): Invalid control character at: line 1 column 236 (char 235)
+2026-05-11 16:30:48,382 WARNING Retry 1/3 for 'PRJNA901978' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:30:49,672 WARNING Retry 1/3 for 'PRJNA768795' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:30:49,756 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1078142"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink cal
+2026-05-11 16:30:49,756 WARNING Retry 1/3 for 'PRJNA1078142' (full chain): Invalid control character at: line 1 column 236 (char 235)
+2026-05-11 16:30:50,656 WARNING Retry 1/3 for 'PRJNA1034155' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:30:51,300 WARNING Retry 1/3 for 'PRJNA1083734' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:30:52,253 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["768422"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Mega
+2026-05-11 16:30:52,254 WARNING Retry 1/3 for 'PRJNA768422' (full chain): Invalid control character at: line 1 column 335 (char 334)
+2026-05-11 16:30:52,471 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["600499"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Mega
+2026-05-11 16:30:52,472 WARNING Retry 1/3 for 'PRJNA600499' (full chain): Invalid control character at: line 1 column 335 (char 334)
+2026-05-11 16:30:53,227 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1162069"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink cal
+2026-05-11 16:30:53,227 WARNING Retry 1/3 for 'PRJNA1162069' (full chain): Invalid control character at: line 1 column 236 (char 235)
+2026-05-11 16:30:53,492 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["902375"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:30:53,493 WARNING Retry 1/3 for 'PRJNA902375' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:30:53,865 WARNING Retry 1/3 for 'PRJNA1162119' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:30:56,456 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["601237"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:30:56,456 WARNING Retry 1/3 for 'PRJNA601237' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:30:58,077 WARNING Retry 1/3 for 'PRJNA1090428' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:31:01,411 WARNING Retry 1/3 for 'PRJNA1036174' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:31:01,766 WARNING Retry 1/3 for 'PRJNA1162854' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:31:06,022 WARNING Retry 1/3 for 'PRJNA602933' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:31:08,771 WARNING Retry 1/3 for 'PRJNA1163098' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:31:09,040 WARNING Retry 1/3 for 'PRJNA603358' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:31:22,035 WARNING Retry 1/3 for 'PRJNA1037137' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:31:22,152 WARNING Retry 1/3 for 'PRJNA1165290' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:31:23,265 WARNING Retry 1/3 for 'PRJNA976679' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:31:25,141 WARNING Retry 1/3 for 'PRJNA1037506' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:31:29,412 WARNING Retry 1/3 for 'PRJNA1114402' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:31:39,237 WARNING Retry 1/3 for 'PRJNA575702' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:31:40,476 WARNING Retry 1/3 for 'PRJNA904736' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:31:42,976 WARNING Retry 1/3 for 'PRJNA1166666' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:32:03,487 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1041323"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname
+2026-05-11 16:32:03,489 WARNING Retry 1/3 for 'PRJNA1041323' (full chain): Invalid control character at: line 1 column 298 (char 297)
+2026-05-11 16:32:11,123 WARNING Retry 1/3 for 'PRJNA610060' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:32:11,157 WARNING Retry 1/3 for 'PRJNA609976' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:32:16,032 WARNING Retry 1/3 for 'PRJNA611520' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:32:21,184 WARNING Retry 1/3 for 'PRJNA611831' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:33:08,502 WARNING Retry 1/3 for 'PRJNA913127' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:33:16,064 WARNING Retry 1/3 for 'PRJNA1048866' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:33:19,573 WARNING Retry 1/3 for 'PRJNA778666' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:33:19,916 WARNING Retry 1/3 for 'PRJNA778718' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:33:25,232 WARNING Retry 1/3 for 'PRJNA1049388' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:33:28,019 WARNING Retry 1/3 for 'PRJNA1049409' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:33:31,574 WARNING No SRA links found for 'PRJNA1173491'
+2026-05-11 16:33:32,233 WARNING Retry 1/3 for 'PRJNA1174760' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:33:32,257 WARNING Retry 1/3 for 'PRJNA779720' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:33:35,202 WARNING Retry 1/3 for 'PRJNA914699' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:33:35,525 WARNING Retry 1/3 for 'PRJNA1176188' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:33:52,858 WARNING Retry 1/3 for 'PRJNA781538' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:33:57,168 WARNING Retry 1/3 for 'PRJNA1052110' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:34:04,084 WARNING Retry 1/3 for 'PRJNA1214724' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:34:13,544 WARNING Retry 1/3 for 'PRJNA1178660' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:34:18,020 WARNING Retry 1/3 for 'PRJNA783345' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:34:19,847 WARNING Retry 1/3 for 'PRJNA921828' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:34:20,916 WARNING Retry 1/3 for 'PRJNA627187' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:34:25,163 WARNING Retry 1/3 for 'PRJNA922146' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:34:38,320 WARNING Retry 1/3 for 'PRJNA1055150' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:34:43,491 WARNING Retry 1/3 for 'PRJNA1180965' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:34:43,890 WARNING Retry 1/3 for 'PRJNA785163' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:34:45,827 WARNING Retry 1/3 for 'PRJNA1055891' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:34:49,396 WARNING Retry 1/3 for 'PRJNA1181030' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:34:50,698 WARNING Retry 1/3 for 'PRJNA1279170' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:34:54,976 WARNING Retry 1/3 for 'PRJNA1057240' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:34:58,448 WARNING Retry 1/3 for 'PRJNA1181826' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:07,427 WARNING Retry 1/3 for 'PRJNA786893' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:07,595 WARNING Retry 1/3 for 'PRJNA1182725' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:14,941 WARNING Retry 1/3 for 'PRJNA787275' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:19,160 WARNING Retry 1/3 for 'PRJNA1308584' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:22,785 WARNING Retry 1/3 for 'PRJNA926688' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:26,011 WARNING Retry 1/3 for 'PRJNA927037' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:34,328 WARNING Retry 1/3 for 'PRJNA788957' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:34,470 WARNING Retry 1/3 for 'PRJNA928355' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:35,734 WARNING Retry 1/3 for 'PRJNA633387' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:38,382 WARNING Retry 1/3 for 'PRJNA928408' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:39,684 WARNING Retry 1/3 for 'PRJNA928486' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:47,874 WARNING Retry 1/3 for 'PRJNA929449' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:51,131 WARNING Retry 1/3 for 'PRJNA1187638' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:52,231 WARNING Retry 1/3 for 'PRJNA790847' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:52,353 WARNING Retry 1/3 for 'PRJNA706742' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:55,495 WARNING Retry 1/3 for 'PRJNA419934' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:35:58,171 WARNING Retry 1/3 for 'PRJNA1377001' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:36:00,993 WARNING Retry 1/3 for 'PRJNA791912' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:36:03,184 WARNING Retry 1/3 for 'PRJNA792084' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:36:07,342 WARNING Retry 1/3 for 'PRJNA792583' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:36:07,782 WARNING Retry 1/3 for 'PRJNA930687' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:36:08,635 WARNING Retry 1/3 for 'PRJNA792826' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:36:12,645 WARNING Retry 1/3 for 'PRJNA793023' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:36:16,099 WARNING Retry 1/3 for 'PRJNA1190409' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:36:17,671 WARNING Retry 1/3 for 'PRJNA530977' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:36:24,449 WARNING Retry 1/3 for 'PRJNA544334' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:36:33,302 WARNING Retry 1/3 for 'PRJNA638597' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:36:36,993 WARNING Retry 1/3 for 'PRJNA638677' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:36:43,043 WARNING Retry 1/3 for 'PRJNA795772' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:36:43,582 WARNING Retry 1/3 for 'PRJNA638893' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:36:45,196 WARNING Retry 1/3 for 'PRJNA795325' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:36:57,798 WARNING Retry 1/3 for 'PRJNA1063717' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:37:01,332 WARNING Retry 1/3 for 'PRJNA1196090' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:37:01,497 WARNING Retry 1/3 for 'PRJNA604573' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:37:02,499 WARNING Retry 1/3 for 'PRJNA640673' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:37:06,899 WARNING Retry 1/3 for 'PRJNA935339' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:37:10,153 WARNING Retry 1/3 for 'PRJNA1064919' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:37:10,560 WARNING No SRA links found for 'PRJNA641434'
+2026-05-11 16:37:12,006 WARNING Retry 1/3 for 'PRJNA641428' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:37:12,217 WARNING No SRA links found for 'PRJNA641440'
+2026-05-11 16:37:17,284 WARNING Retry 1/3 for 'PRJNA1197972' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:37:17,356 WARNING Retry 1/3 for 'PRJNA626597' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:37:22,737 WARNING Retry 1/3 for 'PRJNA798360' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:37:26,612 WARNING Retry 1/3 for 'PRJNA1198872' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:37:26,633 WARNING Retry 1/3 for 'PRJNA644636' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:37:27,145 WARNING Retry 1/3 for 'PRJNA798676' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:37:31,098 WARNING Retry 1/3 for 'PRJNA1066345' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:37:35,538 WARNING Retry 1/3 for 'PRJNA656253' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:37:45,824 WARNING Retry 1/3 for 'PRJNA800681' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:37:51,014 WARNING Retry 1/3 for 'PRJNA645161' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:03,507 WARNING Retry 1/3 for 'PRJNA1203668' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:11,237 WARNING Retry 1/3 for 'PRJNA1069012' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:12,286 WARNING Retry 1/3 for 'PRJNA936445' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:15,363 WARNING Retry 1/3 for 'PRJNA802670' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:15,374 WARNING Retry 1/3 for 'PRJNA702594' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:18,831 WARNING Retry 1/3 for 'PRJNA936905' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:19,585 WARNING Retry 1/3 for 'PRJNA802759' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:19,920 WARNING Retry 1/3 for 'PRJNA1205969' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:20,354 WARNING Retry 1/3 for 'PRJNA936908' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:22,938 WARNING Retry 1/3 for 'PRJNA803367' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:27,819 WARNING Retry 1/3 for 'PRJNA648138' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:28,286 WARNING Retry 1/3 for 'PRJNA1207061' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:31,691 WARNING Retry 1/3 for 'PRJNA1070571' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:33,199 WARNING Retry 1/3 for 'PRJNA648499' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:34,470 WARNING Retry 1/3 for 'PRJNA1207555' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:36,570 WARNING Retry 1/3 for 'PRJNA648988' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:36,638 WARNING Retry 1/3 for 'PRJNA726991' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:39,812 WARNING Retry 1/3 for 'PRJNA649211' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:46,897 WARNING Retry 1/3 for 'PRJNA939113' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:48,774 WARNING Retry 1/3 for 'PRJNA1068057' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:48,778 WARNING Retry 1/3 for 'PRJNA939128' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:54,715 WARNING Retry 1/3 for 'PRJNA939217' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:55,511 WARNING Retry 1/3 for 'PRJNA939630' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:55,545 WARNING Retry 1/3 for 'PRJNA1209792' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:56,982 WARNING Retry 1/3 for 'PRJNA742201' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:38:59,556 WARNING Retry 1/3 for 'PRJNA1209966' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:00,616 WARNING Retry 1/3 for 'PRJNA940070' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:03,921 WARNING Retry 1/3 for 'PRJNA940167' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:09,645 WARNING Retry 1/3 for 'PRJNA1211152' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:09,660 WARNING Retry 1/3 for 'PRJNA1073468' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:12,414 WARNING Retry 1/3 for 'PRJNA656954' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:13,753 WARNING Retry 1/3 for 'PRJNA940972' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:17,416 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["656998"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:39:17,416 WARNING Retry 1/3 for 'PRJNA656998' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:39:17,496 WARNING Retry 1/3 for 'PRJNA1074752' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:21,618 WARNING No SRA links found for 'PRJNA658246'
+2026-05-11 16:39:23,827 WARNING Retry 1/3 for 'PRJNA1213835' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:24,813 WARNING Retry 1/3 for 'PRJNA1075064' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:28,779 WARNING Retry 1/3 for 'PRJNA1214691' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:28,822 WARNING Retry 1/3 for 'PRJNA658601' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:30,127 WARNING Retry 1/3 for 'PRJNA943498' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:30,581 WARNING Retry 1/3 for 'PRJNA1071651' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:33,176 WARNING Retry 1/3 for 'PRJNA1214830' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:33,515 WARNING Retry 1/3 for 'PRJNA1075826' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:37,692 WARNING Retry 1/3 for 'PRJNA1076165' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:39,633 WARNING Retry 1/3 for 'PRJNA659493' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:50,037 WARNING Retry 1/3 for 'PRJNA1216654' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:39:56,890 WARNING Retry 1/3 for 'PRJNA946143' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:01,182 WARNING Retry 1/3 for 'PRJNA1218631' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:01,265 WARNING Retry 1/3 for 'PRJNA1077953' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:02,268 WARNING Retry 1/3 for 'PRJNA1078277' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:05,513 WARNING Retry 1/3 for 'PRJNA809204' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:06,462 WARNING Retry 1/3 for 'PRJNA947200' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:06,736 WARNING Retry 1/3 for 'PRJNA809317' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:09,412 WARNING Retry 1/3 for 'PRJNA836911' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:10,225 WARNING Retry 1/3 for 'PRJNA1078864' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:11,066 WARNING Retry 1/3 for 'PRJNA662313' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:11,237 WARNING Retry 1/3 for 'PRJNA809634' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:13,928 WARNING Retry 1/3 for 'PRJNA1079341' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:15,767 WARNING Retry 1/3 for 'PRJNA1219606' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:17,675 WARNING Retry 1/3 for 'PRJNA810837' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:18,830 WARNING Retry 1/3 for 'PRJNA1079673' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:20,302 WARNING Retry 1/3 for 'PRJNA811113' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:21,789 WARNING Retry 1/3 for 'PRJNA662927' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:23,016 WARNING Retry 1/3 for 'PRJNA1220093' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:26,108 WARNING Retry 1/3 for 'PRJNA1220572' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:28,620 WARNING Retry 1/3 for 'PRJNA1080200' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:29,784 WARNING Retry 1/3 for 'PRJNA1080523' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:30,816 WARNING Retry 1/3 for 'PRJNA1080500' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:31,184 WARNING Retry 1/3 for 'PRJNA1221573' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:33,477 WARNING Retry 1/3 for 'PRJNA664351' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:34,725 WARNING Retry 1/3 for 'PRJNA1080625' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:38,112 WARNING Retry 1/3 for 'PRJNA1222313' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:49,530 WARNING No SRA links found for 'PRJNA951608'
+2026-05-11 16:40:50,073 WARNING No SRA links found for 'PRJNA951632'
+2026-05-11 16:40:50,582 WARNING No SRA links found for 'PRJNA951674'
+2026-05-11 16:40:55,262 WARNING Retry 1/3 for 'PRJNA952609' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:40:56,630 WARNING Retry 1/3 for 'PRJNA952652' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:41:02,199 WARNING Retry 1/3 for 'PRJNA816515' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:41:11,770 WARNING Retry 1/3 for 'PRJNA818674' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:41:13,606 WARNING Retry 1/3 for 'PRJNA664993' (full chain): Client error '429 Too Many Requests' for url 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?dbfrom=bioproject&db=sra&WebEnv=MCID_6a01f1e67a10ea374e0b9870&query_key=1&cmd=neighbor_history&retmode=json&api_key=61e038518e781de982cddacff077ec29ae09'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-05-11 16:41:15,461 WARNING Retry 1/3 for 'PRJNA954837' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:41:18,063 WARNING Retry 1/3 for 'PRJNA1085414' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:41:27,764 WARNING Retry 1/3 for 'PRJNA1224207' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:41:44,096 WARNING Retry 1/3 for 'PRJNA821714' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:41:44,208 WARNING Retry 1/3 for 'PRJNA821510' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:41:51,534 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["821838"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname"
+2026-05-11 16:41:51,535 WARNING Retry 1/3 for 'PRJNA821838' (full chain): Invalid control character at: line 1 column 297 (char 296)
+2026-05-11 16:41:53,217 WARNING Retry 1/3 for 'PRJNA958137' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:41:54,385 WARNING Retry 1/3 for 'PRJNA1089207' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:41:56,021 WARNING Retry 1/3 for 'PRJNA1089619' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:00,769 WARNING Retry 1/3 for 'PRJNA1227590' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:01,045 WARNING Retry 1/3 for 'PRJNA960837' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:05,515 WARNING Retry 1/3 for 'PRJNA961118' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:08,426 WARNING Retry 1/3 for 'PRJNA670875' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:12,578 WARNING Retry 1/3 for 'PRJNA961714' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:13,681 WARNING Retry 1/3 for 'PRJNA824860' (full chain): Client error '429 Too Many Requests' for url 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?dbfrom=bioproject&db=sra&WebEnv=MCID_6a01f22388a2da24b3004cad&query_key=1&cmd=neighbor_history&retmode=json&api_key=61e038518e781de982cddacff077ec29ae09'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-05-11 16:42:14,287 WARNING Retry 1/3 for 'PRJNA862285' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:16,581 WARNING Retry 1/3 for 'PRJNA825480' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:17,027 WARNING Retry 1/3 for 'PRJNA962063' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:20,498 WARNING Retry 1/3 for 'PRJNA962329' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:20,542 WARNING Retry 1/3 for 'PRJNA1231108' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:21,014 WARNING Retry 1/3 for 'PRJNA673425' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:21,511 WARNING Retry 1/3 for 'PRJNA962506' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:23,635 WARNING Retry 1/3 for 'PRJNA673630' (full chain): elink backend error in linksetdbhistories: 'Database is not supported: sra'
+2026-05-11 16:42:24,012 WARNING Retry 1/3 for 'PRJNA826528' (full chain): elink backend error in linksetdbhistories: 'Database is not supported: sra'
+2026-05-11 16:42:24,120 WARNING Retry 1/3 for 'PRJNA1230557' (full chain): elink backend error in linksetdbhistories: 'Database is not supported: sra'
+2026-05-11 16:42:24,315 WARNING Retry 1/3 for 'PRJNA962726' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:24,377 WARNING Retry 1/3 for 'PRJNA1231596' (full chain): elink backend error in linksetdbhistories: 'Database is not supported: sra'
+2026-05-11 16:42:24,387 WARNING Retry 1/3 for 'PRJNA673632' (full chain): elink backend error in linksetdbhistories: 'Database is not supported: sra'
+2026-05-11 16:42:27,161 WARNING Retry 1/3 for 'PRJNA962837' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:28,557 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["962503"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:42:28,558 WARNING Retry 1/3 for 'PRJNA962503' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:42:32,690 WARNING Retry 1/3 for 'PRJNA828188' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:40,833 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["674516"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:42:40,833 WARNING Retry 1/3 for 'PRJNA674516' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:42:47,945 WARNING Retry 1/3 for 'PRJNA1235223' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:42:48,696 WARNING No SRA links found for 'PRJNA831875'
+2026-05-11 16:42:48,839 WARNING No SRA links found for 'PRJNA831830'
+2026-05-11 16:42:49,017 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1090114"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname
+2026-05-11 16:42:49,018 WARNING Retry 1/3 for 'PRJNA1090114' (full chain): Invalid control character at: line 1 column 298 (char 297)
+2026-05-11 16:42:50,011 WARNING No SRA links found for 'PRJNA831886'
+2026-05-11 16:42:50,880 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1235239"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink cal
+2026-05-11 16:42:50,881 WARNING Retry 1/3 for 'PRJNA1235239' (full chain): Invalid control character at: line 1 column 236 (char 235)
+2026-05-11 16:42:53,821 WARNING Retry 1/3 for 'PRJDB14097' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:05,813 WARNING Retry 1/3 for 'PRJDB19494' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:06,328 WARNING Retry 1/3 for 'PRJNA679463' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:06,884 WARNING No SRA links found for 'PRJNA679754'
+2026-05-11 16:43:07,554 WARNING No SRA links found for 'PRJNA679769'
+2026-05-11 16:43:09,044 WARNING Retry 1/3 for 'PRJNA832946' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:09,827 WARNING Retry 1/3 for 'PRJNA679844' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:13,405 WARNING Retry 1/3 for 'PRJDB19247' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:13,547 WARNING Retry 1/3 for 'PRJNA1240799' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:13,861 WARNING Retry 1/3 for 'PRJNA680328' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:21,578 WARNING Retry 1/3 for 'PRJNA834098' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:21,872 WARNING Retry 1/3 for 'PRJNA1241782' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:21,902 WARNING Retry 1/3 for 'PRJNA834020' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:22,056 WARNING Retry 1/3 for 'PRJNA1241755' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:23,255 WARNING Retry 1/3 for 'PRJNA1092633' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:29,642 WARNING Retry 1/3 for 'PRJNA1242884' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:37,733 WARNING Retry 1/3 for 'PRJNA682194' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:38,127 WARNING Retry 1/3 for 'PRJNA1243445' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:38,621 WARNING Retry 1/3 for 'PRJDB36308' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:45,656 WARNING Retry 1/3 for 'PRJNA1094932' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:43:55,154 WARNING Retry 1/3 for 'PRJDB38224' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:44:00,592 WARNING Retry 1/3 for 'PRJNA684151' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:44:02,882 WARNING Retry 1/3 for 'PRJNA684305' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:44:10,648 WARNING Retry 1/3 for 'PRJEB50571' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:44:18,425 WARNING Retry 1/3 for 'PRJNA1097503' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:44:19,811 WARNING Retry 1/3 for 'PRJNA837874' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:44:31,466 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1098641"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname
+2026-05-11 16:44:31,466 WARNING Retry 1/3 for 'PRJNA1098641' (full chain): Invalid control character at: line 1 column 298 (char 297)
+2026-05-11 16:44:31,735 WARNING Retry 1/3 for 'PRJNA838567' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:44:31,744 WARNING Retry 1/3 for 'PRJNA1098760' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:44:35,553 WARNING Retry 1/3 for 'PRJNA838620' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:44:39,553 WARNING Retry 1/3 for 'PRJNA1251551' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:44:43,421 WARNING Retry 1/3 for 'PRJNA1252016' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:44:46,500 WARNING Retry 1/3 for 'PRJNA1099643' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:44:47,882 WARNING Retry 1/3 for 'PRJNA973609' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:44:51,840 WARNING Retry 1/3 for 'PRJEB53691' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:44:52,037 WARNING Retry 1/3 for 'PRJNA1253653' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:44:55,999 WARNING Retry 1/3 for 'PRJEB53999' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:44:58,768 WARNING No SRA links found for 'PRJEB54580'
+2026-05-11 16:45:00,243 WARNING Retry 1/3 for 'PRJNA1101062' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:04,350 WARNING Retry 1/3 for 'PRJNA974845' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:04,377 WARNING Retry 1/3 for 'PRJNA974153' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:08,990 WARNING Retry 1/3 for 'PRJEB55271' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:10,337 WARNING Retry 1/3 for 'PRJNA1255539' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:16,741 WARNING Retry 1/3 for 'PRJNA1102029' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:19,872 WARNING Retry 1/3 for 'PRJNA691947' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:21,685 WARNING Retry 1/3 for 'PRJNA692211' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:28,594 WARNING Retry 1/3 for 'PRJNA1103171' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:28,778 WARNING Retry 1/3 for 'PRJNA1258171' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:35,797 WARNING No SRA links found for 'PRJNA1103761'
+2026-05-11 16:45:41,034 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["692740"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:45:41,035 WARNING Retry 1/3 for 'PRJNA692740' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:45:43,225 WARNING Retry 1/3 for 'PRJNA1103933' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:45,089 WARNING Retry 1/3 for 'PRJNA977231' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:49,210 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1260239"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname
+2026-05-11 16:45:49,211 WARNING Retry 1/3 for 'PRJNA1260239' (full chain): Invalid control character at: line 1 column 298 (char 297)
+2026-05-11 16:45:52,046 WARNING Retry 1/3 for 'PRJNA977647' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:52,802 WARNING Retry 1/3 for 'PRJEB60344' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:52,893 WARNING Retry 1/3 for 'PRJNA1104289' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:52,913 WARNING Retry 1/3 for 'PRJNA1104623' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:53,047 WARNING Retry 1/3 for 'PRJNA1104655' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:45:59,869 WARNING Retry 1/3 for 'PRJNA1105070' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:00,454 WARNING Retry 1/3 for 'PRJEB61823' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:01,570 WARNING Retry 1/3 for 'PRJNA1261810' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:01,689 WARNING Retry 1/3 for 'PRJNA1105369' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:01,696 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1104686"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink cal
+2026-05-11 16:46:01,697 WARNING Retry 1/3 for 'PRJNA1104686' (full chain): Invalid control character at: line 1 column 236 (char 235)
+2026-05-11 16:46:02,997 WARNING Retry 1/3 for 'PRJNA694670' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:06,200 WARNING Retry 1/3 for 'PRJNA1261969' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:13,690 WARNING Retry 1/3 for 'PRJNA842346' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:15,355 WARNING Retry 1/3 for 'PRJNA1106405' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:18,989 WARNING Retry 1/3 for 'PRJNA1263617' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:30,665 WARNING Retry 1/3 for 'PRJNA980253' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:34,275 WARNING Retry 1/3 for 'PRJNA980249' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:38,401 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["844057"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname"
+2026-05-11 16:46:38,402 WARNING Retry 1/3 for 'PRJNA844057' (full chain): Invalid control character at: line 1 column 297 (char 296)
+2026-05-11 16:46:42,981 WARNING Retry 1/3 for 'PRJEB67884' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:46,798 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["844903"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:46:46,799 WARNING Retry 1/3 for 'PRJNA844903' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:46:50,658 WARNING Retry 1/3 for 'PRJNA982117' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:53,969 WARNING Retry 1/3 for 'PRJEB71629' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:54,156 WARNING Retry 1/3 for 'PRJNA846713' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:54,414 WARNING Retry 1/3 for 'PRJNA1109290' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:54,850 WARNING Retry 1/3 for 'PRJNA847195' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:56,268 WARNING Retry 1/3 for 'PRJEB19466' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:58,410 WARNING Retry 1/3 for 'PRJNA982861' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:46:59,707 WARNING Retry 1/3 for 'PRJNA983410' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:02,314 WARNING Retry 1/3 for 'PRJNA1110164' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:02,569 WARNING Retry 1/3 for 'PRJNA983754' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:02,613 WARNING Retry 1/3 for 'PRJNA983394' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:03,551 WARNING Retry 1/3 for 'PRJNA1110208' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:07,241 WARNING Retry 1/3 for 'PRJNA848396' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:07,935 WARNING Retry 1/3 for 'PRJEB74742' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:11,447 WARNING Retry 1/3 for 'PRJNA984656' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:13,366 WARNING Retry 1/3 for 'PRJEB75396' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:14,943 WARNING Retry 1/3 for 'PRJNA849218' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:15,621 WARNING Retry 1/3 for 'PRJNA849284' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:19,673 WARNING Retry 1/3 for 'PRJNA985690' (full chain): Client error '429 Too Many Requests' for url 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?dbfrom=bioproject&db=sra&WebEnv=MCID_6a01f3566a01d187090cb835&query_key=1&cmd=neighbor_history&retmode=json&api_key=61e038518e781de982cddacff077ec29ae09'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-05-11 16:47:19,825 WARNING Retry 1/3 for 'PRJNA1111791' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:28,442 WARNING Retry 1/3 for 'PRJNA1261997' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:35,444 WARNING Retry 1/3 for 'PRJEB81502' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:37,136 WARNING Retry 1/3 for 'PRJNA1112844' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:43,718 WARNING Retry 1/3 for 'PRJNA851594' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:43,778 WARNING Retry 1/3 for 'PRJNA986892' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:43,794 WARNING Retry 1/3 for 'PRJEB82479' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:48,023 WARNING Retry 1/3 for 'PRJNA1269065' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:51,757 WARNING Retry 1/3 for 'PRJNA852221' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:51,878 WARNING Retry 1/3 for 'PRJNA1113678' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:55,383 WARNING Retry 1/3 for 'PRJNA1113625' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:47:56,292 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["852507"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Mega
+2026-05-11 16:47:56,293 WARNING Retry 1/3 for 'PRJNA852507' (full chain): Invalid control character at: line 1 column 335 (char 334)
+2026-05-11 16:47:59,470 WARNING Retry 1/3 for 'PRJEB86031' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:00,321 WARNING Retry 1/3 for 'PRJNA988066' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:03,818 WARNING Retry 1/3 for 'PRJNA988140' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:03,826 WARNING Retry 1/3 for 'PRJNA853393' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:04,417 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1114115"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Meg
+2026-05-11 16:48:04,418 WARNING Retry 1/3 for 'PRJNA1114115' (full chain): Invalid control character at: line 1 column 336 (char 335)
+2026-05-11 16:48:05,296 WARNING Retry 1/3 for 'PRJNA595692' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:07,406 WARNING Retry 1/3 for 'PRJNA988466' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:07,491 WARNING Retry 1/3 for 'PRJNA853761' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:08,514 WARNING Retry 1/3 for 'PRJNA853730' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:08,535 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1114705"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Meg
+2026-05-11 16:48:08,536 WARNING Retry 1/3 for 'PRJNA1114705' (full chain): Invalid control character at: line 1 column 336 (char 335)
+2026-05-11 16:48:08,536 WARNING Retry 1/3 for 'PRJNA988514' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:12,255 WARNING Retry 1/3 for 'PRJNA1271467' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:12,816 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1272966"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink cal
+2026-05-11 16:48:12,817 WARNING Retry 1/3 for 'PRJEB88129' (full chain): Invalid control character at: line 1 column 236 (char 235)
+2026-05-11 16:48:13,092 WARNING Retry 1/3 for 'PRJEB91360' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:13,659 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1271550"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink cal
+2026-05-11 16:48:13,660 WARNING Retry 1/3 for 'PRJNA1271550' (full chain): Invalid control character at: line 1 column 236 (char 235)
+2026-05-11 16:48:16,992 WARNING Retry 1/3 for 'PRJNA854055' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:20,488 WARNING Retry 1/3 for 'PRJNA1116143' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:20,585 WARNING Retry 1/3 for 'PRJNA1272841' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:21,183 WARNING Retry 1/3 for 'PRJNA854903' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:21,944 WARNING Retry 1/3 for 'PRJNA990681' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:24,343 WARNING Retry 1/3 for 'PRJNA990744' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:29,035 WARNING Retry 1/3 for 'PRJNA1274481' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:32,384 WARNING Retry 1/3 for 'PRJNA991596' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:37,588 WARNING Retry 1/3 for 'PRJNA992125' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:40,573 WARNING Retry 1/3 for 'PRJNA992517' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:40,825 WARNING No SRA links found for 'PRJNA1280145'
+2026-05-11 16:48:43,470 WARNING Retry 1/3 for 'PRJNA1281111' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:44,720 WARNING Retry 1/3 for 'PRJNA707203' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:46,601 WARNING Retry 1/3 for 'PRJNA707476' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:50,083 WARNING Retry 1/3 for 'PRJNA858023' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:50,094 WARNING Retry 1/3 for 'PRJNA994430' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:53,236 WARNING Retry 1/3 for 'PRJNA1282070' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:57,931 WARNING Retry 1/3 for 'PRJNA1283075' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:48:58,102 WARNING Retry 1/3 for 'PRJNA994584' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:01,936 WARNING Retry 1/3 for 'PRJEB95112' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:05,245 WARNING Retry 1/3 for 'PRJNA1116216' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:09,305 WARNING Retry 1/3 for 'PRJNA1284896' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:10,345 WARNING Retry 1/3 for 'PRJEB100787' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:14,365 WARNING Retry 1/3 for 'PRJEB100809' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:18,411 WARNING Retry 1/3 for 'PRJNA996065' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:21,740 WARNING Retry 1/3 for 'PRJNA1285933' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:27,033 WARNING Retry 1/3 for 'PRJNA716339' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:29,937 WARNING Retry 1/3 for 'PRJNA996892' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:30,477 WARNING No SRA links found for 'PRJEB102956'
+2026-05-11 16:49:30,571 WARNING Retry 1/3 for 'PRJNA1288501' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:30,723 WARNING Retry 1/3 for 'PRJNA716830' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:33,740 WARNING Retry 1/3 for 'PRJEB103833' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:44,034 WARNING Retry 1/3 for 'PRJNA1119636' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:48,794 WARNING Retry 1/3 for 'PRJNA1291653' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:48,911 WARNING Retry 1/3 for 'PRJNA863129' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:50,814 WARNING Retry 1/3 for 'PRJEB38269' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:52,866 WARNING Retry 1/3 for 'PRJNA718568' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:53,371 WARNING Retry 1/3 for 'PRJNA718819' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:56,977 WARNING Retry 1/3 for 'PRJNA1293344' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:49:59,089 WARNING Retry 1/3 for 'PRJNA1120830' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:02,591 WARNING Retry 1/3 for 'PRJEB40951' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:04,618 WARNING Retry 1/3 for 'PRJNA1294292' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:04,627 WARNING Retry 1/3 for 'PRJNA719379' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:06,790 WARNING Retry 1/3 for 'PRJNA1121235' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:10,644 WARNING Retry 1/3 for 'PRJNA1295414' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:10,993 WARNING Retry 1/3 for 'PRJNA719726' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:12,103 WARNING Retry 1/3 for 'PRJNA1121386' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:15,271 WARNING Retry 1/3 for 'PRJNA865298' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:16,478 WARNING Retry 1/3 for 'PRJNA1122158' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:16,591 WARNING Retry 1/3 for 'PRJNA783207' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:19,461 WARNING Retry 1/3 for 'PRJNA865341' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:20,252 WARNING Retry 1/3 for 'PRJEB46101' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:20,274 WARNING Retry 1/3 for 'PRJNA720624' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:23,371 WARNING Retry 1/3 for 'PRJNA865564' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:28,181 WARNING Retry 1/3 for 'PRJNA1084069' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:31,335 WARNING Retry 1/3 for 'PRJEB47074' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:31,912 WARNING Retry 1/3 for 'PRJEB47569' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:32,043 WARNING Retry 1/3 for 'PRJNA1301124' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:36,025 WARNING Retry 1/3 for 'PRJNA1124081' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:36,030 WARNING Retry 1/3 for 'PRJNA1301119' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:36,371 WARNING Retry 1/3 for 'PRJNA722013' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:39,959 WARNING Retry 1/3 for 'PRJNA1301944' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:40,075 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["867016"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname"
+2026-05-11 16:50:40,076 WARNING Retry 1/3 for 'PRJNA867016' (full chain): Invalid control character at: line 1 column 297 (char 296)
+2026-05-11 16:50:41,699 WARNING Retry 1/3 for 'PRJNA1302483' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:44,141 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["722418"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Mega
+2026-05-11 16:50:44,142 WARNING Retry 1/3 for 'PRJNA722418' (full chain): Invalid control character at: line 1 column 335 (char 334)
+2026-05-11 16:50:44,158 WARNING Retry 1/3 for 'PRJNA1124150' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:48,227 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1124372"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Meg
+2026-05-11 16:50:48,228 WARNING Retry 1/3 for 'PRJNA1124372' (full chain): Invalid control character at: line 1 column 336 (char 335)
+2026-05-11 16:50:48,511 WARNING Retry 1/3 for 'PRJNA867708' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:50,647 WARNING Retry 1/3 for 'PRJNA723191' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:51,687 WARNING Retry 1/3 for 'PRJNA867725' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:52,478 WARNING Retry 1/3 for 'PRJNA1125607' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:52,763 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["722977"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:50:52,764 WARNING Retry 1/3 for 'PRJNA722977' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:50:55,064 WARNING Retry 1/3 for 'PRJNA401805' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:55,257 WARNING Retry 1/3 for 'PRJNA719245' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:56,374 WARNING Retry 1/3 for 'PRJNA723598' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:56,414 WARNING Retry 1/3 for 'PRJNA998902' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:56,515 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["723597"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Mega
+2026-05-11 16:50:56,516 WARNING Retry 1/3 for 'PRJNA723597' (full chain): Invalid control character at: line 1 column 335 (char 334)
+2026-05-11 16:50:57,385 WARNING Retry 1/3 for 'PRJNA724018' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:59,212 WARNING Retry 1/3 for 'PRJNA724666' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:50:59,401 WARNING Retry 1/3 for 'PRJNA998807' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:00,584 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1125429"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink cal
+2026-05-11 16:51:00,585 WARNING Retry 1/3 for 'PRJNA1125429' (full chain): Invalid control character at: line 1 column 236 (char 235)
+2026-05-11 16:51:00,892 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1305426"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink cal
+2026-05-11 16:51:00,893 WARNING Retry 1/3 for 'PRJNA1305426' (full chain): Invalid control character at: line 1 column 236 (char 235)
+2026-05-11 16:51:03,617 WARNING Retry 1/3 for 'PRJNA1125904' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:03,767 WARNING Retry 1/3 for 'PRJNA1214419' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:04,630 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["413049"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:51:04,631 WARNING Retry 1/3 for 'PRJNA413049' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:51:07,763 WARNING Retry 1/3 for 'PRJNA858618' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:08,724 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["999307"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Mega
+2026-05-11 16:51:08,725 WARNING Retry 1/3 for 'PRJNA999307' (full chain): Invalid control character at: line 1 column 335 (char 334)
+2026-05-11 16:51:08,768 WARNING Retry 1/3 for 'PRJNA1302661' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:11,620 WARNING Retry 1/3 for 'PRJNA1126617' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:11,661 WARNING Retry 1/3 for 'PRJNA725706' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:12,048 WARNING Retry 1/3 for 'PRJNA726170' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:16,111 WARNING Retry 1/3 for 'PRJNA869711' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:16,203 WARNING Retry 1/3 for 'PRJNA1126290' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:16,987 WARNING Retry 1/3 for 'PRJNA1000443' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:20,566 WARNING Retry 1/3 for 'PRJNA726986' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:21,095 WARNING Retry 1/3 for 'PRJNA727195' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:24,300 WARNING Retry 1/3 for 'PRJNA1000567' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:25,189 WARNING Retry 1/3 for 'PRJNA1127617' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:25,237 WARNING Retry 1/3 for 'PRJNA1127523' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:27,325 WARNING Retry 1/3 for 'PRJNA1000603' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:28,999 WARNING Retry 1/3 for 'PRJNA1128044' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:29,365 WARNING Retry 1/3 for 'PRJNA1000910' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:29,408 WARNING Retry 1/3 for 'PRJNA1311139' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:30,573 WARNING Retry 1/3 for 'PRJNA1000946' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:32,804 WARNING Retry 1/3 for 'PRJNA484783' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:32,905 WARNING Retry 1/3 for 'PRJNA1312867' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:33,261 WARNING Retry 1/3 for 'PRJNA1313884' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:33,282 WARNING Retry 1/3 for 'PRJNA727856' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:33,363 WARNING Retry 1/3 for 'PRJNA1000978' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:37,431 WARNING Retry 1/3 for 'PRJNA1001340' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:41,553 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["872019"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname"
+2026-05-11 16:51:41,554 WARNING Retry 1/3 for 'PRJNA872019' (full chain): Invalid control character at: line 1 column 297 (char 296)
+2026-05-11 16:51:45,628 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["489582"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname"
+2026-05-11 16:51:45,629 WARNING Retry 1/3 for 'PRJNA489582' (full chain): Invalid control character at: line 1 column 297 (char 296)
+2026-05-11 16:51:45,642 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["489475"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname"
+2026-05-11 16:51:45,643 WARNING Retry 1/3 for 'PRJNA489475' (full chain): Invalid control character at: line 1 column 297 (char 296)
+2026-05-11 16:51:49,462 WARNING Retry 1/3 for 'PRJNA494028' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:49,806 WARNING Retry 1/3 for 'PRJNA1322524' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:49,818 WARNING Retry 1/3 for 'PRJNA1001959' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:49,831 WARNING Retry 1/3 for 'PRJNA495592' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:49,862 WARNING Retry 1/3 for 'PRJNA1001924' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:53,049 WARNING Retry 1/3 for 'PRJNA1129109' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:53,965 WARNING Retry 1/3 for 'PRJNA1327223' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:54,718 WARNING Retry 1/3 for 'PRJNA730005' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:57,873 WARNING Retry 1/3 for 'PRJNA1327766' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:58,738 WARNING Retry 1/3 for 'PRJNA1328702' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:58,801 WARNING Retry 1/3 for 'PRJNA730694' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:51:59,243 WARNING Retry 1/3 for 'PRJNA873273' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:00,515 WARNING Retry 1/3 for 'PRJNA1002589' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:02,036 WARNING Retry 1/3 for 'PRJNA1002605' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:04,725 WARNING Retry 1/3 for 'PRJNA1003044' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:06,734 WARNING Retry 1/3 for 'PRJNA1003099' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:08,428 WARNING Retry 1/3 for 'PRJNA1129529' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:08,842 WARNING Retry 1/3 for 'PRJNA731109' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:09,848 WARNING Retry 1/3 for 'PRJNA1129585' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:11,051 WARNING Retry 1/3 for 'PRJNA1331664' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:12,557 WARNING Retry 1/3 for 'PRJNA732364' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:15,216 WARNING Retry 1/3 for 'PRJNA1004617' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:15,305 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1332574"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink cal
+2026-05-11 16:52:15,306 WARNING Retry 1/3 for 'PRJNA1332574' (full chain): Invalid control character at: line 1 column 236 (char 235)
+2026-05-11 16:52:21,442 WARNING Retry 1/3 for 'PRJNA1335939' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:22,591 WARNING Retry 1/3 for 'PRJNA1004674' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:22,669 WARNING Retry 1/3 for 'PRJNA1336097' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:23,857 WARNING Retry 1/3 for 'PRJNA509262' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:24,239 WARNING Retry 1/3 for 'PRJNA508962' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:30,233 WARNING Retry 1/3 for 'PRJNA1005683' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:30,264 WARNING Retry 1/3 for 'PRJNA1365019' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:31,144 WARNING Retry 1/3 for 'PRJNA1131841' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:34,393 WARNING Retry 1/3 for 'PRJNA1365086' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:34,844 WARNING Retry 1/3 for 'PRJNA1132259' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:34,857 WARNING Retry 1/3 for 'PRJNA512202' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:38,408 WARNING Retry 1/3 for 'PRJNA1006213' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:38,530 WARNING Retry 1/3 for 'PRJNA735234' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:38,558 WARNING Retry 1/3 for 'PRJNA1132300' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:39,092 WARNING Retry 1/3 for 'PRJNA512502' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:42,122 WARNING Retry 1/3 for 'PRJNA735721' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:42,237 WARNING Retry 1/3 for 'PRJNA514236' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:42,960 WARNING Retry 1/3 for 'PRJNA1133077' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:42,978 WARNING Retry 1/3 for 'PRJNA735736' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:42,986 WARNING Retry 1/3 for 'PRJNA1368712' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:43,919 WARNING Retry 1/3 for 'PRJNA1006691' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:47,026 WARNING Retry 1/3 for 'PRJNA1007621' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:47,589 WARNING Retry 1/3 for 'PRJNA515751' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:50,951 WARNING Retry 1/3 for 'PRJNA736705' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:51,204 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["515063"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:52:51,204 WARNING Retry 1/3 for 'PRJNA515063' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:52:52,377 WARNING Retry 1/3 for 'PRJNA873741' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:55,083 WARNING Retry 1/3 for 'PRJNA737161' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:52:57,469 WARNING Retry 1/3 for 'PRJNA737273' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:02,798 WARNING Retry 1/3 for 'PRJNA874714' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:02,802 WARNING Retry 1/3 for 'PRJNA1375790' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:02,888 WARNING Retry 1/3 for 'PRJNA1008178' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:02,934 WARNING Retry 1/3 for 'PRJNA737573' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:08,223 WARNING Retry 1/3 for 'PRJNA524860' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:11,773 WARNING Retry 1/3 for 'PRJNA875399' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:11,810 WARNING Retry 1/3 for 'PRJNA1135080' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:14,926 WARNING Retry 1/3 for 'PRJNA1135134' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:14,942 WARNING Retry 1/3 for 'PRJNA1008689' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:18,967 WARNING Retry 1/3 for 'PRJNA1009008' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:20,163 WARNING Retry 1/3 for 'PRJNA762594' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:21,199 WARNING Retry 1/3 for 'PRJNA739681' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:23,374 WARNING Retry 1/3 for 'PRJNA528089' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:24,538 WARNING Retry 1/3 for 'PRJNA876121' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:29,428 WARNING Retry 1/3 for 'PRJNA1135960' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:29,650 WARNING Retry 1/3 for 'PRJNA741385' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:35,427 WARNING Retry 1/3 for 'PRJNA741511' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:36,407 WARNING Retry 1/3 for 'PRJNA1010697' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:36,418 WARNING Retry 1/3 for 'PRJNA531057' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:39,047 WARNING Retry 1/3 for 'PRJNA1010818' (full chain): Client error '429 Too Many Requests' for url 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?dbfrom=bioproject&db=sra&WebEnv=MCID_6a01f4d368e104aeb400cad8&query_key=1&cmd=neighbor_history&retmode=json&api_key=61e038518e781de982cddacff077ec29ae09'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-05-11 16:53:39,649 WARNING Retry 1/3 for 'PRJNA877120' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:40,424 WARNING Retry 1/3 for 'PRJNA773987' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:43,552 WARNING Retry 1/3 for 'PRJNA777734' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:52,103 WARNING Retry 1/3 for 'PRJNA483009' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:52,341 WARNING Retry 1/3 for 'PRJNA743038' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:53:52,682 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["533635"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:53:52,683 WARNING Retry 1/3 for 'PRJNA533635' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:53:56,292 WARNING Retry 1/3 for 'PRJNA1011330' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:04,067 WARNING Retry 1/3 for 'PRJNA1012009' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:04,510 WARNING Retry 1/3 for 'PRJNA1138877' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:04,640 WARNING Retry 1/3 for 'PRJNA1013052' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:05,288 WARNING Retry 1/3 for 'PRJNA1013187' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:06,384 WARNING Retry 1/3 for 'PRJNA541943' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:07,262 WARNING Retry 1/3 for 'PRJNA541875' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:08,478 WARNING Retry 1/3 for 'PRJNA880552' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:08,578 WARNING Retry 1/3 for 'PRJNA880521' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:13,278 WARNING Retry 1/3 for 'PRJNA543884' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:19,624 WARNING Retry 1/3 for 'PRJNA1139771' (full chain): 
+2026-05-11 16:54:21,006 WARNING Retry 1/3 for 'PRJNA1014429' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:21,337 WARNING Retry 1/3 for 'PRJNA1014440' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:21,342 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1140269"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Meg
+2026-05-11 16:54:21,342 WARNING Retry 1/3 for 'PRJNA1140269' (full chain): Invalid control character at: line 1 column 336 (char 335)
+2026-05-11 16:54:21,508 WARNING Retry 1/3 for 'PRJNA882107' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:22,260 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["544073"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:54:22,261 WARNING Retry 1/3 for 'PRJNA544073' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:54:25,176 WARNING Retry 1/3 for 'PRJNA545242' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:25,327 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["882020"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:54:25,328 WARNING Retry 1/3 for 'PRJNA882020' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:54:25,353 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1140624"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname
+2026-05-11 16:54:25,354 WARNING Retry 1/3 for 'PRJNA1140624' (full chain): Invalid control character at: line 1 column 298 (char 297)
+2026-05-11 16:54:25,680 WARNING Retry 1/3 for 'PRJNA882465' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:26,004 WARNING Retry 1/3 for 'PRJNA1140879' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:26,044 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["882355"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:54:26,044 WARNING Retry 1/3 for 'PRJNA882355' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:54:26,398 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1014495"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname
+2026-05-11 16:54:26,399 WARNING Retry 1/3 for 'PRJNA1014495' (full chain): Invalid control character at: line 1 column 298 (char 297)
+2026-05-11 16:54:27,168 WARNING Retry 1/3 for 'PRJNA1140536' (full chain): 
+2026-05-11 16:54:28,041 WARNING No SRA links found for 'PRJNA1141463'
+2026-05-11 16:54:29,481 WARNING Retry 1/3 for 'PRJNA1067553' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:29,531 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1014900"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname
+2026-05-11 16:54:29,531 WARNING Retry 1/3 for 'PRJNA1014900' (full chain): Invalid control character at: line 1 column 298 (char 297)
+2026-05-11 16:54:29,858 WARNING Retry 1/3 for 'PRJNA1015543' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:31,190 WARNING Retry 1/3 for 'PRJNA547634' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:31,352 WARNING Retry 1/3 for 'PRJNA1015558' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:31,406 WARNING Retry 1/3 for 'PRJNA1141886' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:32,799 WARNING Retry 1/3 for 'PRJNA1141503' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:33,888 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["546020"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:54:33,890 WARNING Retry 1/3 for 'PRJNA546020' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:54:33,922 WARNING Retry 1/3 for 'PRJNA545955' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:33,931 WARNING Retry 1/3 for 'PRJNA1015267' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:33,952 WARNING Retry 1/3 for 'PRJNA868372' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:33,961 WARNING Retry 1/3 for 'PRJNA882878' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:33,967 WARNING Retry 1/3 for 'PRJNA882862' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:35,292 WARNING Retry 1/3 for 'PRJNA1015124' (full chain): 
+2026-05-11 16:54:37,171 WARNING Retry 1/3 for 'PRJNA882770' (full chain): 
+2026-05-11 16:54:40,948 WARNING Retry 1/3 for 'PRJNA883951' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:41,123 WARNING Retry 1/3 for 'PRJNA794826' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:41,148 WARNING Retry 1/3 for 'PRJNA743854' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:42,517 WARNING Retry 1/3 for 'PRJNA884380' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:45,673 WARNING Retry 1/3 for 'PRJNA1016446' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:46,282 WARNING Retry 1/3 for 'PRJNA1142856' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:46,494 WARNING Retry 1/3 for 'PRJNA803769' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:48,636 WARNING Retry 1/3 for 'PRJNA1142939' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:49,621 WARNING Retry 1/3 for 'PRJNA1142961' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:50,655 WARNING Retry 1/3 for 'PRJNA745198' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:50,661 WARNING Retry 1/3 for 'PRJNA810985' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:50,688 WARNING Retry 1/3 for 'PRJNA885152' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:51,679 WARNING Retry 1/3 for 'PRJNA802332' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:52,068 WARNING Retry 1/3 for 'PRJNA1142978' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:52,828 WARNING Retry 1/3 for 'PRJNA1143023' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:54,252 WARNING Retry 1/3 for 'PRJNA745465' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:55,031 WARNING Retry 1/3 for 'PRJNA1143545' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:55,912 WARNING Retry 1/3 for 'PRJNA745464' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:56,310 WARNING Retry 1/3 for 'PRJNA1018429' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:57,792 WARNING Retry 1/3 for 'PRJNA885622' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:59,335 WARNING Retry 1/3 for 'PRJNA746332' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:54:59,349 WARNING Retry 1/3 for 'PRJNA819057' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:01,182 WARNING Retry 1/3 for 'PRJNA1018247' (full chain): 
+2026-05-11 16:55:01,548 WARNING Retry 1/3 for 'PRJNA748552' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:01,909 WARNING Retry 1/3 for 'PRJNA885806' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:03,293 WARNING Retry 1/3 for 'PRJNA828127' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:05,748 WARNING Retry 1/3 for 'PRJNA746555' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:06,363 WARNING Retry 1/3 for 'PRJNA746548' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:06,460 WARNING Retry 1/3 for 'PRJNA746566' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:07,467 WARNING Retry 1/3 for 'PRJNA1019231' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:07,485 WARNING Retry 1/3 for 'PRJNA834897' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:07,504 WARNING Retry 1/3 for 'PRJNA746624' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:07,672 WARNING Retry 1/3 for 'PRJNA886090' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:08,161 WARNING Retry 1/3 for 'PRJNA746582' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:10,289 WARNING Retry 1/3 for 'PRJNA1019298' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:10,426 WARNING Retry 1/3 for 'PRJNA835590' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:15,249 WARNING Retry 1/3 for 'PRJNA841980' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:16,275 WARNING Retry 1/3 for 'PRJNA886980' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:17,731 WARNING Retry 1/3 for 'PRJNA835152' (full chain): 
+2026-05-11 16:55:18,470 WARNING Retry 1/3 for 'PRJNA747816' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:19,644 WARNING Retry 1/3 for 'PRJNA887403' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:19,984 WARNING Retry 1/3 for 'PRJNA741479' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:23,106 WARNING Retry 1/3 for 'PRJNA846952' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:27,289 WARNING Retry 1/3 for 'PRJNA1020856' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:27,660 WARNING Retry 1/3 for 'PRJNA548369' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:27,664 WARNING Retry 1/3 for 'PRJNA749056' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:31,545 WARNING Retry 1/3 for 'PRJNA888034' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:32,788 WARNING Retry 1/3 for 'PRJNA1020896' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:34,759 WARNING Retry 1/3 for 'PRJNA888056' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:36,331 WARNING Retry 1/3 for 'PRJNA549083' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:37,421 WARNING Retry 1/3 for 'PRJNA727744' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:39,281 WARNING Retry 1/3 for 'PRJNA866296' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:44,436 WARNING Retry 1/3 for 'PRJNA889729' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:48,442 WARNING Retry 1/3 for 'PRJNA551746' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:48,467 WARNING Retry 1/3 for 'PRJNA885018' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:53,413 WARNING Retry 1/3 for 'PRJNA552346' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:54,857 WARNING Retry 1/3 for 'PRJNA883006' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:55,527 WARNING Retry 1/3 for 'PRJNA887945' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:55,555 WARNING Retry 1/3 for 'PRJNA1022305' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:55,565 WARNING Retry 1/3 for 'PRJNA553242' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:59,025 WARNING Retry 1/3 for 'PRJNA554092' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:59,239 WARNING Retry 1/3 for 'PRJNA751384' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:59,525 WARNING Retry 1/3 for 'PRJNA891206' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:55:59,645 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["751026"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname"
+2026-05-11 16:55:59,645 WARNING Retry 1/3 for 'PRJNA751026' (full chain): Invalid control character at: line 1 column 297 (char 296)
+2026-05-11 16:55:59,731 WARNING Retry 1/3 for 'PRJNA890648' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:01,062 WARNING Retry 1/3 for 'PRJNA890673' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:03,794 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["498408"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:56:03,795 WARNING Retry 1/3 for 'PRJNA498408' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:56:06,966 WARNING Retry 1/3 for 'PRJNA891295' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:07,027 WARNING Retry 1/3 for 'PRJNA894303' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:08,141 WARNING Retry 1/3 for 'PRJNA751615' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:11,367 WARNING Retry 1/3 for 'PRJNA751905' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:15,348 WARNING Retry 1/3 for 'PRJNA752282' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:16,002 WARNING Retry 1/3 for 'PRJNA558375' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:17,207 WARNING Retry 1/3 for 'PRJNA1023939' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:20,256 WARNING Retry 1/3 for 'PRJNA903521' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:24,314 WARNING Retry 1/3 for 'PRJNA753130' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:28,035 WARNING Retry 1/3 for 'PRJNA917076' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:29,257 WARNING Retry 1/3 for 'PRJNA486848' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:29,276 WARNING Retry 1/3 for 'PRJNA893016' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:32,577 WARNING Retry 1/3 for 'PRJNA560891' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:32,629 WARNING Retry 1/3 for 'PRJNA928337' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:32,926 WARNING Retry 1/3 for 'PRJNA754149' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:36,863 WARNING Retry 1/3 for 'PRJNA931762' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:36,901 WARNING Retry 1/3 for 'PRJNA754190' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:40,099 WARNING Retry 1/3 for 'PRJNA754238' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:40,592 WARNING Retry 1/3 for 'PRJNA1148083' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:44,426 WARNING Retry 1/3 for 'PRJNA894471' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:44,632 WARNING Retry 1/3 for 'PRJNA562904' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:44,836 WARNING Retry 1/3 for 'PRJNA562315' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:48,674 WARNING Retry 1/3 for 'PRJNA755305' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:51,984 WARNING Retry 1/3 for 'PRJNA755326' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:52,112 WARNING Retry 1/3 for 'PRJNA564134' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:53,414 WARNING Retry 1/3 for 'PRJNA895433' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:53,423 WARNING Retry 1/3 for 'PRJNA1148991' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:57,271 WARNING Retry 1/3 for 'PRJNA948052' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:57,300 WARNING Retry 1/3 for 'PRJNA565725' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:56:59,851 WARNING Retry 1/3 for 'PRJNA755993' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:00,349 WARNING Retry 1/3 for 'PRJNA756048' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:01,265 WARNING Retry 1/3 for 'PRJNA896202' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:01,360 WARNING Retry 1/3 for 'PRJNA565916' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:04,234 WARNING Retry 1/3 for 'PRJNA954770' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:04,314 WARNING Retry 1/3 for 'PRJNA566183' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:04,326 WARNING No SRA links found for 'PRJNA1149772'
+2026-05-11 16:57:04,421 WARNING Retry 1/3 for 'PRJNA756234' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:04,460 WARNING Retry 1/3 for 'PRJNA946340' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:04,539 WARNING Retry 1/3 for 'PRJNA1149682' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:05,755 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1149085"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname
+2026-05-11 16:57:05,756 WARNING Retry 1/3 for 'PRJNA1149085' (full chain): Invalid control character at: line 1 column 298 (char 297)
+2026-05-11 16:57:08,635 WARNING Retry 1/3 for 'PRJNA756693' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:12,525 WARNING Retry 1/3 for 'PRJNA895547' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:12,550 WARNING Retry 1/3 for 'PRJNA757242' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:12,892 WARNING Retry 1/3 for 'PRJNA961746' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:13,449 WARNING Retry 1/3 for 'PRJNA715570' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:14,833 WARNING Retry 1/3 for 'PRJNA566389' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:15,379 WARNING Retry 1/3 for 'PRJNA957492' (full chain): 
+2026-05-11 16:57:16,540 WARNING Retry 1/3 for 'PRJNA962294' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:16,684 WARNING Retry 1/3 for 'PRJNA575013' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:17,128 WARNING Retry 1/3 for 'PRJNA574650' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:17,874 WARNING Retry 1/3 for 'PRJNA896775' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:20,528 WARNING Retry 1/3 for 'PRJNA973809' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:21,012 WARNING Retry 1/3 for 'PRJNA1024502' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:21,020 WARNING Retry 1/3 for 'PRJNA757733' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:21,031 WARNING Retry 1/3 for 'PRJNA1024929' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:21,446 WARNING Retry 1/3 for 'PRJNA970943' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:21,713 WARNING Retry 1/3 for 'PRJNA576439' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:25,122 WARNING Retry 1/3 for 'PRJNA1151082' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:25,720 WARNING Retry 1/3 for 'PRJNA1151649' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:29,620 WARNING Retry 1/3 for 'PRJNA885104' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:29,813 WARNING Retry 1/3 for 'PRJNA898638' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:33,667 WARNING Retry 1/3 for 'PRJNA1151734' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:38,026 WARNING Retry 1/3 for 'PRJNA759630' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:41,684 WARNING Retry 1/3 for 'PRJNA759785' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:45,876 WARNING Retry 1/3 for 'PRJNA996357' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:46,240 WARNING Retry 1/3 for 'PRJNA759904' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:49,972 WARNING Retry 1/3 for 'PRJNA579536' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:50,756 WARNING Retry 1/3 for 'PRJNA899906' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:54,339 WARNING Retry 1/3 for 'PRJNA900216' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:54,417 WARNING Retry 1/3 for 'PRJNA761124' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:57,997 WARNING Retry 1/3 for 'PRJNA1153578' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:58,975 WARNING Retry 1/3 for 'PRJNA588345' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:57:58,978 WARNING Retry 1/3 for 'PRJNA1005229' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:02,128 WARNING Retry 1/3 for 'PRJDB8796' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:02,144 WARNING Retry 1/3 for 'PRJNA589018' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:02,331 WARNING Retry 1/3 for 'PRJNA1027879' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:02,560 WARNING Retry 1/3 for 'PRJNA990778' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:05,703 WARNING Retry 1/3 for 'PRJNA1004232' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:06,966 WARNING Retry 1/3 for 'PRJDB14102' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:10,282 WARNING Retry 1/3 for 'PRJNA762337' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:10,688 WARNING Retry 1/3 for 'PRJNA901188' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:14,115 WARNING Retry 1/3 for 'PRJDB9037' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:14,780 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1013241"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname
+2026-05-11 16:58:14,781 WARNING Retry 1/3 for 'PRJNA1013241' (full chain): Invalid control character at: line 1 column 298 (char 297)
+2026-05-11 16:58:14,784 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["589609"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Mega
+2026-05-11 16:58:14,785 WARNING Retry 1/3 for 'PRJNA589609' (full chain): Invalid control character at: line 1 column 335 (char 334)
+2026-05-11 16:58:16,125 WARNING Retry 1/3 for 'PRJNA762366' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:18,535 WARNING Retry 1/3 for 'PRJNA901419' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:18,932 WARNING Retry 1/3 for 'PRJNA1014406' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:18,969 WARNING Retry 1/3 for 'PRJNA1017130' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:18,993 WARNING Retry 1/3 for 'PRJNA1155691' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:19,985 WARNING Retry 1/3 for 'PRJNA763217' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:20,308 WARNING Retry 1/3 for 'PRJNA1028957' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:22,952 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["591821"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname"
+2026-05-11 16:58:22,953 WARNING Retry 1/3 for 'PRJNA591821' (full chain): Invalid control character at: line 1 column 297 (char 296)
+2026-05-11 16:58:23,088 WARNING Retry 1/3 for 'PRJNA1029546' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:24,288 WARNING Retry 1/3 for 'PRJNA1021694' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:27,051 WARNING Retry 1/3 for 'PRJNA1021558' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:31,085 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1026083"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Meg
+2026-05-11 16:58:31,085 WARNING Retry 1/3 for 'PRJNA1026083' (full chain): Invalid control character at: line 1 column 336 (char 335)
+2026-05-11 16:58:31,086 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["592982"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname"
+2026-05-11 16:58:31,086 WARNING Retry 1/3 for 'PRJNA592982' (full chain): Invalid control character at: line 1 column 297 (char 296)
+2026-05-11 16:58:32,540 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1029611"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink cal
+2026-05-11 16:58:32,541 WARNING Retry 1/3 for 'PRJNA1029611' (full chain): Invalid control character at: line 1 column 236 (char 235)
+2026-05-11 16:58:33,126 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["593046"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:58:33,127 WARNING Retry 1/3 for 'PRJNA593046' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:58:35,417 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1029612"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink cal
+2026-05-11 16:58:35,418 WARNING Retry 1/3 for 'PRJNA1029612' (full chain): Invalid control character at: line 1 column 236 (char 235)
+2026-05-11 16:58:36,942 WARNING Retry 1/3 for 'PRJNA554141' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:39,138 WARNING Retry 1/3 for 'PRJNA1030286' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:39,998 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1028143"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Meg
+2026-05-11 16:58:40,000 WARNING Retry 1/3 for 'PRJNA1028143' (full chain): Invalid control character at: line 1 column 336 (char 335)
+2026-05-11 16:58:43,217 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1158455"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Meg
+2026-05-11 16:58:43,218 WARNING Retry 1/3 for 'PRJNA1158455' (full chain): Invalid control character at: line 1 column 336 (char 335)
+2026-05-11 16:58:43,236 WARNING Retry 1/3 for 'PRJNA765691' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:44,264 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["764849"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:58:44,265 WARNING Retry 1/3 for 'PRJNA764849' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:58:47,484 WARNING Retry 1/3 for 'PRJNA596675' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:47,527 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["765292"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:58:47,527 WARNING Retry 1/3 for 'PRJNA765292' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:58:51,550 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1032033"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname
+2026-05-11 16:58:51,552 WARNING Retry 1/3 for 'PRJNA1032033' (full chain): Invalid control character at: line 1 column 298 (char 297)
+2026-05-11 16:58:51,605 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["596672"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:58:51,605 WARNING Retry 1/3 for 'PRJNA596672' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:58:51,612 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["596264"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:58:51,612 WARNING Retry 1/3 for 'PRJNA596264' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:58:52,565 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1031668"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink cal
+2026-05-11 16:58:52,565 WARNING Retry 1/3 for 'PRJNA1031668' (full chain): Invalid control character at: line 1 column 236 (char 235)
+2026-05-11 16:58:55,016 WARNING Retry 1/3 for 'PRJNA1066058' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:55,767 WARNING Retry 1/3 for 'PRJNA1160297' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:55,780 WARNING Retry 1/3 for 'PRJNA1066342' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:58:59,664 WARNING Retry 1/3 for 'PRJNA1032579' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:59:00,235 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["767398"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 16:59:00,236 WARNING Retry 1/3 for 'PRJNA767398' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 16:59:00,360 WARNING Retry 1/3 for 'PRJNA598582' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:59:03,844 WARNING Retry 1/3 for 'PRJNA1160784' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:59:03,934 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["598614"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname"
+2026-05-11 16:59:03,934 WARNING Retry 1/3 for 'PRJNA598614' (full chain): Invalid control character at: line 1 column 297 (char 296)
+2026-05-11 16:59:04,361 WARNING Retry 1/3 for 'PRJNA1070442' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:59:05,526 WARNING Retry 1/3 for 'PRJNA1160835' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:59:07,566 WARNING Retry 1/3 for 'PRJNA1070345' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:59:07,932 WARNING Retry 1/3 for 'PRJNA767856' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:59:07,937 WARNING Retry 1/3 for 'PRJNA599154' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:59:08,143 WARNING Retry 1/3 for 'PRJNA1160861' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:59:08,246 WARNING Retry 1/3 for 'PRJNA1032918' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:59:11,383 WARNING Retry 1/3 for 'PRJNA1068179' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 16:59:16,143 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1161177"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Meg
+2026-05-11 16:59:16,144 WARNING Retry 1/3 for 'PRJNA1161177' (full chain): Invalid control character at: line 1 column 336 (char 335)
+2026-05-11 17:00:31,587 WARNING Retry 1/3 for 'PRJNA907390' (full chain): Server disconnected without sending a response.
+2026-05-11 17:00:43,638 WARNING Retry 1/3 for 'PRJNA909230' (full chain): Server disconnected without sending a response.
+2026-05-11 17:00:43,881 WARNING Retry 1/3 for 'PRJNA1043475' (full chain): Server disconnected without sending a response.
+2026-05-11 17:00:58,229 WARNING Retry 1/3 for 'PRJNA1045295' (full chain): Server disconnected without sending a response.
+2026-05-11 17:02:09,239 WARNING Retry 1/3 for 'PRJNA1050329' (full chain): Server disconnected without sending a response.
+2026-05-11 17:03:27,423 WARNING Retry 1/3 for 'PRJNA1182247' (full chain): Server disconnected without sending a response.
+2026-05-11 17:04:09,423 WARNING Retry 1/3 for 'PRJNA1338258' (full chain): Server disconnected without sending a response.
+2026-05-11 17:04:25,203 WARNING Retry 1/3 for 'PRJNA1379454' (full chain): Server disconnected without sending a response.
+2026-05-11 17:04:47,059 WARNING Retry 1/3 for 'PRJNA1190849' (full chain): Server disconnected without sending a response.
+2026-05-11 17:09:54,726 WARNING Retry 1/3 for 'PRJNA1224266' (full chain): Server disconnected without sending a response.
+2026-05-11 17:10:01,199 WARNING Retry 1/3 for 'PRJNA1225183' (full chain): Server disconnected without sending a response.
+2026-05-11 17:11:33,752 WARNING Retry 1/3 for 'PRJDB19232' (full chain): Server disconnected without sending a response.
+2026-05-11 17:12:11,527 WARNING Retry 1/3 for 'PRJNA967628' (full chain): Server disconnected without sending a response.
+2026-05-11 17:13:02,711 WARNING Retry 1/3 for 'PRJEB9859' (full chain): 
+2026-05-11 17:14:15,065 WARNING Retry 1/3 for 'PRJNA840887' (full chain): Server disconnected without sending a response.
+2026-05-11 17:14:18,425 WARNING Retry 1/3 for 'PRJNA1105012' (full chain): Server disconnected without sending a response.
+2026-05-11 17:14:49,219 WARNING Retry 1/3 for 'PRJNA843321' (full chain): Server disconnected without sending a response.
+2026-05-11 17:15:51,433 WARNING Retry 1/3 for 'PRJNA986118' (full chain): Server disconnected without sending a response.
+2026-05-11 17:17:23,467 WARNING Retry 1/3 for 'PRJNA1284387' (full chain): Server disconnected without sending a response.
+2026-05-11 17:17:37,240 WARNING Retry 1/3 for 'PRJNA996087' (full chain): Server disconnected without sending a response.
+2026-05-11 17:18:31,087 WARNING Retry 1/3 for 'PRJEB1284' (full chain): 
+2026-05-11 17:19:17,894 WARNING Retry 1/3 for 'PRJNA701412' (full chain): Server disconnected without sending a response.
+2026-05-11 17:20:05,573 WARNING Retry 1/3 for 'PRJNA1001859' (full chain): Server disconnected without sending a response.
+2026-05-11 17:20:30,111 WARNING Retry 1/3 for 'PRJNA1332371' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:20:54,289 WARNING Retry 1/3 for 'PRJNA1365014' (full chain): Server disconnected without sending a response.
+2026-05-11 17:21:34,853 WARNING Retry 1/3 for 'PRJNA1032559' (full chain): Server disconnected without sending a response.
+2026-05-11 17:22:27,948 WARNING Retry 1/3 for 'PRJNA542649' (full chain): Server disconnected without sending a response.
+2026-05-11 17:22:50,317 WARNING Retry 1/3 for 'PRJNA1015164' (full chain): Server disconnected without sending a response.
+2026-05-11 17:23:59,277 WARNING Retry 1/3 for 'PRJNA750119' (full chain): Server disconnected without sending a response.
+2026-05-11 17:25:56,458 WARNING Retry 1/3 for 'PRJNA577656' (full chain): Server disconnected without sending a response.
+2026-05-11 17:27:40,114 WARNING Retry 2/3 for 'PRJNA788957' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:27:43,403 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["927037"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 17:27:43,404 WARNING Retry 2/3 for 'PRJNA927037' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 17:27:44,260 WARNING Retry 2/3 for 'PRJNA798360' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:27:45,252 WARNING No SRA links found for 'PRJNA641428'
+2026-05-11 17:27:45,267 WARNING Retry 2/3 for 'PRJNA935339' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:27:46,113 WARNING Retry 2/3 for 'PRJNA936905' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:27:48,705 WARNING Retry 2/3 for 'PRJNA742201' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:27:50,771 WARNING Retry 2/3 for 'PRJNA656954' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:27:55,768 WARNING Retry 2/3 for 'PRJNA1220093' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:27:56,250 WARNING Retry 2/3 for 'PRJNA662313' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:01,901 WARNING Retry 2/3 for 'PRJDB14097' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:04,786 WARNING Retry 2/3 for 'PRJNA837874' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:04,861 WARNING Retry 2/3 for 'PRJDB19247' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:08,974 WARNING Retry 2/3 for 'PRJNA1261810' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:09,039 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["679463"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 17:28:09,040 WARNING Retry 2/3 for 'PRJNA679463' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 17:28:13,579 WARNING Retry 2/3 for 'PRJNA980249' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:17,828 WARNING Retry 2/3 for 'PRJNA1272841' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:19,999 WARNING No SRA links found for 'PRJEB100787'
+2026-05-11 17:28:20,521 WARNING Retry 2/3 for 'PRJNA1112844' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:21,086 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1111791"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink cal
+2026-05-11 17:28:21,086 WARNING Retry 2/3 for 'PRJNA1111791' (full chain): Invalid control character at: line 1 column 236 (char 235)
+2026-05-11 17:28:25,536 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["854055"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 17:28:25,538 WARNING Retry 2/3 for 'PRJNA854055' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 17:28:26,130 WARNING Retry 2/3 for 'PRJNA867016' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:27,255 WARNING Retry 2/3 for 'PRJNA722418' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:33,686 WARNING Retry 2/3 for 'PRJNA730005' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:36,904 WARNING Retry 2/3 for 'PRJNA1327766' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:41,181 WARNING Retry 2/3 for 'PRJNA1003099' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:41,572 WARNING Retry 2/3 for 'PRJNA1132259' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:42,448 WARNING Retry 2/3 for 'PRJNA512502' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:49,802 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["876121"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Mega
+2026-05-11 17:28:49,803 WARNING Retry 2/3 for 'PRJNA876121' (full chain): Invalid control character at: line 1 column 335 (char 334)
+2026-05-11 17:28:49,977 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1135960"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink cal
+2026-05-11 17:28:49,979 WARNING Retry 2/3 for 'PRJNA1135960' (full chain): Invalid control character at: line 1 column 236 (char 235)
+2026-05-11 17:28:50,107 WARNING Retry 2/3 for 'PRJNA737161' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:50,127 WARNING Retry 2/3 for 'PRJNA528089' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:28:57,988 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["545242"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Mega
+2026-05-11 17:28:57,990 WARNING Retry 2/3 for 'PRJNA545242' (full chain): Invalid control character at: line 1 column 335 (char 334)
+2026-05-11 17:28:57,995 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["803769"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Mega
+2026-05-11 17:28:57,995 WARNING Retry 2/3 for 'PRJNA803769' (full chain): Invalid control character at: line 1 column 335 (char 334)
+2026-05-11 17:29:01,930 WARNING Retry 2/3 for 'PRJNA846952' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:29:06,028 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["890673"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname"
+2026-05-11 17:29:06,029 WARNING Retry 2/3 for 'PRJNA890673' (full chain): Invalid control character at: line 1 column 297 (char 296)
+2026-05-11 17:29:10,231 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["755993"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname"
+2026-05-11 17:29:10,232 WARNING Retry 2/3 for 'PRJNA755993' (full chain): Invalid control character at: line 1 column 297 (char 296)
+2026-05-11 17:29:10,306 WARNING Retry 2/3 for 'PRJNA1151734' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:29:11,954 WARNING Retry 2/3 for 'PRJNA970943' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:29:13,757 WARNING Retry 2/3 for 'PRJNA757733' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:29:14,345 WARNING Retry 2/3 for 'PRJNA589609' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:29:14,418 WARNING Retry 2/3 for 'PRJNA762366' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:29:14,561 WARNING Retry 2/3 for 'PRJNA1155691' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:29:18,180 WARNING Retry 2/3 for 'PRJNA1066342' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:29:18,402 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1029546"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Query failed on Meg
+2026-05-11 17:29:18,403 WARNING Retry 2/3 for 'PRJNA1029546' (full chain): Invalid control character at: line 1 column 336 (char 335)
+2026-05-11 17:29:18,671 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["591821"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink call
+2026-05-11 17:29:18,671 WARNING Retry 2/3 for 'PRJNA591821' (full chain): Invalid control character at: line 1 column 235 (char 234)
+2026-05-11 17:29:18,812 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1021694"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","ERROR":"callMLink: Failed MegaLink cal
+2026-05-11 17:29:18,813 WARNING Retry 2/3 for 'PRJNA1021694' (full chain): Invalid control character at: line 1 column 236 (char 235)
+2026-05-11 17:29:19,115 WARNING Retry 2/3 for 'PRJNA767398' (full chain): elink backend error in linksetdbhistories: 'callMLink: Query failed on MegaLink server'
+2026-05-11 17:29:22,396 WARNING Bad JSON from elink (content-type: application/json; charset=UTF-8): '{"header":{"type":"elink","version":"0.3"},"linksets":[{"dbfrom":"bioproject","ids":["1029612"],"linksetdbhistories":[{"dbto":"sra","linkname":"bioproject_sra","querykey":"2"},{"dbto":"sra","linkname
+2026-05-11 17:29:22,397 WARNING Retry 2/3 for 'PRJNA1029612' (full chain): Invalid control character at: line 1 column 298 (char 297)
+2026-05-11 17:30:06,932 WARNING Retry 2/3 for 'PRJNA985690' (full chain): Server disconnected without sending a response.
+2026-05-11 17:31:09,034 ERROR Failed to fetch 'PRJNA927037': RetryError[<Future at 0x120173e50 state=finished raised MalformedResponseError>]
+2026-05-11 17:31:10,121 ERROR Failed to fetch 'PRJNA662313': RetryError[<Future at 0x1201d2fd0 state=finished raised MalformedResponseError>]
+2026-05-11 17:31:13,797 ERROR Failed to fetch 'PRJNA1327766': RetryError[<Future at 0x120081bd0 state=finished raised MalformedResponseError>]
+2026-05-11 17:31:16,068 ERROR Failed to fetch 'PRJNA762366': RetryError[<Future at 0x118b06c50 state=finished raised MalformedResponseError>]
+2026-05-11 17:31:39,387 WARNING Retry 2/3 for 'PRJEB9859' (full chain): 
+2026-05-11 17:32:17,328 ERROR Failed to fetch 'PRJEB9859': RetryError[<Future at 0x118b07d50 state=finished raised ReadTimeout>]

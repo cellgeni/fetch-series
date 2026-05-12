@@ -1,0 +1,68 @@
+2026-05-11 17:55:56,476 WARNING No ENA runs found for 'PRJNA904346'
+2026-05-11 17:58:03,094 WARNING No ENA runs found for 'PRJNA1173491'
+2026-05-11 17:58:15,247 WARNING No ENA runs found for 'PRJNA1050789'
+2026-05-11 17:58:18,718 WARNING No ENA runs found for 'PRJNA658246'
+2026-05-11 18:00:36,127 WARNING No ENA runs found for 'PRJNA1190403'
+2026-05-11 18:02:34,893 ERROR Failed to fetch '-': Client error '400 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=-&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400
+2026-05-11 18:04:57,001 WARNING No ENA runs found for 'PRJEB54580'
+2026-05-11 18:06:40,159 WARNING Retry 1/5 for 'PRJNA1224250': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA1224250&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:40,302 WARNING Retry 1/5 for 'PRJEB70761': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJEB70761&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:40,538 WARNING Retry 1/5 for 'PRJNA846680': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA846680&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:40,665 WARNING Retry 1/5 for 'PRJNA955707': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA955707&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:40,799 WARNING Retry 1/5 for 'PRJNA1086996': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA1086996&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:41,065 WARNING Retry 1/5 for 'PRJEB70872': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJEB70872&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:42,301 WARNING Retry 1/5 for 'PRJEB71044': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJEB71044&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:42,669 WARNING Retry 1/5 for 'PRJNA955796': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA955796&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:42,700 WARNING Retry 1/5 for 'PRJNA1087348': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA1087348&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:43,068 WARNING Retry 1/5 for 'PRJEB71313': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJEB71313&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:43,762 WARNING Retry 1/5 for 'PRJNA846707': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA846707&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:44,303 WARNING Retry 1/5 for 'PRJEB71629': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJEB71629&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:44,698 WARNING Retry 1/5 for 'PRJNA1087387': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA1087387&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:45,067 WARNING Retry 1/5 for 'PRJEB71812': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJEB71812&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:45,099 WARNING Retry 1/5 for 'PRJNA846759': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA846759&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:46,557 WARNING Retry 1/5 for 'PRJNA847154': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA847154&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:47,018 WARNING Retry 1/5 for 'PRJEB71978': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJEB71978&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:06:47,370 WARNING Retry 1/5 for 'PRJNA956541': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA956541&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:08:34,869 WARNING No ENA runs found for 'PRJNA857927'
+2026-05-11 18:09:13,956 WARNING No ENA runs found for 'PRJEB102956'
+2026-05-11 18:09:27,430 WARNING No ENA runs found for 'PRJNA1248477'
+2026-05-11 18:10:56,109 WARNING No ENA runs found for 'PRJNA1103761'
+2026-05-11 18:11:09,446 WARNING No ENA runs found for 'PRJNA869921'
+2026-05-11 18:14:40,444 WARNING Retry 1/5 for 'PRJNA1118304': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA1118304&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:14:43,510 WARNING Retry 1/5 for 'PRJNA885800': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA885800&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:14:44,574 WARNING Retry 1/5 for 'PRJNA1288501': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA1288501&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:14:45,244 WARNING Retry 1/5 for 'PRJNA1289087': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA1289087&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:14:45,377 WARNING Retry 1/5 for 'PRJNA746451': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA746451&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:14:45,744 WARNING Retry 1/5 for 'PRJNA997064': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA997064&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:14:45,772 WARNING Retry 1/5 for 'PRJNA1118817': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA1118817&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:14:46,692 WARNING Retry 1/5 for 'PRJNA1118819': Server error '500 ' for url 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA1118819&result=read_run&format=tsv&fields=run_accession%2Cexperiment_accession%2Csample_accession%2Csecondary_sample_accession%2Cstudy_accession%2Clibrary_strategy%2Clibrary_source%2Clibrary_layout%2Csample_alias%2Cscientific_name'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-05-11 18:18:56,524 WARNING No ENA runs found for 'PRJNA1136968'
+2026-05-11 18:20:29,220 WARNING No ENA runs found for 'PRJNA1021173'
+2026-05-11 18:21:33,710 WARNING No ENA runs found for 'PRJNA1149772'
