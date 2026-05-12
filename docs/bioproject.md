@@ -618,6 +618,9 @@ read_enaruns(
 ```
 
 ## Following Links
+
+We will reuse the search result for BioProject PRJNA988806 to follow links to other databases. We will start with GEO, then SRA and finally ENA.
+
 ### BioProject to GEO 
 Let's start with GEO datasets linked to this BioProject.
 
