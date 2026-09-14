@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from datetime import date
 from pathlib import Path
 from typing import Annotated
 
@@ -151,6 +152,43 @@ def survey_show(
                     typer.echo(
                         f"  {result.accession}: {result.error_class}: {result.error_message}"
                     )
+
+
+@survey_app.command("evidence")
+def survey_evidence(
+    route_id: Annotated[str, typer.Option("--route")],
+    corpus_name: Annotated[str, typer.Option("--corpus")],
+    cache_path: Annotated[Path, typer.Option("--cache")] = DEFAULT_CACHE_PATH,
+) -> None:
+    """Emit the RouteEvidence block for a completed survey.
+
+    Ranking is supposed to be derived from measurement, so the numbers in
+    graph.py must come from a survey rather than from someone's recollection of
+    one. This prints the block to paste, with the date and corpus already filled
+    in, so the two cannot quietly drift apart.
+    """
+    _route_or_exit(route_id)
+    with SurveyCache(cache_path) as cache:
+        summary = cache.summary(corpus_name, route_id)
+
+    if not summary["queried"]:
+        typer.secho(
+            f"No recorded results for {route_id} on {corpus_name}.", fg=typer.colors.RED, err=True
+        )
+        raise typer.Exit(1)
+
+    # EMPTY is a real answer about the archive, not a failure, so it counts
+    # towards the denominator and not towards accessions_failed.
+    typer.echo(
+        f"""        evidence=RouteEvidence(
+            corpus="{corpus_name}",
+            surveyed_on=date({date.today():%Y, %-m, %-d}),
+            accessions_queried={summary["queried"]:_},
+            accessions_failed={summary["failed"]:_},
+            unique_results={summary["unique_results"]:_},
+            notes="{summary["resolved"]:,} resolved, {summary["empty"]:,} empty.",
+        ),"""
+    )
 
 
 @survey_app.command("compare")
