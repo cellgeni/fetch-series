@@ -57,6 +57,7 @@ nav:
       - ELink gds to sra returns no links: pathologies/elink-gds-sra-missing-links.md
       - GEO omits the SRA relation: pathologies/geo-omits-sample-sra-relation.md
       - Shared umbrella BioProject: pathologies/series-under-shared-umbrella-bioproject.md
+      - SOFT names experiments with no runs: pathologies/soft-names-experiments-with-no-runs.md
   - Upstream reports:
       - Overview: upstream/index.md
       - NCBI ELink gds to sra: upstream/ncbi-elink-gds-sra.md
