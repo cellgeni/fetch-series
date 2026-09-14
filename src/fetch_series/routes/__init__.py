@@ -111,6 +111,32 @@ async def gse_to_experiment_elink(series: str, client: SurveyClient, timeout: fl
     return sorted(e for e in experiments if e[1:3] in {"RX"})
 
 
+async def gse_to_experiment_soft_bioproject_ena(
+    series: str, client: SurveyClient, timeout: float
+) -> list[str]:
+    """Take the BioProject from the SOFT file, then ask ENA for its experiments.
+
+    The recovery path for series that ``elink gds->sra`` cannot reach. Measured
+    on 85 such series, it returned every experiment the SOFT file names for 79
+    of them (93%) with no partial recoveries; the remaining 6 record no
+    BioProject in SOFT at all, four of them because they sit under a shared
+    umbrella project (PRJNA30709) rather than one of their own.
+
+    Its value is that it crosses archives: the GEO half comes from NCBI's FTP
+    mirror and the experiment half from EBI, so it shares no failure mode with
+    either NCBI Entrez route.
+    """
+    text = await geo.fetch_soft_family(client, series, timeout)
+    bioprojects = sorted(set(geo.parse_soft_family(series, text).bioprojects))
+    if not bioprojects:
+        return []
+    found: set[str] = set()
+    for bioproject in bioprojects:
+        rows = await ena_portal.read_run_report(client, bioproject, timeout)
+        found.update(ena_portal.column(rows, "experiment_accession"))
+    return sorted(found)
+
+
 async def gse_to_run_elink(series: str, client: SurveyClient, timeout: float) -> list[str]:
     """``gds -> sra`` by ELink, then EFetch runinfo for the run accessions."""
     uid = await geo.gds_uid(client, series, timeout)
@@ -168,6 +194,7 @@ IMPLEMENTATIONS: dict[str, RouteFn] = {
     "gse->geo_sample:gds_summary": gse_to_gsm_gds,
     "gse->experiment:soft_family": gse_to_experiment_soft,
     "gse->experiment:elink_gds_sra": gse_to_experiment_elink,
+    "gse->experiment:soft_bioproject_ena": gse_to_experiment_soft_bioproject_ena,
     "gse->run:elink_gds_sra": gse_to_run_elink,
     "bioproject->run:ena_filereport": _ena_route("run_accession"),
     "bioproject->study:ena_filereport": _ena_route("secondary_study_accession"),

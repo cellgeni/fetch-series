@@ -513,6 +513,16 @@ ROUTES: list[Route] = [
         known_pathologies=("esummary-sra-buries-accessions-in-expxml",),
     ),
     Route(
+        id="gse->experiment:soft_bioproject_ena",
+        source=EntityType.GEO_SERIES,
+        target=EntityType.EXPERIMENT,
+        provider="geo_ftp+ena_portal",
+        summary="BioProject from the SOFT family file, then ENA filereport for its experiments.",
+        kb_page="routes/gse-to-experiment/soft-bioproject-ena.md",
+        cost=RouteCost(requests=2, rate_limit_rps=NCBI_FTP_RPS),
+        known_pathologies=("series-under-a-shared-umbrella-bioproject",),
+    ),
+    Route(
         id="gse->run:elink_gds_sra",
         source=EntityType.GEO_SERIES,
         target=EntityType.RUN,
