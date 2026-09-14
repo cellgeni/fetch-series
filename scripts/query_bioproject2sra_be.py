@@ -5,15 +5,6 @@ import os
 import httpx
 import pandas as pd
 from dotenv import load_dotenv
-from tenacity import (
-    RetryError,
-    retry,
-    retry_if_exception,
-    stop_after_attempt,
-    wait_exponential,
-)
-from tqdm.asyncio import tqdm_asyncio
-
 from query_bioproject2sra import (
     NCBI_API_KEY,
     SRA_COLUMNS,
@@ -24,8 +15,16 @@ from query_bioproject2sra import (
     eutils_link,
     eutils_search,
 )
+from tenacity import (
+    RetryError,
+    retry,
+    retry_if_exception,
+    stop_after_attempt,
+    wait_exponential,
+)
+from tqdm.asyncio import tqdm_asyncio
 
-SRA_COLUMNS = SRA_COLUMNS + ["ScientificName"]
+SRA_COLUMNS = [*SRA_COLUMNS, "ScientificName"]
 
 
 def parse_sra_runinfo(accession: str, runinfo_text: str | None) -> list[dict]:
@@ -141,7 +140,7 @@ async def _bioproject2sra_once(
     except (TypeError, ValueError):
         raise MalformedResponseError(
             f"esearchresult querykey not an integer for {accession!r}: {esearch['querykey']!r}"
-        )
+        ) from None
 
     if not esearch["idlist"]:
         logging.warning("No BioProject found for %r", accession)
@@ -193,7 +192,7 @@ async def _bioproject2sra_once(
     except (TypeError, ValueError):
         raise MalformedResponseError(
             f"link_history querykey not an integer for {accession!r}: {link_history['querykey']!r}"
-        )
+        ) from None
 
     return await sra_be_fetch_runinfo(
         get=get,
@@ -228,7 +227,7 @@ async def main():
         results = await tqdm_asyncio.gather(*tasks, desc="Fetching BioProject→SRA (be)")
 
     rows = []
-    for accession, runinfo_text in zip(bioproject_list, results):
+    for accession, runinfo_text in zip(bioproject_list, results, strict=True):
         rows.extend(parse_sra_runinfo(accession, runinfo_text))
 
     df = pd.DataFrame(rows)

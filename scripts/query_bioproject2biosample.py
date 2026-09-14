@@ -2,20 +2,11 @@ import asyncio
 import json
 import logging
 import os
-from typing import Any, Dict
+from typing import Any
 
 import httpx
 import pandas as pd
 from dotenv import load_dotenv
-from tenacity import (
-    RetryError,
-    retry,
-    retry_if_exception,
-    stop_after_attempt,
-    wait_exponential,
-)
-from tqdm.asyncio import tqdm_asyncio
-
 from query_bioproject2sra import (
     NCBI_API_KEY,
     MalformedResponseError,
@@ -25,6 +16,14 @@ from query_bioproject2sra import (
     eutils_link,
     eutils_search,
 )
+from tenacity import (
+    RetryError,
+    retry,
+    retry_if_exception,
+    stop_after_attempt,
+    wait_exponential,
+)
+from tqdm.asyncio import tqdm_asyncio
 
 load_dotenv()
 
@@ -53,7 +52,7 @@ async def eutils_summary(
     query_key: str,
     db: str,
     api_key: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
     params = {
         "db": db,
@@ -77,7 +76,7 @@ async def eutils_summary(
 
 
 def parse_biosample_summary(
-    accession: str, summary: Dict[str, Any] | None
+    accession: str, summary: dict[str, Any] | None
 ) -> list[dict]:
     failure_row = {col: None for col in OUTPUT_COLUMNS}
     failure_row["bioproject_accession"] = accession
@@ -110,7 +109,7 @@ async def bioproject2biosample(
     accession: str,
     get: ThrottledGet,
     api_key: str | None = None,
-) -> Dict[str, Any] | None:
+) -> dict[str, Any] | None:
     @retry(
         stop=stop_after_attempt(5),
         wait=wait_exponential(multiplier=1, min=2, max=30),
@@ -145,7 +144,7 @@ async def bioproject2biosample(
         except (TypeError, ValueError):
             raise MalformedResponseError(
                 f"esearchresult querykey not an integer for {accession!r}: {esearch['querykey']!r}"
-            )
+            ) from None
 
         if not esearch["idlist"]:
             logging.warning("No BioProject found for %r", accession)
@@ -193,7 +192,7 @@ async def bioproject2biosample(
         except (TypeError, ValueError):
             raise MalformedResponseError(
                 f"link_history querykey not an integer for {accession!r}: {link_history['querykey']!r}"
-            )
+            ) from None
 
         return await eutils_summary(
             get=get,
@@ -213,7 +212,7 @@ async def main():
     bioproject_list = samples10x.prj.unique().tolist()
     print(f"Fetching BioSamples for {len(bioproject_list)} BioProjects...")
 
-    async def safe_fetch(acc: str) -> Dict[str, Any] | None:
+    async def safe_fetch(acc: str) -> dict[str, Any] | None:
         try:
             return await bioproject2biosample(
                 accession=acc, get=get, api_key=NCBI_API_KEY
@@ -236,7 +235,7 @@ async def main():
         )
 
     rows = []
-    for accession, summary in zip(bioproject_list, results):
+    for accession, summary in zip(bioproject_list, results, strict=True):
         rows.extend(parse_biosample_summary(accession, summary))
 
     df = pd.DataFrame(rows)
