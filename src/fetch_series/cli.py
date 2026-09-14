@@ -197,6 +197,10 @@ def survey_compare(
     corpus_name: Annotated[str, typer.Option("--corpus")] = "hard-cases",
     cache_path: Annotated[Path, typer.Option("--cache")] = DEFAULT_CACHE_PATH,
     examples: Annotated[int, typer.Option(help="Accessions to name per disagreement class.")] = 5,
+    intersection: Annotated[
+        bool,
+        typer.Option(help="Compare only accessions every route has answered."),
+    ] = False,
     out: Annotated[Path | None, typer.Option(help="Write every disagreement to this CSV.")] = None,
 ) -> None:
     """Compare routes that answer the same question.
@@ -224,7 +228,15 @@ def survey_compare(
             typer.echo(json.dumps(cache.summary(corpus_name, route_id), indent=2))
 
     missing: tuple[str, frozenset[str]] = ("absent", frozenset())
-    accessions = sorted(set().union(*(set(v) for v in per_route.values())) if per_route else [])
+    if not per_route:
+        accessions: list[str] = []
+    elif intersection:
+        # Needed while a survey is still running: one route being further
+        # through the corpus than another is not a disagreement about the
+        # archive, and counting it as one would swamp the real signal.
+        accessions = sorted(set.intersection(*(set(v) for v in per_route.values())))
+    else:
+        accessions = sorted(set().union(*(set(v) for v in per_route.values())))
     disagreements = [
         a for a in accessions if len({per_route[r].get(a, missing) for r in route_ids}) > 1
     ]
