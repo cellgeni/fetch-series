@@ -1,6 +1,7 @@
 import csv
 import io
 import logging
+import os
 import re
 from typing import Any, Literal
 
@@ -24,6 +25,24 @@ retry = Retry(
 transport = RetryTransport(retry=retry)
 
 
+def default_api_key() -> str | None:
+    """Return the NCBI API key from the environment, if one is configured.
+
+    Both spellings are accepted because the two have been used interchangeably
+    in this project; ``NCBI_API_KEY`` is the preferred one.
+    """
+    return os.getenv("NCBI_API_KEY") or os.getenv("NCBI_KEY")
+
+
+def _clean_params(params: dict[str, Any]) -> dict[str, Any]:
+    """Drop parameters whose value is None.
+
+    httpx encodes ``None`` as an empty value rather than omitting the parameter,
+    so ``api_key=None`` is sent as ``api_key=`` -- which E-utilities rejects with
+    a 400. Every call that did not pass an explicit key used to fail this way.
+    """
+    return {key: value for key, value in params.items() if value is not None}
+
 
 def eutils_search(
     query: str,
@@ -46,10 +65,10 @@ def eutils_search(
         "term": query,
         "retmode": "json",
         "usehistory": "y",
-        "api_key": api_key,
+        "api_key": api_key or default_api_key(),
     }
     with httpx.Client(transport=transport) as client:
-        response = client.get(base, params=params, timeout=10)
+        response = client.get(base, params=_clean_params(params), timeout=10)
     response.raise_for_status()
     payload: dict[str, Any] = response.json()
     return payload
@@ -86,11 +105,11 @@ def eutils_summary(
         "WebEnv": webenv,
         "query_key": query_key,
         "retmode": "json",
-        "api_key": api_key,
+        "api_key": api_key or default_api_key(),
     }
 
     with httpx.Client(transport=transport) as client:
-        response = client.get(base, params=params, timeout=10)
+        response = client.get(base, params=_clean_params(params), timeout=10)
     response.raise_for_status()
     payload: dict[str, Any] = response.json()
     return payload
@@ -129,7 +148,7 @@ def eutils_fetch(
         "db": db,
         "retmode": retmode,
         "rettype": rettype,
-        "api_key": api_key,
+        "api_key": api_key or default_api_key(),
     }
 
     if ids is not None:
@@ -140,7 +159,7 @@ def eutils_fetch(
         params["query_key"] = query_key
 
     with httpx.Client(transport=transport) as client:
-        response = client.get(base, params=params, timeout=10)
+        response = client.get(base, params=_clean_params(params), timeout=10)
     response.raise_for_status()
     if retmode == "json":
         payload: dict[str, Any] = response.json()
@@ -184,10 +203,10 @@ def eutils_link(
         "WebEnv": webenv,
         "query_key": query_key,
         "cmd": cmd,
-        "api_key": api_key,
+        "api_key": api_key or default_api_key(),
     }
     with httpx.Client(transport=transport) as client:
-        response = client.get(base, params=params, timeout=10)
+        response = client.get(base, params=_clean_params(params), timeout=10)
     response.raise_for_status()
     payload: dict[str, Any] = response.json()
     return payload
