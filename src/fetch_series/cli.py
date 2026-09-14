@@ -196,20 +196,23 @@ def survey_compare(
     route_ids: Annotated[list[str], typer.Option("--route", help="Repeat to compare several.")],
     corpus_name: Annotated[str, typer.Option("--corpus")] = "hard-cases",
     cache_path: Annotated[Path, typer.Option("--cache")] = DEFAULT_CACHE_PATH,
+    examples: Annotated[int, typer.Option(help="Accessions to name per disagreement class.")] = 5,
+    out: Annotated[Path | None, typer.Option(help="Write every disagreement to this CSV.")] = None,
 ) -> None:
     """Compare routes that answer the same question.
 
-    Reports per-route coverage and, crucially, the accessions where the routes
-    disagree. Agreement is cheap to report and tells you little; the
-    disagreements are the evidence.
+    Agreement is cheap to report and tells you little; the disagreements are the
+    evidence. Comparison is keyed on (outcome, results), not results alone: a
+    route that FAILED and one that returned a genuine EMPTY both have no
+    results, but they are saying entirely different things -- "I could not find
+    out" versus "the archive holds no such link" -- and reporting them as
+    agreeing is the confusion this project exists to remove.
+
+    With two routes the disagreements are bucketed by direction, because at
+    corpus scale the interesting question is not which accessions differ but
+    whether one route is systematically missing what the other finds.
     """
     with SurveyCache(cache_path) as cache:
-        # Keyed on (outcome, results), not results alone. A route that FAILED
-        # and one that returned a genuine EMPTY both have no results, but they
-        # are saying completely different things -- "I could not find out" versus
-        # "the archive holds no such link". Comparing result sets alone reports
-        # them as agreeing, which is the specific confusion this project exists
-        # to remove.
         per_route = {
             route_id: {
                 r.accession: (r.outcome.value, frozenset(r.results))
@@ -217,24 +220,80 @@ def survey_compare(
             }
             for route_id in route_ids
         }
-        missing: tuple[str, frozenset[str]] = ("absent", frozenset())
         for route_id in route_ids:
             typer.echo(json.dumps(cache.summary(corpus_name, route_id), indent=2))
 
-        accessions = sorted(set().union(*(set(v) for v in per_route.values())) if per_route else [])
-        disagreements = [
-            accession
-            for accession in accessions
-            if len({per_route[r].get(accession, missing) for r in route_ids}) > 1
-        ]
-        typer.echo(f"\naccessions compared: {len(accessions)}")
-        typer.echo(f"disagreements: {len(disagreements)}")
+    missing: tuple[str, frozenset[str]] = ("absent", frozenset())
+    accessions = sorted(set().union(*(set(v) for v in per_route.values())) if per_route else [])
+    disagreements = [
+        a for a in accessions if len({per_route[r].get(a, missing) for r in route_ids}) > 1
+    ]
+
+    typer.echo(f"\naccessions compared: {len(accessions):,}")
+    typer.echo(f"agreements:          {len(accessions) - len(disagreements):,}")
+    typer.echo(f"disagreements:       {len(disagreements):,}")
+
+    if len(route_ids) == 2:
+        left, right = route_ids
+        buckets: dict[str, list[str]] = {
+            f"only {left} found anything": [],
+            f"only {right} found anything": [],
+            "both found different sets": [],
+            "same results, different outcome": [],
+        }
         for accession in disagreements:
+            lo, lr = per_route[left].get(accession, missing)
+            ro, rr = per_route[right].get(accession, missing)
+            if lr and not rr:
+                buckets[f"only {left} found anything"].append(accession)
+            elif rr and not lr:
+                buckets[f"only {right} found anything"].append(accession)
+            elif lr != rr:
+                buckets["both found different sets"].append(accession)
+            else:
+                buckets["same results, different outcome"].append(accession)
+
+        typer.echo("")
+        for label, members in buckets.items():
+            if not members:
+                continue
+            share = len(members) / len(accessions) if accessions else 0
+            typer.echo(f"  {label}: {len(members):,} ({share:.1%})")
+            for accession in members[:examples]:
+                lo, lr = per_route[left].get(accession, missing)
+                ro, rr = per_route[right].get(accession, missing)
+                typer.echo(
+                    f"      {accession:14s} {left.split(':')[-1]}={len(lr) or f'({lo})'}"
+                    f"  {right.split(':')[-1]}={len(rr) or f'({ro})'}"
+                )
+            if len(members) > examples:
+                typer.echo(f"      ... and {len(members) - examples:,} more")
+    else:
+        for accession in disagreements[:examples]:
             typer.echo(f"  {accession}")
             for route_id in route_ids:
                 outcome, found = per_route[route_id].get(accession, missing)
-                rendered = sorted(found) if found else f"({outcome})"
-                typer.echo(f"    {route_id:44s} {rendered}")
+                typer.echo(f"    {route_id:44s} {sorted(found) if found else f'({outcome})'}")
+
+    if out is not None:
+        import csv as _csv
+
+        out.parent.mkdir(parents=True, exist_ok=True)
+        with out.open("w", newline="") as handle:
+            writer = _csv.writer(handle)
+            writer.writerow(
+                [
+                    "accession",
+                    *(f"{r}:outcome" for r in route_ids),
+                    *(f"{r}:results" for r in route_ids),
+                ]
+            )
+            for accession in disagreements:
+                cells = [per_route[r].get(accession, missing) for r in route_ids]
+                writer.writerow(
+                    [accession, *(c[0] for c in cells), *(";".join(sorted(c[1])) for c in cells)]
+                )
+        typer.echo(f"\nwrote {len(disagreements):,} disagreements to {out}")
 
 
 @app.command()
