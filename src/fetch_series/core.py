@@ -315,15 +315,13 @@ def ae2biosamples(series: str) -> list[str]:
         response = client.get(base, follow_redirects=True, timeout=30)
     response.raise_for_status()
 
-    biosamples = []
     reader = csv.DictReader(io.StringIO(response.text), delimiter="\t")
+    # csv.DictReader fills missing trailing columns with None, so the key can be
+    # present with a None value -- short rows are common in hand-edited SDRFs.
     biosamples = [
-        row.get("Comment[BioSD_SAMPLE]").strip()
-        for row in reader
-        if "Comment[BioSD_SAMPLE]" in row
+        value.strip() for row in reader if (value := row.get("Comment[BioSD_SAMPLE]")) is not None
     ]
-    biosamples = list(filter(None, biosamples))  # Remove empty strings
-    return biosamples
+    return [biosample for biosample in biosamples if biosample]
 
 
 def read_enaruns(
