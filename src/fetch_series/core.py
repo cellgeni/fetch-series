@@ -377,24 +377,36 @@ def ena2bioproject(series: str) -> list[str]:
     if not runs or "study_accession" not in runs[0]:
         logging.warning("No BioProject found for %s", series)
         return []
-    accessions = set(run["study_accession"] for run in runs if "study_accession" in run)
-    return list(accessions)
+    accessions = {run["study_accession"] for run in runs if run.get("study_accession")}
+    return sorted(accessions)
 
 
-def bioproject2ena(series: str) -> list[str] | None:
+def bioproject2ena(series: str) -> list[str]:
     """
     Retrieves the ENA series accessions associated with a given BioProject ID from the EBI ENA database
     Args:
         series (str): BioProject ID to retrieve ENA series accessions for (e.g., PRJEB12345)
 
     Returns:
-        List[str] | None: A list of ENA series accessions associated with the BioProject, or None if no accessions are found
+        list[str]: ENA secondary study accessions for the BioProject, sorted; empty if none are found
+
+    Note:
+        This used to return ``runs[0]["secondary_study_accession"]`` -- the first
+        run's study as a bare string, despite being annotated as a list. A
+        BioProject can carry more than one secondary study, and every one after
+        the first was silently dropped.
     """
     runs = read_enaruns(series=series, format="json", fields="secondary_study_accession")
-    if not runs or "secondary_study_accession" not in runs[0]:
+    if not runs:
         logging.warning("No ENA series found for %s", series)
-        return None
-    return runs[0]["secondary_study_accession"]
+        return []
+    accessions = {
+        run["secondary_study_accession"] for run in runs if run.get("secondary_study_accession")
+    }
+    if not accessions:
+        logging.warning("No ENA series found for %s", series)
+        return []
+    return sorted(accessions)
 
 
 def query_ae(query: str, pagesize: int = 100) -> dict[str, Any]:
