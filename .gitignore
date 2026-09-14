@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Secrets — never commit; see docs/ for the api_key redaction filter
+.env
+
+# Local caches and scratch
+.cache/
+*.sqlite
+*.sqlite-journal
+ex.csv
+scripts/rerun_failed.py
+
+# MkDocs build output
+_site/
