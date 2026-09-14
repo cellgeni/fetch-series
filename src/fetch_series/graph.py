@@ -523,7 +523,23 @@ ROUTES: list[Route] = [
         summary="ELink gds->sra with cmd=neighbor, then ESummary.",
         kb_page="routes/gse-to-experiment/elink-gds-sra.md",
         cost=RouteCost(requests=3, rate_limit_rps=NCBI_EUTILS_RPS, paginates=True),
-        known_pathologies=("esummary-sra-buries-accessions-in-expxml",),
+        evidence=RouteEvidence(
+            corpus="reprocessed-gse",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=13_045,
+            accessions_failed=0,
+            unique_results=178_879,
+            notes=(
+                "Census. 10,752 resolved, 2,293 empty. Reports 17.6% of series as having "
+                "no sequencing data when they demonstrably do, and returns 58% of the "
+                "experiments the SOFT route finds. Zero failures -- its incompleteness is "
+                "entirely silent."
+            ),
+        ),
+        known_pathologies=(
+            "esummary-sra-buries-accessions-in-expxml",
+            "elink-gds-sra-missing-links",
+        ),
     ),
     Route(
         id="gse->experiment:soft_bioproject_ena",
