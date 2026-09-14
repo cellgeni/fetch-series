@@ -13,8 +13,10 @@ through one table and cannot drift.
 
 from __future__ import annotations
 
-from fetch_series.providers import biostudies, ena_portal, geo
-from fetch_series.providers.eutils import efetch_text, elink_uids, esummary_by_ids
+from typing import Any
+
+from fetch_series.providers import biostudies, ena_portal, geo, sra_be
+from fetch_series.providers.eutils import efetch_text, elink_uids, esearch, esummary_by_ids
 from fetch_series.survey.client import MalformedResponseError, SurveyClient
 from fetch_series.survey.runner import RouteFn
 
@@ -165,6 +167,129 @@ def _runs_from_runinfo(text: str) -> list[str]:
 # --------------------------------------------------------------------------
 
 
+async def _bioproject_sra_history(
+    accession: str, client: SurveyClient, timeout: float, *, via_elink: bool
+) -> tuple[str, str] | None:
+    """Get an ESearch history over the SRA records of a BioProject.
+
+    Two ways in, and the survey says they differ. ``via_elink`` searches
+    db=bioproject and walks the link; the direct form searches db=sra for
+    ``[GPRJ]``, which is one request cheaper but unreliable for renamed or
+    merged projects -- the term falls through to ``[All Fields]``.
+    """
+    if not via_elink:
+        result = await esearch(client, db="sra", term=f"{accession}[GPRJ]", timeout=timeout)
+        if result.get("count") == "0":
+            return None
+        return result["webenv"], result["querykey"]
+
+    project = await esearch(client, db="bioproject", term=f"{accession}[PRJA]", timeout=timeout)
+    uids = project.get("idlist") or []
+    if not uids:
+        return None
+    sra_uids = await elink_uids(client, dbfrom="bioproject", db="sra", uids=uids, timeout=timeout)
+    if not sra_uids:
+        return None
+    # Re-establish a history over the linked UIDs so the backend can be driven
+    # from it; ELink's own history is the one that sometimes has no querykey.
+    result = await esearch(
+        client,
+        db="sra",
+        term=" OR ".join(f"{uid}[UID]" for uid in sra_uids),
+        timeout=timeout,
+    )
+    if result.get("count") == "0":
+        return None
+    return result["webenv"], result["querykey"]
+
+
+def _bioproject_run_route(*, backend: str, via_elink: bool) -> RouteFn:
+    async def route(accession: str, client: SurveyClient, timeout: float) -> list[str]:
+        history = await _bioproject_sra_history(accession, client, timeout, via_elink=via_elink)
+        if history is None:
+            return []
+        webenv, query_key = history
+        if backend == "sra_be":
+            rows = await sra_be.runinfo_by_history(client, webenv, query_key, timeout)
+            return sra_be.column(rows, "Run")
+        text = await efetch_text(
+            client, db="sra", webenv=webenv, query_key=query_key, timeout=timeout
+        )
+        return _runs_from_runinfo(text)
+
+    return route
+
+
+async def bioproject_to_geo_gds_direct(
+    accession: str, client: SurveyClient, timeout: float
+) -> list[str]:
+    """Search db=gds for the BioProject accession directly."""
+    result = await esearch(client, db="gds", term=f"{accession}[ALL]", timeout=timeout)
+    uids = result.get("idlist") or []
+    if not uids:
+        return []
+    summaries = await esummary_by_ids(client, db="gds", uids=list(uids), timeout=timeout)
+    return _geo_series_from_summaries(summaries)
+
+
+async def bioproject_to_geo_elink(
+    accession: str, client: SurveyClient, timeout: float
+) -> list[str]:
+    """Walk bioproject -> gds with ELink, using cmd=neighbor."""
+    project = await esearch(client, db="bioproject", term=f"{accession}[PRJA]", timeout=timeout)
+    uids = project.get("idlist") or []
+    if not uids:
+        return []
+    gds_uids = await elink_uids(client, dbfrom="bioproject", db="gds", uids=uids, timeout=timeout)
+    if not gds_uids:
+        return []
+    summaries = await esummary_by_ids(client, db="gds", uids=gds_uids, timeout=timeout)
+    return _geo_series_from_summaries(summaries)
+
+
+def _geo_series_from_summaries(summaries: dict[str, Any]) -> list[str]:
+    """Series accessions from gds ESummary records.
+
+    A gds record can be a GSE or a GSM; only series are wanted here.
+    """
+    found = set()
+    for record in summaries.values():
+        if not isinstance(record, dict):
+            continue
+        accession = str(record.get("accession", "")).strip()
+        if accession.startswith("GSE"):
+            found.add(accession)
+    return sorted(found)
+
+
+async def bioproject_to_biosample_elink(
+    accession: str, client: SurveyClient, timeout: float
+) -> list[str]:
+    """Walk bioproject -> biosample with ELink, paging the summaries.
+
+    The survey script this replaces did not page its ESummary call, so any
+    project with more than 500 BioSamples hit the UID ceiling and was recorded
+    as a failure. That accounts for its 330 failures, ten times any SRA route.
+    """
+    project = await esearch(client, db="bioproject", term=f"{accession}[PRJA]", timeout=timeout)
+    uids = project.get("idlist") or []
+    if not uids:
+        return []
+    sample_uids = await elink_uids(
+        client, dbfrom="bioproject", db="biosample", uids=uids, timeout=timeout
+    )
+    if not sample_uids:
+        return []
+    summaries = await esummary_by_ids(client, db="biosample", uids=sample_uids, timeout=timeout)
+    return sorted(
+        {
+            str(record["accession"]).strip()
+            for record in summaries.values()
+            if isinstance(record, dict) and record.get("accession")
+        }
+    )
+
+
 def _ena_route(field: str) -> RouteFn:
     async def route(accession: str, client: SurveyClient, timeout: float) -> list[str]:
         rows = await ena_portal.read_run_report(client, accession, timeout)
@@ -197,6 +322,13 @@ IMPLEMENTATIONS: dict[str, RouteFn] = {
     "gse->experiment:soft_bioproject_ena": gse_to_experiment_soft_bioproject_ena,
     "gse->run:elink_gds_sra": gse_to_run_elink,
     "bioproject->run:ena_filereport": _ena_route("run_accession"),
+    "bioproject->run:sra_be_direct_cgi": _bioproject_run_route(backend="sra_be", via_elink=False),
+    "bioproject->run:sra_be_elink": _bioproject_run_route(backend="sra_be", via_elink=True),
+    "bioproject->run:efetch_direct": _bioproject_run_route(backend="efetch", via_elink=False),
+    "bioproject->run:efetch_elink": _bioproject_run_route(backend="efetch", via_elink=True),
+    "bioproject->geo_series:gds_direct": bioproject_to_geo_gds_direct,
+    "bioproject->geo_series:elink": bioproject_to_geo_elink,
+    "bioproject->biosample:elink": bioproject_to_biosample_elink,
     "bioproject->study:ena_filereport": _ena_route("secondary_study_accession"),
     "bioproject->experiment:ena_filereport": _ena_route("experiment_accession"),
     "bioproject->biosample:ena_filereport": _ena_route("sample_accession"),
