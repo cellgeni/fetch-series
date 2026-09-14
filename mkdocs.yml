@@ -51,10 +51,12 @@ nav:
   - Home: index.md
   - Routes:
       - GEO series to experiment: routes/gse-to-experiment/index.md
+      - Via SOFT BioProject and ENA: routes/gse-to-experiment/soft-bioproject-ena.md
   - Pathologies:
       - Overview: pathologies/index.md
       - ELink gds to sra returns no links: pathologies/elink-gds-sra-missing-links.md
       - GEO omits the SRA relation: pathologies/geo-omits-sample-sra-relation.md
+      - Shared umbrella BioProject: pathologies/series-under-shared-umbrella-bioproject.md
   - Upstream reports:
       - Overview: upstream/index.md
       - NCBI ELink gds to sra: upstream/ncbi-elink-gds-sra.md

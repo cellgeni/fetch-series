@@ -15,6 +15,7 @@ good news — the archive fixed something.
 |---|---|---|
 | [ELink gds→sra returns no links](elink-gds-sra-missing-links.md) | NCBI | 25% of SRA-bearing series in a random sample report as having no sequencing data |
 | [GEO omits the SRA relation](geo-omits-sample-sra-relation.md) | NCBI | Samples with SRA data look like they have none |
+| [Shared umbrella BioProject](series-under-shared-umbrella-bioproject.md) | NCBI | Series with sequencing data record no BioProject, breaking project-based routing |
 
 ## Reporting upstream
 
