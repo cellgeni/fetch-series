@@ -222,6 +222,8 @@ _BIOPROJECTS_PRJNA = 12_114
 
 NCBI_EUTILS_RPS = 10.0  # with an API key; 3/s without
 EBI_RPS = 15.0
+# The GEO FTP mirror is not an API and is slower; do not hammer it.
+NCBI_FTP_RPS = 3.0
 
 ROUTES: list[Route] = [
     Route(
@@ -447,6 +449,123 @@ ROUTES: list[Route] = [
         provider="ena_portal",
         summary="ENA portal filereport, fields=study_accession.",
         kb_page="routes/study-to-bioproject/ena-filereport.md",
+        cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+    ),
+    # --- GEO series as an entry point ------------------------------------
+    # The primary entry point and, until now, the least measured. GEO exposes a
+    # series through two surfaces that do not agree: the SOFT family file is the
+    # submitter's own record, db=gds is NCBI's index of it.
+    Route(
+        id="gse->bioproject:soft_family",
+        source=EntityType.GEO_SERIES,
+        target=EntityType.BIOPROJECT,
+        provider="geo_ftp",
+        summary="!Series_relation = BioProject: from the SOFT family file.",
+        kb_page="routes/gse-to-bioproject/soft-family.md",
+        cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
+        known_pathologies=("superseries-carries-no-bioproject",),
+    ),
+    Route(
+        id="gse->bioproject:gds_summary",
+        source=EntityType.GEO_SERIES,
+        target=EntityType.BIOPROJECT,
+        provider="eutils",
+        summary="The bioproject field of the db=gds ESummary record.",
+        kb_page="routes/gse-to-bioproject/gds-summary.md",
+        cost=RouteCost(requests=2, rate_limit_rps=NCBI_EUTILS_RPS),
+    ),
+    Route(
+        id="gse->geo_sample:soft_family",
+        source=EntityType.GEO_SERIES,
+        target=EntityType.GEO_SAMPLE,
+        provider="geo_ftp",
+        summary="^SAMPLE records in the SOFT family file, in declaration order.",
+        kb_page="routes/gse-to-geo-sample/soft-family.md",
+        cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
+    ),
+    Route(
+        id="gse->geo_sample:gds_summary",
+        source=EntityType.GEO_SERIES,
+        target=EntityType.GEO_SAMPLE,
+        provider="eutils",
+        summary="The Samples array of the db=gds ESummary record.",
+        kb_page="routes/gse-to-geo-sample/gds-summary.md",
+        cost=RouteCost(requests=2, rate_limit_rps=NCBI_EUTILS_RPS),
+    ),
+    Route(
+        id="gse->experiment:soft_family",
+        source=EntityType.GEO_SERIES,
+        target=EntityType.EXPERIMENT,
+        provider="geo_ftp",
+        summary="!Sample_relation = SRA: collected across every sample.",
+        kb_page="routes/gse-to-experiment/soft-family.md",
+        cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
+        known_pathologies=("geo-omits-sample-sra-relation",),
+    ),
+    Route(
+        id="gse->experiment:elink_gds_sra",
+        source=EntityType.GEO_SERIES,
+        target=EntityType.EXPERIMENT,
+        provider="eutils",
+        summary="ELink gds->sra with cmd=neighbor, then ESummary.",
+        kb_page="routes/gse-to-experiment/elink-gds-sra.md",
+        cost=RouteCost(requests=3, rate_limit_rps=NCBI_EUTILS_RPS, paginates=True),
+        known_pathologies=("esummary-sra-buries-accessions-in-expxml",),
+    ),
+    Route(
+        id="gse->run:elink_gds_sra",
+        source=EntityType.GEO_SERIES,
+        target=EntityType.RUN,
+        provider="eutils",
+        summary="ELink gds->sra, then EFetch rettype=runinfo.",
+        kb_page="routes/gse-to-run/elink-gds-sra.md",
+        cost=RouteCost(requests=3, rate_limit_rps=NCBI_EUTILS_RPS),
+        known_pathologies=("efetch-returns-fewer-runs-than-esearch-counts",),
+    ),
+    # --- ENA portal, which answers many edges from one endpoint -----------
+    Route(
+        id="bioproject->experiment:ena_filereport",
+        source=EntityType.BIOPROJECT,
+        target=EntityType.EXPERIMENT,
+        provider="ena_portal",
+        summary="ENA portal filereport, experiment_accession column.",
+        kb_page="routes/bioproject-to-experiment/ena-filereport.md",
+        cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+    ),
+    Route(
+        id="bioproject->biosample:ena_filereport",
+        source=EntityType.BIOPROJECT,
+        target=EntityType.BIOSAMPLE,
+        provider="ena_portal",
+        summary="ENA portal filereport, sample_accession column.",
+        kb_page="routes/bioproject-to-biosample/ena-filereport.md",
+        cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+    ),
+    Route(
+        id="study->run:ena_filereport",
+        source=EntityType.STUDY,
+        target=EntityType.RUN,
+        provider="ena_portal",
+        summary="ENA portal filereport keyed on a study accession.",
+        kb_page="routes/study-to-run/ena-filereport.md",
+        cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+    ),
+    Route(
+        id="run->experiment:ena_filereport",
+        source=EntityType.RUN,
+        target=EntityType.EXPERIMENT,
+        provider="ena_portal",
+        summary="ENA portal filereport keyed on a run accession.",
+        kb_page="routes/run-to-experiment/ena-filereport.md",
+        cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+    ),
+    Route(
+        id="run->biosample:ena_filereport",
+        source=EntityType.RUN,
+        target=EntityType.BIOSAMPLE,
+        provider="ena_portal",
+        summary="ENA portal filereport keyed on a run accession.",
+        kb_page="routes/run-to-biosample/ena-filereport.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
     ),
 ]
