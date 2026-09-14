@@ -172,6 +172,26 @@ class SurveyClient:
         response.raise_for_status()
         return response
 
+    async def post(
+        self, url: str, data: dict[str, Any], timeout: float | None = None
+    ) -> httpx.Response:
+        """One rate-limited, concurrency-bounded POST.
+
+        E-utilities documents POST for large ID lists, and it is not optional:
+        a few hundred UIDs in a query string overflows the server's URI limit
+        and comes back as a 414, which is not retryable and loses the series.
+        """
+        if self._client is None:
+            raise RuntimeError("SurveyClient must be used as an async context manager")
+        clean = {k: v for k, v in data.items() if v is not None}
+        async with self._semaphore:
+            await self._limiter.acquire()
+            response = await self._client.post(
+                url, data=clean, timeout=timeout or self.limits.base_timeout
+            )
+        response.raise_for_status()
+        return response
+
     async def with_retry(
         self,
         operation: Callable[[float], Awaitable[T]],

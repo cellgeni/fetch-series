@@ -27,6 +27,11 @@ BASE = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 # a 200. Anything paging UIDs must respect it.
 MAX_UIDS_PER_SUMMARY = 500
 
+# Above this many UIDs the request goes by POST. A UID plus its separator is
+# about nine characters, so a few hundred already approach the ~4 KB that
+# servers commonly accept in a URI.
+POST_THRESHOLD_UIDS = 200
+
 
 def require_result(payload: dict[str, Any], context: str) -> dict[str, Any]:
     """Return ``payload["result"]``, or raise a typed error explaining why not."""
@@ -79,16 +84,19 @@ async def esummary_by_ids(
     merged: dict[str, Any] = {}
     for start in range(0, len(uids), MAX_UIDS_PER_SUMMARY):
         batch = uids[start : start + MAX_UIDS_PER_SUMMARY]
-        response = await client.get(
-            f"{BASE}/esummary.fcgi",
-            params={
-                "db": db,
-                "id": ",".join(batch),
-                "retmode": "json",
-                "api_key": client.api_key,
-            },
-            timeout=timeout,
-        )
+        params = {
+            "db": db,
+            "id": ",".join(batch),
+            "retmode": "json",
+            "api_key": client.api_key,
+        }
+        # A GET carries the UID list in the query string, and a few hundred of
+        # them overflow the server's URI limit: GSE115931 and GSE111860 both
+        # came back 414, which is not retryable, so the series was simply lost.
+        if len(batch) > POST_THRESHOLD_UIDS:
+            response = await client.post(f"{BASE}/esummary.fcgi", data=params, timeout=timeout)
+        else:
+            response = await client.get(f"{BASE}/esummary.fcgi", params=params, timeout=timeout)
         merged.update(require_result(response.json(), f"{db} uids {batch[0]}..."))
     merged.pop("uids", None)
     return merged
