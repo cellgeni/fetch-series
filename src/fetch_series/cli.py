@@ -29,6 +29,16 @@ app.add_typer(survey_app, name="survey")
 app.add_typer(routes_app, name="routes")
 
 
+def _slug(route_id: str) -> str:
+    """Filesystem-safe form of a route id.
+
+    Route ids read well in a terminal ("gse->experiment:soft_family") and badly
+    as directory names -- ">" needs quoting in every shell that would otherwise
+    tab-complete the path.
+    """
+    return route_id.replace("->", "-to-").replace(":", "_").replace("/", "_")
+
+
 def _route_or_exit(route_id: str) -> Route:
     try:
         return REGISTRY[route_id]
@@ -100,7 +110,7 @@ def survey_run(
     if limit:
         accessions = accessions[:limit]
 
-    logfile = run_logfile(route_id.replace("/", "_").replace(":", "_"))
+    logfile = run_logfile(_slug(route_id))
     configure_logging(level=logging.INFO, logfile=logfile)
     typer.echo(f"{route_id} over {corpus_name}: {len(accessions)} accessions -> {logfile}")
 
