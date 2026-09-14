@@ -1,11 +1,12 @@
-import io
-import re
 import csv
-from urllib import response
+import io
+import logging
+import os
+import re
+from typing import Any, Literal
+
 import httpx
 from httpx_retries import Retry, RetryTransport
-import logging
-from typing import Any, Dict, List, Literal
 
 # Enable retry logic for HTTP requests to handle transient errors and rate limiting when accessing the NCBI E-utilities API
 retry = Retry(
@@ -24,11 +25,30 @@ retry = Retry(
 transport = RetryTransport(retry=retry)
 
 
+def default_api_key() -> str | None:
+    """Return the NCBI API key from the environment, if one is configured.
+
+    Both spellings are accepted because the two have been used interchangeably
+    in this project; ``NCBI_API_KEY`` is the preferred one.
+    """
+    return os.getenv("NCBI_API_KEY") or os.getenv("NCBI_KEY")
+
+
+def _clean_params(params: dict[str, Any]) -> dict[str, Any]:
+    """Drop parameters whose value is None.
+
+    httpx encodes ``None`` as an empty value rather than omitting the parameter,
+    so ``api_key=None`` is sent as ``api_key=`` -- which E-utilities rejects with
+    a 400. Every call that did not pass an explicit key used to fail this way.
+    """
+    return {key: value for key, value in params.items() if value is not None}
+
+
 def eutils_search(
     query: str,
     db: str,
     api_key: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Searches the NCBI Entrez database using the E-utilities API
     Args:
@@ -45,12 +65,13 @@ def eutils_search(
         "term": query,
         "retmode": "json",
         "usehistory": "y",
-        "api_key": api_key,
+        "api_key": api_key or default_api_key(),
     }
     with httpx.Client(transport=transport) as client:
-        response = client.get(base, params=params, timeout=10)
+        response = client.get(base, params=_clean_params(params), timeout=10)
     response.raise_for_status()
-    return response.json()
+    payload: dict[str, Any] = response.json()
+    return payload
 
 
 def eutils_summary(
@@ -59,7 +80,7 @@ def eutils_summary(
     webenv: str | None = None,
     query_key: str | None = None,
     api_key: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Retrieves summaries of records from the NCBI Entrez database using the E-utilities API
     Args:
@@ -84,13 +105,14 @@ def eutils_summary(
         "WebEnv": webenv,
         "query_key": query_key,
         "retmode": "json",
-        "api_key": api_key,
+        "api_key": api_key or default_api_key(),
     }
 
     with httpx.Client(transport=transport) as client:
-        response = client.get(base, params=params, timeout=10)
+        response = client.get(base, params=_clean_params(params), timeout=10)
     response.raise_for_status()
-    return response.json()
+    payload: dict[str, Any] = response.json()
+    return payload
 
 
 def eutils_fetch(
@@ -126,7 +148,7 @@ def eutils_fetch(
         "db": db,
         "retmode": retmode,
         "rettype": rettype,
-        "api_key": api_key,
+        "api_key": api_key or default_api_key(),
     }
 
     if ids is not None:
@@ -137,10 +159,11 @@ def eutils_fetch(
         params["query_key"] = query_key
 
     with httpx.Client(transport=transport) as client:
-        response = client.get(base, params=params, timeout=10)
+        response = client.get(base, params=_clean_params(params), timeout=10)
     response.raise_for_status()
     if retmode == "json":
-        return response.json()
+        payload: dict[str, Any] = response.json()
+        return payload
     return response.text
 
 
@@ -153,7 +176,7 @@ def eutils_link(
     retmode: str = "json",
     cmd: str = "neighbor_history",
     api_key: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Search for linked items in a target database using the E-utilities API.
     Args:
@@ -180,12 +203,13 @@ def eutils_link(
         "WebEnv": webenv,
         "query_key": query_key,
         "cmd": cmd,
-        "api_key": api_key,
+        "api_key": api_key or default_api_key(),
     }
     with httpx.Client(transport=transport) as client:
-        response = client.get(base, params=params, timeout=10)
+        response = client.get(base, params=_clean_params(params), timeout=10)
     response.raise_for_status()
-    return response.json()
+    payload: dict[str, Any] = response.json()
+    return payload
 
 
 def geo_dataset_id(
@@ -231,10 +255,11 @@ def geo_dataset_id(
         )
         return None
     else:
-        return search_results["esearchresult"]["idlist"][0]
+        uid: str = search_results["esearchresult"]["idlist"][0]
+        return uid
 
 
-def ae2secondary(series: str) -> List[str]:
+def ae2secondary(series: str) -> list[str]:
     """
     Retrieves SecondaryAccession values associated with a given series from the EBI BioStudies database
     Args:
@@ -276,7 +301,7 @@ def ae2secondary(series: str) -> List[str]:
     return secondary
 
 
-def ae2biosamples(series: str) -> List[str]:
+def ae2biosamples(series: str) -> list[str]:
     """
     Retrieves biosample IDs associated with a given series from the EBI BioStudies database
     Args:
@@ -290,15 +315,13 @@ def ae2biosamples(series: str) -> List[str]:
         response = client.get(base, follow_redirects=True, timeout=30)
     response.raise_for_status()
 
-    biosamples = []
     reader = csv.DictReader(io.StringIO(response.text), delimiter="\t")
+    # csv.DictReader fills missing trailing columns with None, so the key can be
+    # present with a None value -- short rows are common in hand-edited SDRFs.
     biosamples = [
-        row.get("Comment[BioSD_SAMPLE]").strip()
-        for row in reader
-        if "Comment[BioSD_SAMPLE]" in row
+        value.strip() for row in reader if (value := row.get("Comment[BioSD_SAMPLE]")) is not None
     ]
-    biosamples = list(filter(None, biosamples))  # Remove empty strings
-    return biosamples
+    return [biosample for biosample in biosamples if biosample]
 
 
 def read_enaruns(
@@ -306,7 +329,7 @@ def read_enaruns(
     format: Literal["json", "tsv"] = "json",
     fields: str = "study_accession,experiment_accession,run_accession",
     limit: int | None = None,
-) -> List[Dict[str, Any]] | None:
+) -> list[dict[str, Any]] | None:
     """
     Retrieves ENA run accessions associated with a given series from the EBI ENA database
     Args:
@@ -326,17 +349,20 @@ def read_enaruns(
         "limit": limit,
     }
     with httpx.Client(transport=transport) as client:
-        response = client.get(base, params=params, timeout=10.0, follow_redirects=True)
+        response = client.get(
+            base, params=_clean_params(params), timeout=10.0, follow_redirects=True
+        )
     response.raise_for_status()
 
     if format == "json":
-        return response.json()
+        payload: list[dict[str, Any]] = response.json()
+        return payload
     elif format == "tsv":
         reader = csv.DictReader(io.StringIO(response.text), delimiter="\t")
         return list(reader)
 
 
-def ena2bioproject(series: str) -> List[str]:
+def ena2bioproject(series: str) -> list[str]:
     """
     Retrieves the BioProject ID associated with a given ENA series from the EBI ENA database
     Args:
@@ -349,29 +375,39 @@ def ena2bioproject(series: str) -> List[str]:
     if not runs or "study_accession" not in runs[0]:
         logging.warning("No BioProject found for %s", series)
         return []
-    accessions = set(run["study_accession"] for run in runs if "study_accession" in run)
-    return list(accessions)
+    accessions = {run["study_accession"] for run in runs if run.get("study_accession")}
+    return sorted(accessions)
 
 
-def bioproject2ena(series: str) -> List[str] | None:
+def bioproject2ena(series: str) -> list[str]:
     """
     Retrieves the ENA series accessions associated with a given BioProject ID from the EBI ENA database
     Args:
         series (str): BioProject ID to retrieve ENA series accessions for (e.g., PRJEB12345)
 
     Returns:
-        List[str] | None: A list of ENA series accessions associated with the BioProject, or None if no accessions are found
+        list[str]: ENA secondary study accessions for the BioProject, sorted; empty if none are found
+
+    Note:
+        This used to return ``runs[0]["secondary_study_accession"]`` -- the first
+        run's study as a bare string, despite being annotated as a list. A
+        BioProject can carry more than one secondary study, and every one after
+        the first was silently dropped.
     """
-    runs = read_enaruns(
-        series=series, format="json", fields="secondary_study_accession"
-    )
-    if not runs or "secondary_study_accession" not in runs[0]:
+    runs = read_enaruns(series=series, format="json", fields="secondary_study_accession")
+    if not runs:
         logging.warning("No ENA series found for %s", series)
-        return None
-    return runs[0]["secondary_study_accession"]
+        return []
+    accessions = {
+        run["secondary_study_accession"] for run in runs if run.get("secondary_study_accession")
+    }
+    if not accessions:
+        logging.warning("No ENA series found for %s", series)
+        return []
+    return sorted(accessions)
 
 
-def query_ae(query: str, pagesize: int = 100) -> Dict[str, Any]:
+def query_ae(query: str, pagesize: int = 100) -> dict[str, Any]:
     """
     Queries the EBI BioStudies database for datasets matching the given query string
     Args:
@@ -388,12 +424,15 @@ def query_ae(query: str, pagesize: int = 100) -> Dict[str, Any]:
     }
 
     with httpx.Client(transport=transport) as client:
-        response = client.get(base, params=params, timeout=10.0, follow_redirects=True)
+        response = client.get(
+            base, params=_clean_params(params), timeout=10.0, follow_redirects=True
+        )
     response.raise_for_status()
-    return response.json()
+    payload: dict[str, Any] = response.json()
+    return payload
 
 
-def ena2ae(series: str) -> List[str] | None:
+def ena2ae(series: str) -> list[str] | None:
     """
     Retrieves the ArrayExpress accessions associated with a given ENA series from the EBI BioStudies database
     Args:

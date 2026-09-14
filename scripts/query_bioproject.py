@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 from collections.abc import Callable, Coroutine
-from typing import Any, Dict
+from typing import Any
 
 import httpx
 import pandas as pd
@@ -43,7 +43,7 @@ async def eutils_search(
     db: str,
     get: ThrottledGet,
     api_key: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     params = {
         "db": db,
@@ -76,7 +76,7 @@ async def eutils_summary(
     webenv: str | None = None,
     query_key: str | None = None,
     api_key: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     if (ids is None) == (webenv is None or query_key is None):
         raise ValueError("Must specify either ids OR webenv and query_key")
 
@@ -113,7 +113,7 @@ async def view_bioproject(
     accession: str,
     get: ThrottledGet,
     api_key: str | None = None,
-) -> Dict[str, Any] | None:
+) -> dict[str, Any] | None:
     search = await eutils_search(
         query=f"{accession}[PRJNA]",
         db="bioproject",
@@ -132,7 +132,7 @@ async def view_bioproject(
     )
 
 
-def parse_summary(accession: str, summary: Dict[str, Any] | None) -> list[dict]:
+def parse_summary(accession: str, summary: dict[str, Any] | None) -> list[dict]:
     if summary is None:
         return [
             {
@@ -166,7 +166,7 @@ async def main():
     bioproject_list = samples10x.prj.unique().tolist()
     print(f"Fetching summaries for {len(bioproject_list)} BioProjects...")
 
-    async def safe_view(acc: str) -> Dict[str, Any] | None:
+    async def safe_view(acc: str) -> dict[str, Any] | None:
         try:
             return await view_bioproject(accession=acc, get=get, api_key=NCBI_API_KEY)
         except (
@@ -184,7 +184,7 @@ async def main():
         results = await tqdm_asyncio.gather(*tasks, desc="Fetching BioProject records")
 
     rows = []
-    for accession, summary in zip(bioproject_list, results):
+    for accession, summary in zip(bioproject_list, results, strict=True):
         rows.extend(parse_summary(accession, summary))
 
     df = pd.DataFrame(rows)

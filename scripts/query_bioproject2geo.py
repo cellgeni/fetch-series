@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 from collections.abc import Callable, Coroutine
-from typing import Any, Dict
+from typing import Any
 
 import httpx
 import pandas as pd
@@ -57,7 +57,7 @@ async def eutils_search(
     db: str,
     get: ThrottledGet,
     api_key: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     params = {
         "db": db,
@@ -91,7 +91,7 @@ async def eutils_link(
     query_key: str,
     cmd: str = "neighbor_history",
     api_key: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi"
     params = {
         "dbfrom": dbfrom,
@@ -116,12 +116,12 @@ async def eutils_summary(
     query_key: str,
     api_key: str | None = None,
     retmax: int = 500,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
 
     # No retry here: webenv is session-scoped and would be stale after a long backoff.
     # The caller (bioproject2geo) retries the entire chain from scratch instead.
-    async def _fetch_page(retstart: int) -> Dict[str, Any]:
+    async def _fetch_page(retstart: int) -> dict[str, Any]:
         params = {
             "db": db,
             "WebEnv": webenv,
@@ -135,7 +135,7 @@ async def eutils_summary(
         response.raise_for_status()
         return response.json()
 
-    combined: Dict[str, Any] | None = None
+    combined: dict[str, Any] | None = None
     retstart = 0
 
     while True:
@@ -167,7 +167,7 @@ async def eutils_summary_by_ids(
     ids: list[str],
     api_key: str | None = None,
     batch_size: int = 500,
-) -> Dict[str, Any] | None:
+) -> dict[str, Any] | None:
     if not ids:
         return None
 
@@ -183,7 +183,7 @@ async def eutils_summary_by_ids(
             rs.outcome.exception(),
         ),
     )
-    async def _fetch_batch(batch: list[str]) -> Dict[str, Any]:
+    async def _fetch_batch(batch: list[str]) -> dict[str, Any]:
         params = {
             "db": db,
             "id": ",".join(batch),
@@ -194,7 +194,7 @@ async def eutils_summary_by_ids(
         response.raise_for_status()
         return response.json()
 
-    combined: Dict[str, Any] | None = None
+    combined: dict[str, Any] | None = None
 
     for start in range(0, len(ids), batch_size):
         page = await _fetch_batch(ids[start : start + batch_size])
@@ -216,7 +216,7 @@ async def eutils_summary_by_ids(
     return combined
 
 
-def _geo_ids_from_links(links: Dict[str, Any]) -> list[str]:
+def _geo_ids_from_links(links: dict[str, Any]) -> list[str]:
     geo_ids = []
     for linkset in links.get("linksets", []):
         for linksetdb in linkset.get("linksetdbs", []):
@@ -231,7 +231,7 @@ async def _geo_summary_from_neighbor_links(
     webenv: str,
     query_key: str,
     api_key: str | None = None,
-) -> Dict[str, Any] | None:
+) -> dict[str, Any] | None:
     fallback_links = await eutils_link(
         dbfrom="bioproject",
         db="gds",
@@ -262,7 +262,7 @@ async def bioproject2geo(
     accession: str,
     get: ThrottledGet,
     api_key: str | None = None,
-) -> Dict[str, Any] | None:
+) -> dict[str, Any] | None:
     @retry(
         stop=stop_after_attempt(5),
         wait=wait_exponential(multiplier=1, min=2, max=30),
@@ -284,7 +284,7 @@ async def _bioproject2geo_once(
     accession: str,
     get: ThrottledGet,
     api_key: str | None = None,
-) -> Dict[str, Any] | None:
+) -> dict[str, Any] | None:
     search = await eutils_search(
         query=f"{accession}[PRJNA]",
         db="bioproject",
@@ -353,7 +353,7 @@ async def _bioproject2geo_once(
     )
 
 
-def parse_geo_summary(accession: str, summary: Dict[str, Any] | None) -> list[dict]:
+def parse_geo_summary(accession: str, summary: dict[str, Any] | None) -> list[dict]:
     failure_row = {
         "bioproject_accession": accession,
         "geo_uid": None,
@@ -410,7 +410,7 @@ async def main():
     print(f"Fetching GEO links for {len(bioproject_list)} BioProjects...")
     logging.info("Fetching GEO links for %d BioProjects", len(bioproject_list))
 
-    async def safe_fetch(acc: str) -> Dict[str, Any] | None:
+    async def safe_fetch(acc: str) -> dict[str, Any] | None:
         try:
             return await bioproject2geo(accession=acc, get=get, api_key=NCBI_API_KEY)
         except (
@@ -427,7 +427,7 @@ async def main():
         results = await tqdm_asyncio.gather(*tasks, desc="Fetching BioProject→GEO")
 
     rows = []
-    for accession, summary in zip(bioproject_list, results):
+    for accession, summary in zip(bioproject_list, results, strict=True):
         rows.extend(parse_geo_summary(accession, summary))
 
     df = pd.DataFrame(rows)

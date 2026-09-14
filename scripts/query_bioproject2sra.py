@@ -5,7 +5,7 @@ import json
 import logging
 import os
 from collections.abc import Callable, Coroutine
-from typing import Any, Dict
+from typing import Any
 
 import httpx
 import pandas as pd
@@ -86,7 +86,7 @@ async def eutils_search(
     db: str,
     get: ThrottledGet,
     api_key: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     params = {
         "db": db,
@@ -120,7 +120,7 @@ async def eutils_link(
     query_key: str,
     cmd: str = "neighbor_history",
     api_key: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi"
     params = {
         "dbfrom": dbfrom,
@@ -226,7 +226,7 @@ async def _bioproject2sra_once(
     except (TypeError, ValueError):
         raise MalformedResponseError(
             f"esearchresult querykey not an integer for {accession!r}: {esearch['querykey']!r}"
-        )
+        ) from None
 
     if not esearch["idlist"]:
         logging.warning("No BioProject found for %r", accession)
@@ -278,7 +278,7 @@ async def _bioproject2sra_once(
     except (TypeError, ValueError):
         raise MalformedResponseError(
             f"link_history querykey not an integer for {accession!r}: {link_history['querykey']!r}"
-        )
+        ) from None
 
     return await eutils_fetch_runinfo(
         get=get,
@@ -340,7 +340,7 @@ async def main():
         results = await tqdm_asyncio.gather(*tasks, desc="Fetching BioProject→SRA")
 
     rows = []
-    for accession, runinfo_text in zip(bioproject_list, results):
+    for accession, runinfo_text in zip(bioproject_list, results, strict=True):
         rows.extend(parse_sra_runinfo(accession, runinfo_text))
 
     df = pd.DataFrame(rows)

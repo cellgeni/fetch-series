@@ -7,15 +7,6 @@ import os
 import httpx
 import pandas as pd
 from dotenv import load_dotenv
-from tenacity import (
-    RetryError,
-    retry,
-    retry_if_exception,
-    stop_after_attempt,
-    wait_exponential,
-)
-from tqdm.asyncio import tqdm_asyncio
-
 from query_bioproject2sra import (
     NCBI_API_KEY,
     SRA_COLUMNS,
@@ -25,10 +16,18 @@ from query_bioproject2sra import (
     _make_throttled_get,
     eutils_search,
 )
+from tenacity import (
+    RetryError,
+    retry,
+    retry_if_exception,
+    stop_after_attempt,
+    wait_exponential,
+)
+from tqdm.asyncio import tqdm_asyncio
 
 load_dotenv()
 
-SRA_COLUMNS = SRA_COLUMNS + ["ScientificName"]
+SRA_COLUMNS = [*SRA_COLUMNS, "ScientificName"]
 
 OUTPUT_DIR = "data/query"
 LOG_PATH = os.path.join(OUTPUT_DIR, "logs", "bioproject2sra_direct_cgi.log")
@@ -128,7 +127,7 @@ async def bioproject2sra(
         except (TypeError, ValueError):
             raise MalformedResponseError(
                 f"esearchresult querykey not an integer for {accession!r}: {esearch['querykey']!r}"
-            )
+            ) from None
 
         if esearch["count"] == "0":
             logging.warning("No SRA records found for %r", accession)
@@ -171,7 +170,7 @@ async def main():
         )
 
     rows = []
-    for accession, runinfo_text in zip(bioproject_list, results):
+    for accession, runinfo_text in zip(bioproject_list, results, strict=True):
         rows.extend(parse_sra_runinfo(accession, runinfo_text))
 
     df = pd.DataFrame(rows)

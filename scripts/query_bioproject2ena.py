@@ -7,6 +7,11 @@ import os
 import httpx
 import pandas as pd
 from dotenv import load_dotenv
+from query_bioproject2sra import (
+    ThrottledGet,
+    _is_retryable,
+    _make_throttled_get,
+)
 from tenacity import (
     RetryError,
     retry,
@@ -15,12 +20,6 @@ from tenacity import (
     wait_exponential,
 )
 from tqdm.asyncio import tqdm_asyncio
-
-from query_bioproject2sra import (
-    ThrottledGet,
-    _is_retryable,
-    _make_throttled_get,
-)
 
 load_dotenv()
 
@@ -162,7 +161,7 @@ async def main():
         results = await tqdm_asyncio.gather(*tasks, desc="Fetching BioProject→ENA")
 
     rows = []
-    for accession, text in zip(bioproject_list, results):
+    for accession, text in zip(bioproject_list, results, strict=True):
         rows.extend(parse_ena_response(accession, text))
 
     df = pd.DataFrame(rows)
