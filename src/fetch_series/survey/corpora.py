@@ -186,9 +186,37 @@ CORPUS_BUILDERS = {
     "geo-sample": geo_sample,
 }
 
+KNOWN_CORPORA = (
+    "hard-cases",
+    "reprocessed-<column>   (column: " + ", ".join(SAMPLE_TABLE_COLUMNS[:6]) + ")",
+    "geo-sample[-<n>]",
+)
+
 
 def load(name: str) -> Corpus:
-    """Build a corpus by name."""
-    if name not in CORPUS_BUILDERS:
-        raise ValueError(f"Unknown corpus {name!r}; known: {', '.join(sorted(CORPUS_BUILDERS))}")
-    return CORPUS_BUILDERS[name]()
+    """Build a corpus by name, accepting the parameterised forms.
+
+    ``reprocessed-gse`` and ``geo-sample-2000`` name a corpus precisely enough
+    that survey results can be attributed to it later. The corpus name is stored
+    with every verdict, so it has to identify the accession set exactly -- two
+    different draws recorded under one name would be uncomparable.
+    """
+    if name in CORPUS_BUILDERS:
+        return CORPUS_BUILDERS[name]()
+
+    if name.startswith("reprocessed-"):
+        column = name.removeprefix("reprocessed-")
+        if column in SAMPLE_TABLE_COLUMNS:
+            return reprocessed(column)
+        raise ValueError(
+            f"Unknown column {column!r} in corpus {name!r}; "
+            f"expected one of {', '.join(SAMPLE_TABLE_COLUMNS[:6])}"
+        )
+
+    if name.startswith("geo-sample-"):
+        suffix = name.removeprefix("geo-sample-")
+        if suffix.isdigit():
+            return geo_sample(int(suffix))
+        raise ValueError(f"Expected a sample size in corpus {name!r}, got {suffix!r}")
+
+    raise ValueError(f"Unknown corpus {name!r}; known: {'; '.join(KNOWN_CORPORA)}")
