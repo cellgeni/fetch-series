@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false  # the survey corpora are not needed to lint or unit-test
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install
+        run: uv sync --all-groups
+
+      - name: Lint
+        run: uv run ruff check src tests scripts
+
+      - name: Format
+        run: uv run ruff format --check src tests
+
+      - name: Type check
+        run: uv run mypy
+
+      # Offline only. Tests marked `integration` (live archive APIs) and
+      # `pathology` (known archive bugs) are excluded by the default addopts --
+      # CI must not depend on NCBI/EBI being up, and must not spend their
+      # rate limit on every push.
+      - name: Unit tests
+        run: uv run pytest
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      # An NCBI API key reached this repository once already, through `api_key=`
+      # in committed survey logs. fetch_series.logging_utils redacts it at write
+      # time; this is the backstop that fails the build if one slips through.
+      - name: Reject credentials in tracked files
+        run: |
+          # 20+ alphanumerics with no separators: the shape of a real key or
+          # token. Placeholders like `api_key=NCBI_API_KEY` or `api_key=api_key`
+          # carry underscores or are too short, so they do not match.
+          if git grep -nIE '(api_key|apikey|access_token|password)=[A-Za-z0-9]{20,}' \
+               -- ':!*.lock' ':!.github/workflows/*' ':!tests/*'; then
+            echo "::error::A credential-shaped query parameter is present in a tracked file."
+            exit 1
+          fi
+          echo "No credentials found in tracked files."
