@@ -14,16 +14,54 @@ A SOFT family file lists samples that declare a BioSample relation and nothing e
 though the samples have SRA experiments. Reading the SOFT file alone reports the series as
 having no sequencing data.
 
+## Prevalence
+
+Measured by census, not by sample: every one of the 13,045 GEO series in the reprocessed
+table, surveyed 2026-09-14.
+
+| Outcome of `gse->experiment:soft_family` | Series | Share |
+|---|---|---|
+| Experiments found | 13,022 | 99.82% |
+| **No SRA relation on any sample** | **16** | **0.12%** |
+| Fetch failed (404 — private or withdrawn) | 7 | 0.05% |
+
+**This is much rarer than the curated corpus suggests**, and that gap is the point. On
+`hard-cases` this pathology looks like 2 series in 7; across the real population it is 16
+in 13,045. A corpus selected for pathology cannot measure prevalence — only a census can.
+Both numbers are true and they answer different questions: *can this happen* versus *how
+often does it*.
+
 ## Affected accessions
 
-| GEO series | SOFT experiments | ELink `gds`→`sra` experiments |
-|---|---|---|
-| GSE135325 | 0 | 6 |
-| GSE137444 | 0 | 12 |
+All 16, with what the SOFT file does record. Every one names a BioProject and has samples;
+none names a single SRA relation.
 
-Measured 2026-09-14 on `hard-cases`. Both series also mix library types — GSE135325 lists
-four BD AbSeq samples next to its two 10x ones — so a resolver that drops them silently
-loses part of a series rather than all of it.
+| Series | Samples | Samples with a BioSample relation | Recovered via BioProject → ENA |
+|---|---|---|---|
+| GSE135325 | 6 | 6 | 6 experiments |
+| GSE137444 | 12 | 12 | 12 |
+| GSE175516 | 2 | 2 | 2 |
+| GSE175533 | 147 | 147 | 147 |
+| GSE178485 | 4 | 4 | 4 |
+| GSE203552 | 22 | 22 | 15 |
+| GSE223155 | 5 | 5 | 5 |
+| GSE270158 | 6 | 6 | 5 |
+| GSE272976 | 16 | 16 | 4 |
+| GSE208337 | 105 | 0 | 105 |
+| GSE296731 | 10 | 0 | 10 |
+| GSE156524 | 3 | 0 | none |
+| GSE264624 | 26 | 0 | none |
+| GSE275199 | 2 | 0 | none |
+| GSE307587 | 20 | 0 | none |
+| GSE308007 | 31 | 0 | none |
+
+Two shapes. Nine series record a BioSample relation per sample and omit only the SRA half;
+seven record no sample relations at all.
+
+The five that recover nothing return nothing from ELink either, and their BioProjects have
+no released runs — so they are most likely awaiting release rather than mis-linked. They
+are listed here because a resolver cannot tell the two cases apart from the outside, and
+saying "no data yet" is a different answer from "I could not find it".
 
 ## Reproducer
 

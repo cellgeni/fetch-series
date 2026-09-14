@@ -500,6 +500,19 @@ ROUTES: list[Route] = [
         summary="!Sample_relation = SRA: collected across every sample.",
         kb_page="routes/gse-to-experiment/soft-family.md",
         cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
+        evidence=RouteEvidence(
+            corpus="reprocessed-gse",
+            surveyed_on=date(2026, 9, 14),
+            accessions_queried=13_045,
+            accessions_failed=7,
+            unique_results=308_639,
+            notes=(
+                "Census of every GEO series in the reprocessed table. 13,022 resolved, "
+                "16 empty, 7 failed -- all seven a 404 on the FTP mirror, i.e. private "
+                "or withdrawn. Of the 16 empties, 11 are recoverable through the "
+                "BioProject; the other 5 have no released runs at all."
+            ),
+        ),
         known_pathologies=("geo-omits-sample-sra-relation",),
     ),
     Route(
