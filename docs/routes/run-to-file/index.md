@@ -75,9 +75,54 @@ prepended.
   — all 15 runs of ERP129702, where the fastq route's answer is complete-looking
   and half the data.
 
-## Measured behaviour
+## Measured
 
-The census over `sample:3000@reprocessed-srr` — the same draw the ENA identity
-routes were measured on, so the two are directly comparable — is running. Per
-[the governing rule](../../index.md), this page will not claim coverage it has
-not counted, and the routes carry no `RouteEvidence` until it does.
+**Corpus:** `sample:3000@reprocessed-srr` — a seeded draw from the 262,690 runs
+the reprocessing pipeline has resolved, the same draw the ENA identity routes
+were measured on. **Surveyed:** 2026-09-15. Nothing failed on any route.
+
+| Route | Runs answered | Files returned | Files per answered run |
+|---|---:|---:|---:|
+| `run->file:sdl` | **2,996** (99.9%) | 3,085 | 1.03 |
+| `run->file:ena_fastq` | 2,844 (94.8%) | 4,466 | 1.57 |
+| `run->file:ena_submitted` | **246 (8.2%)** | 601 | 2.44 |
+| `run->file:ena_sra` | **0** | 0 | — |
+
+Four numbers, four separate conclusions.
+
+**SDL answers for almost everything, and almost always with one file.** 1.03
+files per run means the `.sra` object and nothing else. Near-total coverage of a
+format that has to be dumped before it is usable.
+
+**ENA's fastq columns answer for 94.8% and are frequently incomplete.** 1.57
+files per run, for a corpus in which every run is 10x and therefore paired:
+1,225 of the 2,844 answered runs offer exactly **one** fastq. That is not a
+naming quirk — see
+[ENA's derived fastq omits the read that carries the cell barcode](../../pathologies/ena-paired-library-single-fastq.md),
+where 1,177 of those 1,225 are shown to have more bases in SRA than ENA
+publishes.
+
+**The submitter's original deposit exists for only 8.2% of runs.** This is the
+number that makes the previous one serious. For the other 91.8% there is no
+original to fall back on, so when ENA's fastq is partial the SRA object is the
+only complete source there is.
+
+**`sra_ftp` is empty. Every time.** Not a parsing failure and not an outage:
+`sra_ftp`, `sra_md5`, `sra_bytes` and `sra_aspera` are documented, returnable
+fields of `result=read_run`, and ENA populates them for none of the 3,000
+sampled runs — nor for `SRR25056225`, `ERR2861957`, `DRR188691` or `SRR6639101`
+checked by hand across all three archives. The route is kept, declared, and
+measured at zero, because "we asked and the column is empty" is a different
+fact from "we never asked", and only the first can be cited. It also means the
+incumbent's step 6, *ENA's own SRA mirror*, never fires in practice.
+
+## What this implies for the ranking
+
+No single route is sufficient, and the union is not redundant:
+
+- SDL alone: complete coverage, but `.sra` for nearly every run.
+- ENA fastq alone: convenient format, missing the barcode read 41% of the time.
+- ENA submitted alone: correct and original, available for 8% of runs.
+
+Which is why [the file layer](../../files.md) asks all of them and ranks the
+*answers* rather than the routes.
