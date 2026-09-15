@@ -517,6 +517,14 @@ ROUTES: list[Route] = [
         kb_page="routes/gse-to-bioproject/soft-family.md",
         cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
         known_pathologies=("superseries-carries-no-bioproject",),
+        evidence=RouteEvidence(
+            corpus="reprocessed-gse",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=13_045,
+            accessions_failed=7,
+            unique_results=12_572,
+            notes="12,572 resolved, 466 empty.",
+        ),
     ),
     Route(
         id="gse->bioproject:gds_summary",
@@ -792,6 +800,14 @@ ROUTES: list[Route] = [
         kb_page="routes/run-to-file/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         proves_data_exists=True,
+        evidence=RouteEvidence(
+            corpus="sample:3000@reprocessed-srr",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=3_000,
+            accessions_failed=0,
+            unique_results=4_466,
+            notes="2,844 resolved, 156 empty. 1,225 of the 2,844 resolved runs offer exactly one fastq file.",
+        ),
     ),
     Route(
         id="run->file:ena_submitted",
@@ -802,6 +818,14 @@ ROUTES: list[Route] = [
         kb_page="routes/run-to-file/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         proves_data_exists=True,
+        evidence=RouteEvidence(
+            corpus="sample:3000@reprocessed-srr",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=3_000,
+            accessions_failed=0,
+            unique_results=601,
+            notes="246 resolved, 2,754 empty.",
+        ),
     ),
     Route(
         id="run->file:ena_sra",
@@ -832,6 +856,14 @@ ROUTES: list[Route] = [
         kb_page="routes/run-to-file/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=NCBI_EUTILS_RPS),
         proves_data_exists=True,
+        evidence=RouteEvidence(
+            corpus="sample:3000@reprocessed-srr",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=3_000,
+            accessions_failed=0,
+            unique_results=3_085,
+            notes="2,996 resolved, 4 empty.",
+        ),
     ),
 ]
 
