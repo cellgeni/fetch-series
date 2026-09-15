@@ -15,8 +15,11 @@ from dotenv import load_dotenv
 from fetch_series.accession import EntityType, UnknownAccessionError, parse
 from fetch_series.cache import DEFAULT_CACHE_PATH, SurveyCache
 from fetch_series.core import default_api_key
+from fetch_series.entities import RELATION_COLUMNS, RunRecord
 from fetch_series.graph import REGISTRY, Route
 from fetch_series.logging_utils import configure_logging, run_logfile
+from fetch_series.relations import relations as build_relations
+from fetch_series.relations import resolve_input, sample_to_runs
 from fetch_series.resolver import Mode, Resolution
 from fetch_series.resolver import resolve as resolver_resolve
 from fetch_series.routes import IMPLEMENTATIONS
@@ -395,6 +398,82 @@ def resolve(
             typer.echo(f"{value}\t{flag}\t{routes}")
         else:
             typer.echo(value)
+
+
+@app.command()
+def relations(
+    accession: Annotated[str, typer.Argument(help="A series, project, study or sample accession.")],
+    out: Annotated[
+        Path | None, typer.Option("-o", "--out", help="Write TSV here instead of stdout.")
+    ] = None,
+    sample_map: Annotated[
+        bool, typer.Option("--sample-map", help="Emit sample-to-runs instead of the full table.")
+    ] = False,
+    incomplete: Annotated[
+        bool, typer.Option(help="Include runs that are not usable for reprocessing.")
+    ] = True,
+) -> None:
+    """Cross-archive relation table: one row per run.
+
+    Joins what only GEO knows (GSM to experiment) onto what ENA reports (run,
+    experiment, sample, BioSample, study, species) in a single request. The
+    experiment accession is the only key the two archives share.
+    """
+    load_dotenv()
+    configure_logging(level=logging.WARNING)
+    parsed = resolve_input(accession)
+
+    async def run_it() -> list[RunRecord]:
+        async with SurveyClient(
+            limits=Limits(rps=5.0, concurrency=4), api_key=default_api_key()
+        ) as client:
+            return await build_relations(parsed, client)
+
+    records = asyncio.run(run_it())
+    if not records:
+        typer.secho(f"No runs found for {parsed}.", fg=typer.colors.YELLOW, err=True)
+        raise typer.Exit(1)
+
+    usable = [r for r in records if r.is_complete_for_reprocessing]
+    skipped = [r for r in records if not r.is_complete_for_reprocessing]
+    if skipped:
+        gaps: dict[str, int] = {}
+        for record in skipped:
+            for gap in record.missing_for_reprocessing:
+                gaps[gap] = gaps.get(gap, 0) + 1
+        typer.secho(
+            f"{len(skipped)} of {len(records)} runs are not usable for reprocessing "
+            f"(missing: {', '.join(f'{k} x{v}' for k, v in sorted(gaps.items()))})",
+            fg=typer.colors.YELLOW,
+            err=True,
+        )
+    conflicted = [r for r in records if r.conflicts]
+    if conflicted:
+        typer.secho(
+            f"{len(conflicted)} runs have fields where two archives disagree; "
+            "the highest-ranked route's value is used. Fields: "
+            + ", ".join(sorted({f for r in conflicted for f in r.conflicts})),
+            fg=typer.colors.YELLOW,
+            err=True,
+        )
+
+    chosen = records if incomplete else usable
+    lines: list[str] = []
+    if sample_map:
+        lines.append("sample\truns")
+        for sample, runs in sample_to_runs(chosen).items():
+            lines.append(f"{sample}\t{','.join(runs)}")
+    else:
+        lines.append("\t".join(RELATION_COLUMNS))
+        lines.extend("\t".join(record.as_row()) for record in chosen)
+
+    body = "\n".join(lines) + "\n"
+    if out is None:
+        typer.echo(body, nl=False)
+    else:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(body)
+        typer.echo(f"wrote {len(chosen)} rows to {out}", err=True)
 
 
 def main() -> None:
