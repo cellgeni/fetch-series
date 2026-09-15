@@ -47,12 +47,26 @@ answers the next page with HTTP 500 — see
 Neither limit binds on a single-study lookup, which returns one or two hits, but
 both bind on any enumeration of the collection.
 
-## Measured behaviour
+## Measured
 
-Not yet surveyed against a representative corpus. Tier one
-(`hard-cases`) produces a verdict for every study: `ERP126408` resolves to
-`E-MTAB-10018`, and `SRP446371` — an NCBI-native study with no ArrayExpress
-record — returns empty rather than failing, which is the correct answer.
+**Corpus:** a seeded 3,000-study draw from the 12,748 studies the
+[BioProject to study](../bioproject-to-study/ena-filereport.md) census returned
+— that is, the studies behind the reprocessed 10x corpus. **Surveyed:**
+2026-09-15.
 
-Per [the governing rule](../../index.md), an unmeasured route sorts behind every
-measured one and this page will not claim coverage it has not counted.
+| | |
+|---|---|
+| Resolved | 100 (3.3%) |
+| Empty | 2,900 |
+| Failed | **0** |
+
+**A 3.3% hit rate is the right answer, not a poor one.** The corpus is studies
+reached from the BioProjects a 10x reprocessing pipeline has handled, and those
+are overwhelmingly NCBI submissions with no ArrayExpress record to find. The
+number measures the overlap between two archives' holdings, not the route's
+reliability — for which the relevant figure is the zero failures.
+
+The cost of a miss is one request that returns an empty result set, so this is a
+cheap route to try and a useless one to rely on. Rank it accordingly: it is the
+way *in* for someone holding a study accession who wants ArrayExpress's
+sample-level metadata, not a step in any resolution path that already has one.
