@@ -734,6 +734,14 @@ ROUTES: list[Route] = [
         kb_page="routes/bioproject-to-biosample/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         proves_data_exists=True,
+        evidence=RouteEvidence(
+            corpus="reprocessed-prj",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=12_755,
+            accessions_failed=0,
+            unique_results=363_885,
+            notes="12,730 resolved, 25 empty.",
+        ),
     ),
     Route(
         id="study->run:ena_filereport",
@@ -805,6 +813,14 @@ ROUTES: list[Route] = [
         kb_page="routes/run-to-experiment/ena-filereport.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         proves_data_exists=True,
+        evidence=RouteEvidence(
+            corpus="sample:3000@reprocessed-srr",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=3_000,
+            accessions_failed=0,
+            unique_results=2_888,
+            notes="2,977 resolved, 23 empty.",
+        ),
     ),
     Route(
         id="run->biosample:ena_filereport",
