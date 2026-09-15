@@ -41,6 +41,13 @@ jobs:
       - name: Unit tests
         run: uv run pytest
 
+      # CLAUDE.md claims the docs build --strict, and every route page is
+      # reachable from a `kb_page` the test suite enforces the existence of.
+      # Neither claim was actually checked here until a broken anchor got as far
+      # as a push.
+      - name: Knowledge base
+        run: uv run mkdocs build --strict
+
   secret-scan:
     runs-on: ubuntu-latest
     steps:
