@@ -10,7 +10,6 @@ Knowledge base: docs/pathologies/elink-gds-sra-missing-links.md
 
 from __future__ import annotations
 
-import asyncio
 import os
 
 import pytest
@@ -45,7 +44,7 @@ def _client() -> SurveyClient:
 
 
 @pytest.mark.parametrize(("series", "experiment"), sorted(UNREACHABLE.items()))
-def test_elink_still_returns_no_sra_links(series: str, experiment: str) -> None:
+def test_elink_still_returns_no_sra_links(series: str, experiment: str, run_or_skip) -> None:
     """ELink reports no SRA neighbours, while the experiment plainly exists."""
 
     async def check() -> tuple[list[str], str | None, list[str]]:
@@ -57,7 +56,7 @@ def test_elink_still_returns_no_sra_links(series: str, experiment: str) -> None:
             rows = await ena_portal.read_run_report(client, experiment, timeout=30)
             return links, found.get("count"), ena_portal.column(rows, "run_accession")
 
-    links, sra_count, runs = asyncio.run(check())
+    links, sra_count, runs = run_or_skip(check())
 
     # The data exists. If these two ever fail, the premise is gone, not the bug.
     assert sra_count == "1", f"{experiment} is no longer in db=sra"

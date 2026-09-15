@@ -9,7 +9,6 @@ Knowledge base: docs/pathologies/geo-omits-sample-sra-relation.md
 
 from __future__ import annotations
 
-import asyncio
 import os
 
 import pytest
@@ -39,7 +38,9 @@ def _client() -> SurveyClient:
 
 
 @pytest.mark.parametrize(("series", "expected_via_elink"), sorted(OMITS_SRA_RELATION.items()))
-def test_soft_still_omits_the_sra_relation(series: str, expected_via_elink: int) -> None:
+def test_soft_still_omits_the_sra_relation(
+    series: str, expected_via_elink: int, run_or_skip
+) -> None:
     """The SOFT file names no experiments; ELink finds them."""
 
     async def check() -> tuple[list[str], list[str], dict[str, dict[str, str]]]:
@@ -49,7 +50,7 @@ def test_soft_still_omits_the_sra_relation(series: str, expected_via_elink: int)
             text = await geo.fetch_soft_family(client, series, 60)
             return soft, elink, geo.parse_soft_family(series, text).sample_relations
 
-    soft, elink, relations = asyncio.run(check())
+    soft, elink, relations = run_or_skip(check())
 
     # Premise: the series still exists and still has samples.
     assert relations, f"{series} SOFT file lists no samples at all; the series has changed"
