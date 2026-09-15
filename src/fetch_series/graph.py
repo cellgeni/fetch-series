@@ -806,6 +806,14 @@ ROUTES: list[Route] = [
         kb_page="routes/bioproject-to-biosample/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         proves_data_exists=True,
+        evidence=RouteEvidence(
+            corpus="sample:3000@reprocessed-srx",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=3_000,
+            accessions_failed=0,
+            unique_results=2_893,
+            notes="2,959 resolved, 41 empty.",
+        ),
     ),
     Route(
         id="sample->run:ena_filereport",
