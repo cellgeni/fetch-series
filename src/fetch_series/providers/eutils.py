@@ -169,15 +169,19 @@ async def elink_uids(
     if "linksets" not in payload:
         raise MalformedResponseError(f"elink returned no 'linksets' for {dbfrom}->{db}")
 
-    found: list[str] = []
+    # A single ELink response lists the same neighbours under several link
+    # names -- bioproject->biosample comes back as bioproject_biosample,
+    # _biosample_all and _biosample_sp, each holding the identical UIDs -- so
+    # concatenating them triples the list and triples the ESummary payload.
+    found: set[str] = set()
     for linkset in payload["linksets"]:
-        for setdb in linkset.get("linksetdbs", []):
+        for setdb in linkset.get("linksetdbs") or []:
             if linkname and setdb.get("linkname") != linkname:
                 continue
             if setdb.get("dbto") != db:
                 continue
-            found.extend(str(uid) for uid in setdb.get("links", []))
-    return found
+            found.update(str(uid) for uid in setdb.get("links") or [])
+    return sorted(found)
 
 
 async def efetch_text(
