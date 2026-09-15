@@ -14,29 +14,56 @@ where getting the wrong file list means reprocessing the wrong data.
 
 ## Status
 
-Early. Milestone 1 (the accession-graph survey) is in progress; see
-`docs/` for what has been measured so far. The CLI currently resolves BioProject → GEO only.
+Milestone 1 — the accession graph — is substantially done. 33 routes are implemented across five
+archives, every one exercised against a curated pathology corpus, and the important ones measured
+by census rather than sample.
 
 ```bash
-uv sync
-uv run fetch PRJNA988806      # -> GSE236084
+uv sync --all-groups
+
+# One row per run, joining what only GEO knows onto what ENA reports
+fetch relations GSE236084
+fetch relations GSE236084 --sample-map
+
+# Resolve between any two entity types, walking multi-hop paths when needed
+fetch resolve GSM7518069 --to run --explain
+fetch resolve GSE150508 --to experiment --confirmed-only
+
+# Inspect the graph and the evidence behind it
+fetch routes list
+fetch survey compare --route A --route B --corpus reprocessed-gse
 ```
 
-## What is already measured
+File links are **not** here yet. That is milestone 2, and it is where "which files should I
+actually download" gets decided — ENA `fastq_ftp` versus `submitted_ftp` versus NCBI SDL, md5 and
+size verification, mate completeness, paywalled objects. Today the table stops at the run.
 
-Nine routes surveyed across 12,756 BioProjects. At the unique-run level:
+## What the censuses found
 
-| BioProject → runs | Unique runs | Failed accessions |
-|---|---|---|
-| ENA portal `filereport` | **784,026** | 15 |
-| SRA `sra-db-be` (direct CGI) | 754,277 | 16 |
-| SRA `sra-db-be` (via ELink) | 754,332 | 34 |
-| NCBI `efetch` runinfo (via ELink) | 674,186 | 31 |
-| NCBI `efetch` runinfo (direct `[GPRJ]`) | 673,157 | 15 |
+Three of these contradicted what the code assumed before anyone measured it.
 
-ENA is a near-superset: it holds 111,665 runs `efetch` never returns, while only ~1,800 runs are
-missing from it. For GEO, the ELink and direct `db=gds` routes are functionally identical — zero
-accessions where they disagree.
+**NCBI's `elink gds→sra` is missing 17.6% of GEO series, silently.** Over all 13,045 series in the
+reprocessed corpus it resolves 82.4% against the SOFT family file's 99.8%, and returns 178,879
+experiments against 308,639 — with **zero** errors, so no caller can detect the shortfall.
+[The report is drafted](docs/upstream/ncbi-elink-gds-sra.md).
+
+**An accession is not evidence that data exists.** Thousands of experiments named in GEO SOFT files
+have no runs at all. Two series name experiment sets that are the same size as, and completely
+disjoint from, what their project actually holds — so a complete-looking answer downloads nothing.
+The resolver therefore splits its answer into confirmed and unconfirmed.
+
+**Archives only index their own accessions.** NCBI's ELink resolves BioProject → BioSample for 99.3%
+of NCBI-issued projects and **1.4%** of EBI-issued ones. Routes declare which archives they can
+answer for, and the resolver skips the rest rather than spending three requests to learn nothing.
+
+**A paging bug was hiding 94,895 BioSamples.** Fixing an unpaged ESummary call did not merely clear
+330 failures; it recovered data that had been silently truncated on projects that reported success.
+149,429 unique BioSamples became 244,324.
+
+The comparison tables, every affected accession, and the curl reproducers are in
+[the knowledge base](docs/). How it was all measured — including the methodology mistakes that cost
+real time and one that understated a finding sevenfold — is in
+[benchmarks](docs/benchmarks/index.md).
 
 ## Development
 
@@ -47,11 +74,15 @@ uv run mypy
 uv run pytest                    # offline unit tests
 uv run pytest -m integration     # hits live archive APIs
 uv run pytest -m pathology       # known archive bugs; a FAILURE means one was fixed
+uv run mkdocs serve              # the knowledge base
 ```
 
 Set `NCBI_API_KEY` in a local `.env` to lift the NCBI rate limit from 3 to 10 requests/second.
-Never commit it — `fetch_series.logging_utils` redacts credentials from log output, and CI rejects
-credential-shaped strings in tracked files.
+Never commit it — credentials are redacted from both log output and exception messages, and CI
+rejects credential-shaped strings in tracked files.
+
+See [CLAUDE.md](CLAUDE.md) for the conventions, and for the archive behaviours that have already
+cost time.
 
 ## Licence
 
