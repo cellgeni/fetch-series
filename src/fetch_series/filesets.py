@@ -22,9 +22,12 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
 from fetch_series.accession import Accession, EntityType
+from fetch_series.assays import AssayCall
+from fetch_series.assays.registry import is_10x
 from fetch_series.export.links import LinkRow, links_for
 from fetch_series.files import FileRecord, FileSet, Recommendation, recommend
 from fetch_series.graph import REGISTRY, RouteRegistry
+from fetch_series.providers import ena_portal
 from fetch_series.relations import relations
 from fetch_series.resolver import resolve_path
 from fetch_series.routes import (
@@ -228,3 +231,39 @@ async def links_table(
         # there is one.
         samples={r.run: (r.geo_sample or r.sample or "NA") for r in records},
     )
+
+
+ASSAY_FIELDS = (
+    "run_accession",
+    "library_construction_protocol",
+    "experiment_title",
+    "library_name",
+    "library_strategy",
+    "library_selection",
+    "instrument_model",
+)
+
+
+async def screen(
+    accession: Accession, client: SurveyClient, *, limit: int | None = None
+) -> list[tuple[str, AssayCall]]:
+    """Ask what assay every run of an accession is, before downloading anything.
+
+    One extra ENA request per run, against the same endpoint the file routes
+    already use. GSE109816 is 880 runs of Smart-seq2 that the reprocessing
+    pipeline fetched in full before rejecting them, and this is the question
+    that would have cost 880 requests instead of 880 downloads.
+    """
+    records = await relations(accession, client)
+    if limit is not None:
+        records = records[:limit]
+
+    async def one(run: str) -> tuple[str, AssayCall]:
+        try:
+            rows = await ena_portal.read_run_report(client, run, 60.0, fields=ASSAY_FIELDS)
+        except Exception:
+            return run, AssayCall(assay=None)
+        row = next((r for r in rows if r.get("run_accession") == run), {})
+        return run, is_10x(row)
+
+    return list(await asyncio.gather(*(one(record.run) for record in records)))

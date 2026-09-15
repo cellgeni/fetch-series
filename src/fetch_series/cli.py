@@ -13,12 +13,19 @@ import typer
 from dotenv import load_dotenv
 
 from fetch_series.accession import EntityType, UnknownAccessionError, parse
+from fetch_series.assays import AssayCall
 from fetch_series.cache import DEFAULT_CACHE_PATH, SurveyCache
 from fetch_series.core import default_api_key
 from fetch_series.entities import MISSING, RELATION_COLUMNS, RunRecord
 from fetch_series.export.links import LINKS_COLUMNS, LinkRow
 from fetch_series.files import Recommendation
-from fetch_series.filesets import Verdict, links_table, recommendations_for, verify_all
+from fetch_series.filesets import (
+    Verdict,
+    links_table,
+    recommendations_for,
+    screen,
+    verify_all,
+)
 from fetch_series.graph import REGISTRY, Route
 from fetch_series.logging_utils import configure_logging, run_logfile
 from fetch_series.relations import relations as build_relations
@@ -645,6 +652,63 @@ def links(
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(body)
         typer.echo(f"wrote {len(rows)} runs to {out}", err=True)
+
+
+@app.command("screen")
+def screen_command(
+    accession: Annotated[str, typer.Argument(help="A series, project, study or run.")],
+    limit: Annotated[int | None, typer.Option(help="At most this many runs.")] = None,
+    explain: Annotated[
+        bool, typer.Option("--explain", help="Show the phrases each call rests on.")
+    ] = False,
+) -> None:
+    """Say what assay each run is, from metadata, before anything is downloaded.
+
+    Exits non-zero when no run is recognised as 10x, so a pipeline can gate on
+    it. A run whose metadata carries no protocol text is *unknown*, not
+    known-negative, and is reported separately -- screening on absence would
+    discard every submission that left the field blank.
+    """
+    load_dotenv()
+    configure_logging(level=logging.WARNING)
+    parsed = resolve_input(accession)
+
+    async def run_it() -> list[tuple[str, AssayCall]]:
+        async with SurveyClient(
+            limits=Limits(rps=5.0, concurrency=6), api_key=default_api_key()
+        ) as client:
+            return await screen(parsed, client, limit=limit)
+
+    calls = asyncio.run(run_it())
+    if not calls:
+        typer.secho(f"No runs found for {parsed}.", fg=typer.colors.YELLOW, err=True)
+        raise typer.Exit(1)
+
+    typer.echo("run\tassay\tlibrary_type")
+    for run, call in calls:
+        kind = call.library_type or (
+            "|".join(call.library_types) if call.ambiguous_library_type else MISSING
+        )
+        typer.echo(f"{run}\t{call.assay or MISSING}\t{kind}")
+        if explain:
+            typer.echo(f"  {call.explain()}", err=True)
+
+    recognised = [c for _, c in calls if c.recognised]
+    unknown = [r for r, c in calls if not c.recognised and not c.had_metadata]
+    ambiguous = [r for r, c in calls if c.ambiguous_library_type]
+    notes = []
+    if unknown:
+        notes.append(f"{len(unknown)} carry no assay metadata at all")
+    if ambiguous:
+        notes.append(f"{len(ambiguous)} name more than one library type")
+    typer.secho(
+        f"{len(recognised)} of {len(calls)} runs recognised as 10x"
+        + ("; " + "; ".join(notes) if notes else ""),
+        fg=typer.colors.GREEN if recognised else typer.colors.YELLOW,
+        err=True,
+    )
+    if not recognised:
+        raise typer.Exit(2)
 
 
 def main() -> None:

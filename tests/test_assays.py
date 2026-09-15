@@ -30,13 +30,19 @@ class TestScreening:
         call = is_10x({"library_construction_protocol": SMARTSEQ_PROTOCOL})
         assert not call.recognised
 
-    def test_empty_metadata_is_unrecognised_not_rejected(self):
-        """A run with no protocol text is unknown, not known-negative. Screening
-        on absence would discard every submission that left the field blank."""
+    def test_empty_metadata_is_unknown_not_known_negative(self):
+        """Screening on absence would discard every submission that left the
+        protocol field blank."""
         call = is_10x({})
-        assert not call.recognised
-        assert call.matches == ()
-        assert "no assay recognised" in call.explain()
+        assert not call.recognised and not call.had_metadata
+        assert "no assay metadata" in call.explain()
+
+    def test_metadata_that_simply_is_not_10x_says_so_differently(self):
+        """A Smart-seq2 run has plenty of metadata and is not 10x. Reporting it
+        as 'no metadata' would blame the archive for a correct answer."""
+        call = is_10x({"library_construction_protocol": SMARTSEQ_PROTOCOL})
+        assert not call.recognised and call.had_metadata
+        assert "no assay signature" in call.explain()
 
     def test_the_grounds_are_reported_with_the_call(self):
         call = is_10x({"library_construction_protocol": TENX_PROTOCOL})
@@ -56,9 +62,11 @@ class TestLibraryTypes:
     def test_gene_expression_is_gex(self):
         assert is_10x({"library_construction_protocol": TENX_PROTOCOL}).library_type == "GEX"
 
-    def test_a_feature_barcode_library_is_not_read_as_gex(self):
-        """A CITE-seq protocol almost always also says 'gene expression'.
-        Reading it as GEX sends antibody capture down the wrong pipeline."""
+    def test_a_protocol_naming_two_families_asserts_neither(self):
+        """ENA's protocol field is per-experiment in the schema and per-*study*
+        in practice: submitters paste the whole methods section into every run.
+        GSE111360's names both a Chromium 5' kit and TCR V(D)J, so every run
+        matches two families and the text cannot say which library this is."""
         call = is_10x(
             {
                 "library_construction_protocol": (
@@ -66,17 +74,25 @@ class TestLibraryTypes:
                 )
             }
         )
-        assert call.library_type == "ADT"
+        assert call.ambiguous_library_type
+        assert call.library_types == ("ADT", "GEX")
+        assert call.library_type is None
+        assert "ambiguous" in call.explain()
 
-    def test_vdj_beats_gene_expression_too(self):
+    def test_an_unambiguous_family_is_asserted(self):
+        call = is_10x({"library_construction_protocol": "10x Chromium TCR V(D)J immune profiling"})
+        assert call.library_type == "VDJ"
+
+    def test_the_specific_families_are_reported_before_gene_expression(self):
         call = is_10x(
             {"library_construction_protocol": "10x Chromium 5' gene expression and TCR V(D)J"}
         )
-        assert call.library_type == "VDJ"
+        assert call.library_types[0] == "VDJ"
 
     def test_an_unlabelled_10x_run_has_no_library_type(self):
         call = is_10x({"experiment_title": "10x Genomics library"})
         assert call.recognised and call.library_type is None
+        assert call.library_types == ()
 
 
 class TestTheInterfaceIsAnInterface:
@@ -91,7 +107,7 @@ class TestTheInterfaceIsAnInterface:
         to distinguish, and the interface must not require one."""
         assert SMARTSEQ.library_types == {}
         call = SMARTSEQ.call({"library_construction_protocol": SMARTSEQ_PROTOCOL})
-        assert call.library_type is None
+        assert call.library_type is None and call.library_types == ()
 
     def test_a_new_assay_needs_no_change_to_the_core(self):
         parse = Assay(name="parse-seq", phrases=("Parse Biosciences", "Evercode"))
