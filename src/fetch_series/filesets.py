@@ -27,7 +27,7 @@ from fetch_series.assays.registry import is_10x
 from fetch_series.export.links import LinkRow, links_for
 from fetch_series.files import FileRecord, FileSet, Recommendation, recommend
 from fetch_series.graph import REGISTRY, RouteRegistry
-from fetch_series.providers import ena_portal
+from fetch_series.providers import ena_portal, geo
 from fetch_series.relations import relations
 from fetch_series.resolver import resolve_path
 from fetch_series.routes import (
@@ -258,12 +258,29 @@ async def screen(
     if limit is not None:
         records = records[:limit]
 
-    async def one(run: str) -> tuple[str, AssayCall]:
+    # GEO carries assay information ENA's protocol field often does not, and one
+    # SOFT family file covers every sample in the series, so joining it costs a
+    # single request however many runs there are. GSM5659253 is the case: its
+    # ENA protocol describes the tissue dissociation and never names a platform,
+    # while !Sample_data_processing says CellRanger.
+    soft_text: dict[str, dict[str, str]] = {}
+    if accession.entity is EntityType.GEO_SERIES:
+        try:
+            family = geo.parse_soft_family(
+                accession.value, await geo.fetch_soft_family(client, accession.value, 120.0)
+            )
+            soft_text = family.sample_text
+        except Exception:
+            soft_text = {}
+
+    async def one(run: str, geo_sample: str | None) -> tuple[str, AssayCall]:
         try:
             rows = await ena_portal.read_run_report(client, run, 60.0, fields=ASSAY_FIELDS)
+            row = dict(next((r for r in rows if r.get("run_accession") == run), {}))
         except Exception:
-            return run, AssayCall(assay=None)
-        row = next((r for r in rows if r.get("run_accession") == run), {})
+            row = {}
+        if geo_sample and (extra := soft_text.get(geo_sample)):
+            row.update(extra)
         return run, is_10x(row)
 
-    return list(await asyncio.gather(*(one(record.run) for record in records)))
+    return list(await asyncio.gather(*(one(record.run, record.geo_sample) for record in records)))

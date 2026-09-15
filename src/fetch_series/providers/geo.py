@@ -39,6 +39,11 @@ class SoftFamily:
     samples: list[str] = field(default_factory=list)
     # GSM -> the SRX and BioSample it declares, where it declares them at all.
     sample_relations: dict[str, dict[str, str]] = field(default_factory=dict)
+    # GSM -> the free-text fields that say what the library actually is. GEO
+    # carries assay information ENA's library_construction_protocol often does
+    # not: GSM5659253 names CellRanger in !Sample_data_processing while its ENA
+    # protocol describes only the tissue dissociation.
+    sample_text: dict[str, dict[str, str]] = field(default_factory=dict)
 
 
 async def fetch_soft_family(client: SurveyClient, series: str, timeout: float) -> str:
@@ -95,8 +100,35 @@ def parse_soft_family(series: str, text: str) -> SoftFamily:
             elif token.startswith("SAM"):
                 relations["biosample"] = token
         family.sample_relations[gsm] = relations
+        family.sample_text[gsm] = _sample_text(block)
 
     return family
+
+
+# The GEO fields that describe what the library is, mapped onto the names the
+# assay layer scans. GEO repeats a key across several lines rather than wrapping
+# one, so the values are joined instead of overwritten -- keeping only the last
+# line of !Sample_data_processing would throw away the line naming CellRanger,
+# which is usually not the last one.
+_TEXT_FIELDS = {
+    "!Sample_title": "sample_title",
+    "!Sample_data_processing": "sample_data_processing",
+    "!Sample_library_construction_protocol": "sample_library_construction_protocol",
+    "!Sample_extract_protocol_ch1": "sample_extract_protocol",
+    "!Sample_growth_protocol_ch1": "sample_extract_protocol",
+    "!Sample_instrument_model": "instrument_model",
+}
+_TEXT_LINE = re.compile(r"^(![A-Za-z_0-9]+)\s*=\s*(.*)$", re.MULTILINE)
+
+
+def _sample_text(block: str) -> dict[str, str]:
+    """The free-text fields of one sample block, joined per key."""
+    collected: dict[str, list[str]] = {}
+    for match in _TEXT_LINE.finditer(block):
+        name = _TEXT_FIELDS.get(match.group(1))
+        if name and (value := match.group(2).strip()):
+            collected.setdefault(name, []).append(value)
+    return {name: " ".join(values) for name, values in collected.items()}
 
 
 async def gds_uid(client: SurveyClient, series: str, timeout: float) -> str | None:

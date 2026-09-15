@@ -51,9 +51,13 @@ SCANNED_FIELDS: tuple[str, ...] = (
     "library_strategy",
     "library_selection",
     "instrument_model",
-    # GEO's SOFT spellings, for callers joining SOFT metadata in.
+    # GEO's SOFT spellings, for callers joining SOFT metadata in. GEO carries
+    # assay information ENA's protocol field often does not: GSM5659253 names
+    # CellRanger in !Sample_data_processing while its ENA protocol describes
+    # only the tissue dissociation.
     "sample_library_construction_protocol",
     "sample_extract_protocol",
+    "sample_data_processing",
     "sample_title",
 )
 
