@@ -67,8 +67,33 @@ E-MTAB-14460  E-MTAB-15098  E-MTAB-15118  E-MTAB-15165  E-MTAB-15306
 So the chain is: IDF secondary accession → else SDRF BioSamples → ENA. Both hops
 are declared routes (`ae_experiment->biosample:sdrf`, `biosample->run:ena_filereport`)
 and `fetch_series.relations` walks the composition for any ArrayExpress entry
-point. **Unverified:** how many of the 551 the fallback recovers as a
-population — the mechanism is proven on E-MTAB-6505 and has not been censused.
+point.
+
+### How much the fallback actually recovers: 4.2%
+
+Measured over exactly the 551, on 2026-09-15
+(corpus `arrayexpress-no-secondary`, committed):
+
+| Prefix | Studies | SDRF names a BioSample | |
+|---|---:|---:|---:|
+| `E-GEOD` | 450 | **0** | 0% |
+| `E-ERAD` | 81 | 16 | 20% |
+| `E-MTAB` | 20 | 7 | 35% |
+| **total** | **551** | **23** | **4.2%** |
+
+**Not one of the 450 `E-GEOD` studies carries a `Comment[BioSD_SAMPLE]`.** That
+is not a near miss, it is a categorical property: an ArrayExpress import of a
+GEO series has a GEO-derived SDRF, and GEO-derived SDRFs do not carry BioSample
+columns. 15 of the 450 could not be read at all.
+
+The fallback is therefore real but narrow. It rescues E-MTAB-6505 and 22 other
+studies, and it is the wrong tool for the group that dominates the failures.
+
+**The right route for an `E-GEOD` study is GEO.** `E-GEOD-63923` is `GSE63923`;
+the GEO series resolves through [the SOFT family file](../gse-to-experiment/index.md)
+at 99.8%. Reading a derived record of a derived record, and then failing over to
+a second derived field of the same derived record, is two ways of avoiding the
+archive that actually holds the answer.
 
 ## A trap in the file list
 
