@@ -41,7 +41,7 @@ fetch routes list
 fetch survey compare --route A --route B --corpus reprocessed-gse
 ```
 
-`fetch links` reproduces **11 of 11** of `fetch10xmeta`'s own nf-test cases — 425 runs, no
+`fetch links` reproduces **14 of 14** of `fetch10xmeta`'s own nf-test cases — 447 runs, no
 differences. See [the parity record](docs/fetch10xmeta-parity.md).
 
 ## What the censuses found
