@@ -17,6 +17,11 @@ FROM python:3.13-slim-bookworm AS build
 COPY --from=ghcr.io/astral-sh/uv:0.9.5 /uv /usr/local/bin/uv
 
 WORKDIR /src
+# The environment is built at the path it will be *used* from. A venv created at
+# /src/.venv and copied to /opt/venv has console scripts whose shebang still
+# names /src/.venv/bin/python, so every entry point fails with
+# "exec: no such file or directory" -- and only at run time.
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy UV_PYTHON_DOWNLOADS=never
 
 # Dependencies first, so a source change does not re-resolve the environment.
@@ -25,7 +30,10 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-dev
 
 COPY src ./src
-RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev
+# --no-editable, or uv installs a .pth pointing at /src/src, which does not exist
+# in the runtime stage: the venv imports cleanly here and raises
+# ModuleNotFoundError there, at run time rather than at build time.
+RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev --no-editable
 
 
 FROM python:3.13-slim-bookworm
@@ -37,7 +45,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=build /src/.venv /opt/venv
+# Both stages are the same base image, so the interpreter the venv symlinks to
+# is at the same path here.
+COPY --from=build /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Nextflow runs processes as the invoking user against a bind-mounted work
@@ -51,8 +61,14 @@ WORKDIR /work
 ENV NCBI_API_KEY=""
 
 # Fails the build if the entry point is broken, and records the version the way
-# Nextflow's versions.yml wants it.
-RUN printf 'fetch-series: %s\n' "$(fetch --version)" > /versions.txt
+# Nextflow's versions.yml wants it. The `set -e` and the emptiness check are not
+# belt and braces: `$(fetch --version)` inside a printf swallows a non-zero exit,
+# so the first version of this line wrote an empty versions.txt from an image
+# whose entry point did not run at all, and reported success.
+RUN set -eu; \
+    version="$(fetch --version)"; \
+    test -n "$version"; \
+    printf 'fetch-series: %s\n' "$version" > /versions.txt
 
 ENTRYPOINT ["fetch"]
 CMD ["--help"]

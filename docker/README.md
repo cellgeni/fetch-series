@@ -44,6 +44,28 @@ is how datasets go missing without anyone noticing. Failing is the honest
 behaviour; if a batch must survive individual failures, collect them and report
 the list at the end.
 
+## Verified
+
+Built and run on 2026-09-15: 253 MB, `fetch --version` reports `0.1.0`, and
+`docker run --rm fetch-series:0.1.0 links GSE117988` returns the same six rows
+as the local install and as `fetch10xmeta`'s snapshot for that series.
+
+Two things that failed the first time and are now guarded in the Dockerfile:
+
+- A venv created at `/src/.venv` and copied to `/opt/venv` has console scripts
+  whose shebang still names `/src/.venv/bin/python`. Every entry point then
+  fails with `exec: no such file or directory`, at run time. `UV_PROJECT_ENVIRONMENT`
+  builds it at its final path instead.
+- `uv sync` installs the project editable by default, so the runtime image got a
+  `.pth` pointing at a `/src/src` that does not exist there — importable in the
+  build stage, `ModuleNotFoundError` in the runtime one. `--no-editable` fixes it.
+
+Both bugs were invisible at build time, which is why the image now runs
+`fetch --version` as a build step and fails if it is empty. The first version of
+that line used `$(fetch --version)` inside a `printf`, which swallows a non-zero
+exit and wrote an empty `versions.txt` from an image whose entry point did not
+work at all.
+
 ## Why this image is small
 
 It resolves accessions and writes a TSV. It downloads no data, so it needs
