@@ -15,7 +15,9 @@ from dotenv import load_dotenv
 from fetch_series.accession import EntityType, UnknownAccessionError, parse
 from fetch_series.cache import DEFAULT_CACHE_PATH, SurveyCache
 from fetch_series.core import default_api_key
-from fetch_series.entities import RELATION_COLUMNS, RunRecord
+from fetch_series.entities import MISSING, RELATION_COLUMNS, RunRecord
+from fetch_series.files import Recommendation
+from fetch_series.filesets import recommendations_for
 from fetch_series.graph import REGISTRY, Route
 from fetch_series.logging_utils import configure_logging, run_logfile
 from fetch_series.relations import relations as build_relations
@@ -483,6 +485,89 @@ def relations(
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(body)
         typer.echo(f"wrote {len(chosen)} rows to {out}", err=True)
+
+
+@app.command()
+def files(
+    accession: Annotated[str, typer.Argument(help="A run, or anything that resolves to runs.")],
+    out: Annotated[
+        Path | None, typer.Option("-o", "--out", help="Write TSV here instead of stdout.")
+    ] = None,
+    limit: Annotated[int | None, typer.Option(help="Ask about at most this many runs.")] = None,
+    explain: Annotated[
+        bool, typer.Option("--explain", help="Show every route's offer and why one won.")
+    ] = False,
+    all_offers: Annotated[
+        bool, typer.Option("--all", help="Emit every offer, not just the recommended set.")
+    ] = False,
+    no_sdl: Annotated[
+        bool, typer.Option("--no-sdl", help="Skip NCBI SDL; ENA columns only.")
+    ] = False,
+) -> None:
+    """Download links for a run, with checksums and the reason for the choice.
+
+    Asks every file route rather than stopping at the first that answers,
+    because they do not answer the same question: ENA's fastq columns hold ENA's
+    derivations, submitted holds the submitter's deposit, SDL holds NCBI's view
+    of both. A run can have one and not the other.
+    """
+    load_dotenv()
+    configure_logging(level=logging.WARNING)
+    parsed = resolve_input(accession)
+
+    async def run_it() -> list[Recommendation]:
+        async with SurveyClient(
+            limits=Limits(rps=5.0, concurrency=6), api_key=default_api_key()
+        ) as client:
+            return await recommendations_for(parsed, client, limit=limit, include_sdl=not no_sdl)
+
+    results = asyncio.run(run_it())
+    if not results:
+        typer.secho(f"No runs found for {parsed}.", fg=typer.colors.YELLOW, err=True)
+        raise typer.Exit(1)
+
+    empty = [r for r in results if r.chosen is None]
+    if empty:
+        typer.secho(
+            f"{len(empty)} of {len(results)} runs had no downloadable data file: "
+            + ", ".join(r.run for r in empty[:10])
+            + ("..." if len(empty) > 10 else ""),
+            fg=typer.colors.YELLOW,
+            err=True,
+        )
+
+    if explain:
+        for rec in results:
+            typer.echo(rec.explain(), err=True)
+
+    lines = ["run\tsource\tkind\tmate\turl\tmd5\tbytes"]
+    for rec in results:
+        offers = [rec.chosen, *rec.alternatives] if all_offers else [rec.chosen]
+        for candidate in offers:
+            if candidate is None:
+                continue
+            for record in candidate.files:
+                lines.append(
+                    "\t".join(
+                        [
+                            record.run,
+                            record.source,
+                            str(record.kind),
+                            str(record.mate) if record.mate is not None else MISSING,
+                            record.url,
+                            record.md5 or MISSING,
+                            str(record.size) if record.size is not None else MISSING,
+                        ]
+                    )
+                )
+
+    body = "\n".join(lines) + "\n"
+    if out is None:
+        typer.echo(body, nl=False)
+    else:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(body)
+        typer.echo(f"wrote {len(lines) - 1} file links to {out}", err=True)
 
 
 def main() -> None:

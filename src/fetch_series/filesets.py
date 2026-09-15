@@ -1,0 +1,105 @@
+"""Assemble a run's files from every route that offers any, and recommend one set.
+
+This is the point of the whole project: an accession in, verified download links
+out. Everything before it -- accession parsing, the route graph, the resolver --
+exists to get from whatever the user has to a list of runs, and this module
+takes it from there.
+
+It asks *every* file route rather than stopping at the first that answers. That
+is a deliberate departure from how the resolver treats identity routes, where
+the first good answer is the answer. Here the routes do not answer the same
+question: ENA's ``fastq_*`` columns hold ENA's own derived fastqs, ``submitted_*``
+holds what the submitter deposited, and SDL holds NCBI's view of both. A run can
+have fastqs and no submitted files, submitted files and no fastqs, or -- as the
+two-run tier-one check found -- exactly one of the two, with the other route
+returning empty and meaning it.
+"""
+
+from __future__ import annotations
+
+import asyncio
+from collections.abc import Mapping
+
+from fetch_series.accession import Accession, EntityType
+from fetch_series.files import FileRecord, FileSet, Recommendation, recommend
+from fetch_series.graph import REGISTRY, RouteRegistry
+from fetch_series.resolver import resolve_path
+from fetch_series.routes import IMPLEMENTATIONS, ena_file_records, sdl_file_records
+from fetch_series.survey.client import SurveyClient
+from fetch_series.survey.runner import RouteFn
+
+# Each file route paired with the call that returns typed records rather than
+# bare URLs. The route ids are the same ones the graph declares and the survey
+# measures, so a route's coverage figure and its use here cannot drift apart.
+FILE_RECORD_SOURCES: Mapping[str, str] = {
+    "run->file:ena_fastq": "fastq",
+    "run->file:ena_submitted": "submitted",
+    "run->file:ena_sra": "sra",
+}
+
+
+async def files_for_run(
+    run: str,
+    client: SurveyClient,
+    timeout: float = 60.0,
+    *,
+    include_sdl: bool = True,
+) -> FileSet:
+    """Every file every route offers for one run.
+
+    A route that fails is not allowed to take the others down with it: a failed
+    route contributes nothing and the set says so by its ``sources``, which is
+    recoverable, whereas an exception here loses the routes that did answer.
+    """
+
+    async def ena(column: str) -> list[FileRecord]:
+        return await ena_file_records(run, client, timeout, column)
+
+    tasks = [ena(column) for column in FILE_RECORD_SOURCES.values()]
+    if include_sdl:
+        tasks.append(sdl_file_records(run, client, timeout))
+
+    records: list[FileRecord] = []
+    for outcome in await asyncio.gather(*tasks, return_exceptions=True):
+        if isinstance(outcome, BaseException):
+            continue
+        records.extend(outcome)
+    return FileSet(run=run, records=tuple(records))
+
+
+async def runs_of(
+    accession: Accession,
+    client: SurveyClient,
+    *,
+    registry: RouteRegistry = REGISTRY,
+    implementations: Mapping[str, RouteFn] = IMPLEMENTATIONS,
+) -> list[str]:
+    """The runs an accession resolves to, or itself if it is already one."""
+    if accession.entity is EntityType.RUN:
+        return [accession.value]
+    resolution = await resolve_path(
+        accession, EntityType.RUN, client, registry=registry, implementations=implementations
+    )
+    return list(resolution.values)
+
+
+async def recommendations_for(
+    accession: Accession,
+    client: SurveyClient,
+    *,
+    limit: int | None = None,
+    include_sdl: bool = True,
+) -> list[Recommendation]:
+    """Resolve an accession to runs and recommend a file set for each.
+
+    ``limit`` caps how many runs are asked about. A 880-run series costs four
+    requests per run, and a user checking what a series holds should not have to
+    spend 3,520 requests to find out.
+    """
+    runs = await runs_of(accession, client)
+    if limit is not None:
+        runs = runs[:limit]
+    sets = await asyncio.gather(
+        *(files_for_run(run, client, include_sdl=include_sdl) for run in runs)
+    )
+    return [recommend(fileset) for fileset in sets]
