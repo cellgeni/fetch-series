@@ -26,6 +26,20 @@ SHUFFLE_SEED = 20260915
 RouteFn = Callable[[str, SurveyClient, float], Awaitable[list[str]]]
 
 
+def shuffled(accessions: Sequence[str]) -> list[str]:
+    """The corpus in its seeded visit order.
+
+    Exposed because slicing a corpus *before* shuffling is a trap. Corpora
+    arrive sorted, so taking the first N of one yields the N lowest accession
+    numbers -- the oldest submissions -- not a sample. That bias is what made
+    six ELink failures in an early 150-series run all look like old accessions,
+    and prompted an age hypothesis the full census then disproved.
+    """
+    ordered = list(accessions)
+    random.Random(SHUFFLE_SEED).shuffle(ordered)
+    return ordered
+
+
 @dataclass(frozen=True, slots=True)
 class SurveyRun:
     """What a completed run of one route over one corpus produced."""
@@ -87,14 +101,13 @@ async def run_route(
     """
     started = time.monotonic()
 
-    todo = list(accessions)
     # Shuffled, deterministically. Corpora arrive in sorted order, which puts
     # every PRJDB and PRJEB accession before the first PRJNA -- so the opening
     # thousand results of a BioProject census are all non-NCBI projects and its
     # interim empty rate reads as 91% when the true figure is nothing like it.
     # A fixed seed keeps the order reproducible; resume is keyed on the
     # accession set, so shuffling cannot disturb it.
-    random.Random(SHUFFLE_SEED).shuffle(todo)
+    todo = shuffled(accessions)
     skipped = 0
     if resume:
         done = cache.answered(corpus, route.id)

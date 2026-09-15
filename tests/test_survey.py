@@ -315,3 +315,36 @@ class TestCorpora:
         from fetch_series.survey.corpora import HARD_CASES
 
         assert all(len(reason) > 20 for reason in HARD_CASES.values())
+
+
+class TestVisitOrder:
+    """Slicing a corpus before shuffling is a biased sample dressed as a limit."""
+
+    def test_shuffled_is_deterministic(self):
+        from fetch_series.survey.runner import shuffled
+
+        values = [f"GSE{i}" for i in range(500)]
+        assert shuffled(values) == shuffled(values)
+
+    def test_shuffled_preserves_membership(self):
+        from fetch_series.survey.runner import shuffled
+
+        values = [f"GSE{i}" for i in range(500)]
+        assert sorted(shuffled(values)) == sorted(values)
+
+    def test_a_prefix_of_the_shuffle_is_not_a_prefix_of_the_sort(self):
+        """The bug this guards.
+
+        Corpora arrive sorted, so the first N of one are the N lowest accession
+        numbers -- the oldest submissions. An early 150-series run sliced that
+        way covered only the oldest fifth of GEO, which made six ELink failures
+        all look like old accessions and produced an age hypothesis the full
+        census then disproved.
+        """
+        from fetch_series.survey.runner import shuffled
+
+        values = sorted((f"GSE{i}" for i in range(1000)), key=lambda a: int(a[3:]))
+        sorted_prefix = [int(a[3:]) for a in values[:100]]
+        visit_prefix = [int(a[3:]) for a in shuffled(values)[:100]]
+        assert max(sorted_prefix) < 200  # the sorted prefix is all low numbers
+        assert max(visit_prefix) > 800  # the visit prefix spans the range

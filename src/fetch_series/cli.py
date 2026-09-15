@@ -24,6 +24,7 @@ from fetch_series.resolver import Mode, Resolution
 from fetch_series.resolver import resolve as resolver_resolve
 from fetch_series.routes import IMPLEMENTATIONS
 from fetch_series.survey import Limits, SurveyClient, corpora, run_route
+from fetch_series.survey.runner import shuffled
 
 app = typer.Typer(
     help="Resolve public sequencing accessions over documented, benchmarked routes.",
@@ -114,7 +115,10 @@ def survey_run(
         )
         raise typer.Exit(1)
     if limit:
-        accessions = accessions[:limit]
+        # Sample in the survey's own visit order, never from the sorted corpus.
+        # Slicing a sorted corpus takes the lowest accession numbers -- the
+        # oldest submissions -- which is a biased sample dressed as a limit.
+        accessions = shuffled(accessions)[:limit]
 
     logfile = run_logfile(_slug(route_id))
     configure_logging(level=logging.INFO, logfile=logfile)
