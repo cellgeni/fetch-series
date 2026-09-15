@@ -12,6 +12,7 @@ trusted for that, and where the archives lose data silently.
 - **Resolving an accession and want to know which route to use?** → [Routes](routes/gse-to-experiment/index.md)
 - **A series came back empty and you suspect it shouldn't have?** → [Pathologies](pathologies/index.md)
 - **Want to report something to an archive?** → [Upstream reports](upstream/index.md)
+- **Wondering how any of this was measured?** → [Benchmarks](benchmarks/index.md)
 
 ## The rules
 

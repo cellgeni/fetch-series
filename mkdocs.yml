@@ -58,6 +58,7 @@ nav:
       - GEO omits the SRA relation: pathologies/geo-omits-sample-sra-relation.md
       - Shared umbrella BioProject: pathologies/series-under-shared-umbrella-bioproject.md
       - SOFT names experiments with no runs: pathologies/soft-names-experiments-with-no-runs.md
+  - Benchmarks: benchmarks/index.md
   - Upstream reports:
       - Overview: upstream/index.md
       - NCBI ELink gds to sra: upstream/ncbi-elink-gds-sra.md
