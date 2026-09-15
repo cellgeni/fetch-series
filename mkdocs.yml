@@ -60,6 +60,7 @@ nav:
       - Via SOFT BioProject and ENA: routes/gse-to-experiment/soft-bioproject-ena.md
       - GEO sample to experiment: routes/geo-sample-to-experiment/index.md
       - BioProject to run: routes/bioproject-to-run/index.md
+      - BioProject to experiment: routes/bioproject-to-experiment/ena-filereport.md
       - BioProject to GEO series: routes/bioproject-to-geo-series/index.md
       - BioProject to BioSample: routes/bioproject-to-biosample/index.md
       - ArrayExpress experiment to study: routes/ae-experiment-to-study/index.md
