@@ -258,7 +258,7 @@ ROUTES: list[Route] = [
         target=EntityType.RUN,
         provider="ena_portal",
         summary="ENA portal filereport, result=read_run, one request per project.",
-        kb_page="routes/bioproject-to-run/ena-filereport.md",
+        kb_page="routes/bioproject-to-run/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         evidence=RouteEvidence(
             corpus="reprocessed-prj",
@@ -284,7 +284,7 @@ ROUTES: list[Route] = [
         target=EntityType.RUN,
         provider="sra_be",
         summary="esearch db=sra [GPRJ], then the sra-db-be CGI backend by history.",
-        kb_page="routes/bioproject-to-run/sra-be-direct.md",
+        kb_page="routes/bioproject-to-run/index.md",
         cost=RouteCost(requests=2, rate_limit_rps=NCBI_EUTILS_RPS),
         evidence=RouteEvidence(
             corpus=REPROCESSED,
@@ -302,7 +302,7 @@ ROUTES: list[Route] = [
         target=EntityType.RUN,
         provider="sra_be",
         summary="esearch db=bioproject, elink bioproject->sra, then the sra-db-be CGI backend.",
-        kb_page="routes/bioproject-to-run/sra-be-elink.md",
+        kb_page="routes/bioproject-to-run/index.md",
         cost=RouteCost(requests=3, rate_limit_rps=NCBI_EUTILS_RPS),
         evidence=RouteEvidence(
             corpus=REPROCESSED,
@@ -320,7 +320,7 @@ ROUTES: list[Route] = [
         target=EntityType.RUN,
         provider="eutils",
         summary="esearch db=bioproject, elink bioproject->sra, efetch rettype=runinfo.",
-        kb_page="routes/bioproject-to-run/efetch-elink.md",
+        kb_page="routes/bioproject-to-run/index.md",
         cost=RouteCost(requests=3, rate_limit_rps=NCBI_EUTILS_RPS),
         evidence=RouteEvidence(
             corpus=REPROCESSED,
@@ -341,7 +341,7 @@ ROUTES: list[Route] = [
         target=EntityType.RUN,
         provider="eutils",
         summary="esearch db=sra [GPRJ], efetch rettype=runinfo.",
-        kb_page="routes/bioproject-to-run/efetch-direct.md",
+        kb_page="routes/bioproject-to-run/index.md",
         cost=RouteCost(requests=2, rate_limit_rps=NCBI_EUTILS_RPS),
         evidence=RouteEvidence(
             corpus=REPROCESSED,
@@ -359,7 +359,7 @@ ROUTES: list[Route] = [
         target=EntityType.GEO_SERIES,
         provider="eutils",
         summary="esearch db=bioproject, elink bioproject->gds, esummary db=gds.",
-        kb_page="routes/bioproject-to-geo-series/elink.md",
+        kb_page="routes/bioproject-to-geo-series/index.md",
         cost=RouteCost(requests=3, rate_limit_rps=NCBI_EUTILS_RPS, paginates=True),
         evidence=RouteEvidence(
             corpus=REPROCESSED,
@@ -380,7 +380,7 @@ ROUTES: list[Route] = [
         target=EntityType.GEO_SERIES,
         provider="eutils",
         summary="esearch db=gds for the BioProject accession, esummary db=gds.",
-        kb_page="routes/bioproject-to-geo-series/gds-direct.md",
+        kb_page="routes/bioproject-to-geo-series/index.md",
         cost=RouteCost(requests=2, rate_limit_rps=NCBI_EUTILS_RPS, paginates=True),
         evidence=RouteEvidence(
             corpus=REPROCESSED,
@@ -401,7 +401,7 @@ ROUTES: list[Route] = [
         target=EntityType.BIOSAMPLE,
         provider="eutils",
         summary="esearch db=bioproject, elink bioproject->biosample, esummary db=biosample.",
-        kb_page="routes/bioproject-to-biosample/elink.md",
+        kb_page="routes/bioproject-to-biosample/index.md",
         cost=RouteCost(requests=3, rate_limit_rps=NCBI_EUTILS_RPS, paginates=True),
         # Measured: 100% of PRJNA projects resolve, 32.8% of PRJDB and 1.4% of
         # PRJEB. Asking NCBI about an EBI-native project is 3 wasted requests.
@@ -434,7 +434,7 @@ ROUTES: list[Route] = [
         target=EntityType.STUDY,
         provider="biostudies",
         summary="Comment[SecondaryAccession] from the ArrayExpress IDF file.",
-        kb_page="routes/ae-experiment-to-study/idf-secondary.md",
+        kb_page="routes/ae-experiment-to-study/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         evidence=RouteEvidence(
             corpus="arrayexpress-all",
@@ -533,7 +533,7 @@ ROUTES: list[Route] = [
         target=EntityType.EXPERIMENT,
         provider="geo_ftp",
         summary="!Sample_relation = SRA: collected across every sample.",
-        kb_page="routes/gse-to-experiment/soft-family.md",
+        kb_page="routes/gse-to-experiment/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
         evidence=RouteEvidence(
             corpus="reprocessed-gse",
@@ -556,7 +556,7 @@ ROUTES: list[Route] = [
         target=EntityType.EXPERIMENT,
         provider="eutils",
         summary="ELink gds->sra with cmd=neighbor, then ESummary.",
-        kb_page="routes/gse-to-experiment/elink-gds-sra.md",
+        kb_page="routes/gse-to-experiment/index.md",
         cost=RouteCost(requests=3, rate_limit_rps=NCBI_EUTILS_RPS, paginates=True),
         evidence=RouteEvidence(
             corpus="reprocessed-gse",
@@ -608,7 +608,7 @@ ROUTES: list[Route] = [
         target=EntityType.RUN,
         provider="eutils",
         summary="ELink gds->sra, then EFetch rettype=runinfo.",
-        kb_page="routes/gse-to-run/elink-gds-sra.md",
+        kb_page="routes/gse-to-experiment/index.md",
         cost=RouteCost(requests=3, rate_limit_rps=NCBI_EUTILS_RPS),
         known_pathologies=("efetch-returns-fewer-runs-than-esearch-counts",),
     ),
@@ -628,7 +628,7 @@ ROUTES: list[Route] = [
         target=EntityType.BIOSAMPLE,
         provider="ena_portal",
         summary="ENA portal filereport, sample_accession column.",
-        kb_page="routes/bioproject-to-biosample/ena-filereport.md",
+        kb_page="routes/bioproject-to-biosample/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
     ),
     Route(

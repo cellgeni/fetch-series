@@ -55,6 +55,10 @@ nav:
   - Routes:
       - GEO series to experiment: routes/gse-to-experiment/index.md
       - Via SOFT BioProject and ENA: routes/gse-to-experiment/soft-bioproject-ena.md
+      - BioProject to run: routes/bioproject-to-run/index.md
+      - BioProject to GEO series: routes/bioproject-to-geo-series/index.md
+      - BioProject to BioSample: routes/bioproject-to-biosample/index.md
+      - ArrayExpress experiment to study: routes/ae-experiment-to-study/index.md
   - Pathologies:
       - Overview: pathologies/index.md
       - ELink gds to sra returns no links: pathologies/elink-gds-sra-missing-links.md

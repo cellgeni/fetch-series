@@ -6,6 +6,8 @@ modes are parsing failures that need no network to reproduce.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from fetch_series.graph import REGISTRY
@@ -95,3 +97,44 @@ class TestRegistryConsistency:
         import inspect
 
         assert inspect.iscoroutinefunction(IMPLEMENTATIONS[route_id])
+
+
+class TestKnowledgeBaseCoverage:
+    """The governing rule, made enforceable.
+
+    "No route ranking ships without a survey behind it and a knowledge-base page
+    citing that survey." A measured route with no page is a ranking nobody can
+    check, so it fails here. Unmeasured routes are exempt: they sort behind
+    everything measured and influence nothing.
+    """
+
+    DOCS = Path("docs")
+
+    def test_every_measured_route_has_a_knowledge_base_page(self):
+        missing = [
+            (route.id, route.kb_page)
+            for route in REGISTRY
+            if route.is_measured and not (self.DOCS / route.kb_page).exists()
+        ]
+        assert not missing, (
+            "measured routes with no KB page (write the page, or point kb_page at the "
+            f"direction index that documents it): {missing}"
+        )
+
+    def test_kb_pages_are_under_routes(self):
+        for route in REGISTRY:
+            assert route.kb_page.startswith("routes/"), route.id
+            assert route.kb_page.endswith(".md"), route.id
+
+    def test_a_measured_routes_page_cites_a_number(self):
+        """A page that documents a route should carry its measurement.
+
+        Weak on purpose -- it checks that a digit appears, not that the digit is
+        right. Its job is to catch a page that describes a route in prose and
+        never says what was measured.
+        """
+        for route in REGISTRY:
+            if not route.is_measured:
+                continue
+            text = (self.DOCS / route.kb_page).read_text()
+            assert any(ch.isdigit() for ch in text), route.kb_page

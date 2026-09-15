@@ -218,10 +218,18 @@ class TestSeededRegistry:
         ids = [r.id for r in REGISTRY]
         assert len(ids) == len(set(ids))
 
-    def test_kb_pages_are_unique_and_markdown(self):
+    def test_kb_pages_are_markdown_under_routes(self):
+        """Pages need not be unique.
+
+        Several routes deliberately share a direction index: the BioProject ->
+        run comparison documents all five of its routes on one page, because
+        the point of that page is the comparison between them. Insisting on a
+        page per route would force five stubs that each say "see the index".
+        """
         pages = [r.kb_page for r in REGISTRY]
-        assert len(pages) == len(set(pages))
         assert all(p.startswith("routes/") and p.endswith(".md") for p in pages)
+        # Every direction that has a measured route must have at least one page.
+        assert len({p for p in pages}) >= 4
 
     def test_evidence_is_dated_and_named(self):
         """An undated coverage number is not evidence of anything."""
