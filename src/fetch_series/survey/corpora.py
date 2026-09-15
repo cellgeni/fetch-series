@@ -192,6 +192,31 @@ def geo_sample(n: int = 1000, seed: int = 20260914, path: Path | None = None) ->
     )
 
 
+def from_survey(route_id: str, corpus: str, cache_path: Path | None = None) -> Corpus:
+    """Build a corpus out of what an earlier survey *returned*.
+
+    The results of one survey are the inputs of the next. The experiments the
+    SOFT census found are the right population for asking "how many experiments
+    GEO names actually carry data" -- the reprocessed table is not, because it
+    holds only accessions that already reprocessed successfully and so excludes
+    the failures the question is about.
+    """
+    from fetch_series.cache import DEFAULT_CACHE_PATH, SurveyCache
+
+    values: set[str] = set()
+    with SurveyCache(cache_path or DEFAULT_CACHE_PATH) as cache:
+        for result in cache.results(corpus, route_id):
+            values.update(result.results)
+    if not values:
+        raise ValueError(f"No recorded results for {route_id} on {corpus}")
+    return _build(
+        name=f"results-of:{route_id}@{corpus}",
+        description=f"Every accession {route_id} returned over {corpus}.",
+        source=f"survey cache: {route_id} @ {corpus}",
+        raws=sorted(values),
+    )
+
+
 CORPUS_BUILDERS = {
     "hard-cases": hard_cases,
     "reprocessed": reprocessed,
@@ -200,6 +225,7 @@ CORPUS_BUILDERS = {
 
 KNOWN_CORPORA = (
     "hard-cases",
+    "results-of:<route-id>@<corpus>",
     "reprocessed-<column>   (column: " + ", ".join(SAMPLE_TABLE_COLUMNS[:6]) + ")",
     "geo-sample[-<n>]",
 )
@@ -224,6 +250,14 @@ def load(name: str) -> Corpus:
             f"Unknown column {column!r} in corpus {name!r}; "
             f"expected one of {', '.join(SAMPLE_TABLE_COLUMNS[:6])}"
         )
+
+    # results-of:<route id>@<corpus>
+    if name.startswith("results-of:"):
+        spec = name.removeprefix("results-of:")
+        route_id, _, source_corpus = spec.rpartition("@")
+        if not route_id or not source_corpus:
+            raise ValueError(f"Expected results-of:<route-id>@<corpus>, got {name!r}")
+        return from_survey(route_id, source_corpus)
 
     if name.startswith("geo-sample-"):
         suffix = name.removeprefix("geo-sample-")

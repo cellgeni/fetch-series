@@ -348,3 +348,39 @@ class TestVisitOrder:
         visit_prefix = [int(a[3:]) for a in shuffled(values)[:100]]
         assert max(sorted_prefix) < 200  # the sorted prefix is all low numbers
         assert max(visit_prefix) > 800  # the visit prefix spans the range
+
+
+class TestSurveyDerivedCorpora:
+    """The results of one survey are the inputs of the next."""
+
+    def test_builds_a_corpus_from_recorded_results(self, tmp_path):
+        from fetch_series.cache import SurveyCache
+        from fetch_series.survey.corpora import from_survey
+
+        path = tmp_path / "c.sqlite"
+        with SurveyCache(path) as cache:
+            cache.record(RouteResult.from_results("GSE1", "r", "c", ["SRX1", "SRX2"], 1))
+            cache.record(RouteResult.from_results("GSE2", "r", "c", ["SRX2", "SRX3"], 1))
+
+        corpus = from_survey("r", "c", cache_path=path)
+        assert corpus.values == ("SRX1", "SRX2", "SRX3")
+        assert "r" in corpus.source and "c" in corpus.source
+
+    def test_refuses_to_build_from_nothing(self, tmp_path):
+        """An empty corpus would survey zero accessions and report success."""
+        from fetch_series.survey.corpora import from_survey
+
+        with pytest.raises(ValueError, match="No recorded results"):
+            from_survey("missing", "c", cache_path=tmp_path / "c.sqlite")
+
+    def test_name_round_trips_through_load(self, tmp_path):
+        from fetch_series.cache import SurveyCache
+        from fetch_series.survey.corpora import from_survey
+
+        path = tmp_path / "c.sqlite"
+        with SurveyCache(path) as cache:
+            cache.record(RouteResult.from_results("GSE1", "a->b:x", "corp", ["SRX1"], 1))
+        corpus = from_survey("a->b:x", "corp", cache_path=path)
+        # The name records exactly which survey produced the population, so a
+        # result can be traced back to the question that generated its inputs.
+        assert corpus.name == "results-of:a->b:x@corp"
