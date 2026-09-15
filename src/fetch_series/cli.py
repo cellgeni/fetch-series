@@ -20,7 +20,7 @@ from fetch_series.graph import REGISTRY, Route
 from fetch_series.logging_utils import configure_logging, run_logfile
 from fetch_series.relations import relations as build_relations
 from fetch_series.relations import resolve_input, sample_to_runs
-from fetch_series.resolver import Mode, Resolution
+from fetch_series.resolver import Mode, Resolution, resolve_path
 from fetch_series.resolver import resolve as resolver_resolve
 from fetch_series.routes import IMPLEMENTATIONS
 from fetch_series.survey import Limits, SurveyClient, corpora, run_route
@@ -333,6 +333,9 @@ def resolve(
             "--confirmed-only", help="Report only values a data-proving route vouched for."
         ),
     ] = False,
+    multi_hop: Annotated[
+        bool, typer.Option(help="Walk a multi-hop path when no direct route answers.")
+    ] = True,
 ) -> None:
     """Resolve one accession to another entity type.
 
@@ -371,6 +374,8 @@ def resolve(
         async with SurveyClient(
             limits=Limits(rps=5.0, concurrency=4), api_key=default_api_key()
         ) as client:
+            if multi_hop and resolve_mode is Mode.UNION:
+                return await resolve_path(parsed, target, client)
             return await resolver_resolve(parsed, target, client, mode=resolve_mode)
 
     resolution = asyncio.run(run_resolution())
