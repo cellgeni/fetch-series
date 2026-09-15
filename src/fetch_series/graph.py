@@ -806,6 +806,16 @@ ROUTES: list[Route] = [
         proves_data_exists=True,
     ),
     Route(
+        id="ae_experiment->file:sdrf",
+        source=EntityType.AE_EXPERIMENT,
+        target=EntityType.FILE,
+        provider="biostudies",
+        summary="Submitter fastq URIs from the ArrayExpress SDRF, guarded by BioStudies registration.",
+        kb_page="routes/ae-experiment-to-file/index.md",
+        cost=RouteCost(requests=2, rate_limit_rps=EBI_RPS, paginates=True),
+        known_pathologies=("ae-sdrf-points-at-decommissioned-mirror",),
+    ),
+    Route(
         id="run->file:sdl",
         source=EntityType.RUN,
         target=EntityType.FILE,

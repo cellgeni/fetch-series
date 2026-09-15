@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fetch_series.files import FileRecord, from_ena_row, from_sdl_files
+from fetch_series.files import FileRecord, classify, from_ena_row, from_sdl_files, mate_of
 from fetch_series.providers import biostudies, ena_portal, geo, sdl, sra_be
 from fetch_series.providers.eutils import (
     efetch_text,
@@ -423,6 +423,50 @@ async def run_to_file_sdl(accession: str, client: SurveyClient, timeout: float) 
     return sorted({record.url for record in records})
 
 
+async def ae_file_records(accession: str, client: SurveyClient, timeout: float) -> list[FileRecord]:
+    """Submitter fastq files an ArrayExpress SDRF names, guarded by registration.
+
+    The guard is the whole point, and it is the one piece of file-layer
+    knowledge the incumbent bash module already had: a SDRF URI under the
+    decommissioned pre-BioStudies mirror is believed only when the study still
+    registers a file of that name. E-MTAB-8060 and E-MTAB-9221 are
+    indistinguishable without it.
+
+    A failure to fetch the file list yields None, not an empty set, so the URIs
+    are kept as written. An unreachable API must not be able to reroute a whole
+    study to its BAMs.
+    """
+    rows = await biostudies.sdrf_raw_rows(client, accession, timeout)
+    registered: set[str] | None
+    try:
+        registered = biostudies.registered_names(
+            await biostudies.registered_files(client, accession, timeout)
+        )
+    except Exception:
+        registered = None
+
+    records: list[FileRecord] = []
+    for run, uris in biostudies.sdrf_fastq_uris(rows, accession, registered).items():
+        for uri in uris:
+            name = uri.rsplit("/", 1)[-1]
+            records.append(
+                FileRecord(
+                    run=run,
+                    url=uri,
+                    name=name,
+                    kind=classify(name),
+                    source="ae_experiment->file:sdrf",
+                    mate=mate_of(name),
+                )
+            )
+    return records
+
+
+async def ae_to_file_sdrf(accession: str, client: SurveyClient, timeout: float) -> list[str]:
+    records = await ae_file_records(accession, client, timeout)
+    return sorted({record.url for record in records})
+
+
 IMPLEMENTATIONS: dict[str, RouteFn] = {
     "gse->bioproject:soft_family": gse_to_bioproject_soft,
     "gse->bioproject:gds_summary": gse_to_bioproject_gds,
@@ -461,4 +505,5 @@ IMPLEMENTATIONS: dict[str, RouteFn] = {
     "run->file:ena_submitted": _ena_file_route("submitted"),
     "run->file:ena_sra": _ena_file_route("sra"),
     "run->file:sdl": run_to_file_sdl,
+    "ae_experiment->file:sdrf": ae_to_file_sdrf,
 }
