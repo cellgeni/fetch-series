@@ -640,6 +640,20 @@ ROUTES: list[Route] = [
         summary="!Sample_relation = SRA: from GEO's own record for the sample.",
         kb_page="routes/geo-sample-to-experiment/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
+        evidence=RouteEvidence(
+            corpus="reprocessed-sample",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=1_000,
+            accessions_failed=0,
+            unique_results=996,
+            notes=(
+                "Tier two, 1,000 samples in visit order. 996 resolved, 4 empty, zero "
+                "failures, and exactly one experiment per sample. The 4 empties all "
+                "record a BioSample and no SRA relation, which is the series-level "
+                "pathology seen per sample -- 0.4%, matching an independent 500-series "
+                "measurement of the same thing."
+            ),
+        ),
         known_pathologies=("geo-omits-sample-sra-relation",),
     ),
     Route(
