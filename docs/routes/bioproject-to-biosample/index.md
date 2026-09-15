@@ -16,22 +16,36 @@ title: BioProject → BioSample
 
 ## Measured behaviour
 
-`elink` over the reprocessed BioProjects, split by issuing archive.
+`elink` over all 12,755 BioProjects in the reprocessed table, 2026-09-15, split by issuing
+archive.
 
-!!! note "Census in progress"
-    3,569 of 12,755 projects at the time of writing. The `PRJEB` and `PRJDB` rows are
-    effectively complete; the `PRJNA` row will grow. The contrast is already decisive.
+| Prefix | Issued by | Queried | Resolved | Empty | Resolve rate |
+|---|---|---|---|---|---|
+| `PRJNA` | NCBI | 12,114 | 12,028 | 86 | **99.3%** |
+| `PRJDB` | DDBJ | 137 | 45 | 92 | 32.8% |
+| `PRJEB` | EBI | 504 | 7 | 497 | **1.4%** |
+| **Total** | | **12,755** | **12,080** | **675** | 94.7% |
 
-| Prefix | Issued by | Queried | Resolved | Resolve rate |
-|---|---|---|---|---|
-| `PRJNA` | NCBI | 2,928 | 2,915 | **99.6%** |
-| `PRJDB` | DDBJ | 137 | 45 | 32.8% |
-| `PRJEB` | EBI | 504 | 7 | **1.4%** |
+**Zero failures**, against the 2026-05 script's **330** over the same projects.
 
-The 2026-05 script run over the same projects recorded **330 failures** — ten times any SRA
-route. That was a client defect, not an archive one: its ESummary call was not paged, so
-any project with more than 500 BioSamples hit the UID ceiling. The harness pages at 500 and
-the census has recorded **zero** failures so far.
+### The paging fix recovered 94,895 BioSamples
+
+Those 330 were a client defect, not an archive one: the script's ESummary call was not
+paged, so any project with more than 500 BioSamples hit the UID ceiling. E-utilities
+reports that as an HTTP 200 whose JSON body has an `error` key and no `result`, which the
+script surfaced as a failure.
+
+Paging did not merely fix the 330. It recovered data the unpaged call had been silently
+truncating everywhere else:
+
+| | 2026-05 script | 2026-09 harness |
+|---|---|---|
+| Unique BioSamples | 149,429 | **244,324** |
+| Failed projects | 330 | **0** |
+
+**+94,895 BioSamples, a 64% increase.** The visible failures were the small part of the
+problem; the silent truncation was the large part, and nothing in the output distinguished
+a truncated project from a complete one.
 
 ## Recommendation
 

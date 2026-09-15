@@ -16,20 +16,15 @@ interchangeable views of one dataset. Their *indexes* are not interchangeable at
 BioProjects in the reprocessed table, split by the prefix that records which body issued
 the project:
 
-| Prefix | Issued by | Resolved | Empty | Resolve rate |
+| Prefix | Issued by | Queried | Resolved | Resolve rate |
 |---|---|---|---|---|
-| `PRJNA` | NCBI | 29 | 0 | **100.0%** |
-| `PRJDB` | DDBJ | 45 | 92 | 32.8% |
-| `PRJEB` | EBI | 7 | 497 | **1.4%** |
+| `PRJNA` | NCBI | 12,114 | 12,028 | **99.3%** |
+| `PRJDB` | DDBJ | 137 | 45 | 32.8% |
+| `PRJEB` | EBI | 504 | 7 | **1.4%** |
 
 Asking NCBI's link table about an EBI-native project answers nothing 98.6% of the time, at
 three requests a go. In this corpus that is 497 projects × 3 requests spent to learn
 nothing.
-
-!!! note "Interim figures"
-    The PRJNA row is small because the census was still running when this was written;
-    the PRJEB and PRJDB rows are effectively complete. The 100%/1.4% contrast is already
-    unambiguous, but treat the exact PRJNA figure as provisional.
 
 ## How it is applied
 

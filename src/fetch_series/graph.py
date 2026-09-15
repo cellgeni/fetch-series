@@ -417,14 +417,19 @@ ROUTES: list[Route] = [
         # PRJEB. Asking NCBI about an EBI-native project is 3 wasted requests.
         source_archives=(Archive.NCBI,),
         evidence=RouteEvidence(
-            corpus=REPROCESSED,
-            surveyed_on=SURVEY_DATE,
-            accessions_queried=_BIOPROJECTS,
-            accessions_failed=330,
-            unique_results=149_959,
+            corpus="reprocessed-prj",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=12_755,
+            accessions_failed=0,
+            unique_results=244_324,
             notes=(
-                "The 330 failures are a client bug, not an archive one: the esummary "
-                "call is not paged, so projects with >500 BioSamples hit the UID limit."
+                "Census. 12,080 resolved, 675 empty, zero failures -- against the 2026-05 "
+                "script's 330 failures over the same projects. That was a client bug, not "
+                "an archive one: its ESummary call was not paged, so projects with more "
+                "than 500 BioSamples hit the UID ceiling. Paging did not merely fix the "
+                "330; it recovered 94,895 BioSamples the unpaged call had been silently "
+                "truncating, 149,429 -> 244,324. Resolve rate splits hard by issuing "
+                "archive: 99.3% of PRJNA, 32.8% of PRJDB, 1.4% of PRJEB."
             ),
         ),
         known_pathologies=("esummary-500-uid-limit", "megalink-backend-flakiness"),
