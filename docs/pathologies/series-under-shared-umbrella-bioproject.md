@@ -51,11 +51,39 @@ curl -s "https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRX1602977&re
 # -> PRJNA30709
 ```
 
+## Censused: 466 series, 41% of them under a true umbrella
+
+Both routes have now been run over all 13,045 series of `reprocessed-gse`
+(2026-09-15). The SOFT family file leaves **473** empty; `esummary db=gds`
+resolves **466** of them, and the two never disagree where both answer.
+
+So the BioProject is not missing from NCBI — only from the submitter's own
+record. But recovering it does not make it useful:
+
+| Project | Series it "resolves" | Runs it holds |
+|---|---:|---:|
+| `PRJNA30709` — Production ENCODE transcriptome data | 138 | **7,591** |
+| `PRJNA66167` | 52 | **5,910** |
+| 257 others | 1 each | specific to the series |
+
+**190 of the 466 — 41% — resolve to a species- or consortium-level umbrella.**
+Routing a two-sample series through `PRJNA30709` returns 7,591 runs and reports
+success. For the other 276 the recovered project is genuine and specific, and
+the SOFT file simply omits it.
+
+This is why the pathology is worth a page even though GEO's behaviour is
+defensible: the obvious fix — ask NCBI's index instead — makes the routing
+failure *louder*, not quieter, for two fifths of the affected series.
+
 ## Workaround
 
-Do not treat a missing BioProject as a missing link. The sample-level SRA relations in the
-SOFT file already answer the question, and the project can be recovered from any one
-experiment through ENA if it is genuinely needed.
+Do not treat a missing BioProject as a missing link, and do not treat a
+recovered one as an answer without checking its size. A project holding orders
+of magnitude more runs than the series has samples is an umbrella.
+
+The sample-level SRA relations in the SOFT file already answer the question, and
+the project can be recovered from any one experiment through ENA if it is
+genuinely needed.
 
 The general rule this case argues for: **resolve upward from the smallest identifier you
 already hold**, rather than insisting on the project as an intermediate hop.

@@ -57,8 +57,13 @@ rather than a transport problem.
 
 ## Compared with `esummary db=gds`
 
-NCBI indexes the same relation through `esummary`, which is one request against
-an API rather than a gzip download from an FTP mirror. That census is running;
-until it lands this page will not claim which is better, and
-[the governing rule](../../index.md) keeps the unmeasured route ranked behind
-this one.
+Now censused: [`gds_summary`](gds-summary.md) resolves 13,038 of the same 13,045
+series, never fails, and finds a BioProject for **466 of the 473** this route
+leaves empty. Where both answer they never disagree.
+
+It should still not be ranked first. 190 of those 466 resolve to a species- or
+consortium-level umbrella project holding thousands of unrelated runs —
+`PRJNA30709` alone accounts for 138 of them and holds 7,591 runs. The extra
+coverage is real and about 41% of it is unusable without a size check. The
+comparison is written up on
+[the `gds_summary` page](gds-summary.md#and-it-still-must-not-be-ranked-first).

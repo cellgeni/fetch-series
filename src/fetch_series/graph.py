@@ -571,6 +571,14 @@ ROUTES: list[Route] = [
         summary="The bioproject field of the db=gds ESummary record.",
         kb_page="routes/gse-to-bioproject/gds-summary.md",
         cost=RouteCost(requests=2, rate_limit_rps=NCBI_EUTILS_RPS),
+        evidence=RouteEvidence(
+            corpus="reprocessed-gse",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=13_045,
+            accessions_failed=0,
+            unique_results=12_830,
+            notes="13,038 resolved, 7 empty. Resolves 466 series the SOFT file leaves empty, and never fails -- but 190 of those 466 resolve to a species-level umbrella project holding thousands of unrelated runs, so the extra coverage is not usable for routing without checking the project's size.",
+        ),
     ),
     Route(
         id="gse->geo_sample:soft_family",
