@@ -57,6 +57,7 @@ nav:
       - Accession types: graph/accession-types.md
       - Routing by archive: graph/routing-by-archive.md
   - Routes:
+      - GEO series to BioProject: routes/gse-to-bioproject/soft-family.md
       - GEO series to experiment: routes/gse-to-experiment/index.md
       - Via SOFT BioProject and ENA: routes/gse-to-experiment/soft-bioproject-ena.md
       - GEO sample to experiment: routes/geo-sample-to-experiment/index.md
