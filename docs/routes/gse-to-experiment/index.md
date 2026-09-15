@@ -22,48 +22,53 @@ knowledge base of why a fallback *order* is not enough.
 A census, not a sample: every one of the 13,045 GEO series in the reprocessed table,
 surveyed 2026-09-14/15.
 
-| | SOFT family | ELink `gds`→`sra` |
-|---|---|---|
-| Series resolved | 13,022 (99.8%) | 10,752 (82.4%) |
-| Series empty | 16 | 2,293 |
-| Series failed | 7 (404, private) | 0 |
-| **Unique experiments** | **308,639** | **178,879** |
-| Requests per series | 1 | 3 |
+| | SOFT family | SOFT BioProject → ENA | ELink `gds`→`sra` |
+|---|---|---|---|
+| Requests per series | 1 | 2 | 3 |
+| Series resolved | **13,022 (99.8%)** | 12,551 (96.2%) | 10,752 (82.4%) |
+| Series empty | 16 | 487 | **2,293** |
+| Series failed | 7 (404, private) | 7 | 0 |
+| **Unique experiments** | **308,639** | 290,462 | 178,879 |
+| Share of the three-route union | 98.3% | 92.5% | 57.0% |
 
-ELink returns **58% of the experiments** SOFT does, and reports **2,293 series (17.6%) as
-having no sequencing data** when they demonstrably do.
+The union of all three is 314,009 experiments, and at least one route resolves
+**13,033 of 13,045 series (99.91%)**.
 
-### Where they disagree
+### ELink is redundant
 
-| Class | Series | Share |
-|---|---|---|
-| Agree | 10,695 | 82.0% |
-| Only SOFT found anything | 2,280 | 17.5% |
-| Only ELink found anything | 10 | 0.1% |
-| Both found different sets | 53 | 0.4% |
-| Same result, different outcome | 7 | 0.1% |
+| Pair | A-only | B-only | Shared |
+|---|---|---|---|
+| SOFT vs ELink | 132,987 | 3,227 | 175,652 |
+| SOFT vs BioProject→ENA | 23,546 | 5,369 | 285,093 |
+| ELink vs BioProject→ENA | **43** | 111,626 | 178,836 |
 
-Counted as experiments rather than series, across the disagreeing set: **167,273 are
-SOFT-only and 3,227 are ELink-only.**
+SOFT and the ENA route together account for 314,008 of the union's 314,009 experiments.
+**Adding ELink contributes exactly one experiment — SRX8090149.** Three requests per
+series, for one accession across the entire corpus.
 
-The 53 divergent-set cases split further: ELink returned a strict superset in 29, SOFT in
-19, and in 5 each route held accessions the other lacked. Those 5 are the serious ones —
-see [SOFT names experiments with no runs](../../pathologies/soft-names-experiments-with-no-runs.md).
+### Completeness is not correctness
+
+Of the 23,546 experiments SOFT returns that the BioProject→ENA route does not, a sample of
+400 found **18.0% with no runs in ENA at all** (95% CI 14.2–21.8%). Extrapolated, roughly
+**4,238 experiments** — 1.37% of everything SOFT names — point at nothing downloadable.
+See [SOFT names experiments with no runs](../../pathologies/soft-names-experiments-with-no-runs.md).
+
+The other 82% of that gap is a limitation of the ENA route rather than of SOFT: a series'
+experiments do not all sit under the BioProject its SOFT file records, so keying the
+filereport on the project misses them. Keyed on the experiment accession instead, ENA
+returns them.
 
 ## Recommendation
 
-**Call SOFT first, fall through to ELink when it is empty, and verify that the
-experiments carry runs.**
+**Call SOFT for the experiment list. Resolve those experiments to runs through ENA. Treat
+"no runs" as the answer, not as an error.**
 
-The census changed this from what the sample suggested. SOFT is not merely the better
-first call, it is overwhelmingly more complete: one request instead of three, 99.8% of
-series resolved against 82.4%, and 130,000 more experiments. ELink earns its place as a
-fallback for the 10 series SOFT cannot see, not as a peer.
+The verification is free, because resolving experiments to runs is the next step anyway.
+An experiment that returns no runs is a stale SOFT entry, and saying so is more useful than
+reporting a file list that downloads nothing.
 
-The verification step is not optional, and it is the census's most uncomfortable result.
-SOFT can name experiments that exist in SRA but carry no runs at all, so a complete-looking
-answer can still resolve to zero files. Completeness and correctness are separate
-properties and this direction fails them separately.
+ELink is not worth calling. It costs three requests, misses 17.6% of series silently, and
+adds one experiment in 314,009 over the two cheaper routes.
 
 See [ELink returns no links](../../pathologies/elink-gds-sra-missing-links.md) and
 [GEO omits the SRA relation](../../pathologies/geo-omits-sample-sra-relation.md).

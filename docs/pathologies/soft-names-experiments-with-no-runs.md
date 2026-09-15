@@ -45,6 +45,21 @@ In both cases the ELink experiments belong to the same BioProject the SOFT file 
 records — `PRJNA471193` and `PRJNA632602` respectively. So GEO knows the right project and
 still points at the wrong experiments within it.
 
+## Prevalence
+
+The three disjoint-set series above are the visible tip. Measuring properly: of the 23,546
+experiments the SOFT route returns that the BioProject→ENA route does not, a random sample
+of 400 found **18.0% with no runs in ENA** (95% CI 14.2–21.8%).
+
+| | Estimate | 95% CI |
+|---|---|---|
+| Experiments named by SOFT with no runs | **~4,238** | 3,352–5,125 |
+| As a share of all 308,639 SOFT experiments | **1.37%** | 1.09–1.66% |
+
+A separate 40-experiment check found none of the run-less accessions had runs at NCBI
+either, so these are dead rather than merely un-mirrored — though that sub-question rests
+on the smaller sample.
+
 ## Diagnosis
 
 The submission was replaced. The original experiment records persist in SRA as metadata

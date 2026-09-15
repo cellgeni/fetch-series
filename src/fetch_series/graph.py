@@ -549,7 +549,23 @@ ROUTES: list[Route] = [
         summary="BioProject from the SOFT family file, then ENA filereport for its experiments.",
         kb_page="routes/gse-to-experiment/soft-bioproject-ena.md",
         cost=RouteCost(requests=2, rate_limit_rps=NCBI_FTP_RPS),
-        known_pathologies=("series-under-a-shared-umbrella-bioproject",),
+        evidence=RouteEvidence(
+            corpus="reprocessed-gse",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=13_045,
+            accessions_failed=7,
+            unique_results=290_462,
+            notes=(
+                "Census. 12,551 resolved, 487 empty. Covers 92.5% of the three-route "
+                "union and subsumes ELink almost entirely -- only 43 of ELink's 178,879 "
+                "experiments are absent from it. Because it queries result=read_run, "
+                "every accession it returns provably carries data."
+            ),
+        ),
+        known_pathologies=(
+            "series-under-a-shared-umbrella-bioproject",
+            "experiments-outside-the-series-bioproject",
+        ),
     ),
     Route(
         id="gse->run:elink_gds_sra",
