@@ -57,6 +57,7 @@ nav:
   - Routes:
       - GEO series to experiment: routes/gse-to-experiment/index.md
       - Via SOFT BioProject and ENA: routes/gse-to-experiment/soft-bioproject-ena.md
+      - GEO sample to experiment: routes/geo-sample-to-experiment/index.md
       - BioProject to run: routes/bioproject-to-run/index.md
       - BioProject to GEO series: routes/bioproject-to-geo-series/index.md
       - BioProject to BioSample: routes/bioproject-to-biosample/index.md
