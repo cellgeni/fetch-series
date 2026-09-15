@@ -261,14 +261,20 @@ ROUTES: list[Route] = [
         kb_page="routes/bioproject-to-run/ena-filereport.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         evidence=RouteEvidence(
-            corpus=REPROCESSED,
-            surveyed_on=SURVEY_DATE,
-            accessions_queried=_BIOPROJECTS,
-            accessions_failed=15,
-            unique_results=784_026,
+            corpus="reprocessed-prj",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=12_755,
+            accessions_failed=0,
+            unique_results=783_936,
             notes=(
-                "Near-superset of every NCBI route: holds 111,665 runs efetch never "
-                "returns, while only ~1,800 runs are missing from it."
+                "Census through the harness. 12,732 resolved, 23 empty, zero failures. "
+                "Reproduces the 2026-05 script figure of 784,026 unique runs to within "
+                "0.011% while eliminating all 15 of its failures -- the difference is "
+                "four months of archive drift, not disagreement. Still a near-superset "
+                "of every NCBI route: holds 111,665 runs efetch never returns, against "
+                "~1,800 missing from it. The 23 empties are withdrawn, private or "
+                "unreleased projects, and include the five whose GEO series also "
+                "resolved to nothing in the GSE census."
             ),
         ),
     ),
