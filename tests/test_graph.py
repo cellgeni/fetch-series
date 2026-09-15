@@ -4,7 +4,7 @@ from datetime import date
 
 import pytest
 
-from fetch_series.accession import EntityType
+from fetch_series.accession import Archive, EntityType, parse
 from fetch_series.graph import (
     REGISTRY,
     Route,
@@ -258,3 +258,57 @@ class TestSeededRegistry:
         # One result apart out of ~15,000: the routes are equivalent in practice,
         # so the extra ELink round trip has nothing to buy.
         assert abs(elink.evidence.unique_results - direct.evidence.unique_results) == 1
+
+
+class TestArchiveRouting:
+    """An archive's index generally knows only its own accessions.
+
+    Measured over the reprocessed BioProjects, NCBI's ELink resolved
+    BioProject -> BioSample for 100% of NCBI-issued projects, 32.8% of DDBJ's
+    and 1.4% of EBI's. A route that declares its archives lets the resolver skip
+    what provably cannot answer.
+    """
+
+    def test_unrestricted_routes_accept_any_archive(self):
+        route = _route("any", EntityType.BIOPROJECT, EntityType.BIOSAMPLE)
+        assert route.accepts(parse("PRJNA1"))
+        assert route.accepts(parse("PRJEB1"))
+        assert route.accepts(parse("PRJDB1"))
+
+    def test_restricted_routes_reject_other_archives(self):
+        route = _route(
+            "ncbi-only",
+            EntityType.BIOPROJECT,
+            EntityType.BIOSAMPLE,
+            source_archives=(Archive.NCBI,),
+        )
+        assert route.accepts(parse("PRJNA1"))
+        assert not route.accepts(parse("PRJEB1"))
+        assert not route.accepts(parse("PRJDB1"))
+
+    def test_routes_reject_the_wrong_entity_type(self):
+        route = _route("x", EntityType.BIOPROJECT, EntityType.BIOSAMPLE)
+        assert not route.accepts(parse("GSE1"))
+
+    def test_ranked_for_filters_by_archive(self):
+        registry = RouteRegistry(
+            [
+                _route(
+                    "ncbi-only",
+                    EntityType.BIOPROJECT,
+                    EntityType.BIOSAMPLE,
+                    source_archives=(Archive.NCBI,),
+                    evidence=_evidence(failed=0, results=100),
+                ),
+                _route("anywhere", EntityType.BIOPROJECT, EntityType.BIOSAMPLE),
+            ]
+        )
+        ncbi = [r.id for r in registry.ranked_for(parse("PRJNA1"), EntityType.BIOSAMPLE)]
+        ebi = [r.id for r in registry.ranked_for(parse("PRJEB1"), EntityType.BIOSAMPLE)]
+        assert ncbi == ["ncbi-only", "anywhere"]
+        assert ebi == ["anywhere"]
+
+    def test_the_seeded_registry_routes_ebi_projects_away_from_ncbi(self):
+        ebi = [r.id for r in REGISTRY.ranked_for(parse("PRJEB42537"), EntityType.BIOSAMPLE)]
+        assert "bioproject->biosample:elink" not in ebi
+        assert "bioproject->biosample:ena_filereport" in ebi

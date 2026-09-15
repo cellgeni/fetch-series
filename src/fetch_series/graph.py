@@ -19,7 +19,7 @@ from collections.abc import Iterator
 from dataclasses import dataclass, replace
 from datetime import date
 
-from fetch_series.accession import EntityType
+from fetch_series.accession import Accession, Archive, EntityType
 
 # Two routes whose yields are within this fraction of each other are treated as
 # equally complete, and separated on reliability and cost instead. 1% sits well
@@ -87,7 +87,17 @@ class RouteEvidence:
 
 @dataclass(frozen=True, slots=True)
 class Route:
-    """One declared way of getting from ``source`` to ``target``."""
+    """One declared way of getting from ``source`` to ``target``.
+
+    Args:
+        source_archives: the issuing archives this route can actually answer
+            for, empty meaning any. An archive's own index generally knows only
+            its own accessions: over the reprocessed BioProjects, NCBI's ELink
+            resolved BioProject -> BioSample for 100% of NCBI-issued projects,
+            32.8% of DDBJ's and **1.4%** of EBI's. Declaring the restriction
+            lets the resolver skip a route that provably cannot answer, instead
+            of spending three requests to be told nothing.
+    """
 
     id: str
     source: EntityType
@@ -98,6 +108,13 @@ class Route:
     cost: RouteCost
     evidence: RouteEvidence | None = None
     known_pathologies: tuple[str, ...] = ()
+    source_archives: tuple[Archive, ...] = ()
+
+    def accepts(self, accession: Accession) -> bool:
+        """Whether this route can answer for a given accession."""
+        if accession.entity is not self.source:
+            return False
+        return not self.source_archives or accession.archive in self.source_archives
 
     def with_evidence(self, evidence: RouteEvidence) -> Route:
         """Return a copy carrying a survey result."""
@@ -171,6 +188,15 @@ class RouteRegistry:
             return (0, -band, failure_band, route.cost.requests, route.id)
 
         return sorted(candidates, key=sort_key)
+
+    def ranked_for(self, accession: Accession, target: EntityType) -> list[Route]:
+        """Like :meth:`ranked`, but drops routes that cannot accept ``accession``.
+
+        This is what the resolver should use. ``ranked`` answers "which routes
+        exist between these two types"; this answers "which routes could
+        actually resolve this identifier".
+        """
+        return [r for r in self.ranked(accession.entity, target) if r.accepts(accession)]
 
     def targets_from(self, source: EntityType) -> set[EntityType]:
         return {r.target for r in self._routes.values() if r.source is source}
@@ -371,6 +397,9 @@ ROUTES: list[Route] = [
         summary="esearch db=bioproject, elink bioproject->biosample, esummary db=biosample.",
         kb_page="routes/bioproject-to-biosample/elink.md",
         cost=RouteCost(requests=3, rate_limit_rps=NCBI_EUTILS_RPS, paginates=True),
+        # Measured: 100% of PRJNA projects resolve, 32.8% of PRJDB and 1.4% of
+        # PRJEB. Asking NCBI about an EBI-native project is 3 wasted requests.
+        source_archives=(Archive.NCBI,),
         evidence=RouteEvidence(
             corpus=REPROCESSED,
             surveyed_on=SURVEY_DATE,

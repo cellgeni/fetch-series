@@ -336,7 +336,10 @@ def resolve(
         )
         raise typer.Exit(2) from None
 
-    candidates = [r for r in REGISTRY.ranked(parsed.entity, target) if r.id in IMPLEMENTATIONS]
+    # ranked_for, not ranked: it drops routes whose provider cannot answer for
+    # this accession's issuing archive, rather than spending the requests to be
+    # told nothing.
+    candidates = [r for r in REGISTRY.ranked_for(parsed, target) if r.id in IMPLEMENTATIONS]
     if not candidates:
         paths = REGISTRY.find_paths(parsed.entity, target)
         typer.secho(
