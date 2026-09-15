@@ -6,6 +6,7 @@ import asyncio
 import json
 import logging
 from datetime import date
+from importlib.metadata import version
 from pathlib import Path
 from typing import Annotated
 
@@ -40,6 +41,31 @@ app = typer.Typer(
     help="Resolve public sequencing accessions over documented, benchmarked routes.",
     no_args_is_help=True,
 )
+
+
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(version("fetch-series"))
+        raise typer.Exit()
+
+
+@app.callback()
+def _root(
+    show_version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            callback=_version_callback,
+            is_eager=True,
+            help="Print the installed version and exit.",
+        ),
+    ] = False,
+) -> None:
+    """Nextflow writes a versions.yml per process, so the version has to be
+    askable without running anything or knowing where the package is installed.
+    """
+
+
 survey_app = typer.Typer(help="Run and compare route surveys.", no_args_is_help=True)
 routes_app = typer.Typer(help="Inspect the route graph.", no_args_is_help=True)
 app.add_typer(survey_app, name="survey")

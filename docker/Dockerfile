@@ -50,7 +50,9 @@ WORKDIR /work
 # Nextflow's own .command.sh.
 ENV NCBI_API_KEY=""
 
-RUN fetch --help > /dev/null && printf 'fetch-series: %s\n' "$(fetch --version 2>/dev/null || echo 0.1.0)" > /versions.txt
+# Fails the build if the entry point is broken, and records the version the way
+# Nextflow's versions.yml wants it.
+RUN printf 'fetch-series: %s\n' "$(fetch --version)" > /versions.txt
 
 ENTRYPOINT ["fetch"]
 CMD ["--help"]
