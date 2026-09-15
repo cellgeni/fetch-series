@@ -316,3 +316,89 @@ class TestMateMarkersOnlyMeanSomethingInFastqNames:
         assert rec.chosen is not None
         assert not rec.chosen.is_paired
         assert rec.chosen.mates == set()
+
+
+class TestDeclaredPairedButUnpaired:
+    """ENA declares ERP129702 PAIRED and publishes one fastq per run.
+
+    25.7 GB of fastq against a 50.2 GB submitted BAM, for all 15 runs of
+    E-MTAB-8060. A pipeline that takes the fastq gets one mate and no warning,
+    and nothing in the file listing alone says so -- only the archive's own
+    library_layout does.
+    """
+
+    def _row(self, layout: str, files: str) -> dict[str, str]:
+        return {
+            "run_accession": "ERR6039559",
+            "library_layout": layout,
+            "fastq_ftp": files,
+            "fastq_md5": ";".join("x" for _ in files.split(";")),
+        }
+
+    def test_a_single_fastq_for_a_paired_library_is_flagged(self):
+        from fetch_series.files import candidates, from_ena_row
+
+        records = from_ena_row(self._row("PAIRED", "ftp/a/ERR6039559.fastq.gz"), "fastq", "r")
+        assert candidates(FileSet("ERR6039559", tuple(records)))[0].demonstrably_incomplete
+
+    def test_a_single_fastq_for_a_single_library_is_not(self):
+        from fetch_series.files import candidates, from_ena_row
+
+        records = from_ena_row(self._row("SINGLE", "ftp/a/ERR6039559.fastq.gz"), "fastq", "r")
+        assert not candidates(FileSet("ERR6039559", tuple(records)))[0].demonstrably_incomplete
+
+    def test_an_undeclared_layout_is_not_an_accusation(self):
+        """Absence of metadata is not evidence of incompleteness."""
+        from fetch_series.files import candidates, from_ena_row
+
+        records = from_ena_row(self._row("", "ftp/a/ERR6039559.fastq.gz"), "fastq", "r")
+        assert not candidates(FileSet("ERR6039559", tuple(records)))[0].demonstrably_incomplete
+
+    def test_a_bam_for_a_paired_library_is_correct_not_incomplete(self):
+        """A BAM holds both mates interleaved, so one file is exactly right."""
+        from fetch_series.files import candidates, from_ena_row
+
+        row = {
+            "run_accession": "ERR6039559",
+            "library_layout": "PAIRED",
+            "submitted_ftp": "ftp/a/Sample_1.bam",
+            "submitted_md5": "x",
+        }
+        records = from_ena_row(row, "submitted", "r")
+        assert not candidates(FileSet("ERR6039559", tuple(records)))[0].demonstrably_incomplete
+
+    def test_the_bam_is_recommended_over_the_truncated_fastq(self):
+        """The whole point. The fastq is the convenient format and the wrong
+        answer, and only the archive's own metadata distinguishes them."""
+        from fetch_series.files import from_ena_row, recommend
+
+        fastq = from_ena_row(
+            self._row("PAIRED", "ftp/a/ERR6039559.fastq.gz"), "fastq", "run->file:ena_fastq"
+        )
+        bam = from_ena_row(
+            {
+                "run_accession": "ERR6039559",
+                "library_layout": "PAIRED",
+                "submitted_ftp": "ftp/a/Sample_1.bam",
+                "submitted_md5": "y",
+            },
+            "submitted",
+            "run->file:ena_submitted",
+        )
+        rec = recommend(FileSet("ERR6039559", tuple(fastq + bam)))
+        assert rec.chosen is not None
+        assert rec.chosen.source == "run->file:ena_submitted"
+        assert "INCOMPLETE" in rec.explain()
+
+    def test_a_real_pair_still_wins_over_everything(self):
+        """The flag must not make every fastq suspect."""
+        from fetch_series.files import from_ena_row, recommend
+
+        records = from_ena_row(
+            self._row("PAIRED", "ftp/a/SRR1_1.fastq.gz;ftp/a/SRR1_2.fastq.gz"),
+            "fastq",
+            "run->file:ena_fastq",
+        )
+        rec = recommend(FileSet("SRR1", tuple(records)))
+        assert rec.chosen is not None and rec.chosen.is_paired
+        assert "complete fastq pair" in rec.reason

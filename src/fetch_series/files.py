@@ -110,6 +110,9 @@ class FileRecord:
     mate: int | None = None
     pay_required: bool = False
     rehydration_required: bool = False
+    # What the archive says the library is, which is not always what the archive
+    # publishes. ENA declares ERP129702 PAIRED and offers one fastq per run.
+    declared_paired: bool | None = None
 
     @property
     def is_data(self) -> bool:
@@ -194,6 +197,8 @@ def from_ena_row(row: dict[str, Any], column: str, source: str) -> list[FileReco
     sized = len(sizes) == len(urls)
 
     run = (row.get("run_accession") or "").strip()
+    declared = (row.get("library_layout") or "").strip().upper()
+    layout = {"PAIRED": True, "SINGLE": False}.get(declared)
     records = []
     for i, url in enumerate(urls):
         name = url.split("/")[-1]
@@ -208,6 +213,7 @@ def from_ena_row(row: dict[str, Any], column: str, source: str) -> list[FileReco
                 md5=md5s[i] if aligned else None,
                 size=int(sizes[i]) if sized and sizes[i].isdigit() else None,
                 mate=mate_of(name),
+                declared_paired=layout,
             )
         )
     return records
@@ -272,6 +278,23 @@ class Candidate:
     kind: FileKind
 
     @property
+    def demonstrably_incomplete(self) -> bool:
+        """The archive declares a paired library and publishes an unpaired set.
+
+        This is a fact, not a preference: ENA reports ``library_layout=PAIRED``
+        for all 15 runs of ERP129702 (E-MTAB-8060) and publishes a single fastq
+        for each, 25.7 GB against a 50.2 GB submitted BAM. A pipeline that takes
+        the fastq gets one mate and no warning.
+
+        Only fastq sets can be caught this way. A BAM holds both mates
+        interleaved, so a single BAM file for a paired library is exactly right.
+        """
+        if self.kind is not FileKind.FASTQ:
+            return False
+        declared = {f.declared_paired for f in self.files}
+        return declared == {True} and not self.is_paired
+
+    @property
     def mates(self) -> set[int]:
         return {f.mate for f in self.files if f.mate is not None}
 
@@ -297,6 +320,8 @@ class Candidate:
         parts = [f"{len(self.files)} {self.kind} file{'s' if len(self.files) != 1 else ''}"]
         parts.append("paired" if self.is_paired else f"mates {sorted(self.mates) or 'unmarked'}")
         parts.append("md5 published" if self.verifiable else "no checksum")
+        if self.demonstrably_incomplete:
+            parts.append("INCOMPLETE: archive declares the library paired")
         if not self.free:
             parts.append("retrieval is not free")
         return ", ".join(parts)
@@ -356,6 +381,9 @@ def recommend(fileset: FileSet) -> Recommendation:
         candidates(fileset),
         key=lambda c: (
             not c.is_paired,  # a half pair is not usable
+            # A fastq set the archive's own metadata proves incomplete ranks
+            # below every format that is merely inconvenient.
+            c.demonstrably_incomplete,
             FORMAT_PREFERENCE.index(c.kind),
             not c.free,
             not c.verifiable,
@@ -367,6 +395,14 @@ def recommend(fileset: FileSet) -> Recommendation:
         return Recommendation(fileset.run, None, (), "no route offered any data file")
 
     best, rest = ranked[0], tuple(ranked[1:])
+    if best.demonstrably_incomplete:
+        return Recommendation(
+            fileset.run,
+            best,
+            rest,
+            "every offer is incomplete: the archive declares a paired library "
+            "and publishes an unpaired file set",
+        )
     if not best.is_paired and not rest:
         reason = "only one offer, and it is not a complete read pair"
     elif not best.is_paired:

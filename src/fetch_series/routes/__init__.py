@@ -371,6 +371,9 @@ async def study_to_ae_experiment(accession: str, client: SurveyClient, timeout: 
 # submitter's original deposit, `sra_*` the NCBI-format archive object.
 ENA_FILE_FIELDS = (
     "run_accession",
+    # Not a file field, but the one that says whether the file set is complete:
+    # ENA declares ERP129702 PAIRED and publishes one fastq per run.
+    "library_layout",
     "fastq_ftp",
     "fastq_md5",
     "fastq_bytes",
