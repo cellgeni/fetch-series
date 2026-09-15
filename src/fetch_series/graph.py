@@ -97,6 +97,14 @@ class Route:
             32.8% of DDBJ's and **1.4%** of EBI's. Declaring the restriction
             lets the resolver skip a route that provably cannot answer, instead
             of spending three requests to be told nothing.
+        proves_data_exists: whether everything this route returns is known to
+            carry data. True for routes built on ENA's ``result=read_run``,
+            whose rows *are* runs, so an accession cannot appear without one.
+            This is not a nicety: about 4,238 experiments named in GEO SOFT
+            files -- 1.37% of the 308,639 it returns -- have no runs at all, so
+            a complete-looking answer can still download nothing. A route that
+            proves existence turns that from a silent failure into a split
+            between confirmed and unconfirmed.
     """
 
     id: str
@@ -109,6 +117,7 @@ class Route:
     evidence: RouteEvidence | None = None
     known_pathologies: tuple[str, ...] = ()
     source_archives: tuple[Archive, ...] = ()
+    proves_data_exists: bool = False
 
     def accepts(self, accession: Accession) -> bool:
         """Whether this route can answer for a given accession."""
@@ -277,6 +286,7 @@ ROUTES: list[Route] = [
                 "resolved to nothing in the GSE census."
             ),
         ),
+        proves_data_exists=True,
     ),
     Route(
         id="bioproject->run:sra_be_direct_cgi",
@@ -427,6 +437,7 @@ ROUTES: list[Route] = [
         summary="ENA portal filereport, fields=secondary_study_accession.",
         kb_page="routes/bioproject-to-study/ena-filereport.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+        proves_data_exists=True,
     ),
     Route(
         id="ae_experiment->study:idf_secondary",
@@ -467,6 +478,7 @@ ROUTES: list[Route] = [
         summary="ENA portal filereport keyed on a BioSample accession.",
         kb_page="routes/biosample-to-run/ena-filereport.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+        proves_data_exists=True,
     ),
     Route(
         id="study->ae_experiment:biostudies_search",
@@ -485,6 +497,7 @@ ROUTES: list[Route] = [
         summary="ENA portal filereport, fields=study_accession.",
         kb_page="routes/study-to-bioproject/ena-filereport.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+        proves_data_exists=True,
     ),
     # --- GEO series as an entry point ------------------------------------
     # The primary entry point and, until now, the least measured. GEO exposes a
@@ -601,6 +614,7 @@ ROUTES: list[Route] = [
             "series-under-a-shared-umbrella-bioproject",
             "experiments-outside-the-series-bioproject",
         ),
+        proves_data_exists=True,
     ),
     Route(
         id="gse->run:elink_gds_sra",
@@ -621,6 +635,7 @@ ROUTES: list[Route] = [
         summary="ENA portal filereport, experiment_accession column.",
         kb_page="routes/bioproject-to-experiment/ena-filereport.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+        proves_data_exists=True,
     ),
     Route(
         id="bioproject->biosample:ena_filereport",
@@ -630,6 +645,7 @@ ROUTES: list[Route] = [
         summary="ENA portal filereport, sample_accession column.",
         kb_page="routes/bioproject-to-biosample/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+        proves_data_exists=True,
     ),
     Route(
         id="study->run:ena_filereport",
@@ -639,6 +655,7 @@ ROUTES: list[Route] = [
         summary="ENA portal filereport keyed on a study accession.",
         kb_page="routes/study-to-run/ena-filereport.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+        proves_data_exists=True,
     ),
     Route(
         id="run->experiment:ena_filereport",
@@ -648,6 +665,7 @@ ROUTES: list[Route] = [
         summary="ENA portal filereport keyed on a run accession.",
         kb_page="routes/run-to-experiment/ena-filereport.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+        proves_data_exists=True,
     ),
     Route(
         id="run->biosample:ena_filereport",
@@ -657,6 +675,7 @@ ROUTES: list[Route] = [
         summary="ENA portal filereport keyed on a run accession.",
         kb_page="routes/run-to-biosample/ena-filereport.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+        proves_data_exists=True,
     ),
 ]
 
