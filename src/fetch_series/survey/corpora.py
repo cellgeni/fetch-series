@@ -169,6 +169,10 @@ def geo_sample(n: int = 1000, seed: int = 20260914, path: Path | None = None) ->
     in for submission date. Sampling uniformly at random would over-represent
     recent years simply because GEO has grown, and route behaviour differs
     sharply between old and new submissions.
+
+    Returns exactly ``n`` accessions or raises. The name is persisted with every
+    verdict as evidence provenance, so a corpus whose size does not match its
+    own label makes two runs quietly incomparable.
     """
     source = path or _gse_list_path()
     accessions = [line.strip() for line in source.read_text().splitlines() if line.strip()]
@@ -176,13 +180,24 @@ def geo_sample(n: int = 1000, seed: int = 20260914, path: Path | None = None) ->
 
     rng = random.Random(seed)
     strata = 10
-    per_stratum = max(1, n // strata)
     size = len(accessions)
+    # Distribute the remainder across strata so the draw is exactly n. Taking
+    # n // strata per stratum silently returned 10 for any n below 20 -- so
+    # geo-sample-15 held 10 accessions while its name, which is persisted with
+    # every verdict as provenance, claimed 15.
+    quota = [n // strata + (1 if i < n % strata else 0) for i in range(strata)]
     drawn: list[str] = []
+    shortfall = 0
     for i in range(strata):
         lo, hi = i * size // strata, (i + 1) * size // strata
         band = accessions[lo:hi]
-        drawn.extend(rng.sample(band, min(per_stratum, len(band))))
+        want = quota[i] + shortfall
+        take = min(want, len(band))
+        shortfall = want - take
+        drawn.extend(rng.sample(band, take))
+
+    if len(drawn) != n:
+        raise ValueError(f"Asked for {n} GEO series but the pool of {size:,} yielded {len(drawn)}")
 
     return _build(
         name=f"geo-sample-{n}",
