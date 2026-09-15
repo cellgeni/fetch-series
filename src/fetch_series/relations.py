@@ -24,6 +24,7 @@ from fetch_series.survey.client import SurveyClient
 logger = logging.getLogger(__name__)
 
 ENA_ROUTE = "ena:filereport"
+BIOSAMPLE_RECOVERY = "geo_sample->biosample:soft_family (recovered via ENA BioSample)"
 SOFT_ROUTE = "geo:soft_family"
 
 # What each ENA filereport column contributes to a RunRecord.
@@ -174,6 +175,13 @@ async def _relations_from_geo(
             )
             experiment_to_gsm = {}
 
+    # The recovery for series GEO records a BioSample for but no SRA relation.
+    # GSE135325 and GSE137444 are the cases: every !Sample_relation line names a
+    # BioSample and none names an experiment, so experiment_to_gsm is empty and
+    # nothing would attach a GSM to any run. ENA reports the BioSample for each
+    # run, so the same identity joins them from the other side.
+    biosample_to_gsm = {biosample: gsm for gsm, biosample in gsm_to_biosample.items() if biosample}
+
     for record in records.values():
         record.set("geo_series", accession.value, SOFT_ROUTE)
         for bioproject in family.bioprojects:
@@ -182,15 +190,31 @@ async def _relations_from_geo(
         if gsm:
             record.set("geo_sample", gsm, SOFT_ROUTE)
             record.set("biosample", gsm_to_biosample.get(gsm), SOFT_ROUTE)
+        elif recovered := biosample_to_gsm.get(record.biosample or ""):
+            record.set("geo_sample", recovered, BIOSAMPLE_RECOVERY)
+
+    recovered_count = sum(
+        1 for r in records.values() if r.provenance.get("geo_sample") == [BIOSAMPLE_RECOVERY]
+    )
 
     # Only when GEO genuinely named nothing. A series whose experiment list was
     # stale did name relations -- saying otherwise would misdescribe the defect.
     if not geo_named_experiments and records:
-        logger.warning(
-            "%s: the SOFT file names no SRA relation for any sample, so no run could be "
-            "attributed to a GEO sample; rows carry the INSDC sample only",
-            accession,
-        )
+        if recovered_count:
+            logger.warning(
+                "%s: the SOFT file names no SRA relation for any sample; %d of %d runs were "
+                "attributed to a GEO sample through the BioSample instead; see "
+                "docs/pathologies/geo-omits-sample-sra-relation.md",
+                accession,
+                recovered_count,
+                len(records),
+            )
+        else:
+            logger.warning(
+                "%s: the SOFT file names no SRA relation for any sample, so no run could be "
+                "attributed to a GEO sample; rows carry the INSDC sample only",
+                accession,
+            )
     return sorted(records.values(), key=lambda r: r.run)
 
 
