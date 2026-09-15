@@ -76,18 +76,15 @@ one is not unreliable — it is meaningless.
 ## Completeness the listing does not admit to
 
 A fastq set can be incomplete in a way only the archive's *other* metadata
-reveals. ENA reports `library_layout=PAIRED` for all 15 runs of ERP129702
-(E-MTAB-8060) and publishes **one** fastq per run:
+reveals, and this is not a rare corner: **39.2% of a random 3,000-run sample of
+the reprocessed corpus**. ENA reports `library_layout=PAIRED` and publishes one
+fastq, and SRA holds a median of **1.40x** the bases ENA serves — the missing
+~28 bp read being the one that carries the 10x cell barcode.
 
-| | |
-|---|---|
-| ENA's single fastq | 25.7 GB |
-| The submitted BAM | 50.2 GB |
-| `library_layout` | `PAIRED` |
-
-A pipeline taking the convenient format gets one mate, no error, and a result
-that looks like a bad experiment rather than a bad download. The file layer
-refuses that set and recommends the BAM, and says which fact drove the choice.
+A pipeline taking the convenient format downloads cleanly, checksums correctly,
+and produces a matrix in which every read is unassignable to a cell. The file
+layer refuses that set, recommends the complete source, and says which fact
+drove the choice.
 
 See [ENA publishes an unpaired fastq for a paired library](pathologies/ena-paired-library-single-fastq.md).
 

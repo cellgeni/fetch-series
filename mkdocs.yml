@@ -76,7 +76,7 @@ nav:
       - Shared umbrella BioProject: pathologies/series-under-shared-umbrella-bioproject.md
       - SOFT names experiments with no runs: pathologies/soft-names-experiments-with-no-runs.md
       - BioStudies 20,000-hit window: pathologies/biostudies-20000-hit-window.md
-      - ENA unpaired fastq for a paired library: pathologies/ena-paired-library-single-fastq.md
+      - ENA fastq omits the barcode read: pathologies/ena-paired-library-single-fastq.md
       - ArrayExpress SDRF mirror URIs: pathologies/ae-sdrf-points-at-decommissioned-mirror.md
   - Benchmarks: benchmarks/index.md
   - Upstream reports:
