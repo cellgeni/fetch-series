@@ -17,8 +17,10 @@ from fetch_series.cache import DEFAULT_CACHE_PATH, SurveyCache
 from fetch_series.core import default_api_key
 from fetch_series.graph import REGISTRY, Route
 from fetch_series.logging_utils import configure_logging, run_logfile
+from fetch_series.resolver import Mode, Resolution
+from fetch_series.resolver import resolve as resolver_resolve
 from fetch_series.routes import IMPLEMENTATIONS
-from fetch_series.survey import Limits, RouteFn, SurveyClient, corpora, run_route
+from fetch_series.survey import Limits, SurveyClient, corpora, run_route
 
 app = typer.Typer(
     help="Resolve public sequencing accessions over documented, benchmarked routes.",
@@ -311,13 +313,27 @@ def survey_compare(
 @app.command()
 def resolve(
     accession: Annotated[str, typer.Argument(help="Any accession, e.g. GSE236084.")],
-    to: Annotated[str, typer.Option(help="Target entity type, e.g. run.")],
-    cache_path: Annotated[Path, typer.Option("--cache")] = DEFAULT_CACHE_PATH,
+    to: Annotated[str, typer.Option(help="Target entity type, e.g. experiment or run.")],
+    mode: Annotated[
+        str, typer.Option(help="'union' asks every applicable route; 'first' stops at one.")
+    ] = "union",
     explain: Annotated[
-        bool, typer.Option(help="Show the route tried and where the answer came from.")
+        bool, typer.Option(help="Show every route tried and where each value came from.")
+    ] = False,
+    confirmed_only: Annotated[
+        bool,
+        typer.Option(
+            "--confirmed-only", help="Report only values a data-proving route vouched for."
+        ),
     ] = False,
 ) -> None:
-    """Resolve one accession to another entity type, trying routes in ranked order."""
+    """Resolve one accession to another entity type.
+
+    Takes the union of every applicable route by default, because for the one
+    direction measured in full no single route was sufficient. Values are
+    reported with whether a route that only ever returns entities carrying data
+    vouched for them -- an accession is not evidence that data exists.
+    """
     load_dotenv()
     configure_logging(level=logging.WARNING)
     try:
@@ -336,53 +352,49 @@ def resolve(
         )
         raise typer.Exit(2) from None
 
-    # ranked_for, not ranked: it drops routes whose provider cannot answer for
-    # this accession's issuing archive, rather than spending the requests to be
-    # told nothing.
-    candidates = [r for r in REGISTRY.ranked_for(parsed, target) if r.id in IMPLEMENTATIONS]
-    if not candidates:
-        paths = REGISTRY.find_paths(parsed.entity, target)
+    try:
+        resolve_mode = Mode(mode)
+    except ValueError:
         typer.secho(
-            f"No implemented direct route from {parsed.entity} to {to}.",
-            fg=typer.colors.YELLOW,
-            err=True,
+            f"Unknown mode {mode!r}; expected 'union' or 'first'.", fg=typer.colors.RED, err=True
         )
-        if paths:
-            typer.echo("Known multi-hop paths:", err=True)
-            for path in paths[:5]:
-                typer.echo("  " + " -> ".join(path), err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(2) from None
 
-    async def main() -> None:
+    async def run_resolution() -> Resolution:
         async with SurveyClient(
             limits=Limits(rps=5.0, concurrency=4), api_key=default_api_key()
         ) as client:
-            for route in candidates:
-                if explain:
-                    typer.echo(f"# trying {route.id}", err=True)
-                route_fn = IMPLEMENTATIONS[route.id]
+            return await resolver_resolve(parsed, target, client, mode=resolve_mode)
 
-                async def attempt(timeout: float, fn: RouteFn = route_fn) -> list[str]:
-                    return await fn(parsed.value, client, timeout)
+    resolution = asyncio.run(run_resolution())
 
-                try:
-                    found = await client.with_retry(attempt, label=route.id)
-                except Exception as exc:
-                    if explain:
-                        typer.echo(f"#   failed: {type(exc).__name__}: {exc}", err=True)
-                    continue
-                if found:
-                    if explain:
-                        typer.echo(f"#   resolved via {route.id}", err=True)
-                    for value in found:
-                        typer.echo(value)
-                    return
-                if explain:
-                    typer.echo("#   empty (archive holds no such link)", err=True)
+    if explain:
+        for line in resolution.explain():
+            typer.echo(line, err=True)
+
+    shown = resolution.confirmed if confirmed_only else resolution.values
+    if not shown:
+        paths = REGISTRY.find_paths(parsed.entity, target)
+        if not resolution.routes_resolved and paths and len(paths[0]) > 2:
+            typer.secho(
+                "No direct route resolved. Known multi-hop paths:",
+                fg=typer.colors.YELLOW,
+                err=True,
+            )
+            for path in paths[:5]:
+                typer.echo("  " + " -> ".join(path), err=True)
+        else:
             typer.secho("No route produced a result.", fg=typer.colors.YELLOW, err=True)
-            raise typer.Exit(1)
+        raise typer.Exit(1)
 
-    asyncio.run(main())
+    confirmed = set(resolution.confirmed)
+    for value in shown:
+        if explain:
+            routes = ",".join(a.route_id.split(":")[-1] for a in resolution.attributions[value])
+            flag = "confirmed" if value in confirmed else "UNCONFIRMED"
+            typer.echo(f"{value}\t{flag}\t{routes}")
+        else:
+            typer.echo(value)
 
 
 def main() -> None:
