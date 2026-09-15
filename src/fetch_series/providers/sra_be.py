@@ -47,10 +47,16 @@ def parse_runinfo(text: str) -> list[dict[str, Any]]:
     body = text.strip()
     if not body:
         return []
-    rows = list(csv.DictReader(io.StringIO(body)))
-    if rows and "Run" not in rows[0]:
-        raise MalformedResponseError("response has no Run column; not a runinfo table")
-    return rows
+    reader = csv.DictReader(io.StringIO(body))
+    # Validate the header, not the first row. A one-line error page or a
+    # header-only response yields zero rows, so a rows-based check waves it
+    # through as a genuine "this project has no runs" -- precisely the
+    # fabricated true negative this function exists to prevent.
+    if reader.fieldnames is None or "Run" not in reader.fieldnames:
+        raise MalformedResponseError(
+            f"response has no Run column; not a runinfo table: {body[:120]!r}"
+        )
+    return list(reader)
 
 
 def column(rows: list[dict[str, Any]], field: str) -> list[str]:
