@@ -100,6 +100,15 @@ HARD_CASES: dict[str, str] = {
     "GSM7518069": "belongs to two series (GSE236084 and GSE236087), so 'its' series is not singular",
     "GSM4005486": "in GSE135325, where GEO records the BioSample but no SRA relation",
     "GSM4274734": "in GSE150508, whose SOFT file names an experiment that carries no runs",
+    "SRR25056225": "the worked example's first run; the end of the chain from PRJNA988806",
+    "ERR2861957": "reached from E-MTAB-6505 only through its BioSample, not its IDF",
+    "SRP446371": "the worked example's study, reached from PRJNA988806",
+    "ERP126408": "EBI-native study; round-trips to E-MTAB-10018 and PRJEB42537",
+    "SRX9670669": "the live experiment GSE150508's SOFT file does not name",
+    "SRX7571191": "the experiment GSE150508 does name, which carries no runs at all",
+    "SAMN36028297": "the worked example's BioSample, reached from GSM7518069",
+    "SAMEA5053920": "E-MTAB-6505's BioSample; the only route to its data when the IDF declares no study",
+    "SAMN12476461": "in GSE135325, which records BioSamples and no SRA relations",
 }
 
 

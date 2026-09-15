@@ -77,6 +77,49 @@ failed` is a verdict about the *call*, not about completeness of the answer. Any
 the form "how much of X is missing" needs a route that returns the missing thing, or a
 comparison against an independent count. It cannot be read off a coverage rate.
 
+## Tier one is a coverage check, and is not recorded as evidence
+
+Every implemented route is exercised on `hard-cases` before anything larger. As of
+2026-09-15 all 33 implemented routes have been, and the results are below. Two things to
+read from it, and one thing not to.
+
+| Route | Queried | Resolved | Empty | Failed |
+|---|---|---|---|---|
+| `ae_experiment->biosample:sdrf` | 5 | 4 | 1 | 0 |
+| `bioproject->biosample:ena_filereport` | 16 | 13 | 3 | 0 |
+| `bioproject->experiment:ena_filereport` | 16 | 13 | 3 | 0 |
+| `bioproject->study:ena_filereport` | 16 | 13 | 3 | 0 |
+| `biosample->run:ena_filereport` | 3 | 3 | 0 | 0 |
+| `experiment->biosample:ena_filereport` | 3 | 2 | 1 | 0 |
+| `experiment->run:ena_filereport` | 3 | 2 | 1 | 0 |
+| `geo_sample->biosample:acc_cgi` | 3 | 3 | 0 | 0 |
+| `geo_sample->geo_series:acc_cgi` | 3 | 3 | 0 | 4 series from 3 samples |
+| `gse->bioproject:gds_summary` | 7 | 6 | 1 | 0 |
+| `gse->bioproject:soft_family` | 7 | 5 | 1 | 1 |
+| `gse->geo_sample:gds_summary` | 7 | 6 | 1 | 0 |
+| `gse->geo_sample:soft_family` | 7 | 6 | 0 | 1 |
+| `gse->run:elink_gds_sra` | 7 | 5 | 2 | 0 |
+| `run->biosample:ena_filereport` | 2 | 2 | 0 | 0 |
+| `run->experiment:ena_filereport` | 2 | 2 | 0 | 0 |
+| `sample->run:ena_filereport` | 5 | 5 | 0 | 0 |
+| `study->bioproject:ena_filereport` | 2 | 2 | 0 | 0 |
+| `study->run:ena_filereport` | 2 | 2 | 0 | 0 |
+
+Both failures are the same accession: `GSE207991` is private and its SOFT family file 404s.
+That is the corpus doing its job, not a defect.
+
+The most useful row is `experiment->run:ena_filereport`. It reports `SRX7571191` — the
+experiment [GSE150508's SOFT file names, which has no data](../pathologies/soft-names-experiments-with-no-runs.md)
+— as **empty**, while `SRX9670669` resolves two runs. The confirmation mechanism the
+resolver depends on is doing the right thing at the level of a single route.
+
+**These results are deliberately not recorded as `RouteEvidence`.** `hard-cases` is curated
+for pathology, so its resolve rate is not a prevalence estimate, and `unique_results` over
+43 hand-picked accessions is not comparable with a census over 13,045. Recording it would
+let a route "measured" on 43 accessions outrank one measured on thousands, for no better
+reason than that both had *some* number attached. A route stays unmeasured until something
+with a real denominator has been run against it.
+
 ## Outcomes
 
 Three, not two. The distinction is load-bearing.
