@@ -207,6 +207,27 @@ def geo_sample(n: int = 1000, seed: int = 20260914, path: Path | None = None) ->
     )
 
 
+CORPORA_DIR = DATA_DIR / "corpora"
+
+
+def committed(name: str) -> Corpus:
+    """A corpus enumerated once from a live archive and then committed.
+
+    ``arrayexpress-ena`` is the 20,693 ArrayExpress studies BioStudies records
+    an ENA link for. Re-enumerating it per run would make two surveys weeks
+    apart uncomparable for a reason that has nothing to do with the routes, so
+    the accession list is versioned and the enumeration is a separate, dated
+    act. The manifest beside it records when and how it was built.
+    """
+    path = CORPORA_DIR / name / "accessions.list"
+    if not path.exists():
+        raise ValueError(f"No committed corpus at {path}")
+    raws = [line.strip() for line in path.read_text().splitlines() if line.strip()]
+    manifest = CORPORA_DIR / name / "manifest.md"
+    description = manifest.read_text().strip().splitlines()[0] if manifest.exists() else name
+    return _build(name=name, description=description, source=str(path), raws=raws)
+
+
 def from_survey(route_id: str, corpus: str, cache_path: Path | None = None) -> Corpus:
     """Build a corpus out of what an earlier survey *returned*.
 
@@ -270,6 +291,7 @@ KNOWN_CORPORA = (
     "sample:<n>@<corpus>",
     "reprocessed-<column>   (column: " + ", ".join(SAMPLE_TABLE_COLUMNS[:6]) + ")",
     "geo-sample[-<n>]",
+    "arrayexpress-ena  (and any other committed data/corpora/<name>/accessions.list)",
 )
 
 
@@ -283,6 +305,9 @@ def load(name: str) -> Corpus:
     """
     if name in CORPUS_BUILDERS:
         return CORPUS_BUILDERS[name]()
+
+    if (CORPORA_DIR / name / "accessions.list").exists():
+        return committed(name)
 
     if name.startswith("reprocessed-"):
         column = name.removeprefix("reprocessed-")
