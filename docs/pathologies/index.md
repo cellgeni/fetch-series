@@ -18,6 +18,7 @@ good news — the archive fixed something.
 | [Shared umbrella BioProject](series-under-shared-umbrella-bioproject.md) | NCBI | Series with sequencing data record no BioProject, breaking project-based routing |
 | [SOFT names experiments with no runs](soft-names-experiments-with-no-runs.md) | NCBI | A complete-looking experiment list resolves to zero downloadable files |
 | [BioStudies 20,000-hit window](biostudies-20000-hit-window.md) | EBI | Enumerating a collection hangs at 96.6%, retrying a permanent 500 |
+| [Unpaired fastq for a paired library](ena-paired-library-single-fastq.md) | EBI | Half the reads download cleanly, checksum correctly, and produce a wrong matrix |
 
 ## Reporting upstream
 

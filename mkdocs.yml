@@ -51,6 +51,7 @@ nav:
   - Home: index.md
   - The resolver: resolver.md
   - The relation table: relations.md
+  - The file layer: files.md
   - The graph:
       - Accession types: graph/accession-types.md
       - Routing by archive: graph/routing-by-archive.md
@@ -63,6 +64,7 @@ nav:
       - BioProject to BioSample: routes/bioproject-to-biosample/index.md
       - ArrayExpress experiment to study: routes/ae-experiment-to-study/index.md
       - Study to ArrayExpress experiment: routes/study-to-ae-experiment/biostudies-search.md
+      - Run to file: routes/run-to-file/index.md
   - Pathologies:
       - Overview: pathologies/index.md
       - ELink gds to sra returns no links: pathologies/elink-gds-sra-missing-links.md
@@ -70,6 +72,7 @@ nav:
       - Shared umbrella BioProject: pathologies/series-under-shared-umbrella-bioproject.md
       - SOFT names experiments with no runs: pathologies/soft-names-experiments-with-no-runs.md
       - BioStudies 20,000-hit window: pathologies/biostudies-20000-hit-window.md
+      - ENA unpaired fastq for a paired library: pathologies/ena-paired-library-single-fastq.md
   - Benchmarks: benchmarks/index.md
   - Upstream reports:
       - Overview: upstream/index.md
