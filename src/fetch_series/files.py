@@ -320,6 +320,11 @@ class Candidate:
         parts = [f"{len(self.files)} {self.kind} file{'s' if len(self.files) != 1 else ''}"]
         parts.append("paired" if self.is_paired else f"mates {sorted(self.mates) or 'unmarked'}")
         parts.append("md5 published" if self.verifiable else "no checksum")
+        # The size decides whether a choice is affordable, and the alternatives
+        # here routinely differ by 2x -- ERR6039559's BAM is 50.2 GB against a
+        # 25.7 GB fastq, and the 25.7 GB one is the incomplete offer.
+        if (total := self.total_bytes) is not None:
+            parts.append(f"{total / 1e9:.1f} GB" if total >= 1e9 else f"{total / 1e6:.0f} MB")
         if self.demonstrably_incomplete:
             parts.append("INCOMPLETE: archive declares the library paired")
         if not self.free:

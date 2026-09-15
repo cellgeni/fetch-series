@@ -402,3 +402,46 @@ class TestDeclaredPairedButUnpaired:
         rec = recommend(FileSet("SRR1", tuple(records)))
         assert rec.chosen is not None and rec.chosen.is_paired
         assert "complete fastq pair" in rec.reason
+
+
+class TestSizeIsReported:
+    """The alternatives routinely differ by 2x, and the larger is often right."""
+
+    def test_a_candidate_reports_its_total_size(self):
+        from fetch_series.files import candidates, from_ena_row
+
+        row = {
+            "run_accession": "SRR1",
+            "fastq_ftp": "ftp/a/SRR1_1.fastq.gz;ftp/a/SRR1_2.fastq.gz",
+            "fastq_bytes": "6000000000;12000000000",
+            "fastq_md5": "a;b",
+        }
+        candidate = candidates(FileSet("SRR1", tuple(from_ena_row(row, "fastq", "r"))))[0]
+        assert candidate.total_bytes == 18_000_000_000
+        assert "18.0 GB" in candidate.why()
+
+    def test_a_set_with_an_unknown_size_reports_none_rather_than_a_partial_sum(self):
+        """Summing the known ones would understate the download and look precise."""
+        from fetch_series.files import candidates, from_ena_row
+
+        row = {
+            "run_accession": "SRR1",
+            "fastq_ftp": "ftp/a/SRR1_1.fastq.gz;ftp/a/SRR1_2.fastq.gz",
+            "fastq_bytes": "6000000000",
+            "fastq_md5": "a;b",
+        }
+        candidate = candidates(FileSet("SRR1", tuple(from_ena_row(row, "fastq", "r"))))[0]
+        assert candidate.total_bytes is None
+        assert "GB" not in candidate.why()
+
+    def test_sub_gigabyte_sets_report_megabytes(self):
+        from fetch_series.files import candidates, from_ena_row
+
+        row = {
+            "run_accession": "SRR1",
+            "fastq_ftp": "ftp/a/SRR1.fastq.gz",
+            "fastq_bytes": "45000000",
+            "fastq_md5": "a",
+        }
+        candidate = candidates(FileSet("SRR1", tuple(from_ena_row(row, "fastq", "r"))))[0]
+        assert "45 MB" in candidate.why()
