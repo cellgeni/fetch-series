@@ -162,6 +162,11 @@ class Resolution:
             lines.append(f"  skipped  {route}: {reason}")
         for route, n in self.routes_resolved.items():
             lines.append(f"  resolved {route}: {n} results")
+            # A route that answered is the one whose defects matter. Printing
+            # them only for the routes that contributed keeps the warning
+            # attached to the value rather than to the catalogue.
+            for pathology in REGISTRY[route].known_pathologies if route in REGISTRY else ():
+                lines.append(f"           known defect: docs/pathologies/{pathology}.md")
         for route in self.routes_empty:
             lines.append(f"  empty    {route}: the archive holds no such link")
         for route, error in self.routes_failed.items():

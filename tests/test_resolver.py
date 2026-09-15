@@ -305,3 +305,41 @@ class TestMultiHop:
             implementations=impls,
         )
         assert not r.disagreed
+
+
+class TestKnownDefectsAreSurfaced:
+    """A route that answered is the one whose defects matter to the caller."""
+
+    def test_explain_names_the_pathology_of_a_contributing_route(self):
+        from fetch_series.accession import parse
+        from fetch_series.resolver import Resolution
+
+        resolution = Resolution(
+            source=parse("GSE78298"), target=EntityType.BIOPROJECT, mode=Mode.UNION
+        )
+        resolution.routes_resolved["gse->bioproject:gds_summary"] = 1
+        text = "\n".join(resolution.explain())
+        assert "series-under-shared-umbrella-bioproject" in text
+
+    def test_a_route_that_answered_nothing_does_not_warn(self):
+        """Listing every catalogued defect would bury the one that applies."""
+        from fetch_series.accession import parse
+        from fetch_series.resolver import Resolution
+
+        resolution = Resolution(
+            source=parse("GSE78298"), target=EntityType.BIOPROJECT, mode=Mode.UNION
+        )
+        resolution.routes_empty.append("gse->bioproject:gds_summary")
+        assert "known defect" not in "\n".join(resolution.explain())
+
+    def test_an_unknown_route_id_does_not_raise(self):
+        """Resolutions can be built from stored survey results, whose route ids
+        may name a route that has since been renamed or removed."""
+        from fetch_series.accession import parse
+        from fetch_series.resolver import Resolution
+
+        resolution = Resolution(
+            source=parse("GSE78298"), target=EntityType.BIOPROJECT, mode=Mode.UNION
+        )
+        resolution.routes_resolved["nonexistent->route:x"] = 1
+        assert "nonexistent->route:x" in "\n".join(resolution.explain())

@@ -157,6 +157,9 @@ class RouteRegistry:
     def __iter__(self) -> Iterator[Route]:
         return iter(self._routes.values())
 
+    def __contains__(self, route_id: object) -> bool:
+        return route_id in self._routes
+
     def __getitem__(self, route_id: str) -> Route:
         return self._routes[route_id]
 
@@ -579,6 +582,7 @@ ROUTES: list[Route] = [
             unique_results=12_830,
             notes="13,038 resolved, 7 empty. Resolves 466 series the SOFT file leaves empty, and never fails -- but 190 of those 466 resolve to a species-level umbrella project holding thousands of unrelated runs, so the extra coverage is not usable for routing without checking the project's size.",
         ),
+        known_pathologies=("series-under-shared-umbrella-bioproject",),
     ),
     Route(
         id="gse->geo_sample:soft_family",
