@@ -70,6 +70,7 @@ nav:
       - Study to run: routes/study-to-run/ena-filereport.md
       - Run to experiment: routes/run-to-experiment/ena-filereport.md
       - Run to BioSample: routes/run-to-biosample/ena-filereport.md
+      - Sample to run: routes/sample-to-run/ena-filereport.md
       - BioProject to GEO series: routes/bioproject-to-geo-series/index.md
       - BioProject to BioSample: routes/bioproject-to-biosample/index.md
       - ArrayExpress experiment to study: routes/ae-experiment-to-study/index.md

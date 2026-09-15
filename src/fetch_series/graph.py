@@ -816,6 +816,14 @@ ROUTES: list[Route] = [
         kb_page="routes/bioproject-to-run/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         proves_data_exists=True,
+        evidence=RouteEvidence(
+            corpus="sample:3000@reprocessed-srs",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=3_000,
+            accessions_failed=0,
+            unique_results=8_359,
+            notes="2,987 resolved, 13 empty.",
+        ),
     ),
     Route(
         id="run->experiment:ena_filereport",
