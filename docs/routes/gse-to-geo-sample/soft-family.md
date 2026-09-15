@@ -43,15 +43,33 @@ The 7 failures are the same series whose SOFT family file cannot be fetched at
 all — GSE207991 among them, which is private on GEO, so the failure is the
 correct answer rather than a transport problem.
 
-## Why this is the reference, not `esummary`
+## Compared with `esummary db=gds`: identical
 
-`esummary db=gds` indexes the same membership through an API rather than a gzip
-download. The comparison census is running; until it lands this page will not
-claim which is better, and [the governing rule](../../index.md) keeps the
-unmeasured route ranked behind this one.
+Both routes over all 13,045 series (2026-09-15):
 
-What is already clear is that 319,023 samples across 13,038 series is **24.5 per
-series** on average, so the per-series cost of this route is one request for
-what would otherwise be a paged query — and paging is where
-[three of this project's five request-limit defects](../../pathologies/index.md)
-came from.
+| | `soft_family` | `gds_summary` |
+|---|---:|---:|
+| Resolved | 13,038 | 13,038 |
+| Empty | 0 | 7 |
+| Failed | 7 | **0** |
+| Unique GEO samples | 319,023 | **319,023** |
+| Agree exactly | 13,038 | 13,038 |
+| Disagree on membership | **0** | **0** |
+
+**Sample for sample, the same 319,023.** Not one series where the two surfaces
+list different members. The only difference is the 7 series whose SOFT file
+cannot be fetched at all, where `gds_summary` returns empty rather than failing.
+
+That is worth stating because it is the exception. The same two surfaces, asked
+[which BioProject a series belongs to](../gse-to-bioproject/gds-summary.md),
+disagree on 466 series — and 41% of the extra answers are umbrella projects that
+must not be used. Membership is one of the few things GEO's own record and
+NCBI's index of it agree about completely.
+
+**Prefer `gds_summary` when a single series is the question**: one API call
+against a multi-megabyte gzip download, and it never fails. Prefer `soft_family`
+when anything *else* about the samples is needed — the SRA relations, the
+BioProject, the per-sample protocol text the [assay layer](../../assays.md)
+reads — because all of it comes out of the same download, and 319,023 samples
+across 13,038 series is **24.5 per series**, so the alternative is 24.5 further
+requests.

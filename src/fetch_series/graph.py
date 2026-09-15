@@ -622,6 +622,14 @@ ROUTES: list[Route] = [
         summary="The Samples array of the db=gds ESummary record.",
         kb_page="routes/gse-to-geo-sample/gds-summary.md",
         cost=RouteCost(requests=2, rate_limit_rps=NCBI_EUTILS_RPS),
+        evidence=RouteEvidence(
+            corpus="reprocessed-gse",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=13_045,
+            accessions_failed=0,
+            unique_results=319_023,
+            notes="13,038 resolved, 7 empty. Identical to the SOFT route on all 13,038 series both answer -- the same 319,023 samples, sample for sample.",
+        ),
     ),
     Route(
         id="gse->experiment:soft_family",
