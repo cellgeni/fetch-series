@@ -551,6 +551,14 @@ ROUTES: list[Route] = [
         summary="^SAMPLE records in the SOFT family file, in declaration order.",
         kb_page="routes/gse-to-geo-sample/soft-family.md",
         cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
+        evidence=RouteEvidence(
+            corpus="reprocessed-gse",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=13_045,
+            accessions_failed=7,
+            unique_results=319_023,
+            notes="13,038 resolved, 0 empty.",
+        ),
     ),
     Route(
         id="gse->geo_sample:gds_summary",

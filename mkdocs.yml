@@ -52,6 +52,7 @@ nav:
   - The resolver: resolver.md
   - The relation table: relations.md
   - The file layer: files.md
+  - The assay layer: assays.md
   - Parity with fetch10xmeta: fetch10xmeta-parity.md
   - The graph:
       - Accession types: graph/accession-types.md
