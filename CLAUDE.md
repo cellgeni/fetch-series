@@ -105,6 +105,29 @@ knowledge-base page, promote the route, and remove the test.
 - **Rotating an API key mid-survey is destructive.** NCBI answers an invalid key with a 400, which
   is not retryable, so every remaining accession is recorded as a permanent failure. Stop the run,
   update `.env`, resume.
+- **A pathology test that fails on a 429 is worse than no test.** The suite is
+  inverted -- a failure is supposed to mean the archive fixed something -- so a
+  transient failure is indistinguishable from the good news. Use the
+  `run_or_skip` fixture in `tests/pathologies/conftest.py`; it skips on anything
+  `is_retryable` recognises. Four false positives appeared the first time a
+  survey and the suite ran at once.
+- **`csv.DictReader` silently keeps only the last value of a repeated column.**
+  SDRF repeats `Comment[FASTQ_URI]` once per mate, so E-MTAB-9221 read through a
+  dict yielded 20 URIs for its 20 runs instead of 40 -- half the data, no error.
+  Use `biostudies.sdrf_raw_rows` for anything that may repeat.
+- **BioStudies file listings are under `items`, not `files`.** A
+  `.get("files", [])` returns an empty list and no error, which reads as "this
+  study registers nothing" -- and since that *is* the finding for E-MTAB-8060,
+  the bug is invisible: it turns every study into E-MTAB-8060.
+- **BioStudies serves 20,000 hits and answers the next page with a 500**, not a
+  400. Every retry policy reads that as transient and retries forever. Partition
+  the query; `search_by_year` does.
+- **Mate markers mean nothing outside a fastq name.** E-MTAB-8060's runs deposit
+  `Sample_1.bam`, where the `_1` is the submitter's sample name. A BAM carries
+  both mates interleaved, so a mate number on one is meaningless.
+- **Two surveys at once need a SQLite busy timeout.** WAL allows one writer and
+  Python's default timeout is five seconds, so the normal way to cover NCBI and
+  ENA routes in parallel would lose hours of work to "database is locked".
 - **Run `hard-cases` before any full corpus.** 34 accessions and seconds. Skipping it cost a partial
   12,755-accession run on a route whose empty rate should have looked wrong immediately.
 
