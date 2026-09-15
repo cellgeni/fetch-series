@@ -19,6 +19,7 @@ good news — the archive fixed something.
 | [SOFT names experiments with no runs](soft-names-experiments-with-no-runs.md) | NCBI | A complete-looking experiment list resolves to zero downloadable files |
 | [BioStudies 20,000-hit window](biostudies-20000-hit-window.md) | EBI | Enumerating a collection hangs at 96.6%, retrying a permanent 500 |
 | [Unpaired fastq for a paired library](ena-paired-library-single-fastq.md) | EBI | Half the reads download cleanly, checksum correctly, and produce a wrong matrix |
+| [SDRF URIs on a decommissioned mirror](ae-sdrf-points-at-decommissioned-mirror.md) | EBI | Trusting them discards the real submission; two studies look identical and are not |
 
 ## Reporting upstream
 

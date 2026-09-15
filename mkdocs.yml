@@ -65,6 +65,7 @@ nav:
       - ArrayExpress experiment to study: routes/ae-experiment-to-study/index.md
       - Study to ArrayExpress experiment: routes/study-to-ae-experiment/biostudies-search.md
       - Run to file: routes/run-to-file/index.md
+      - ArrayExpress experiment to file: routes/ae-experiment-to-file/index.md
   - Pathologies:
       - Overview: pathologies/index.md
       - ELink gds to sra returns no links: pathologies/elink-gds-sra-missing-links.md
@@ -73,6 +74,7 @@ nav:
       - SOFT names experiments with no runs: pathologies/soft-names-experiments-with-no-runs.md
       - BioStudies 20,000-hit window: pathologies/biostudies-20000-hit-window.md
       - ENA unpaired fastq for a paired library: pathologies/ena-paired-library-single-fastq.md
+      - ArrayExpress SDRF mirror URIs: pathologies/ae-sdrf-points-at-decommissioned-mirror.md
   - Benchmarks: benchmarks/index.md
   - Upstream reports:
       - Overview: upstream/index.md
