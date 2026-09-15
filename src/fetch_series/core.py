@@ -8,6 +8,8 @@ from typing import Any, Literal
 import httpx
 from httpx_retries import Retry, RetryTransport
 
+from fetch_series.logging_utils import redact
+
 # Enable retry logic for HTTP requests to handle transient errors and rate limiting when accessing the NCBI E-utilities API
 retry = Retry(
     total=5,
@@ -23,6 +25,22 @@ retry = Retry(
 )
 
 transport = RetryTransport(retry=retry)
+
+
+def _raise_for_status(response: httpx.Response) -> None:
+    """raise_for_status, with credentials stripped from the error message.
+
+    httpx puts the full request URL into the exception message and the API key
+    is a query parameter, so an uncaught traceback prints the key. The redacting
+    log formatter cannot help: the interpreter never routes a traceback through
+    logging.
+    """
+    try:
+        response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        raise httpx.HTTPStatusError(
+            redact(str(exc)), request=exc.request, response=exc.response
+        ) from None
 
 
 def default_api_key() -> str | None:
@@ -69,7 +87,7 @@ def eutils_search(
     }
     with httpx.Client(transport=transport) as client:
         response = client.get(base, params=_clean_params(params), timeout=10)
-    response.raise_for_status()
+    _raise_for_status(response)
     payload: dict[str, Any] = response.json()
     return payload
 
@@ -110,7 +128,7 @@ def eutils_summary(
 
     with httpx.Client(transport=transport) as client:
         response = client.get(base, params=_clean_params(params), timeout=10)
-    response.raise_for_status()
+    _raise_for_status(response)
     payload: dict[str, Any] = response.json()
     return payload
 
@@ -160,7 +178,7 @@ def eutils_fetch(
 
     with httpx.Client(transport=transport) as client:
         response = client.get(base, params=_clean_params(params), timeout=10)
-    response.raise_for_status()
+    _raise_for_status(response)
     if retmode == "json":
         payload: dict[str, Any] = response.json()
         return payload
@@ -207,7 +225,7 @@ def eutils_link(
     }
     with httpx.Client(transport=transport) as client:
         response = client.get(base, params=_clean_params(params), timeout=10)
-    response.raise_for_status()
+    _raise_for_status(response)
     payload: dict[str, Any] = response.json()
     return payload
 
@@ -272,7 +290,7 @@ def ae2secondary(series: str) -> list[str]:
     base = f"https://www.ebi.ac.uk/biostudies/files/{series}/{series}.idf.txt"
     with httpx.Client(transport=transport) as client:
         response = client.get(base, follow_redirects=True, timeout=30)
-    response.raise_for_status()
+    _raise_for_status(response)
 
     # Check if there are SecondaryAccession values in the idf file
     pattern = re.compile(r"Comment\s*\[SecondaryAccession\]\s*((?:ERP|EGA\w)\d+)")
@@ -313,7 +331,7 @@ def ae2biosamples(series: str) -> list[str]:
     base = f"https://www.ebi.ac.uk/biostudies/files/{series}/{series}.sdrf.txt"
     with httpx.Client(transport=transport) as client:
         response = client.get(base, follow_redirects=True, timeout=30)
-    response.raise_for_status()
+    _raise_for_status(response)
 
     reader = csv.DictReader(io.StringIO(response.text), delimiter="\t")
     # csv.DictReader fills missing trailing columns with None, so the key can be
@@ -352,7 +370,7 @@ def read_enaruns(
         response = client.get(
             base, params=_clean_params(params), timeout=10.0, follow_redirects=True
         )
-    response.raise_for_status()
+    _raise_for_status(response)
 
     if format == "json":
         payload: list[dict[str, Any]] = response.json()
@@ -427,7 +445,7 @@ def query_ae(query: str, pagesize: int = 100) -> dict[str, Any]:
         response = client.get(
             base, params=_clean_params(params), timeout=10.0, follow_redirects=True
         )
-    response.raise_for_status()
+    _raise_for_status(response)
     payload: dict[str, Any] = response.json()
     return payload
 

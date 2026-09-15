@@ -31,6 +31,8 @@ from typing import Any, TypeVar
 
 import httpx
 
+from fetch_series.logging_utils import redact
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
@@ -68,6 +70,29 @@ def is_retryable(exc: BaseException) -> bool:
     ):
         return True
     return isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code in RETRYABLE_STATUS
+
+
+def redact_exception(exc: BaseException) -> BaseException:
+    """Return ``exc`` with credentials stripped from its message.
+
+    httpx puts the full request URL into the message of every
+    :class:`httpx.HTTPStatusError` and most transport errors, and the NCBI API
+    key is a query parameter. The redacting log formatter only helps if the
+    exception is *logged*; an uncaught traceback printed by the interpreter
+    bypasses it completely, which is how a key reached a session transcript.
+
+    The exception type is preserved, because :func:`is_retryable` dispatches on
+    it and on ``response.status_code``.
+    """
+    message = redact(str(exc))
+    if message == str(exc):
+        return exc
+    if isinstance(exc, httpx.HTTPStatusError):
+        return httpx.HTTPStatusError(message, request=exc.request, response=exc.response)
+    try:
+        return type(exc)(message)
+    except Exception:
+        return exc
 
 
 @dataclass(frozen=True, slots=True)
@@ -166,10 +191,13 @@ class SurveyClient:
         clean = {k: v for k, v in (params or {}).items() if v is not None}
         async with self._semaphore:
             await self._limiter.acquire()
-            response = await self._client.get(
-                url, params=clean, timeout=timeout or self.limits.base_timeout
-            )
-        response.raise_for_status()
+            try:
+                response = await self._client.get(
+                    url, params=clean, timeout=timeout or self.limits.base_timeout
+                )
+                response.raise_for_status()
+            except Exception as exc:
+                raise redact_exception(exc) from None
         return response
 
     async def post(
@@ -186,10 +214,13 @@ class SurveyClient:
         clean = {k: v for k, v in data.items() if v is not None}
         async with self._semaphore:
             await self._limiter.acquire()
-            response = await self._client.post(
-                url, data=clean, timeout=timeout or self.limits.base_timeout
-            )
-        response.raise_for_status()
+            try:
+                response = await self._client.post(
+                    url, data=clean, timeout=timeout or self.limits.base_timeout
+                )
+                response.raise_for_status()
+            except Exception as exc:
+                raise redact_exception(exc) from None
         return response
 
     async def with_retry(
