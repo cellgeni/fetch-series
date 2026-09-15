@@ -9,6 +9,7 @@ trusted for that, and where the archives lose data silently.
 
 ## Start here
 
+- **What is this identifier, and who issued it?** → [Accession types](graph/accession-types.md)
 - **Resolving an accession and want to know which route to use?** → [Routes](routes/gse-to-experiment/index.md)
 - **A series came back empty and you suspect it shouldn't have?** → [Pathologies](pathologies/index.md)
 - **Want to report something to an archive?** → [Upstream reports](upstream/index.md)

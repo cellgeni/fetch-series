@@ -49,6 +49,9 @@ validation:
 
 nav:
   - Home: index.md
+  - The graph:
+      - Accession types: graph/accession-types.md
+      - Routing by archive: graph/routing-by-archive.md
   - Routes:
       - GEO series to experiment: routes/gse-to-experiment/index.md
       - Via SOFT BioProject and ENA: routes/gse-to-experiment/soft-bioproject-ena.md
