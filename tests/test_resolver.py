@@ -192,3 +192,116 @@ class TestNoRoute:
             GSE, EntityType.EXPERIMENT, client, registry=registry, implementations=impls
         )
         assert any("GSE1 -> experiment" in line for line in r.explain())
+
+
+class TestMultiHop:
+    """A GSM has no direct route to a run, so the graph must be walked."""
+
+    @staticmethod
+    def _registry() -> RouteRegistry:
+        return RouteRegistry(
+            [
+                _route("gsm-to-srx", source=EntityType.GEO_SAMPLE, target=EntityType.EXPERIMENT),
+                _route(
+                    "srx-to-srr",
+                    source=EntityType.EXPERIMENT,
+                    target=EntityType.RUN,
+                    proves_data_exists=True,
+                ),
+            ]
+        )
+
+    async def test_walks_a_two_hop_path(self, client):
+        from fetch_series.resolver import resolve_path
+
+        impls = {"gsm-to-srx": _fn(["SRX1"]), "srx-to-srr": _fn(["SRR1", "SRR2"])}
+        r = await resolve_path(
+            parse("GSM1"),
+            EntityType.RUN,
+            client,
+            registry=self._registry(),
+            implementations=impls,
+        )
+        assert r.values == ["SRR1", "SRR2"]
+        assert r.path == (EntityType.GEO_SAMPLE, EntityType.EXPERIMENT, EntityType.RUN)
+
+    async def test_records_the_intermediate_a_value_came_through(self):
+        """A chained answer nobody can trace back is not much better than a guess."""
+        from fetch_series.resolver import resolve_path
+
+        c = SurveyClient(limits=Limits(rps=0, concurrency=2, attempts=1))
+        impls = {"gsm-to-srx": _fn(["SRX1"]), "srx-to-srr": _fn(["SRR1"])}
+        r = await resolve_path(
+            parse("GSM1"),
+            EntityType.RUN,
+            c,
+            registry=self._registry(),
+            implementations=impls,
+        )
+        assert r.attributions["SRR1"][0].via == "SRX1"
+
+    async def test_a_direct_route_is_preferred(self, client):
+        from fetch_series.resolver import resolve_path
+
+        registry = RouteRegistry(
+            [
+                _route("direct", source=EntityType.GEO_SAMPLE, target=EntityType.RUN),
+                _route("gsm-to-srx", source=EntityType.GEO_SAMPLE, target=EntityType.EXPERIMENT),
+                _route("srx-to-srr", source=EntityType.EXPERIMENT, target=EntityType.RUN),
+            ]
+        )
+        impls = {
+            "direct": _fn(["SRR_direct"]),
+            "gsm-to-srx": _fn(["SRX1"]),
+            "srx-to-srr": _fn(["SRR_chained"]),
+        }
+        r = await resolve_path(
+            parse("GSM1"), EntityType.RUN, client, registry=registry, implementations=impls
+        )
+        assert r.values == ["SRR_direct"]
+        assert r.path == ()
+
+    async def test_a_dead_hop_yields_nothing_rather_than_a_partial_lie(self, client):
+        from fetch_series.resolver import resolve_path
+
+        impls = {"gsm-to-srx": _fn([]), "srx-to-srr": _fn(["SRR1"])}
+        r = await resolve_path(
+            parse("GSM1"),
+            EntityType.RUN,
+            client,
+            registry=self._registry(),
+            implementations=impls,
+        )
+        assert r.values == []
+
+    async def test_fanout_is_capped_and_says_so(self, client):
+        """A 2,396-sample series walked hop by hop would issue 2,396 requests
+        for the second hop alone."""
+        from fetch_series.resolver import resolve_path
+
+        many = [f"SRX{i}" for i in range(20)]
+        impls = {"gsm-to-srx": _fn(many), "srx-to-srr": _fn(["SRR1"])}
+        r = await resolve_path(
+            parse("GSM1"),
+            EntityType.RUN,
+            client,
+            registry=self._registry(),
+            implementations=impls,
+            max_fanout=5,
+        )
+        assert any("fan-out capped" in reason for reason in r.routes_skipped.values())
+
+    async def test_hops_are_not_reported_as_disagreeing(self, client):
+        """Hops answer different questions; counting them as rival routes would
+        mark every chained resolution a disagreement."""
+        from fetch_series.resolver import resolve_path
+
+        impls = {"gsm-to-srx": _fn(["SRX1"]), "srx-to-srr": _fn(["SRR1"])}
+        r = await resolve_path(
+            parse("GSM1"),
+            EntityType.RUN,
+            client,
+            registry=self._registry(),
+            implementations=impls,
+        )
+        assert not r.disagreed

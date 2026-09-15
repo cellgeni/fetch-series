@@ -28,11 +28,11 @@ from __future__ import annotations
 import asyncio
 import logging
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from enum import StrEnum
 
-from fetch_series.accession import Accession, EntityType
+from fetch_series.accession import Accession, EntityType, try_parse
 from fetch_series.graph import REGISTRY, Route, RouteRegistry
 from fetch_series.routes import IMPLEMENTATIONS
 from fetch_series.survey.client import SurveyClient
@@ -55,11 +55,18 @@ class Mode(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class Attribution:
-    """Which route produced a value, and when."""
+    """Which route produced a value, and when.
+
+    ``via`` names the intermediate accession a multi-hop answer came through,
+    so a value reached by GSM -> experiment -> run can say which experiment.
+    Without it a chained answer is unattributable, and an answer nobody can
+    trace back is not much better than a guess.
+    """
 
     route_id: str
     proves_data_exists: bool
     fetched_at: datetime
+    via: str | None = None
 
 
 @dataclass(slots=True)
@@ -74,6 +81,8 @@ class Resolution:
     routes_empty: list[str] = field(default_factory=list)
     routes_failed: dict[str, str] = field(default_factory=dict)
     routes_skipped: dict[str, str] = field(default_factory=dict)
+    path: tuple[EntityType, ...] = ()
+    """The entity-type path walked, when no direct route answered."""
 
     @property
     def values(self) -> list[str]:
@@ -123,23 +132,32 @@ class Resolution:
 
     @property
     def disagreed(self) -> bool:
-        """Whether the routes that answered returned different sets."""
-        answering = [r for r, n in self.routes_resolved.items() if n]
-        if len(answering) < 2:
+        """Whether routes answering the *same* question returned different sets.
+
+        Only routes that contributed a value are compared. A route that
+        answered an earlier hop of a multi-hop walk contributes none of the
+        final values, and counting its absence as an empty answer would report
+        every chained resolution as a disagreement -- which is meaningless,
+        because the hops were never answering the same question.
+        """
+        contributing = {a.route_id for attrs in self.attributions.values() for a in attrs}
+        if len(contributing) < 2:
             return False
         per_route = {
             route: {
-                v
-                for v, attrs in self.attributions.items()
+                value
+                for value, attrs in self.attributions.items()
                 if any(a.route_id == route for a in attrs)
             }
-            for route in answering
+            for route in contributing
         }
         return len(set(map(frozenset, per_route.values()))) > 1
 
     def explain(self) -> list[str]:
         """Human-readable account of how the answer was reached."""
         lines = [f"{self.source} -> {self.target} ({self.mode})"]
+        if self.path:
+            lines.append("  path     " + " -> ".join(self.path))
         for route, reason in self.routes_skipped.items():
             lines.append(f"  skipped  {route}: {reason}")
         for route, n in self.routes_resolved.items():
@@ -156,6 +174,87 @@ class Resolution:
         if self.disagreed:
             lines.append("  -> routes disagreed; see single_route_only")
         return lines
+
+
+async def resolve_path(
+    accession: Accession,
+    target: EntityType,
+    client: SurveyClient,
+    *,
+    registry: RouteRegistry = REGISTRY,
+    implementations: Mapping[str, RouteFn] = IMPLEMENTATIONS,
+    max_fanout: int = 50,
+) -> Resolution:
+    """Resolve ``accession`` to ``target``, walking a multi-hop path if needed.
+
+    Tries direct routes first. If none answers, takes the shortest entity-type
+    path the graph offers and walks it, resolving each hop in turn.
+
+    ``max_fanout`` caps how many intermediates the next hop is asked about. It
+    matters: a 2,396-sample series resolved hop by hop would issue 2,396
+    requests for the second hop alone. When the cap bites the answer is
+    partial, and it says so rather than looking complete.
+    """
+    direct = await resolve(
+        accession, target, client, registry=registry, implementations=implementations
+    )
+    if direct.values or (not direct.routes_skipped and direct.routes_resolved):
+        return direct
+
+    for path in registry.find_paths(accession.entity, target):
+        if len(path) < 3:
+            continue  # the direct edge, already tried
+        walked = await _walk(accession, path, client, registry, implementations, max_fanout)
+        if walked is not None:
+            walked.routes_skipped.update(direct.routes_skipped)
+            walked.routes_empty.extend(direct.routes_empty)
+            walked.routes_failed.update(direct.routes_failed)
+            return walked
+    return direct
+
+
+async def _walk(
+    accession: Accession,
+    path: list[EntityType],
+    client: SurveyClient,
+    registry: RouteRegistry,
+    implementations: Mapping[str, RouteFn],
+    max_fanout: int,
+) -> Resolution | None:
+    """Walk one entity-type path, hop by hop. None if a hop answers nothing."""
+    frontier: list[tuple[Accession, str | None]] = [(accession, None)]
+    final = Resolution(source=accession, target=path[-1], mode=Mode.UNION, path=tuple(path))
+
+    for hop_index in range(len(path) - 1):
+        target = path[hop_index + 1]
+        reached: dict[str, tuple[Accession, str | None]] = {}
+        truncated = len(frontier) > max_fanout
+        for current, origin in frontier[:max_fanout]:
+            hop = await resolve(
+                current, target, client, registry=registry, implementations=implementations
+            )
+            for route_id, n in hop.routes_resolved.items():
+                final.routes_resolved[route_id] = final.routes_resolved.get(route_id, 0) + n
+            final.routes_failed.update(hop.routes_failed)
+            for value, attrs in hop.attributions.items():
+                parsed = try_parse(value)
+                if parsed is None:
+                    continue
+                # The intermediate that got us here, for the last hop's records.
+                reached.setdefault(value, (parsed, origin or current.value))
+                if hop_index == len(path) - 2:
+                    final.attributions.setdefault(value, []).extend(
+                        replace(a, via=current.value) for a in attrs
+                    )
+        if truncated:
+            final.routes_skipped[f"hop {hop_index + 1}"] = (
+                f"fan-out capped at {max_fanout}; the answer is partial"
+            )
+        if not reached:
+            return None
+        frontier = list(reached.values())
+
+    return final if final.attributions else None
 
 
 async def resolve(
