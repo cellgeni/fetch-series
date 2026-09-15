@@ -651,6 +651,13 @@ def links(
     ] = None,
     limit: Annotated[int | None, typer.Option(help="At most this many runs.")] = None,
     header: Annotated[bool, typer.Option(help="Emit a header row.")] = False,
+    samples: Annotated[
+        str | None,
+        typer.Option(
+            "--samples",
+            help="Comma-separated sample accessions (GSM or SRS/ERS) to keep.",
+        ),
+    ] = None,
 ) -> None:
     """Emit links.tsv in the schema the reprocessing pipeline reads today.
 
@@ -673,6 +680,25 @@ def links(
     if not rows:
         typer.secho(f"No runs found for {parsed}.", fg=typer.colors.YELLOW, err=True)
         raise typer.Exit(1)
+
+    if samples:
+        wanted = {token.strip() for token in samples.split(",") if token.strip()}
+        kept = [row for row in rows if row.sample in wanted]
+        missing = wanted - {row.sample for row in rows}
+        if missing:
+            # Naming a sample the series does not contain is a typo or a stale
+            # list, and silently returning fewer rows makes it look like the
+            # archive lost data.
+            typer.secho(
+                f"{len(missing)} requested samples are not in {parsed}: "
+                + ", ".join(sorted(missing)[:10]),
+                fg=typer.colors.YELLOW,
+                err=True,
+            )
+        if not kept:
+            typer.secho("No runs left after filtering by sample.", fg=typer.colors.RED, err=True)
+            raise typer.Exit(1)
+        rows = kept
 
     unresolved = [row for row in rows if not row.urls]
     if unresolved:

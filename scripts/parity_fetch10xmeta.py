@@ -29,10 +29,10 @@ from fetch_series.logging_utils import configure_logging
 from fetch_series.relations import resolve_input
 from fetch_series.survey.client import Limits, SurveyClient
 
-# Only the whole-accession cases. The sample-subset cases exercise the module's
-# own filtering argument, which is a pipeline concern rather than a resolution
-# one, and the stub case asserts file names rather than content.
-CASES: dict[str, str] = {
+# Every case except "GEO - stub", which asserts file names rather than content.
+# A value is the accession, or (accession, sample filter) for the cases that
+# exercise the module's sample_ids argument.
+CASES: dict[str, str | tuple[str, str]] = {
     "GEO - ENA paired-end fastq": "GSE111360",
     "GEO - ENA paired-end fastq - mouse": "GSE160513",
     "GEO - one run per sample": "GSE250130",
@@ -44,6 +44,12 @@ CASES: dict[str, str] = {
     "BioProject - samples taken straight from ENA": "PRJNA511433",
     "GEO - family file without SRA relations - all samples": "GSE135325",
     "GEO - family file without SRA relations - twelve samples": "GSE137444",
+    "GEO - subset of samples": ("GSE117988", "GSM3330564,GSM3330560"),
+    "ArrayExpress - subset of samples": ("E-MTAB-9221", "ERS4689152,ERS4689153"),
+    "GEO - family file without SRA relations - subset of samples": (
+        "GSE135325",
+        "GSM4005490,GSM4005491",
+    ),
 }
 
 
@@ -53,7 +59,8 @@ async def main(snapshot_path: Path) -> int:
     report: dict[str, dict[str, object]] = {}
 
     async with SurveyClient(Limits(rps=5, concurrency=6), api_key=default_api_key()) as client:
-        for name, accession in CASES.items():
+        for name, case in CASES.items():
+            accession, wanted = case if isinstance(case, tuple) else (case, None)
             entry = snapshots.get(name)
             if entry is None:
                 # Not a failure: a test can assert without snapshotting, and
@@ -62,6 +69,9 @@ async def main(snapshot_path: Path) -> int:
                 continue
             expected = {tuple(row) for row in entry["content"][0]}
             rows = await links_table(resolve_input(accession), client)
+            if wanted:
+                keep = {token.strip() for token in wanted.split(",")}
+                rows = [row for row in rows if row.sample in keep]
             got = {(r.run, r.species, r.type, r.sample) for r in rows}
             report[name] = {
                 "accession": accession,
