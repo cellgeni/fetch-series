@@ -16,8 +16,9 @@ from fetch_series.accession import EntityType, UnknownAccessionError, parse
 from fetch_series.cache import DEFAULT_CACHE_PATH, SurveyCache
 from fetch_series.core import default_api_key
 from fetch_series.entities import MISSING, RELATION_COLUMNS, RunRecord
+from fetch_series.export.links import LINKS_COLUMNS, LinkRow
 from fetch_series.files import Recommendation
-from fetch_series.filesets import Verdict, recommendations_for, verify_all
+from fetch_series.filesets import Verdict, links_table, recommendations_for, verify_all
 from fetch_series.graph import REGISTRY, Route
 from fetch_series.logging_utils import configure_logging, run_logfile
 from fetch_series.relations import relations as build_relations
@@ -591,6 +592,59 @@ def files(
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(body)
         typer.echo(f"wrote {len(lines) - 1} file links to {out}", err=True)
+
+
+@app.command()
+def links(
+    accession: Annotated[
+        str, typer.Argument(help="A series, project, study or ArrayExpress experiment.")
+    ],
+    out: Annotated[
+        Path | None, typer.Option("-o", "--out", help="Write TSV here instead of stdout.")
+    ] = None,
+    limit: Annotated[int | None, typer.Option(help="At most this many runs.")] = None,
+    header: Annotated[bool, typer.Option(help="Emit a header row.")] = False,
+) -> None:
+    """Emit links.tsv in the schema the reprocessing pipeline reads today.
+
+    run / species / url(s) / type{ORIFQ,ENAFQ,BAM,SRA} / sample -- the parity
+    contract with fetch10xmeta. The ordering is the incumbent's, deliberately,
+    including where this project's own file layer would choose differently; see
+    docs/routes/run-to-file.
+    """
+    load_dotenv()
+    configure_logging(level=logging.WARNING)
+    parsed = resolve_input(accession)
+
+    async def run_it() -> list[LinkRow]:
+        async with SurveyClient(
+            limits=Limits(rps=5.0, concurrency=6), api_key=default_api_key()
+        ) as client:
+            return await links_table(parsed, client, limit=limit)
+
+    rows = asyncio.run(run_it())
+    if not rows:
+        typer.secho(f"No runs found for {parsed}.", fg=typer.colors.YELLOW, err=True)
+        raise typer.Exit(1)
+
+    unresolved = [row for row in rows if not row.urls]
+    if unresolved:
+        typer.secho(
+            f"{len(unresolved)} of {len(rows)} runs have no download URL: "
+            + ", ".join(row.run for row in unresolved[:10]),
+            fg=typer.colors.YELLOW,
+            err=True,
+        )
+
+    lines = ["\t".join(LINKS_COLUMNS)] if header else []
+    lines.extend("\t".join(row.as_row()) for row in rows)
+    body = "\n".join(lines) + "\n"
+    if out is None:
+        typer.echo(body, nl=False)
+    else:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(body)
+        typer.echo(f"wrote {len(rows)} runs to {out}", err=True)
 
 
 def main() -> None:

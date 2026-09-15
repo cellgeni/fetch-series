@@ -22,10 +22,17 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
 from fetch_series.accession import Accession, EntityType
+from fetch_series.export.links import LinkRow, links_for
 from fetch_series.files import FileRecord, FileSet, Recommendation, recommend
 from fetch_series.graph import REGISTRY, RouteRegistry
+from fetch_series.relations import relations
 from fetch_series.resolver import resolve_path
-from fetch_series.routes import IMPLEMENTATIONS, ena_file_records, sdl_file_records
+from fetch_series.routes import (
+    IMPLEMENTATIONS,
+    ae_file_records,
+    ena_file_records,
+    sdl_file_records,
+)
 from fetch_series.survey.client import SurveyClient
 from fetch_series.survey.runner import RouteFn
 
@@ -172,3 +179,52 @@ async def verify_all(
 ) -> list[Verdict]:
     """Verify many links concurrently, at the client's own rate limit."""
     return list(await asyncio.gather(*(verify(r, client, timeout) for r in records)))
+
+
+async def links_table(
+    accession: Accession,
+    client: SurveyClient,
+    *,
+    limit: int | None = None,
+) -> list[LinkRow]:
+    """The incumbent ``links.tsv`` for everything an accession resolves to.
+
+    Builds the relation table first, because the sample column is the one thing
+    the file routes cannot supply: for a GEO series it is the GSM, which only
+    GEO knows, and for a bare SRA submission it is the SRS.
+
+    The ArrayExpress SDRF route is asked once per *study*, not once per run --
+    it is keyed on the experiment accession and returns every run at once -- so
+    a series with 200 runs costs one SDRF request rather than 200.
+    """
+    records = await relations(accession, client)
+    if limit is not None:
+        records = records[:limit]
+    runs = [record.run for record in records]
+
+    sdrf: dict[str, list[FileRecord]] = {}
+    ae_experiments = {r.ae_experiment for r in records if r.ae_experiment}
+    if accession.entity is EntityType.AE_EXPERIMENT:
+        ae_experiments.add(accession.value)
+    for experiment in sorted(ae_experiments):
+        try:
+            for record in await ae_file_records(experiment, client, 60.0):
+                sdrf.setdefault(record.run, []).append(record)
+        except Exception:
+            continue  # the SDRF is one source among several; losing it is not fatal
+
+    sets = await asyncio.gather(*(files_for_run(run, client) for run in runs))
+    filesets = {
+        fileset.run: FileSet(
+            run=fileset.run, records=fileset.records + tuple(sdrf.get(fileset.run, ()))
+        )
+        for fileset in sets
+    }
+    return links_for(
+        filesets,
+        species={r.run: r.species or "UNKNOWN" for r in records},
+        # GEO calls the sample a GSM and SRA calls it an SRS. The incumbent
+        # emits whichever the entry point implies, so the GEO sample wins when
+        # there is one.
+        samples={r.run: (r.geo_sample or r.sample or "NA") for r in records},
+    )
