@@ -86,8 +86,11 @@ is not a near miss, it is a categorical property: an ArrayExpress import of a
 GEO series has a GEO-derived SDRF, and GEO-derived SDRFs do not carry BioSample
 columns. 15 of the 450 could not be read at all.
 
-The fallback is therefore real but narrow. It rescues E-MTAB-6505 and 22 other
-studies, and it is the wrong tool for the group that dominates the failures.
+The fallback is therefore real but narrow — and **complete where it applies**.
+The 23 studies yield 756 BioSamples, and the second hop resolves every one of
+them: 756 of 756 to 1,547 runs, nothing empty, nothing failed. So it rescues
+E-MTAB-6505 and 22 other studies outright, and it is simply the wrong tool for
+the group that dominates the failures.
 
 **The right route for an `E-GEOD` study is GEO.** `E-GEOD-63923` is `GSE63923`;
 the GEO series resolves through [the SOFT family file](../gse-to-experiment/index.md)
