@@ -100,7 +100,10 @@ def routes_list(
                 f"{route.evidence.failure_rate:.2%} failed, {route.evidence.corpus}"
             )
         typer.echo(f"{marker} {route.id:44s} {note}")
-    typer.echo("\n'!' marks a declared route with no implementation yet.")
+    # The legend would be read as a route id by anything piping --ids-only into
+    # a loop, so it belongs to the human listing only.
+    if not ids_only:
+        typer.echo("\n'!' marks a declared route with no implementation yet.")
 
 
 @survey_app.command("run")

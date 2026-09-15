@@ -138,3 +138,18 @@ class TestKnowledgeBaseCoverage:
                 continue
             text = (self.DOCS / route.kb_page).read_text()
             assert any(ch.isdigit() for ch in text), route.kb_page
+
+
+class TestIdsOnlyListing:
+    """--ids-only is piped into shell loops, so every line must be a route id."""
+
+    def test_the_legend_is_not_emitted(self):
+        from typer.testing import CliRunner
+
+        from fetch_series.cli import app
+
+        result = CliRunner().invoke(app, ["routes", "list", "--implemented", "--ids-only"])
+        assert result.exit_code == 0
+        lines = [line for line in result.stdout.splitlines() if line.strip()]
+        assert lines, "no routes listed"
+        assert all(REGISTRY[line] for line in lines), "a line was not a route id"
