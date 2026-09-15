@@ -21,7 +21,7 @@ ArrayExpress entry point.
 ## Measured
 
 **Corpus:** `sample:3000@arrayexpress-ena`, a seeded draw from the 20,693
-studies BioStudies records an ENA link for. **Surveyed:** 2026-09-16.
+studies BioStudies records an ENA link for. **Surveyed:** 2026-09-15.
 
 | | |
 |---|---|

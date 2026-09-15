@@ -128,6 +128,10 @@ knowledge-base page, promote the route, and remove the test.
 - **Two surveys at once need a SQLite busy timeout.** WAL allows one writer and
   Python's default timeout is five seconds, so the normal way to cover NCBI and
   ENA routes in parallel would lose hours of work to "database is locked".
+- **Dates are UTC, everywhere.** A survey finishing at 00:12 BST is 23:12 UTC the
+  day before, and `date.today()` recorded the wrong day — which a CI runner an
+  hour behind then rejected as being in the future. Archive surveys are
+  international by nature; a local date is ambiguous to every reader.
 - **Run `hard-cases` before any full corpus.** 34 accessions and seconds. Skipping it cost a partial
   12,755-accession run on a route whose empty rate should have looked wrong immediately.
 

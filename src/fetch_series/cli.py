@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from datetime import date
+from datetime import UTC, datetime
 from importlib.metadata import version
 from pathlib import Path
 from typing import Annotated
@@ -241,7 +241,7 @@ def survey_evidence(
     typer.echo(
         f"""        evidence=RouteEvidence(
             corpus="{corpus_name}",
-            surveyed_on=date({date.today():%Y, %-m, %-d}),
+            surveyed_on=date({datetime.now(UTC).date():%Y, %-m, %-d}),
             accessions_queried={summary["queried"]:_},
             accessions_failed={summary["failed"]:_},
             unique_results={summary["unique_results"]:_},

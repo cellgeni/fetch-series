@@ -1,6 +1,6 @@
 """Offline tests for the route registry and ranking."""
 
-from datetime import date
+from datetime import UTC, date, datetime
 
 import pytest
 
@@ -236,7 +236,10 @@ class TestSeededRegistry:
         for route in REGISTRY:
             if route.evidence is not None:
                 assert route.evidence.corpus
-                assert route.evidence.surveyed_on <= date.today()
+                # UTC, not local. A survey run at 00:12 BST is 23:12 UTC the
+                # previous day, and a CI runner an hour behind would reject a
+                # date this machine considers today.
+                assert route.evidence.surveyed_on <= datetime.now(UTC).date()
                 assert route.evidence.accessions_failed <= route.evidence.accessions_queried
 
     def test_bioproject_to_run_prefers_ena_on_the_evidence(self):
