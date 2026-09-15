@@ -86,3 +86,74 @@ class TestSampleToRuns:
     def test_runs_with_no_sample_identity_are_left_out(self):
         records = [RunRecord(run="SRR1"), RunRecord(run="SRR2", geo_sample="GSM1")]
         assert sample_to_runs(records) == {"GSM1": ["SRR2"]}
+
+
+class TestArrayExpressEntryPoint:
+    """ENA's filereport rejects an ArrayExpress accession outright."""
+
+    async def test_the_idf_secondary_study_is_used_as_the_ena_key(self, monkeypatch):
+        import fetch_series.relations as rel
+        from fetch_series.accession import parse
+
+        asked: list[str] = []
+
+        async def idf(client, accession, timeout):
+            return ["ERP122394"]
+
+        async def ena(client, accessions, timeout):
+            asked.extend(accessions)
+            return {"ERR1": RunRecord(run="ERR1")}
+
+        monkeypatch.setattr(rel.biostudies, "idf_secondary_accessions", idf)
+        monkeypatch.setattr(rel, "_ena_records", ena)
+
+        records = await rel.relations(parse("E-MTAB-9221"), client=None)
+        assert asked == ["ERP122394"]
+        assert records[0].ae_experiment == "E-MTAB-9221"
+
+    async def test_a_study_with_no_secondary_accession_falls_back_to_biosamples(self, monkeypatch):
+        """E-MTAB-6505 declares none, and is reachable only this way."""
+        import fetch_series.relations as rel
+        from fetch_series.accession import parse
+
+        asked: list[str] = []
+
+        async def no_idf(client, accession, timeout):
+            return []
+
+        async def sdrf(client, accession, timeout):
+            return [{"Comment[BioSD_SAMPLE]": "SAMEA5053920"}]
+
+        async def ena(client, accessions, timeout):
+            asked.extend(accessions)
+            return {"ERR2861957": RunRecord(run="ERR2861957")}
+
+        monkeypatch.setattr(rel.biostudies, "idf_secondary_accessions", no_idf)
+        monkeypatch.setattr(rel.biostudies, "sdrf_rows", sdrf)
+        monkeypatch.setattr(rel, "_ena_records", ena)
+
+        records = await rel.relations(parse("E-MTAB-6505"), client=None)
+        assert asked == ["SAMEA5053920"]
+        assert records[0].run == "ERR2861957"
+
+    async def test_a_study_with_neither_returns_nothing_rather_than_asking_ena(self, monkeypatch):
+        """Handing an E-MTAB accession to ENA earns a 400 naming the eight
+        shapes it accepts, which the caller would see as 'no runs'."""
+        import fetch_series.relations as rel
+        from fetch_series.accession import parse
+
+        called = []
+
+        async def nothing(client, accession, timeout):
+            return []
+
+        async def ena(client, accessions, timeout):
+            called.append(accessions)
+            return {}
+
+        monkeypatch.setattr(rel.biostudies, "idf_secondary_accessions", nothing)
+        monkeypatch.setattr(rel.biostudies, "sdrf_rows", nothing)
+        monkeypatch.setattr(rel, "_ena_records", ena)
+
+        assert await rel.relations(parse("E-MTAB-9216"), client=None) == []
+        assert called == []

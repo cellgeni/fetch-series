@@ -18,7 +18,7 @@ import logging
 
 from fetch_series.accession import Accession, EntityType, parse, try_parse
 from fetch_series.entities import RunRecord
-from fetch_series.providers import ena_portal, geo
+from fetch_series.providers import biostudies, ena_portal, geo
 from fetch_series.survey.client import SurveyClient
 
 logger = logging.getLogger(__name__)
@@ -53,10 +53,44 @@ async def relations(
     if accession.entity is EntityType.GEO_SERIES:
         return await _relations_from_geo(accession, client, timeout)
 
-    records = await _ena_records(client, [accession.value], timeout)
     if accession.entity is EntityType.AE_EXPERIMENT:
-        for record in records.values():
-            record.set("ae_experiment", accession.value, "input")
+        return await _relations_from_arrayexpress(accession, client, timeout)
+
+    records = await _ena_records(client, [accession.value], timeout)
+    return sorted(records.values(), key=lambda r: r.run)
+
+
+async def _relations_from_arrayexpress(
+    accession: Accession, client: SurveyClient, timeout: float
+) -> list[RunRecord]:
+    """Resolve an ArrayExpress experiment through the accessions ENA accepts.
+
+    ENA's filereport rejects an ArrayExpress accession outright -- it names the
+    eight accession shapes it takes and E-MTAB is not among them -- so the study
+    has to be found first. The IDF's ``Comment[SecondaryAccession]`` is the
+    direct route; E-MTAB-6505 declares none and is reachable only through the
+    BioSamples its SDRF names, which is why the fallback is not optional.
+    """
+    keys: list[str] = []
+    try:
+        keys = await biostudies.idf_secondary_accessions(client, accession.value, timeout)
+    except Exception as exc:
+        logger.warning("IDF fetch failed for %s: %s", accession.value, exc)
+
+    if not keys:
+        try:
+            rows = await biostudies.sdrf_rows(client, accession.value, timeout)
+            keys = biostudies.sdrf_column(rows, "Comment[BioSD_SAMPLE]")
+        except Exception as exc:
+            logger.warning("SDRF fetch failed for %s: %s", accession.value, exc)
+
+    if not keys:
+        logger.warning("%s declares neither a secondary study nor a BioSample", accession.value)
+        return []
+
+    records = await _ena_records(client, keys, timeout)
+    for record in records.values():
+        record.set("ae_experiment", accession.value, "input")
     return sorted(records.values(), key=lambda r: r.run)
 
 
