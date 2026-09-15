@@ -461,14 +461,19 @@ ROUTES: list[Route] = [
         kb_page="routes/ae-experiment-to-study/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         evidence=RouteEvidence(
-            corpus="arrayexpress-all",
-            surveyed_on=date(2026, 3, 6),
-            accessions_queried=7_179,
-            accessions_failed=457,
-            unique_results=6_732,
+            corpus="arrayexpress-ena",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=20_693,
+            accessions_failed=66,
+            unique_results=20_077,
             notes=(
-                "457 experiments declare no secondary accession; the BioSample "
-                "fallback recovers some of them (E-MTAB-6505 resolves that way)."
+                "20,076 resolved, 551 empty. The corpus is every ArrayExpress "
+                "study BioStudies records an ENA link for, so those 551 are a "
+                "measurable recall failure rather than an unknown: the link "
+                "exists and the IDF does not declare it. The BioSample fallback "
+                "recovers some of them; E-MTAB-6505 resolves that way. Replaces "
+                "a 2026-03 figure of 7,179/457 whose population was never "
+                "recorded."
             ),
         ),
         known_pathologies=("ae-idf-missing-secondary-accession",),
@@ -501,6 +506,14 @@ ROUTES: list[Route] = [
         summary="BioStudies search API, collection=arrayexpress.",
         kb_page="routes/study-to-ae-experiment/biostudies-search.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS, paginates=True),
+        evidence=RouteEvidence(
+            corpus="sample:3000@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=3_000,
+            accessions_failed=0,
+            unique_results=101,
+            notes="100 resolved, 2,900 empty. The corpus is studies reached from the reprocessed 10x BioProjects, which are overwhelmingly NCBI submissions; a low yield here is a fact about that population, not a failure of the route.",
+        ),
     ),
     Route(
         id="study->bioproject:ena_filereport",

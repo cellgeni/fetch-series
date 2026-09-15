@@ -12,16 +12,51 @@ title: ArrayExpress experiment → study
 `ae_experiment->study:idf_secondary` reads `Comment[SecondaryAccession]` from the study's
 IDF file at `https://www.ebi.ac.uk/biostudies/files/<acc>/<acc>.idf.txt`. One request.
 
-## Measured behaviour
+## Measured
 
-All 7,179 ArrayExpress sequencing experiments, 2026-03-06:
+**Corpus:** `arrayexpress-ena` — every ArrayExpress study BioStudies records an
+ENA link for, enumerated on 2026-09-15 and committed. **Surveyed:** 2026-09-15.
 
-| | Count |
-|---|---|
-| Resolved to exactly one secondary accession | 6,715 |
-| Resolved to 2–4 | 7 |
-| **No secondary accession declared** | **457** |
-| Secondary accessions found | 6,732 (6,630 ERP, 20 EGA, 82 other) |
+The population is the point. BioStudies independently says an ENA link exists
+for each of these, so a study whose IDF declares no secondary accession is a
+**countable recall failure** rather than an unknown.
+
+| | Count | |
+|---|---:|---|
+| Resolved | 20,137 | 97.3% |
+| **No secondary accession declared** | **551** | 2.7% |
+| Failed | 5 | 0.02% |
+| Distinct studies found | 20,138 | |
+
+### It is not one route, it is two populations
+
+| Prefix | What it is | Total | Resolved | Rate |
+|---|---|---:|---:|---:|
+| `E-MTAB` | native ArrayExpress submissions | 9,802 | 9,777 | **99.7%** |
+| `E-GEOD` | ArrayExpress's imports of GEO series | 10,597 | 10,086 | 95.2% |
+| `E-ERAD` | the Sanger ERAD collection | 274 | 193 | **70.4%** |
+| others | SYBR, GEUV, TABM | 20 | 20 | 100% |
+
+For a study submitted *to* ArrayExpress the IDF route is essentially exact. For
+a GEO series mirrored *into* ArrayExpress it is not, and the right answer for
+those is to go to GEO — where [the SOFT family file resolves 99.8%](../gse-to-experiment/index.md)
+— rather than to read a derived record of a derived record. `E-ERAD` is the
+weakest at 70.4% and the smallest, at 274 studies.
+
+This replaces a 2026-03 figure of 7,179 queried and 457 empty, whose population
+was never recorded and so cannot be compared with anything.
+
+### Five studies exist without existing
+
+The 5 failures are all `E-MTAB`, and all are genuine 404s on the IDF. The study
+records themselves are live — `/api/v1/studies/E-MTAB-14460` returns a title and
+a `ReleaseDate` of 2026-01-26 — and the search index returns them. They simply
+register **no files at all**: no IDF, no SDRF, which are the two files an
+ArrayExpress study is defined by. Eight months past their stated release date.
+
+```
+E-MTAB-14460  E-MTAB-15098  E-MTAB-15118  E-MTAB-15165  E-MTAB-15306
+```
 
 ## The fallback
 
@@ -29,10 +64,11 @@ All 7,179 ArrayExpress sequencing experiments, 2026-03-06:
 `Comment[BioSD_SAMPLE]` BioSample accessions, and querying ENA for one of them
 (`SAMEA5053920`) recovers `ERR2861957` / `PRJEB29431` / `ERP111731`.
 
-So the chain is: IDF secondary accession → else SDRF BioSamples → ENA. The second hop
-exists as `ae_experiment->biosample:sdrf`; the composition is not yet declared as a route
-of its own and the 457 have not been re-run through it. **Unverified:** how many of the 457
-the fallback actually recovers.
+So the chain is: IDF secondary accession → else SDRF BioSamples → ENA. Both hops
+are declared routes (`ae_experiment->biosample:sdrf`, `biosample->run:ena_filereport`)
+and `fetch_series.relations` walks the composition for any ArrayExpress entry
+point. **Unverified:** how many of the 551 the fallback recovers as a
+population — the mechanism is proven on E-MTAB-6505 and has not been censused.
 
 ## A trap in the file list
 
