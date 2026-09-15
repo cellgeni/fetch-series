@@ -57,10 +57,42 @@ GSM4274734 is the more dangerous shape. The route resolves, the answer looks ord
 the experiment it names has no data — which is only visible by
 [confirming against a data-proving route](../../resolver.md).
 
-## Measured behaviour
+## Measured
 
-A tier-two sample of 1,000 GEO samples drawn from the reprocessed table is in progress.
+**Corpus:** `sample:1000@reprocessed-sample` — a seeded draw of 1,000 from the
+104,515 samples in the reprocessed table. **825** of those 1,000 are GEO samples;
+the other 175 are INSDC samples these routes cannot accept, and the runner filters
+them out rather than counting them as failures. **Surveyed:** 2026-09-15.
 
-Tier one (3 accessions) is described above, and is a **coverage** check rather than a
-prevalence estimate — see [benchmarks](../../benchmarks/index.md) on why the two cannot
-substitute for each other.
+All three directions come from the same `acc.cgi` record, and all three behave
+identically on it:
+
+| Route | Resolved | Empty | Failed | Unique results |
+|---|---:|---:|---:|---:|
+| `geo_sample->experiment:acc_cgi` | 822 | **0** | 3 | 822 |
+| `geo_sample->biosample:acc_cgi` | 822 | **0** | 3 | 822 |
+| `geo_sample->geo_series:acc_cgi` | 822 | **0** | 3 | **849** |
+
+The same 3 failures in each case — one record, one fetch, one outcome.
+
+**849 series for 822 samples.** 27 samples belong to more than one series, which
+is the [multi-series membership](#a-sample-can-belong-to-several-series) case
+above measured rather than asserted: 3.3% of samples, common enough that code
+treating "its series" as singular is wrong for one sample in thirty.
+
+### Why zero empties is not the good news it looks like
+
+Every one of the 822 named an experiment. That is **not** evidence against
+[GEO omitting the SRA relation](../../pathologies/geo-omits-sample-sra-relation.md):
+the reprocessed table contains only samples the pipeline *succeeded* on, so a
+sample GEO records no relation for is largely excluded from this corpus by
+construction. The corpus can measure how reliable the route is for samples that
+are known to have worked; it cannot measure how often GEO leaves a sample
+unreachable, because those samples are not in it.
+
+Measuring that needs a draw from all of GEO — `geo-sample-<n>` — which is what
+the series-level census used.
+
+Tier one (3 accessions) is described above, and is a **coverage** check rather
+than a prevalence estimate — see [benchmarks](../../benchmarks/index.md) on why
+the two cannot substitute for each other.

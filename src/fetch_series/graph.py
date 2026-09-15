@@ -727,20 +727,18 @@ ROUTES: list[Route] = [
         kb_page="routes/geo-sample-to-experiment/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
         evidence=RouteEvidence(
-            corpus="reprocessed-sample",
+            corpus="sample:1000@reprocessed-sample",
             surveyed_on=date(2026, 9, 15),
-            accessions_queried=1_000,
-            accessions_failed=0,
-            unique_results=996,
+            accessions_queried=825,
+            accessions_failed=3,
+            unique_results=822,
             notes=(
-                "Tier two, 1,000 samples in visit order. 996 resolved, 4 empty, zero "
-                "failures, and exactly one experiment per sample. The 4 empties all "
-                "record a BioSample and no SRA relation, which is the series-level "
-                "pathology seen per sample -- 0.4%, matching an independent 500-series "
-                "measurement of the same thing."
+                "822 resolved, 0 empty. 825 of the 1,000 drawn are GEO samples; "
+                "the other 175 are INSDC samples this route cannot accept. "
+                "Replaces a run recorded against the bare corpus name, which "
+                "did not say how many accessions it drew."
             ),
         ),
-        known_pathologies=("geo-omits-sample-sra-relation",),
     ),
     Route(
         id="geo_sample->biosample:acc_cgi",
@@ -750,6 +748,14 @@ ROUTES: list[Route] = [
         summary="!Sample_relation = BioSample: from GEO's own record for the sample.",
         kb_page="routes/geo-sample-to-experiment/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
+        evidence=RouteEvidence(
+            corpus="sample:1000@reprocessed-sample",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=825,
+            accessions_failed=3,
+            unique_results=822,
+            notes="822 resolved, 0 empty. 825 of the 1,000 drawn are GEO samples; the other 175 are INSDC samples this route cannot accept.",
+        ),
     ),
     Route(
         id="geo_sample->geo_series:acc_cgi",
@@ -759,6 +765,14 @@ ROUTES: list[Route] = [
         summary="!Sample_series_id from GEO's record; a sample can belong to several series.",
         kb_page="routes/geo-sample-to-experiment/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
+        evidence=RouteEvidence(
+            corpus="sample:1000@reprocessed-sample",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=825,
+            accessions_failed=3,
+            unique_results=849,
+            notes="822 resolved, 0 empty. 825 of the 1,000 drawn are GEO samples; the other 175 are INSDC samples this route cannot accept.",
+        ),
     ),
     # --- ENA portal, which answers many edges from one endpoint -----------
     Route(
