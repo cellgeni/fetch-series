@@ -384,3 +384,44 @@ class TestSurveyDerivedCorpora:
         # The name records exactly which survey produced the population, so a
         # result can be traced back to the question that generated its inputs.
         assert corpus.name == "results-of:a->b:x@corp"
+
+
+class TestSampledCorpora:
+    """A sub-sample of a corpus is a corpus in its own right, and says so."""
+
+    def test_draw_is_the_requested_size(self):
+        from fetch_series.survey.corpora import sample_of
+
+        assert len(sample_of("hard-cases", 10)) == 10
+
+    def test_draw_is_deterministic(self):
+        """Two runs recorded under one name have to mean the same accessions."""
+        from fetch_series.survey.corpora import sample_of
+
+        assert sample_of("hard-cases", 12).values == sample_of("hard-cases", 12).values
+
+    def test_draw_is_a_subset_of_its_parent(self):
+        from fetch_series.survey.corpora import hard_cases, sample_of
+
+        parent = set(hard_cases().values)
+        assert set(sample_of("hard-cases", 15).values) <= parent
+
+    def test_name_round_trips_through_load(self):
+        from fetch_series.survey.corpora import load, sample_of
+
+        drawn = sample_of("hard-cases", 8)
+        assert drawn.name == "sample:8@hard-cases"
+        assert load(drawn.name).values == drawn.values
+
+    def test_refuses_to_draw_more_than_the_parent_holds(self):
+        """Silently returning fewer would label a small draw with a large n."""
+        from fetch_series.survey.corpora import sample_of
+
+        with pytest.raises(ValueError, match="holds"):
+            sample_of("hard-cases", 10_000)
+
+    def test_rejects_a_malformed_spec(self):
+        from fetch_series.survey.corpora import load
+
+        with pytest.raises(ValueError, match="sample:<n>@<corpus>"):
+            load("sample:@hard-cases")

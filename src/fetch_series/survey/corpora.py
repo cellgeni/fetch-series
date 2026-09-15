@@ -232,6 +232,32 @@ def from_survey(route_id: str, corpus: str, cache_path: Path | None = None) -> C
     )
 
 
+def sample_of(name: str, n: int, seed: int = 20260915) -> Corpus:
+    """A seeded draw of ``n`` accessions from another corpus.
+
+    The run, sample and experiment columns of the reprocessed table hold
+    100k-260k accessions, and the ENA routes over them cost one request each.
+    Surveying every one would take most of a day to answer a question a few
+    thousand draws already answers to within a percentage point.
+
+    The draw is named ``sample:<n>@<corpus>`` and seeded, so the name identifies
+    the accession set exactly -- the same property ``geo-sample-<n>`` has, and
+    the reason ``--limit`` is not a substitute: two runs limited differently
+    would both be recorded against the full corpus name and look comparable.
+    """
+    parent = load(name)
+    if n > len(parent):
+        raise ValueError(f"Asked for {n:,} accessions but {name} holds {len(parent):,}")
+    rng = random.Random(seed)
+    drawn = rng.sample([a.value for a in parent.accessions], n)
+    return _build(
+        name=f"sample:{n}@{name}",
+        description=f"{n:,} accessions drawn at random from {name} (seed {seed}).",
+        source=f"{parent.source} sample n={n} seed={seed}",
+        raws=drawn,
+    )
+
+
 CORPUS_BUILDERS = {
     "hard-cases": hard_cases,
     "reprocessed": reprocessed,
@@ -241,6 +267,7 @@ CORPUS_BUILDERS = {
 KNOWN_CORPORA = (
     "hard-cases",
     "results-of:<route-id>@<corpus>",
+    "sample:<n>@<corpus>",
     "reprocessed-<column>   (column: " + ", ".join(SAMPLE_TABLE_COLUMNS[:6]) + ")",
     "geo-sample[-<n>]",
 )
@@ -265,6 +292,14 @@ def load(name: str) -> Corpus:
             f"Unknown column {column!r} in corpus {name!r}; "
             f"expected one of {', '.join(SAMPLE_TABLE_COLUMNS[:6])}"
         )
+
+    # sample:<n>@<corpus>
+    if name.startswith("sample:"):
+        spec = name.removeprefix("sample:")
+        size, _, parent = spec.partition("@")
+        if not size.isdigit() or not parent:
+            raise ValueError(f"Expected sample:<n>@<corpus>, got {name!r}")
+        return sample_of(parent, int(size))
 
     # results-of:<route id>@<corpus>
     if name.startswith("results-of:"):
