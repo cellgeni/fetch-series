@@ -39,15 +39,6 @@ from fetch_series.routes import (
 from fetch_series.survey.client import SurveyClient
 from fetch_series.survey.runner import RouteFn
 
-# Each file route paired with the call that returns typed records rather than
-# bare URLs. The route ids are the same ones the graph declares and the survey
-# measures, so a route's coverage figure and its use here cannot drift apart.
-FILE_RECORD_SOURCES: Mapping[str, str] = {
-    "run->file:ena_fastq": "fastq",
-    "run->file:ena_submitted": "submitted",
-    "run->file:ena_sra": "sra",
-}
-
 
 async def files_for_run(
     run: str,
@@ -63,10 +54,8 @@ async def files_for_run(
     recoverable, whereas an exception here loses the routes that did answer.
     """
 
-    async def ena(column: str) -> list[FileRecord]:
-        return await ena_file_records(run, client, timeout, column)
-
-    tasks = [ena(column) for column in FILE_RECORD_SOURCES.values()]
+    # One request covers every ENA column family; see ena_file_records.
+    tasks = [ena_file_records(run, client, timeout)]
     if include_sdl:
         tasks.append(sdl_file_records(run, client, timeout))
 

@@ -95,12 +95,11 @@ class TestFilesForRun:
     """One route failing must not take the routes that answered down with it."""
 
     async def test_a_failing_route_does_not_lose_the_others(self, monkeypatch):
+        """SDL failing must not lose what ENA answered, or the other way round."""
         import fetch_series.filesets as filesets
 
-        async def good(run, client, timeout, column):
-            if column == "fastq":
-                return [_record()]
-            raise httpx.ConnectError("ENA is down for this column")
+        async def good(run, client, timeout, column=None):
+            return [_record()]
 
         async def sdl_fails(run, client, timeout):
             raise RuntimeError("SDL refused")
@@ -117,7 +116,7 @@ class TestFilesForRun:
 
         called = []
 
-        async def ena(run, client, timeout, column):
+        async def ena(run, client, timeout, column=None):
             return []
 
         async def sdl(run, client, timeout):
@@ -145,3 +144,55 @@ async def test_published_links_resolve_and_match_their_published_size():
     assert verdicts
     assert all(v.resolves for v in verdicts)
     assert all(v.size_matches is not False for v in verdicts)
+
+
+class TestEnaColumnsCostOneRequest:
+    """All three ENA file families come from one filereport row."""
+
+    async def test_one_request_returns_every_family(self, monkeypatch):
+        from fetch_series.routes import ena_file_records
+
+        calls = []
+
+        async def report(client, accession, timeout, fields=None, result="read_run"):
+            calls.append(accession)
+            return [
+                {
+                    "run_accession": "SRR1",
+                    "library_layout": "PAIRED",
+                    "fastq_ftp": "ftp/a/SRR1_1.fastq.gz;ftp/a/SRR1_2.fastq.gz",
+                    "submitted_ftp": "ftp/a/mine.bam",
+                    "sra_ftp": "ftp/a/SRR1.sra",
+                }
+            ]
+
+        import fetch_series.routes as routes
+
+        monkeypatch.setattr(routes.ena_portal, "read_run_report", report)
+        records = await ena_file_records("SRR1", client=None, timeout=10.0)
+
+        assert len(calls) == 1, "asking for three families must not cost three requests"
+        assert {r.source for r in records} == {
+            "run->file:ena_fastq",
+            "run->file:ena_submitted",
+            "run->file:ena_sra",
+        }
+
+    async def test_a_named_column_still_returns_only_that_family(self, monkeypatch):
+        """The survey runs one declared route at a time and must not be handed
+        another route's results under its own id."""
+        import fetch_series.routes as routes
+        from fetch_series.routes import ena_file_records
+
+        async def report(client, accession, timeout, fields=None, result="read_run"):
+            return [
+                {
+                    "run_accession": "SRR1",
+                    "fastq_ftp": "ftp/a/SRR1_1.fastq.gz",
+                    "submitted_ftp": "ftp/a/mine.bam",
+                }
+            ]
+
+        monkeypatch.setattr(routes.ena_portal, "read_run_report", report)
+        records = await ena_file_records("SRR1", client=None, timeout=10.0, column="submitted")
+        assert {r.source for r in records} == {"run->file:ena_submitted"}

@@ -387,14 +387,29 @@ ENA_FILE_FIELDS = (
 )
 
 
+ENA_FILE_COLUMNS = ("fastq", "submitted", "sra")
+
+
 async def ena_file_records(
-    accession: str, client: SurveyClient, timeout: float, column: str
+    accession: str,
+    client: SurveyClient,
+    timeout: float,
+    column: str | None = None,
 ) -> list[FileRecord]:
-    """Typed file records from one of ENA's file column families."""
+    """Typed file records from ENA's file columns.
+
+    All three families come from one row, so ``column=None`` returns records for
+    all of them at the cost of a single request. Asking for each in turn issued
+    three identical filereport calls per run and discarded two thirds of each
+    response -- which at file-layer scale is three times the work and three
+    times the load on EBI for the same answer.
+    """
     rows = await ena_portal.read_run_report(client, accession, timeout, fields=ENA_FILE_FIELDS)
+    wanted = (column,) if column is not None else ENA_FILE_COLUMNS
     records: list[FileRecord] = []
     for row in rows:
-        records.extend(from_ena_row(row, column, f"run->file:ena_{column}"))
+        for name in wanted:
+            records.extend(from_ena_row(row, name, f"run->file:ena_{name}"))
     return records
 
 
