@@ -4,7 +4,7 @@ title: Parity with fetch10xmeta
 
 # Parity with `fetch10xmeta`
 
-**Measured:** 2026-09-15 · **Result: 11 of 11 test cases reproduced.**
+**Measured:** 2026-09-15 · **Result: 14 of 14 test cases reproduced.**
 
 The incumbent is `modules/cellgeni/fetch10xmeta` in
 [nf-reprocessing-public-10x](https://github.com/cellgeni/nf-reprocessing-public-10x):
@@ -43,13 +43,17 @@ them.
 | GEO — no SRA relations, all samples | GSE135325 | 36 | exact |
 | GEO — no SRA relations, twelve samples | GSE137444 | 50 | exact |
 | ArrayExpress — SDRF URIs the study does not register | E-MTAB-8060 | 15 | assertions pass¹ |
+| GEO — subset of samples | GSE117988 + 2 GSMs | 2 | exact |
+| ArrayExpress — subset of samples | E-MTAB-9221 + 2 ERSs | 4 | exact |
+| GEO — no SRA relations, subset | GSE135325 + 2 GSMs | 16 | exact |
 
 ¹ This case's snapshot is not present in the committed `.snap` file, so there is
 nothing to diff against. Every assertion the test does make passes: 15 rows, all
 `BAM`, all URLs ending `.bam`, none under `/pub/databases/microarray/`, no
 `UNKNOWN` species, every sample matching `^ERS\d+$`.
 
-Total: **425 runs** compared, zero differences.
+Total: **447 runs** compared, zero differences. The three subset cases exercise the
+module's `sample_ids` argument, which `fetch links --samples` honours.
 
 ## Three defects had to be fixed to get there
 

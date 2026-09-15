@@ -70,3 +70,36 @@ are runs.
 For a reprocessing pipeline the ENA semantics are usually what you want — a sample with no
 runs has nothing to download. When counting what a project *contains*, they are not
 interchangeable.
+
+## The full-corpus comparison
+
+Both routes have now been run over all 12,755 projects of `reprocessed-prj`
+(2026-09-15). Neither failed on a single accession.
+
+| | `elink` | `ena_filereport` |
+|---|---:|---:|
+| Projects resolved | 12,730 | 12,730 |
+| Projects empty | 25 | 25 |
+| Failed | 0 | 0 |
+| **Unique BioSamples** | 244,324 | **363,885** |
+
+Identical at the project level and 49% apart at the sample level. Comparing the
+per-project sets:
+
+| | |
+|---|---:|
+| Projects where the two agree exactly | 11,876 |
+| Projects where they disagree | 879 |
+| BioSamples ENA has and ELink does not | **125,376** |
+| BioSamples ELink has and ENA does not | 5,710 |
+
+**93.5% of the ENA-only samples — 117,224 of 125,376 — are in EBI-registered
+projects.** 1,074 more are in DDBJ-registered ones. This is the archive
+asymmetry measured at the sample level rather than the project level: NCBI's
+link table does not merely *fail* on `PRJEB` accessions, it under-reports them
+while appearing to succeed, because 219 projects returned a smaller set rather
+than an empty one.
+
+The 5,710 going the other way are why this is a union and not a replacement.
+They are exactly the case the section above describes: BioSamples that carry no
+runs, which `result=read_run` cannot return by construction.
