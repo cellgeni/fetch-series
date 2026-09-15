@@ -53,11 +53,36 @@ bodies, and that difference decides which API can answer about them.
 
 This rule is the first consumer of that field, and it is the reason the field exists.
 
-## The inverse, which is also true
+## The inverse, which is also true — and it makes a DDBJ provider unnecessary
 
-ENA's portal API answered for every prefix in this corpus. Where a route is backed by an
-archive that mirrors INSDC broadly rather than by one body's own link table, no restriction
-applies — and `source_archives` should be left empty rather than guessed at.
+ENA's portal API is not an archive's own index in the same sense; it answers for all three
+INSDC members. Measured on the same corpus, `bioproject->run:ena_filereport`:
+
+| Prefix | Issued by | Queried | Resolved | Resolve rate |
+|---|---|---|---|---|
+| `PRJNA` | NCBI | 12,114 | 12,093 | 99.8% |
+| `PRJEB` | EBI | 504 | 502 | 99.6% |
+| `PRJDB` | DDBJ | 137 | **137** | **100.0%** |
+
+Set against NCBI's 1.4% for EBI-issued projects, the contrast is the whole rule in one
+table: **ask the archive that mirrors INSDC, not the archive that issued the accession** —
+unless the accession's own issuer is the only one holding what you want, as GEO is for
+`GSM → SRX`.
+
+### DDBJ needs no provider of its own
+
+The project plan carried "DDBJ — entirely unexplored" as outstanding work. It is covered:
+ENA resolved every DDBJ-issued project in the corpus and returned 2,307 `DRR` runs for
+them, and the tier-one corpus exercises `DRS188691` and `DRX730719` through the same ENA
+routes.
+
+A dedicated DDBJ provider would be a second way to fetch data that already arrives
+complete. It is not being written, and this is the evidence for that decision rather than a
+deferral.
+
+The caveat worth keeping: this is measured for the **run-level** report. If a later
+milestone needs something DDBJ holds that ENA does not mirror — submission-level metadata,
+or DDBJ-specific file paths — that is a different question and needs its own measurement.
 
 Do not declare a restriction without measuring it. A route wrongly marked NCBI-only becomes
 invisible for two thirds of the graph.
