@@ -14,33 +14,48 @@ where getting the wrong file list means reprocessing the wrong data.
 
 ## Status
 
-Milestone 1 — the accession graph — is substantially done. 33 routes are implemented across five
-archives, every one exercised against a curated pathology corpus, and the important ones measured
-by census rather than sample.
+The accession graph, the file layer, parity with the incumbent, and the assay layer are all in.
+38 routes across five archives, every one exercised against a curated pathology corpus and the
+important ones measured by census rather than sample.
 
 ```bash
 uv sync --all-groups
 
+# Download links, with checksums and the reason each set was chosen
+fetch files SRR25056225 --explain --verify
+
+# links.tsv in the schema the reprocessing pipeline reads today
+fetch links GSE111360
+
+# Is this even 10x? Ask before downloading 880 runs of Smart-seq2
+fetch screen GSE109816
+
 # One row per run, joining what only GEO knows onto what ENA reports
-fetch relations GSE236084
 fetch relations GSE236084 --sample-map
 
 # Resolve between any two entity types, walking multi-hop paths when needed
 fetch resolve GSM7518069 --to run --explain
-fetch resolve GSE150508 --to experiment --confirmed-only
 
 # Inspect the graph and the evidence behind it
 fetch routes list
 fetch survey compare --route A --route B --corpus reprocessed-gse
 ```
 
-File links are **not** here yet. That is milestone 2, and it is where "which files should I
-actually download" gets decided — ENA `fastq_ftp` versus `submitted_ftp` versus NCBI SDL, md5 and
-size verification, mate completeness, paywalled objects. Today the table stops at the run.
+`fetch links` reproduces **11 of 11** of `fetch10xmeta`'s own nf-test cases — 425 runs, no
+differences. See [the parity record](docs/fetch10xmeta-parity.md).
 
 ## What the censuses found
 
-Three of these contradicted what the code assumed before anyone measured it.
+Four of these contradicted what the code assumed before anyone measured it.
+
+**ENA's derived fastq omits the read that carries the cell barcode — for 39.2% of runs.** Over a
+random 3,000-run draw from the reprocessed corpus, 1,201 runs declare `library_layout=PAIRED` and
+publish a single fastq; for **1,177 of them SRA holds more bases than ENA serves** — 5.93 Tb
+unpublished, a median ratio of 1.40. The missing ~28 bp read is the 10x barcode and UMI. The
+download succeeds, the published md5 matches, and every read in the result is unassignable to a
+cell. Only **8.2%** of runs have any submitted original to fall back on, so for most of them the
+SRA object is the sole complete source.
+[The measurement](docs/pathologies/ena-paired-library-single-fastq.md).
 
 **NCBI's `elink gds→sra` is missing 17.6% of GEO series, silently.** Over all 13,045 series in the
 reprocessed corpus it resolves 82.4% against the SOFT family file's 99.8%, and returns 178,879
