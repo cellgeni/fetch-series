@@ -18,6 +18,20 @@ Tiered, and the tiers answer different questions.
 | `reprocessed-gse` | 13,045 | Every GEO series that has been through reprocessing | Prevalence, for GEO entry points |
 | `reprocessed-prj` | 12,755 | Every BioProject in the same table | Prevalence, for project entry points |
 | `geo-sample-<n>` | n | Seeded stratified draw from all 275,238 GEO series | Prevalence across GEO as a whole |
+| `reprocessed-<srr\|srs\|srx\|sample>` | 104k–263k | The run, sample, experiment and GEO-sample columns of the same table | Prevalence at the level the file layer works on |
+| `arrayexpress-ena` | 20,693 | Every ArrayExpress study BioStudies records an ENA link for, enumerated once and committed | Recall, where the link is known to exist from outside the route |
+| `arrayexpress-no-secondary` | 551 | The studies whose IDF declares no secondary accession, from the census above | What a fallback recovers, over exactly the population it exists for |
+| `sample:<n>@<corpus>` | n | A seeded draw from any corpus | Prevalence where a full census costs more than the answer is worth |
+| `results-of:<route>@<corpus>` | varies | Everything a recorded survey returned | The next question, over the population the last answer produced |
+
+### Naming a draw is not decoration
+
+`--limit` exists and is not a substitute for `sample:<n>@<corpus>`. A limited run
+records its verdicts against the **full** corpus name, so two differently-limited
+runs look comparable and are not. The corpus name is persisted with every
+verdict as provenance, which means it has to identify the accession set exactly.
+The same rule is why `geo-sample-15` holding 10 accessions was a bug worth
+fixing rather than a rounding detail.
 
 A new route runs `hard-cases` first — 34 accessions, seconds, and a design error surfaces
 immediately. Only then does it earn a full corpus.
