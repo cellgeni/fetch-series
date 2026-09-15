@@ -62,8 +62,15 @@ knowledge-base page, promote the route, and remove the test.
 
 - **Never `logging.basicConfig`.** Use `fetch_series.logging_utils.configure_logging`. The NCBI API
   key is a query parameter, so any log line echoing a request URL leaks it — which is exactly how a
-  key reached this public repository once already. The redacting formatter covers tracebacks too,
-  not just format strings.
+  key reached this public repository once already. The redacting formatter covers logged
+  tracebacks, not just format strings.
+- **Redaction is not enough on its own: exceptions leak too.** httpx puts the full request URL into
+  the message of every `HTTPStatusError` and most transport errors, and an *uncaught* traceback is
+  printed by the interpreter without ever passing through logging. A second key was leaked this way,
+  by an ad-hoc script that raised outside any handler. `SurveyClient` and `core.py` now route every
+  request failure through `redact_exception`, which preserves the exception type so `is_retryable`
+  still works. **Any new HTTP call site must do the same** — and never print an exception from a
+  throwaway script without redacting it.
 - **Log files append.** The survey scripts used `mode="w"`, so every re-run destroyed the evidence
   documenting the results sitting next to it. Use `run_logfile()` for per-run timestamped paths.
 - **Parse accessions, don't regex them inline.** `fetch_series.accession.parse` is the single
@@ -95,6 +102,11 @@ knowledge-base page, promote the route, and remove the test.
   becomes `#gpu-cellbender` with one hyphen. The build runs `--strict`, so this breaks CI.
 - **`data/` is Git LFS**, but some files committed before `.gitattributes` are plain blobs. Check
   before assuming.
+- **Rotating an API key mid-survey is destructive.** NCBI answers an invalid key with a 400, which
+  is not retryable, so every remaining accession is recorded as a permanent failure. Stop the run,
+  update `.env`, resume.
+- **Run `hard-cases` before any full corpus.** 34 accessions and seconds. Skipping it cost a partial
+  12,755-accession run on a route whose empty rate should have looked wrong immediately.
 
 ## Things to leave alone
 
