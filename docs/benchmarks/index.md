@@ -48,6 +48,17 @@ appear in the 150-series sample, because no series in it was large enough. It ap
 times in the census, and those 9 series held **12,849 experiments** that a sample-driven
 implementation would have gone on losing silently.
 
+### A limit is not a sample
+
+Corpora arrive sorted, so taking the first N of one returns the N lowest accession numbers
+— the oldest submissions. An early 150-series run sliced that way covered only GSE ≤ 59,184,
+the oldest fifth of GEO. Every ELink failure in it was therefore an old accession, which
+produced an age hypothesis that the full census disproved.
+
+`fetch survey run --limit` now samples in the survey's own seeded visit order, and
+`shuffled()` is exported so anything else that slices a corpus does the same. The lesson
+generalises: **any prefix of an ordered corpus is a stratum, not a sample.**
+
 ## Outcomes
 
 Three, not two. The distinction is load-bearing.
