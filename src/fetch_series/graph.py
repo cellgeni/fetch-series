@@ -713,6 +713,19 @@ ROUTES: list[Route] = [
         summary="ENA portal filereport keyed on an experiment accession.",
         kb_page="routes/bioproject-to-run/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+        evidence=RouteEvidence(
+            corpus="results-of:gse->experiment:soft_family@reprocessed-gse",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=3_000,
+            accessions_failed=0,
+            unique_results=6_580,
+            notes=(
+                "Tier two over the experiments the GEO census returned. 2,963 resolved, "
+                "37 empty, zero failures. Those 37 are the measurement that matters: "
+                "1.23% of experiments GEO names carry no runs at all (95% CI "
+                "0.84-1.63%), about 3,807 of the 308,639 SOFT names."
+            ),
+        ),
         proves_data_exists=True,
     ),
     Route(

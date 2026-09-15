@@ -48,10 +48,10 @@ series, for one accession across the entire corpus.
 
 ### Completeness is not correctness
 
-Of the 23,546 experiments SOFT returns that the BioProject→ENA route does not, a sample of
-400 found **18.0% with no runs in ENA at all** (95% CI 14.2–21.8%). Extrapolated, roughly
-**4,238 experiments** — 1.37% of everything SOFT names — point at nothing downloadable.
-See [SOFT names experiments with no runs](../../pathologies/soft-names-experiments-with-no-runs.md).
+Measured directly over 3,000 experiments drawn from all 308,639 the census returned:
+**1.23% carry no runs at all** (95% CI 0.84–1.63%), roughly **3,807 experiments** pointing at
+nothing downloadable. See
+[SOFT names experiments with no runs](../../pathologies/soft-names-experiments-with-no-runs.md).
 
 The other 82% of that gap is a limitation of the ENA route rather than of SOFT: a series'
 experiments do not all sit under the BioProject its SOFT file records, so keying the

@@ -47,8 +47,8 @@ reprocessed corpus it resolves 82.4% against the SOFT family file's 99.8%, and r
 experiments against 308,639 — with **zero** errors, so no caller can detect the shortfall.
 [The report is drafted](docs/upstream/ncbi-elink-gds-sra.md).
 
-**An accession is not evidence that data exists.** Thousands of experiments named in GEO SOFT files
-have no runs at all. Two series name experiment sets that are the same size as, and completely
+**An accession is not evidence that data exists.** 1.23% of the experiments named in GEO SOFT
+files — roughly 3,807 of 308,639 — have no runs at all. Two series name experiment sets that are the same size as, and completely
 disjoint from, what their project actually holds — so a complete-looking answer downloads nothing.
 The resolver therefore splits its answer into confirmed and unconfirmed.
 

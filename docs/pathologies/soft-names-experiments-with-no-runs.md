@@ -47,20 +47,35 @@ still points at the wrong experiments within it.
 
 ## Prevalence
 
-The three disjoint-set series above are the visible tip. Measuring properly: of the 23,546
-experiments the SOFT route returns that the BioProject→ENA route does not, a random sample
-of 400 found **18.0% with no runs in ENA** (95% CI 14.2–21.8%).
+Measured directly, 2026-09-15: 3,000 experiments drawn in visit order from **all 308,639**
+that the SOFT census returned, each asked for its runs through ENA.
 
-| | Estimate | 95% CI |
-|---|---|---|
-| Experiments named by SOFT with no runs | **~4,238** | 3,352–5,125 |
-| As a share of all 308,639 SOFT experiments | **1.37%** | 1.09–1.66% |
+| | Value |
+|---|---|
+| Experiments with no runs | **37 / 3,000 = 1.23%** (95% CI 0.84–1.63%) |
+| Extrapolated over all 308,639 | **~3,807** (CI 2,588–5,026) |
+| Route failures | 0 |
 
-A separate 40-experiment check found none of the run-less accessions had runs at NCBI
-either, so these are dead rather than merely un-mirrored — though that sub-question rests
-on the smaller sample.
+An earlier figure of ~4,238 (1.37%) was reached indirectly, by sampling only the 23,546
+experiments the BioProject→ENA route did not confirm and finding 18% of *those* dead. The
+two agree within their confidence intervals, but **the direct measurement is the one to
+quote**: it samples the whole population rather than a subset chosen for being suspicious,
+so it needs no assumption about how the subset relates to the rest.
 
-## Diagnosis
+The corpus is reproducible:
+
+```bash
+fetch survey run --route "experiment->run:ena_filereport" \
+  --corpus "results-of:gse->experiment:soft_family@reprocessed-gse" --limit 3000
+```
+
+### What "no runs" means here
+
+It means ENA's `read_run` report returns nothing for the accession. A separate 40-experiment
+check found none of the run-less accessions had runs at NCBI either, so these are dead
+rather than un-mirrored — though that sub-question rests on the smaller sample.
+
+## Diagnosis## Diagnosis
 
 The submission was replaced. The original experiment records persist in SRA as metadata
 shells with no runs attached, the replacements were registered under new accessions, and
