@@ -768,6 +768,53 @@ ROUTES: list[Route] = [
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         proves_data_exists=True,
     ),
+    # --- The file layer ---------------------------------------------------
+    # A file is where every other route was heading. These four disagree with
+    # each other by design rather than by defect: ENA's fastq columns hold ENA's
+    # own derivations, `submitted` holds what the submitter actually deposited,
+    # and SDL holds NCBI's view of both. E-MTAB-8060 is the case that proves
+    # they are not interchangeable -- its real data is a BAM that the fastq
+    # route cannot see at all.
+    Route(
+        id="run->file:ena_fastq",
+        source=EntityType.RUN,
+        target=EntityType.FILE,
+        provider="ena_portal",
+        summary="ENA fastq_ftp/fastq_md5/fastq_bytes columns; ENA's own derived fastqs.",
+        kb_page="routes/run-to-file/index.md",
+        cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+        proves_data_exists=True,
+    ),
+    Route(
+        id="run->file:ena_submitted",
+        source=EntityType.RUN,
+        target=EntityType.FILE,
+        provider="ena_portal",
+        summary="ENA submitted_ftp columns; the submitter's original deposit, in its original format.",
+        kb_page="routes/run-to-file/index.md",
+        cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+        proves_data_exists=True,
+    ),
+    Route(
+        id="run->file:ena_sra",
+        source=EntityType.RUN,
+        target=EntityType.FILE,
+        provider="ena_portal",
+        summary="ENA sra_ftp columns; the NCBI-format archive object mirrored at EBI.",
+        kb_page="routes/run-to-file/index.md",
+        cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+        proves_data_exists=True,
+    ),
+    Route(
+        id="run->file:sdl",
+        source=EntityType.RUN,
+        target=EntityType.FILE,
+        provider="sdl",
+        summary="NCBI Storage Data Locator; original files, cloud mirrors, and retrieval cost.",
+        kb_page="routes/run-to-file/index.md",
+        cost=RouteCost(requests=1, rate_limit_rps=NCBI_EUTILS_RPS),
+        proves_data_exists=True,
+    ),
 ]
 
 REGISTRY = RouteRegistry(ROUTES)

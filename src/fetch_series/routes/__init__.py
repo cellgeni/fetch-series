@@ -15,7 +15,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from fetch_series.providers import biostudies, ena_portal, geo, sra_be
+from fetch_series.files import FileRecord, from_ena_row, from_sdl_files
+from fetch_series.providers import biostudies, ena_portal, geo, sdl, sra_be
 from fetch_series.providers.eutils import (
     efetch_text,
     elink_uids,
@@ -355,6 +356,70 @@ async def study_to_ae_experiment(accession: str, client: SurveyClient, timeout: 
     return sorted({hit for hit in hits if hit.startswith("E-")})
 
 
+# --------------------------------------------------------------------------
+# The file layer
+#
+# A file route answers with URLs rather than accessions. That is deliberate:
+# the survey harness compares routes by what they return, and comparing the URL
+# sets two providers offer for the same run is exactly the question the file
+# layer exists to ask. The typed FileRecord view lives alongside, for callers
+# that need the checksum and not just the link.
+# --------------------------------------------------------------------------
+
+# ENA packs a run's files into parallel `;`-joined columns, one family per
+# prefix. `fastq_*` are ENA's own derivations, `submitted_*` are the
+# submitter's original deposit, `sra_*` the NCBI-format archive object.
+ENA_FILE_FIELDS = (
+    "run_accession",
+    "fastq_ftp",
+    "fastq_md5",
+    "fastq_bytes",
+    "submitted_ftp",
+    "submitted_md5",
+    "submitted_bytes",
+    "submitted_format",
+    "sra_ftp",
+    "sra_md5",
+    "sra_bytes",
+)
+
+
+async def ena_file_records(
+    accession: str, client: SurveyClient, timeout: float, column: str
+) -> list[FileRecord]:
+    """Typed file records from one of ENA's file column families."""
+    rows = await ena_portal.read_run_report(client, accession, timeout, fields=ENA_FILE_FIELDS)
+    records: list[FileRecord] = []
+    for row in rows:
+        records.extend(from_ena_row(row, column, f"run->file:ena_{column}"))
+    return records
+
+
+def _ena_file_route(column: str) -> RouteFn:
+    async def route(accession: str, client: SurveyClient, timeout: float) -> list[str]:
+        records = await ena_file_records(accession, client, timeout, column)
+        return sorted({record.url for record in records})
+
+    return route
+
+
+async def sdl_file_records(
+    accession: str, client: SurveyClient, timeout: float
+) -> list[FileRecord]:
+    """Typed file records from NCBI's Storage Data Locator.
+
+    SDL batches, but a route is called per accession, so this asks for one
+    bundle. Batching belongs to the caller that has many runs in hand.
+    """
+    listings = await sdl.retrieve(client, [accession], timeout)
+    return from_sdl_files(accession, listings.get(accession, []), "run->file:sdl")
+
+
+async def run_to_file_sdl(accession: str, client: SurveyClient, timeout: float) -> list[str]:
+    records = await sdl_file_records(accession, client, timeout)
+    return sorted({record.url for record in records})
+
+
 IMPLEMENTATIONS: dict[str, RouteFn] = {
     "gse->bioproject:soft_family": gse_to_bioproject_soft,
     "gse->bioproject:gds_summary": gse_to_bioproject_gds,
@@ -389,4 +454,8 @@ IMPLEMENTATIONS: dict[str, RouteFn] = {
     "ae_experiment->study:idf_secondary": ae_to_study_idf,
     "ae_experiment->biosample:sdrf": ae_to_biosample_sdrf,
     "study->ae_experiment:biostudies_search": study_to_ae_experiment,
+    "run->file:ena_fastq": _ena_file_route("fastq"),
+    "run->file:ena_submitted": _ena_file_route("submitted"),
+    "run->file:ena_sra": _ena_file_route("sra"),
+    "run->file:sdl": run_to_file_sdl,
 }
