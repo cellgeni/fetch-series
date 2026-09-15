@@ -50,6 +50,7 @@ validation:
 nav:
   - Home: index.md
   - The resolver: resolver.md
+  - The relation table: relations.md
   - The graph:
       - Accession types: graph/accession-types.md
       - Routing by archive: graph/routing-by-archive.md
