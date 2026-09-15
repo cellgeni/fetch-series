@@ -59,6 +59,24 @@ produced an age hypothesis that the full census disproved.
 `shuffled()` is exported so anything else that slices a corpus does the same. The lesson
 generalises: **any prefix of an ordered corpus is a stratum, not a sample.**
 
+### A route returning "resolved" does not mean it resolved everything
+
+The sharpest lesson of all, and it invalidated a published figure.
+
+`gse->experiment:soft_family` was censused over 13,045 series, and 16 came back empty. That
+was reported as the prevalence of GEO omitting the SRA relation: 0.12%.
+
+It is not. The census measures whether a route returned **anything**, so it sees only series
+where *every* sample lacks a relation. A series where 37 of 50 samples lack it resolves 13
+experiments and is recorded as a success. Measuring properly — comparing each series' sample
+list against the samples that carry a relation — puts the affected-series rate about
+**sevenfold** higher.
+
+The general form: **a survey measures the question its route asks.** `resolved / empty /
+failed` is a verdict about the *call*, not about completeness of the answer. Any question of
+the form "how much of X is missing" needs a route that returns the missing thing, or a
+comparison against an independent count. It cannot be read off a coverage rate.
+
 ## Outcomes
 
 Three, not two. The distinction is load-bearing.
