@@ -844,6 +844,14 @@ ROUTES: list[Route] = [
         kb_page="routes/run-to-biosample/ena-filereport.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         proves_data_exists=True,
+        evidence=RouteEvidence(
+            corpus="sample:3000@reprocessed-srr",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=3_000,
+            accessions_failed=0,
+            unique_results=2_880,
+            notes="2,977 resolved, 23 empty. The 23 empties are the same runs that no longer exist in either archive.",
+        ),
     ),
     # --- The file layer ---------------------------------------------------
     # A file is where every other route was heading. These four disagree with
