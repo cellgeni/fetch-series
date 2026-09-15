@@ -70,7 +70,15 @@ def mate_of(name: str) -> int | None:
     Returns 0 for an I1 index read and -1 for I2 -- they are real reads carrying
     barcodes, not alignment indexes, and a 10x run needs them, so they must be
     distinguishable from both data mates and from `FileKind.INDEX`.
+
+    Only fastq files are considered. A `_1` suffix means "mate 1" by convention
+    in fastq naming and nothing at all anywhere else: E-MTAB-8060's runs deposit
+    `Sample_1.bam`, where the `_1` is part of the submitter's sample name. A BAM
+    carries both mates interleaved by construction, so reading a mate number off
+    one is not merely unreliable, it is meaningless.
     """
+    if classify(name) is not FileKind.FASTQ:
+        return None
     stem = name.split("/")[-1]
     for suffix in (".gz", ".bz2", ".zst"):
         stem = stem.removesuffix(suffix)
@@ -239,3 +247,139 @@ def from_sdl_files(run: str, files: list[dict[str, Any]], source: str) -> list[F
                 )
             )
     return records
+
+
+# What a reprocessing pipeline can consume without a conversion step. This is a
+# statement about the downstream tool, not a claim about which archive is
+# better: STARsolo reads fastq, so a fastq set is preferred over the same data
+# as BAM, and an .sra object is last because it must be dumped before it is
+# anything at all.
+FORMAT_PREFERENCE: tuple[FileKind, ...] = (
+    FileKind.FASTQ,
+    FileKind.BAM,
+    FileKind.CRAM,
+    FileKind.SRA,
+    FileKind.OTHER,
+)
+
+
+@dataclass(frozen=True, slots=True)
+class Candidate:
+    """One route's complete offer for a run, scored against what is needed."""
+
+    source: str
+    files: tuple[FileRecord, ...]
+    kind: FileKind
+
+    @property
+    def mates(self) -> set[int]:
+        return {f.mate for f in self.files if f.mate is not None}
+
+    @property
+    def is_paired(self) -> bool:
+        return {1, 2} <= self.mates
+
+    @property
+    def verifiable(self) -> bool:
+        return bool(self.files) and all(f.md5 is not None for f in self.files)
+
+    @property
+    def free(self) -> bool:
+        return all(f.is_free for f in self.files)
+
+    @property
+    def total_bytes(self) -> int | None:
+        sizes = [f.size for f in self.files]
+        return sum(s for s in sizes if s is not None) if all(s is not None for s in sizes) else None
+
+    def why(self) -> str:
+        """The one-line reason a caller can read back."""
+        parts = [f"{len(self.files)} {self.kind} file{'s' if len(self.files) != 1 else ''}"]
+        parts.append("paired" if self.is_paired else f"mates {sorted(self.mates) or 'unmarked'}")
+        parts.append("md5 published" if self.verifiable else "no checksum")
+        if not self.free:
+            parts.append("retrieval is not free")
+        return ", ".join(parts)
+
+
+@dataclass(frozen=True, slots=True)
+class Recommendation:
+    """A chosen candidate, the alternatives, and why the choice was made.
+
+    The alternatives are carried, not discarded. A recommendation the caller
+    cannot argue with is a recommendation they cannot check, and the whole point
+    of the file layer is that the archives disagree in ways worth seeing.
+    """
+
+    run: str
+    chosen: Candidate | None
+    alternatives: tuple[Candidate, ...]
+    reason: str
+
+    def explain(self) -> str:
+        lines = [f"{self.run}: {self.reason}"]
+        if self.chosen:
+            lines.append(f"  -> {self.chosen.source}: {self.chosen.why()}")
+        for other in self.alternatives:
+            lines.append(f"     {other.source}: {other.why()}")
+        return "\n".join(lines)
+
+
+def candidates(fileset: FileSet) -> list[Candidate]:
+    """Split a file set into one candidate per (source, format).
+
+    Split by format as well as source because a single source routinely offers
+    two incompatible things at once -- SDL hands back a submitted BAM and an
+    .sra object for the same run, and they are not one offer.
+    """
+    grouped: dict[tuple[str, FileKind], list[FileRecord]] = {}
+    for record in fileset.data_files:
+        grouped.setdefault((record.source, record.kind), []).append(record)
+    return [
+        Candidate(source=source, kind=kind, files=tuple(files))
+        for (source, kind), files in grouped.items()
+    ]
+
+
+def recommend(fileset: FileSet) -> Recommendation:
+    """Rank the candidate file sets and say why the winner won.
+
+    Two different kinds of judgement meet here, and they are kept apart on
+    purpose. Which *route* to try first is an evidence question, answered by
+    ``RouteRegistry.ranked()`` from measured survey results. Which *files* to
+    use, once several routes have answered, is a requirements question: the
+    downstream pipeline needs a complete, checksummed, free, fastq-shaped set,
+    and every term below is one of those requirements. Neither is a preference
+    between archives.
+    """
+    ranked = sorted(
+        candidates(fileset),
+        key=lambda c: (
+            not c.is_paired,  # a half pair is not usable
+            FORMAT_PREFERENCE.index(c.kind),
+            not c.free,
+            not c.verifiable,
+            -len(c.files),
+            c.source,
+        ),
+    )
+    if not ranked:
+        return Recommendation(fileset.run, None, (), "no route offered any data file")
+
+    best, rest = ranked[0], tuple(ranked[1:])
+    if not best.is_paired and not rest:
+        reason = "only one offer, and it is not a complete read pair"
+    elif not best.is_paired:
+        reason = "no route offered a complete read pair"
+    elif best.kind is FileKind.FASTQ and best.verifiable and best.free:
+        reason = "complete fastq pair with published checksums, free to retrieve"
+    else:
+        missing = []
+        if best.kind is not FileKind.FASTQ:
+            missing.append(f"{best.kind} needs conversion")
+        if not best.verifiable:
+            missing.append("no published checksum")
+        if not best.free:
+            missing.append("retrieval is not free")
+        reason = "best available: " + "; ".join(missing)
+    return Recommendation(fileset.run, best, rest, reason)

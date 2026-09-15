@@ -213,3 +213,106 @@ class TestFileSet:
             "SRR1", (FileRecord("SRR1", "u", "a.bam.bai", FileKind.INDEX, "sdl", md5="x"),)
         )
         assert not index_only.fully_verifiable
+
+
+class TestRecommendation:
+    """Which files to use is a requirements question, not a preference between
+    archives: the pipeline needs a complete, checksummed, free, fastq-shaped set."""
+
+    def _sdl_sra(self) -> FileRecord:
+        return FileRecord(
+            "SRR1", "https://s3/sra/SRR1", "SRR1", FileKind.SRA, "run->file:sdl", md5="x"
+        )
+
+    def test_a_complete_fastq_pair_wins_and_says_so(self):
+        from fetch_series.files import recommend
+
+        fileset = FileSet(
+            "SRR1",
+            (
+                _fastq("SRR1_1.fastq.gz", 1),
+                _fastq("SRR1_2.fastq.gz", 2),
+                self._sdl_sra(),
+            ),
+        )
+        rec = recommend(fileset)
+        assert rec.chosen is not None
+        assert rec.chosen.kind is FileKind.FASTQ
+        assert "complete fastq pair" in rec.reason
+        # The .sra offer is kept, not discarded.
+        assert [c.kind for c in rec.alternatives] == [FileKind.SRA]
+
+    def test_a_half_pair_loses_to_a_single_file_format_that_is_whole(self):
+        """One fastq mate is not half a download, it is an unusable one."""
+        from fetch_series.files import recommend
+
+        fileset = FileSet("SRR1", (_fastq("SRR1_1.fastq.gz", 1), self._sdl_sra()))
+        rec = recommend(fileset)
+        assert rec.chosen is not None
+        # Neither offer is paired, so neither is preferred on that axis; format
+        # decides, and the reason must not claim a pair that is not there.
+        assert "complete read pair" in rec.reason
+
+    def test_a_run_no_route_answered_for_recommends_nothing(self):
+        from fetch_series.files import recommend
+
+        rec = recommend(FileSet("SRR1", ()))
+        assert rec.chosen is None
+        assert rec.reason == "no route offered any data file"
+
+    def test_a_paid_copy_loses_to_a_free_one_of_the_same_format(self):
+        from fetch_series.files import recommend
+
+        free = FileRecord("SRR1", "https://ncbi/x", "SRR1", FileKind.SRA, "free", md5="x")
+        paid = FileRecord(
+            "SRR1", "https://s3/x", "SRR1", FileKind.SRA, "paid", md5="x", pay_required=True
+        )
+        rec = recommend(FileSet("SRR1", (paid, free)))
+        assert rec.chosen is not None and rec.chosen.source == "free"
+        assert "retrieval is not free" in rec.explain()
+
+    def test_one_source_offering_two_formats_is_two_candidates(self):
+        """SDL hands back a submitted BAM and an .sra object for the same run.
+        They are not one offer and cannot be scored as one."""
+        from fetch_series.files import candidates
+
+        bam = FileRecord("E1", "u1", "a.bam", FileKind.BAM, "run->file:sdl")
+        sra = FileRecord("E1", "u2", "E1", FileKind.SRA, "run->file:sdl")
+        assert len(candidates(FileSet("E1", (bam, sra)))) == 2
+
+    def test_index_files_never_become_a_candidate(self):
+        from fetch_series.files import candidates
+
+        index = FileRecord("E1", "u", "a.bam.bai", FileKind.INDEX, "run->file:sdl")
+        assert candidates(FileSet("E1", (index,))) == []
+
+
+class TestMateMarkersOnlyMeanSomethingInFastqNames:
+    """`_1` means "mate 1" by convention in fastq naming, and nothing anywhere else."""
+
+    def test_a_bam_named_for_its_sample_has_no_mate(self):
+        """E-MTAB-8060's runs deposit `Sample_1.bam`, where the `_1` is part of
+        the submitter's sample name. Reading it as mate 1 made a single BAM
+        report `mates [1]` -- half a pair that was never a pair."""
+        assert mate_of("Sample_1.bam") is None
+        assert mate_of("Sample_2.cram") is None
+
+    def test_a_fastq_mate_marker_still_reads(self):
+        assert mate_of("Sample_1.fastq.gz") == 1
+
+    def test_an_index_file_has_no_mate_either(self):
+        assert mate_of("Sample_1.bam.bai") is None
+
+    def test_a_bam_offer_is_never_reported_as_paired(self):
+        from fetch_series.files import from_ena_row, recommend
+
+        row = {
+            "run_accession": "ERR6039559",
+            "submitted_ftp": "ftp.sra.ebi.ac.uk/a/Sample_1.bam;ftp.sra.ebi.ac.uk/a/Sample_2.bam",
+            "submitted_md5": "a;b",
+        }
+        records = from_ena_row(row, "submitted", "run->file:ena_submitted")
+        rec = recommend(FileSet("ERR6039559", tuple(records)))
+        assert rec.chosen is not None
+        assert not rec.chosen.is_paired
+        assert rec.chosen.mates == set()
