@@ -84,6 +84,9 @@ nav:
   - Upstream reports:
       - Overview: upstream/index.md
       - NCBI ELink gds to sra: upstream/ncbi-elink-gds-sra.md
+      - EBI ENA derived fastq: upstream/ebi-ena-derived-fastq-drops-technical-read.md
+      - EBI BioStudies search window: upstream/ebi-biostudies-search-window.md
+      - EBI ArrayExpress SDRF URIs: upstream/ebi-arrayexpress-sdrf-mirror-uris.md
   # Earlier exploration notes, kept because they record how each finding was
   # reached. Being superseded by the per-route pages above.
   - Archive notes:
