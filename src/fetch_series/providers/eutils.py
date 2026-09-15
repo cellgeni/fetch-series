@@ -17,6 +17,7 @@ Two behaviours are encoded here rather than at each call site:
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from fetch_series.survey.client import MalformedResponseError, SurveyClient
@@ -209,3 +210,65 @@ async def efetch_text(
         timeout=timeout,
     )
     return response.text
+
+
+# ESearch returns 20 UIDs when asked for no particular number. That default is
+# the same trap as ESummary's 500-UID ceiling and BioStudies' 25-item page: a
+# silent truncation that looks like a complete, successful answer.
+ESEARCH_PAGE = 500
+
+
+async def esearch_all_uids(client: SurveyClient, db: str, term: str, timeout: float) -> list[str]:
+    """Every UID matching ``term``, paged.
+
+    Never use ``esearch(...)["idlist"]`` directly when the caller wants all of
+    them: without ``retmax`` it silently returns the first 20.
+    """
+    first = await esearch(client, db=db, term=term, timeout=timeout, retmax=ESEARCH_PAGE)
+    uids = [str(uid) for uid in first.get("idlist") or []]
+    try:
+        total = int(first.get("count", len(uids)))
+    except (TypeError, ValueError):
+        total = len(uids)
+
+    for retstart in range(ESEARCH_PAGE, total, ESEARCH_PAGE):
+        page = await client.get(
+            f"{BASE}/esearch.fcgi",
+            params={
+                "db": db,
+                "term": term,
+                "retmode": "json",
+                "retstart": retstart,
+                "retmax": ESEARCH_PAGE,
+                "api_key": client.api_key,
+            },
+            timeout=timeout,
+        )
+        result = page.json().get("esearchresult", {})
+        uids.extend(str(uid) for uid in result.get("idlist") or [])
+    return uids
+
+
+async def epost_history(
+    client: SurveyClient, db: str, uids: list[str], timeout: float
+) -> tuple[str, str]:
+    """Upload a UID list and return its ``(WebEnv, query_key)``.
+
+    EPost exists precisely so a large UID set need not travel in a query string.
+    Rebuilding a history by joining UIDs into an ESearch term produces a
+    many-kilobyte GET and a non-retryable 414 on exactly the large projects that
+    matter -- the same failure that cost 12,849 experiments through ESummary.
+    """
+    response = await client.post(
+        f"{BASE}/epost.fcgi",
+        data={"db": db, "id": ",".join(uids), "api_key": client.api_key},
+        timeout=timeout,
+    )
+    text = response.text
+    webenv = re.search(r"<WebEnv>(\S+)</WebEnv>", text)
+    query_key = re.search(r"<QueryKey>(\d+)</QueryKey>", text)
+    if not webenv or not query_key:
+        raise MalformedResponseError(
+            f"epost returned no usable history for {len(uids)} {db} uids: {text[:160]!r}"
+        )
+    return webenv.group(1), query_key.group(1)

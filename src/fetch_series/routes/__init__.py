@@ -16,8 +16,15 @@ from __future__ import annotations
 from typing import Any
 
 from fetch_series.providers import biostudies, ena_portal, geo, sra_be
-from fetch_series.providers.eutils import efetch_text, elink_uids, esearch, esummary_by_ids
-from fetch_series.survey.client import MalformedResponseError, SurveyClient
+from fetch_series.providers.eutils import (
+    efetch_text,
+    elink_uids,
+    epost_history,
+    esearch,
+    esearch_all_uids,
+    esummary_by_ids,
+)
+from fetch_series.survey.client import SurveyClient
 from fetch_series.survey.runner import RouteFn
 
 # --------------------------------------------------------------------------
@@ -153,13 +160,7 @@ async def gse_to_run_elink(series: str, client: SurveyClient, timeout: float) ->
 
 def _runs_from_runinfo(text: str) -> list[str]:
     """Pull the Run column out of an SRA runinfo CSV."""
-    import csv
-    import io
-
-    rows = list(csv.DictReader(io.StringIO(text)))
-    if rows and "Run" not in rows[0]:
-        raise MalformedResponseError("runinfo response has no Run column")
-    return sorted({row["Run"].strip() for row in rows if row.get("Run", "").strip()})
+    return sorted(sra_be.column(sra_be.parse_runinfo(text), "Run"))
 
 
 # --------------------------------------------------------------------------
@@ -218,15 +219,12 @@ async def _bioproject_sra_history(
         return None
     # Re-establish a history over the linked UIDs so the backend can be driven
     # from it; ELink's own history is the one that sometimes has no querykey.
-    result = await esearch(
-        client,
-        db="sra",
-        term=" OR ".join(f"{uid}[UID]" for uid in sra_uids),
-        timeout=timeout,
-    )
-    if result.get("count") == "0":
-        return None
-    return result["webenv"], result["querykey"]
+    #
+    # By EPost, not by joining the UIDs into an ESearch term. A project with
+    # hundreds of SRA records would make that term many kilobytes of GET URL and
+    # earn a non-retryable 414 -- failing on precisely the large projects worth
+    # not failing on, which is exactly what the same mistake cost at ESummary.
+    return await epost_history(client, db="sra", uids=sra_uids, timeout=timeout)
 
 
 def _bioproject_run_route(*, backend: str, via_elink: bool) -> RouteFn:
@@ -249,12 +247,17 @@ def _bioproject_run_route(*, backend: str, via_elink: bool) -> RouteFn:
 async def bioproject_to_geo_gds_direct(
     accession: str, client: SurveyClient, timeout: float
 ) -> list[str]:
-    """Search db=gds for the BioProject accession directly."""
-    result = await esearch(client, db="gds", term=f"{accession}[ALL]", timeout=timeout)
-    uids = result.get("idlist") or []
+    """Search db=gds for the BioProject accession directly.
+
+    Paged. ESearch returns 20 UIDs when asked for no particular number, so a
+    project with more GDS records than that would have returned a truncated
+    set -- as a successful resolution, which the resolver then stops on,
+    never trying the ELink route that would have found the rest.
+    """
+    uids = await esearch_all_uids(client, db="gds", term=f"{accession}[ALL]", timeout=timeout)
     if not uids:
         return []
-    summaries = await esummary_by_ids(client, db="gds", uids=list(uids), timeout=timeout)
+    summaries = await esummary_by_ids(client, db="gds", uids=uids, timeout=timeout)
     return _geo_series_from_summaries(summaries)
 
 
