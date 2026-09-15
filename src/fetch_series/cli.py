@@ -73,12 +73,23 @@ def routes_list(
     unmeasured: Annotated[
         bool, typer.Option(help="Show only routes with no survey behind them.")
     ] = False,
+    implemented: Annotated[
+        bool, typer.Option(help="Show only routes that have an implementation.")
+    ] = False,
+    ids_only: Annotated[
+        bool, typer.Option("--ids-only", help="Emit bare route ids, for scripting.")
+    ] = False,
 ) -> None:
     """List declared routes, with their measured evidence."""
     for route in sorted(REGISTRY, key=lambda r: (r.source, r.target, r.id)):
         if source and route.source != source:
             continue
         if unmeasured and route.is_measured:
+            continue
+        if implemented and route.id not in IMPLEMENTATIONS:
+            continue
+        if ids_only:
+            typer.echo(route.id)
             continue
         marker = " " if route.id in IMPLEMENTATIONS else "!"
         if route.evidence is None:
@@ -709,6 +720,68 @@ def screen_command(
     )
     if not recognised:
         raise typer.Exit(2)
+
+
+cache_app = typer.Typer(help="Inspect the survey cache and diff archive state over time.")
+app.add_typer(cache_app, name="cache")
+
+
+@cache_app.command("stats")
+def cache_stats(
+    cache: Annotated[Path, typer.Option(help="SQLite store.")] = DEFAULT_CACHE_PATH,
+    corpus: Annotated[str | None, typer.Option(help="Only this corpus.")] = None,
+) -> None:
+    """What has been surveyed, and what each survey found."""
+    with SurveyCache(cache) as store:
+        rows = [
+            store.summary(recorded_corpus, route_id)
+            for recorded_corpus, route_id in store.routes_surveyed(corpus)
+        ]
+    typer.echo(json.dumps(rows, indent=2))
+
+
+@cache_app.command("diff")
+def cache_diff(
+    before: Annotated[Path, typer.Argument(help="The earlier snapshot.")],
+    corpus: Annotated[str, typer.Option(help="Corpus to compare.")] = "hard-cases",
+    route: Annotated[str | None, typer.Option(help="Only this route.")] = None,
+    cache: Annotated[Path, typer.Option(help="The current store.")] = DEFAULT_CACHE_PATH,
+) -> None:
+    """Report what the archives changed between two runs of the same survey.
+
+    This is the longitudinal record nobody else is keeping. A BioProject that
+    resolved to one GEO series and now resolves to another has been re-created
+    upstream; one that resolved and now does not has been withdrawn or made
+    private. Neither event is announced anywhere, and both silently change what
+    a pipeline resolves.
+
+    Exits non-zero when anything changed, so a scheduled job can alert on it.
+    """
+    with SurveyCache(cache) as store, SurveyCache(before) as earlier:
+        pairs = [
+            (recorded_corpus, route_id)
+            for recorded_corpus, route_id in store.routes_surveyed(corpus)
+            if route is None or route_id == route
+        ]
+        report = {
+            route_id: store.diff(recorded_corpus, route_id, earlier)
+            for recorded_corpus, route_id in pairs
+        }
+
+    moved = {
+        route_id: entry
+        for route_id, entry in report.items()
+        if entry["changed"] or entry["added"] or entry["removed"]
+    }
+    typer.echo(json.dumps(moved, indent=2))
+    if not moved:
+        typer.secho(f"no archive state changed across {len(report)} routes", err=True)
+        return
+    total = sum(len(entry["changed"]) for entry in moved.values())
+    typer.secho(
+        f"{total} accessions changed across {len(moved)} routes", fg=typer.colors.YELLOW, err=True
+    )
+    raise typer.Exit(1)
 
 
 def main() -> None:
