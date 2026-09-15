@@ -36,8 +36,29 @@ async def idf_secondary_accessions(
     return sorted(set(SECONDARY.findall(response.text)))
 
 
+async def sdrf_raw_rows(client: SurveyClient, accession: str, timeout: float) -> list[list[str]]:
+    """The SDRF as raw field lists, header included.
+
+    SDRF repeats column names by design -- E-MTAB-9221 has two
+    ``Comment[FASTQ_URI]`` columns, one per mate -- and ``csv.DictReader`` keeps
+    only the last value for a repeated key. Reading that study through a dict
+    silently returned one URI per run instead of two, which for paired reads is
+    exactly half the data. Anything that reads a column which may repeat must
+    use this, not ``sdrf_rows``.
+    """
+    response = await client.get(f"{FILES}/{accession}/{accession}.sdrf.txt", timeout=timeout)
+    text = response.text.strip()
+    if not text:
+        return []
+    return [line.split("\t") for line in text.splitlines()]
+
+
 async def sdrf_rows(client: SurveyClient, accession: str, timeout: float) -> list[dict[str, Any]]:
-    """The SDRF sample table as row dicts."""
+    """The SDRF sample table as row dicts.
+
+    Convenient, and lossy for any column name that repeats -- see
+    :func:`sdrf_raw_rows`.
+    """
     response = await client.get(f"{FILES}/{accession}/{accession}.sdrf.txt", timeout=timeout)
     text = response.text.strip()
     if not text:
@@ -70,15 +91,31 @@ async def registered_files(
             timeout=timeout,
         )
         payload = response.json()
-        files = payload.get("files", payload if isinstance(payload, list) else [])
-        collected.extend(files)
-        total = (
-            (payload.get("pagination") or {}).get("total") if isinstance(payload, dict) else None
-        )
+        # The list is under `items`, and `files` is not an alias for it -- a
+        # .get("files", []) returns an empty list and no error, which read as
+        # "this study registers nothing". For the guard that uses this list,
+        # registering nothing is the finding, so the bug was invisible: it
+        # turned every study into E-MTAB-8060.
+        if isinstance(payload, list):
+            page = payload
+            total = len(page)
+        else:
+            page = payload.get("items") or []
+            total = (payload.get("pagination") or {}).get("total", len(page))
+        collected.extend(page)
         offset += PAGE_SIZE
-        if not files or total is None or offset >= total:
+        if not page or offset >= total:
             break
     return collected
+
+
+def registered_names(files: list[dict[str, Any]]) -> set[str]:
+    """The bare filenames a study registers, for comparing against SDRF URIs."""
+    return {
+        str(entry.get("path") or entry.get("Name") or "").rsplit("/", 1)[-1]
+        for entry in files
+        if entry.get("path") or entry.get("Name")
+    }
 
 
 SEARCH = f"{API}/{{collection}}/search"
@@ -170,3 +207,56 @@ async def search_by_year(
             )
         )
     return sorted(accessions)
+
+
+# The pre-BioStudies ArrayExpress mirror. A SDRF URI under this path is a stale
+# spelling that means two different things depending on whether the study still
+# registers the file, which is why it can never be taken at face value.
+AE_MIRROR = re.compile(r"/pub/databases/(microarray|arrayexpress)/data/experiment/")
+
+# Anything fastq-shaped, however the submitter spelled it.
+FASTQ_URI = re.compile(r"(?:ftp|https?)://\S*\.f(?:ast)?q(?:\.gz)?\b", re.IGNORECASE)
+
+
+def sdrf_fastq_uris(
+    rows: list[list[str]], accession: str, registered: set[str] | None
+) -> dict[str, list[str]]:
+    """Submitter fastq URIs from an SDRF, keyed by the run they belong to.
+
+    Takes raw field lists, not row dicts: SDRF repeats ``Comment[FASTQ_URI]``
+    once per mate, and a dict keeps only the last. Columns are not standardised
+    anyway, so URIs are found by shape rather than by name and a row is
+    attributed to whatever run accession it mentions.
+
+    A URI under the decommissioned pre-BioStudies mirror is believed only if
+    the study still registers a file of that name, and rewritten to the
+    BioStudies path when it does. E-MTAB-8060 and E-MTAB-9221 are
+    indistinguishable at this point -- both point every fastq URI at the mirror
+    and both also declare a BAM -- and yet 9221 registers all 40 of its fastqs
+    while 8060 registers none of its 36. Taking 8060's URIs at face value
+    discarded the real BAM for all 15 of its runs, silently.
+
+    ``registered`` of None means the file list could not be fetched. Every URI
+    is then kept as written: an unreachable API must not be able to reroute a
+    whole study to its BAMs.
+    """
+    by_run: dict[str, list[str]] = {}
+    for row in rows:
+        line = "\t".join(field for field in row if field)
+        uris = FASTQ_URI.findall(line)
+        if not uris:
+            continue
+        runs = sorted(set(re.findall(r"\b[SED]RR\d+\b", line)))
+        if not runs:
+            continue
+        kept: list[str] = []
+        for uri in uris:
+            if registered is None or not AE_MIRROR.search(uri):
+                kept.append(uri)
+                continue
+            name = uri.rsplit("/", 1)[-1]
+            if name in registered:
+                kept.append(f"{FILES}/{accession}/{name}")
+        for run in runs:
+            by_run.setdefault(run, []).extend(kept)
+    return {run: sorted(dict.fromkeys(uris)) for run, uris in by_run.items() if uris}
