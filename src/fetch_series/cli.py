@@ -17,7 +17,7 @@ from fetch_series.cache import DEFAULT_CACHE_PATH, SurveyCache
 from fetch_series.core import default_api_key
 from fetch_series.entities import MISSING, RELATION_COLUMNS, RunRecord
 from fetch_series.files import Recommendation
-from fetch_series.filesets import recommendations_for
+from fetch_series.filesets import Verdict, recommendations_for, verify_all
 from fetch_series.graph import REGISTRY, Route
 from fetch_series.logging_utils import configure_logging, run_logfile
 from fetch_series.relations import relations as build_relations
@@ -503,6 +503,10 @@ def files(
     no_sdl: Annotated[
         bool, typer.Option("--no-sdl", help="Skip NCBI SDL; ENA columns only.")
     ] = False,
+    check: Annotated[
+        bool,
+        typer.Option("--verify", help="HEAD every recommended link and check the published size."),
+    ] = False,
 ) -> None:
     """Download links for a run, with checksums and the reason for the choice.
 
@@ -515,13 +519,21 @@ def files(
     configure_logging(level=logging.WARNING)
     parsed = resolve_input(accession)
 
-    async def run_it() -> list[Recommendation]:
+    async def run_it() -> tuple[list[Recommendation], list[Verdict]]:
         async with SurveyClient(
             limits=Limits(rps=5.0, concurrency=6), api_key=default_api_key()
         ) as client:
-            return await recommendations_for(parsed, client, limit=limit, include_sdl=not no_sdl)
+            recommended = await recommendations_for(
+                parsed, client, limit=limit, include_sdl=not no_sdl
+            )
+            if not check:
+                return recommended, []
+            # Only the recommended files: verifying every alternative triples
+            # the requests to check links the caller is not going to use.
+            links = [f for r in recommended if r.chosen for f in r.chosen.files]
+            return recommended, await verify_all(links, client)
 
-    results = asyncio.run(run_it())
+    results, verdicts = asyncio.run(run_it())
     if not results:
         typer.secho(f"No runs found for {parsed}.", fg=typer.colors.YELLOW, err=True)
         raise typer.Exit(1)
@@ -539,6 +551,17 @@ def files(
     if explain:
         for rec in results:
             typer.echo(rec.explain(), err=True)
+
+    if verdicts:
+        broken = [v for v in verdicts if not v.resolves or v.size_matches is False]
+        for verdict in broken:
+            typer.secho("  " + verdict.describe(), fg=typer.colors.RED, err=True)
+        typer.secho(
+            f"verified {len(verdicts)} links: {len(verdicts) - len(broken)} good, "
+            f"{len(broken)} unusable",
+            fg=typer.colors.RED if broken else typer.colors.GREEN,
+            err=True,
+        )
 
     lines = ["run\tsource\tkind\tmate\turl\tmd5\tbytes"]
     for rec in results:

@@ -200,6 +200,29 @@ class SurveyClient:
                 raise redact_exception(exc) from None
         return response
 
+    async def head(self, url: str, timeout: float | None = None) -> httpx.Response:
+        """One rate-limited HEAD, returned whatever its status.
+
+        Deliberately does not raise for status. A 404 on a published download
+        link is the answer being asked for, not an error in asking -- and a
+        route that raises here would lose the distinction between "the archive
+        says this file is gone" and "the request did not complete".
+
+        Redirects are followed: ENA publishes `ftp.sra.ebi.ac.uk` paths that
+        answer over HTTPS after a redirect, and refusing to follow would report
+        every one of them as unresolvable.
+        """
+        if self._client is None:
+            raise RuntimeError("SurveyClient must be used as an async context manager")
+        async with self._semaphore:
+            await self._limiter.acquire()
+            try:
+                return await self._client.head(
+                    url, timeout=timeout or self.limits.base_timeout, follow_redirects=True
+                )
+            except Exception as exc:
+                raise redact_exception(exc) from None
+
     async def post(
         self, url: str, data: dict[str, Any], timeout: float | None = None
     ) -> httpx.Response:

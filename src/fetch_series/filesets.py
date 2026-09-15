@@ -18,7 +18,8 @@ returning empty and meaning it.
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass
 
 from fetch_series.accession import Accession, EntityType
 from fetch_series.files import FileRecord, FileSet, Recommendation, recommend
@@ -103,3 +104,71 @@ async def recommendations_for(
         *(files_for_run(run, client, include_sdl=include_sdl) for run in runs)
     )
     return [recommend(fileset) for fileset in sets]
+
+
+@dataclass(frozen=True, slots=True)
+class Verdict:
+    """What a HEAD request said about one published download link.
+
+    ``size_matches`` is None when the archive published no size, or the server
+    returned no ``Content-Length`` -- the check did not fail, it could not run,
+    and conflating the two would report every chunked response as a corrupt
+    file.
+    """
+
+    record: FileRecord
+    status: int | None
+    served_bytes: int | None
+    error: str | None = None
+
+    @property
+    def resolves(self) -> bool:
+        return self.status is not None and 200 <= self.status < 300
+
+    @property
+    def size_matches(self) -> bool | None:
+        if self.record.size is None or self.served_bytes is None:
+            return None
+        return self.record.size == self.served_bytes
+
+    def describe(self) -> str:
+        if self.error:
+            return f"{self.record.url} -- {self.error}"
+        if not self.resolves:
+            return f"{self.record.url} -- HTTP {self.status}"
+        if self.size_matches is False:
+            return (
+                f"{self.record.url} -- archive published {self.record.size:,} bytes, "
+                f"server serves {self.served_bytes:,}"
+            )
+        if self.size_matches is None:
+            return f"{self.record.url} -- resolves; size not checkable"
+        return f"{self.record.url} -- resolves, size matches"
+
+
+async def verify(record: FileRecord, client: SurveyClient, timeout: float = 30.0) -> Verdict:
+    """Check that a published link resolves and serves the size it claims.
+
+    A HEAD, not a download: the md5 the archive publishes cannot be checked
+    without fetching the bytes, and at file-layer scale that is not a survey, it
+    is a mirror. Size and resolvability are what can be checked cheaply, and
+    they catch the two failures that matter most -- a link to a decommissioned
+    mirror, and a file that was replaced without its metadata being updated.
+    """
+    try:
+        response = await client.head(record.url, timeout=timeout)
+    except Exception as exc:  # a failed request is itself the verdict
+        return Verdict(record=record, status=None, served_bytes=None, error=type(exc).__name__)
+    length = response.headers.get("content-length")
+    return Verdict(
+        record=record,
+        status=response.status_code,
+        served_bytes=int(length) if length and length.isdigit() else None,
+    )
+
+
+async def verify_all(
+    records: Iterable[FileRecord], client: SurveyClient, timeout: float = 30.0
+) -> list[Verdict]:
+    """Verify many links concurrently, at the client's own rate limit."""
+    return list(await asyncio.gather(*(verify(r, client, timeout) for r in records)))
