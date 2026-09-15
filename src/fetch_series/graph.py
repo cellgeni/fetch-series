@@ -490,6 +490,19 @@ ROUTES: list[Route] = [
         kb_page="routes/ae-experiment-to-biosample/sdrf.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         known_pathologies=("biostudies-silent-25-item-default",),
+        evidence=RouteEvidence(
+            corpus="sample:3000@arrayexpress-ena",
+            surveyed_on=date(2026, 9, 16),
+            accessions_queried=3_000,
+            accessions_failed=11,
+            unique_results=63_153,
+            notes=(
+                "1,221 resolved, 1,768 empty. Split entirely by provenance: "
+                "1,210 of 1,398 E-MTAB studies (87%) name BioSamples, and 0 of "
+                "1,550 E-GEOD imports do. Adding the 450 E-GEOD studies in "
+                "arrayexpress-no-secondary makes it 0 of 2,000."
+            ),
+        ),
     ),
     Route(
         id="biosample->run:ena_filereport",
