@@ -341,6 +341,20 @@ async def ae_to_biosample_sdrf(accession: str, client: SurveyClient, timeout: fl
     return biostudies.sdrf_column(rows, "Comment[BioSD_SAMPLE]")
 
 
+async def study_to_ae_experiment(accession: str, client: SurveyClient, timeout: float) -> list[str]:
+    """The ArrayExpress experiment that declares this study as its secondary.
+
+    BioStudies has no field query for secondary accessions, so this is a
+    free-text search of the ArrayExpress collection. The search index covers the
+    IDF, so a study named there is found -- but free text also matches a study
+    accession that merely appears in a description, so results are filtered to
+    ArrayExpress accessions and the caller should treat more than one hit as a
+    fact about the archive rather than a bug here.
+    """
+    hits = await biostudies.search(client, timeout, query=accession)
+    return sorted({hit for hit in hits if hit.startswith("E-")})
+
+
 IMPLEMENTATIONS: dict[str, RouteFn] = {
     "gse->bioproject:soft_family": gse_to_bioproject_soft,
     "gse->bioproject:gds_summary": gse_to_bioproject_gds,
@@ -374,4 +388,5 @@ IMPLEMENTATIONS: dict[str, RouteFn] = {
     "run->biosample:ena_filereport": _ena_route("sample_accession"),
     "ae_experiment->study:idf_secondary": ae_to_study_idf,
     "ae_experiment->biosample:sdrf": ae_to_biosample_sdrf,
+    "study->ae_experiment:biostudies_search": study_to_ae_experiment,
 }

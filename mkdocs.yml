@@ -62,12 +62,14 @@ nav:
       - BioProject to GEO series: routes/bioproject-to-geo-series/index.md
       - BioProject to BioSample: routes/bioproject-to-biosample/index.md
       - ArrayExpress experiment to study: routes/ae-experiment-to-study/index.md
+      - Study to ArrayExpress experiment: routes/study-to-ae-experiment/biostudies-search.md
   - Pathologies:
       - Overview: pathologies/index.md
       - ELink gds to sra returns no links: pathologies/elink-gds-sra-missing-links.md
       - GEO omits the SRA relation: pathologies/geo-omits-sample-sra-relation.md
       - Shared umbrella BioProject: pathologies/series-under-shared-umbrella-bioproject.md
       - SOFT names experiments with no runs: pathologies/soft-names-experiments-with-no-runs.md
+      - BioStudies 20,000-hit window: pathologies/biostudies-20000-hit-window.md
   - Benchmarks: benchmarks/index.md
   - Upstream reports:
       - Overview: upstream/index.md
