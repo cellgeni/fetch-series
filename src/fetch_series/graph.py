@@ -972,6 +972,18 @@ ROUTES: list[Route] = [
         kb_page="routes/ae-experiment-to-file/index.md",
         cost=RouteCost(requests=2, rate_limit_rps=EBI_RPS, paginates=True),
         known_pathologies=("ae-sdrf-points-at-decommissioned-mirror",),
+        evidence=RouteEvidence(
+            corpus="sample:3000@arrayexpress-ena",
+            surveyed_on=date(2026, 9, 16),
+            accessions_queried=3_000,
+            accessions_failed=11,
+            unique_results=197_089,
+            notes=(
+                "2,316 resolved, 673 empty. 1,385 of 1,398 E-MTAB studies (99%) "
+                "name fastq URIs, against 879 of 1,550 E-GEOD imports (57%). "
+                "Median 16 files per resolved study, mean 86."
+            ),
+        ),
     ),
     Route(
         id="run->file:sdl",

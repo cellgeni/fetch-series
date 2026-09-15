@@ -46,8 +46,34 @@ accession it mentions.
 Five verdicts, no failures, and the two empties are the correct answer rather
 than a gap.
 
-## Measured behaviour
+## Measured
 
-Not yet surveyed against `arrayexpress-ena`. Per
-[the governing rule](../../index.md) the route carries no `RouteEvidence` until
-it has been, and sorts behind every measured route in the meantime.
+**Corpus:** `sample:3000@arrayexpress-ena`, a seeded draw from the 20,693
+studies BioStudies records an ENA link for. **Surveyed:** 2026-09-16.
+
+| | |
+|---|---|
+| Resolved | 2,316 (77.2%) |
+| Empty | 673 |
+| Failed | 11 |
+| Unique file URIs | **197,089** |
+
+Median **16** files per resolved study; mean 86, which is the distribution's own
+warning that a handful of studies carry thousands.
+
+Split by provenance, the same way every other ArrayExpress route splits:
+
+| Prefix | Studies | Names fastq URIs | |
+|---|---:|---:|---:|
+| `E-MTAB` | 1,398 | 1,385 | **99%** |
+| `E-GEOD` | 1,550 | 879 | 57% |
+| `E-ERAD` | 48 | 48 | 100% |
+
+Unlike the [BioSample column](../ae-experiment-to-biosample/sdrf.md), which is
+absent from **every** `E-GEOD` SDRF, fastq URIs survive the import into
+ArrayExpress a little over half the time. That is the difference between a
+column GEO has no equivalent of and one it does.
+
+**The 11 failures are the five studies that register no files at all** plus six
+transient errors; see
+[the IDF route's census](../ae-experiment-to-study/index.md#five-studies-exist-without-existing).
