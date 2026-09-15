@@ -631,6 +631,35 @@ ROUTES: list[Route] = [
         cost=RouteCost(requests=3, rate_limit_rps=NCBI_EUTILS_RPS),
         known_pathologies=("efetch-returns-fewer-runs-than-esearch-counts",),
     ),
+    # --- GEO sample as an entry point -------------------------------------
+    Route(
+        id="geo_sample->experiment:acc_cgi",
+        source=EntityType.GEO_SAMPLE,
+        target=EntityType.EXPERIMENT,
+        provider="geo_acc_cgi",
+        summary="!Sample_relation = SRA: from GEO's own record for the sample.",
+        kb_page="routes/geo-sample-to-experiment/index.md",
+        cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
+        known_pathologies=("geo-omits-sample-sra-relation",),
+    ),
+    Route(
+        id="geo_sample->biosample:acc_cgi",
+        source=EntityType.GEO_SAMPLE,
+        target=EntityType.BIOSAMPLE,
+        provider="geo_acc_cgi",
+        summary="!Sample_relation = BioSample: from GEO's own record for the sample.",
+        kb_page="routes/geo-sample-to-experiment/index.md",
+        cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
+    ),
+    Route(
+        id="geo_sample->geo_series:acc_cgi",
+        source=EntityType.GEO_SAMPLE,
+        target=EntityType.GEO_SERIES,
+        provider="geo_acc_cgi",
+        summary="!Sample_series_id from GEO's record; a sample can belong to several series.",
+        kb_page="routes/geo-sample-to-experiment/index.md",
+        cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
+    ),
     # --- ENA portal, which answers many edges from one endpoint -----------
     Route(
         id="bioproject->experiment:ena_filereport",

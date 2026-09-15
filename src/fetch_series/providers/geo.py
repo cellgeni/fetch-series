@@ -118,3 +118,57 @@ async def gds_summary(client: SurveyClient, series: str, timeout: float) -> dict
     summaries = await esummary_by_ids(client, db="gds", uids=[uid], timeout=timeout)
     record = summaries.get(uid, {})
     return record if isinstance(record, dict) else {}
+
+
+@dataclass(slots=True)
+class SampleRecord:
+    """What GEO's own record for a single sample says."""
+
+    sample: str
+    experiment: str | None = None
+    biosample: str | None = None
+    # A sample can belong to more than one series: GSM7518069 is in both
+    # GSE236084 and GSE236087. Routing from a sample to "its" series has to
+    # cope with there being several.
+    series: list[str] = field(default_factory=list)
+    organism: str | None = None
+
+
+_SERIES_ID = re.compile(r"^!Sample_series_id\s*=\s*(GSE\d+)", re.MULTILINE)
+_ORGANISM = re.compile(r"^!Sample_organism_ch1\s*=\s*(.+)$", re.MULTILINE)
+
+
+async def fetch_sample_record(client: SurveyClient, sample: str, timeout: float) -> str:
+    """Download GEO's text record for one sample.
+
+    ``acc.cgi`` is a web endpoint rather than an API, and ``view=brief`` still
+    returns the submitter's full protocol prose -- tens of kilobytes for one
+    sample. It is the only place the per-sample SRA relation can be had without
+    downloading the whole series family file, which is far larger again.
+    """
+    response = await client.get(
+        ACC_CGI,
+        params={"acc": sample, "targ": "self", "form": "text", "view": "brief"},
+        timeout=timeout,
+    )
+    text = response.text
+    if not text.lstrip().startswith("^SAMPLE"):
+        raise MalformedResponseError(
+            f"acc.cgi returned no SAMPLE record for {sample}: {text[:120]!r}"
+        )
+    return text
+
+
+def parse_sample_record(sample: str, text: str) -> SampleRecord:
+    """Parse the relations out of a single-sample SOFT record."""
+    record = SampleRecord(sample=sample)
+    # The relation lines have the same shape as in a family file, so reuse that
+    # parser rather than writing a second one that can drift from it.
+    family = parse_soft_family(sample, text)
+    relations = family.sample_relations.get(sample, {})
+    record.experiment = relations.get("experiment")
+    record.biosample = relations.get("biosample")
+    record.series = sorted(set(_SERIES_ID.findall(text)))
+    organism = _ORGANISM.search(text)
+    record.organism = organism.group(1).strip() if organism else None
+    return record

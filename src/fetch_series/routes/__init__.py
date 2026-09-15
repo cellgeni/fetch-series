@@ -163,6 +163,32 @@ def _runs_from_runinfo(text: str) -> list[str]:
 
 
 # --------------------------------------------------------------------------
+# GEO sample as an entry point
+#
+# Until these existed a GSM was a dead end: the graph could reach one from a
+# series but not leave it, so half the GEO entry points resolved to nothing.
+# --------------------------------------------------------------------------
+
+
+async def gsm_to_experiment(sample: str, client: SurveyClient, timeout: float) -> list[str]:
+    """Read !Sample_relation = SRA: from GEO's record for the sample."""
+    record = geo.parse_sample_record(sample, await geo.fetch_sample_record(client, sample, timeout))
+    return [record.experiment] if record.experiment else []
+
+
+async def gsm_to_biosample(sample: str, client: SurveyClient, timeout: float) -> list[str]:
+    """Read !Sample_relation = BioSample: from GEO's record for the sample."""
+    record = geo.parse_sample_record(sample, await geo.fetch_sample_record(client, sample, timeout))
+    return [record.biosample] if record.biosample else []
+
+
+async def gsm_to_series(sample: str, client: SurveyClient, timeout: float) -> list[str]:
+    """The series a sample belongs to -- there can be more than one."""
+    record = geo.parse_sample_record(sample, await geo.fetch_sample_record(client, sample, timeout))
+    return record.series
+
+
+# --------------------------------------------------------------------------
 # ENA portal: one endpoint serves much of the graph
 # --------------------------------------------------------------------------
 
@@ -316,6 +342,9 @@ IMPLEMENTATIONS: dict[str, RouteFn] = {
     "gse->bioproject:soft_family": gse_to_bioproject_soft,
     "gse->bioproject:gds_summary": gse_to_bioproject_gds,
     "gse->geo_sample:soft_family": gse_to_gsm_soft,
+    "geo_sample->experiment:acc_cgi": gsm_to_experiment,
+    "geo_sample->biosample:acc_cgi": gsm_to_biosample,
+    "geo_sample->geo_series:acc_cgi": gsm_to_series,
     "gse->geo_sample:gds_summary": gse_to_gsm_gds,
     "gse->experiment:soft_family": gse_to_experiment_soft,
     "gse->experiment:elink_gds_sra": gse_to_experiment_elink,

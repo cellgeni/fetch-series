@@ -97,6 +97,9 @@ HARD_CASES: dict[str, str] = {
     "SRS24456482": "submitted to SRA both directly and via GEO; yields more experiments than expected",
     "SRS9029085": "submitted to SRA both directly and via GEO; same pattern as SRS24456482",
     "SRS27109451": "ambiguous: PRJNA1337591 lists 4 experiments, PRJNA1345517 lists 9, same biosample",
+    "GSM7518069": "belongs to two series (GSE236084 and GSE236087), so 'its' series is not singular",
+    "GSM4005486": "in GSE135325, where GEO records the BioSample but no SRA relation",
+    "GSM4274734": "in GSE150508, whose SOFT file names an experiment that carries no runs",
 }
 
 
