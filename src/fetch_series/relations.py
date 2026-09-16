@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 ENA_ROUTE = "ena:filereport"
 BIOSAMPLE_RECOVERY = "geo_sample->biosample:soft_family (recovered via ENA BioSample)"
+ALIAS_ROUTE = "run->geo_sample:ena_alias"
 SOFT_ROUTE = "geo:soft_family"
 
 # What each ENA filereport column contributes to a RunRecord.
@@ -100,9 +101,14 @@ async def _ena_records(
 ) -> dict[str, RunRecord]:
     """One filereport per accession, merged into records keyed by run."""
     records: dict[str, RunRecord] = {}
+    # The alias fields come free on a request already being made, and for a
+    # GEO-brokered submission they carry the GSM -- including for the series
+    # where GEO itself records no SRA relation. Measured against GEO's own
+    # record: 8,604 of 8,604 agree, zero contradictions.
+    fields = (*ena_portal.IDENTITY_FIELDS, *ena_portal.ALIAS_FIELDS)
     for value in accessions:
         try:
-            rows = await ena_portal.read_run_report(client, value, timeout)
+            rows = await ena_portal.read_run_report(client, value, timeout, fields=fields)
         except Exception as exc:
             logger.warning("ENA filereport failed for %s: %s", value, exc)
             continue
@@ -113,6 +119,15 @@ async def _ena_records(
             record = records.setdefault(run, RunRecord(run=run))
             for column, name in _ENA_TO_FIELD.items():
                 record.set(name, (row.get(column) or "").strip(), ENA_ROUTE)
+            # RunRecord.set is first-wins, and this runs before the SOFT pass,
+            # so the alias supplies the value and SOFT's confirms it -- landing
+            # in `provenance` as a second route where they agree and in
+            # `conflicts` where they do not. Both are what a caller needs to
+            # see; neither archive is silently preferred.
+            if alias := ena_portal.alias_accessions([row], ena_portal.GSM_IN_ALIAS):
+                record.set("geo_sample", alias[0], ALIAS_ROUTE)
+            if ae := ena_portal.alias_accessions([row], ena_portal.AE_IN_ALIAS):
+                record.set("ae_experiment", ae[0], ALIAS_ROUTE)
     return records
 
 
@@ -193,8 +208,11 @@ async def _relations_from_geo(
         elif recovered := biosample_to_gsm.get(record.biosample or ""):
             record.set("geo_sample", recovered, BIOSAMPLE_RECOVERY)
 
+    # Membership, not equality: provenance may already list the ENA alias as a
+    # source for the same field, and an equality check would then silently count
+    # zero recoveries and print the wrong warning.
     recovered_count = sum(
-        1 for r in records.values() if r.provenance.get("geo_sample") == [BIOSAMPLE_RECOVERY]
+        1 for r in records.values() if BIOSAMPLE_RECOVERY in r.provenance.get("geo_sample", [])
     )
 
     # Only when GEO genuinely named nothing. A series whose experiment list was

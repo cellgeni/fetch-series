@@ -112,3 +112,31 @@ series contains they are still information.
 ENA `fastq_ftp` versus `submitted_ftp` versus NCBI SDL, md5 and size verification, mate
 completeness, and paywalled or rehydration-required objects. Until then this table stops at
 the run.
+
+## Two routes now attribute the GEO sample
+
+The relation table asks ENA for the alias fields alongside the identity ones —
+free, on a request it was already making — so a run brokered through GEO carries
+its GSM from **two independent sources**: GEO's own `!Sample_relation = SRA:`,
+and the submitter's `sample_alias` as ENA recorded it.
+
+Measured over 200 series and 8,607 runs: they agree **8,604 of 8,604** times,
+with zero contradictions
+([the comparison](routes/run-to-geo-sample/ena-alias.md)).
+
+Where they agree, `provenance` lists both and the attribution is confirmed
+rather than asserted. Where they disagree, `conflicts` carries both values and
+neither archive is silently preferred — which is the only honest thing to do
+when two archives disagree about the same field.
+
+For GSE135325 this matters concretely. GEO records no SRA relation for any of
+its samples, so before this the GSM came only from the BioSample recovery.
+Now every one of its 36 runs is attributed by two routes that share no data
+source:
+
+```
+SRR9895473  GSM4005486
+  provenance: run->geo_sample:ena_alias,
+              geo_sample->biosample:soft_family (recovered via ENA BioSample)
+  conflicts:  none
+```

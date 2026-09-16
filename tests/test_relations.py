@@ -249,3 +249,81 @@ class TestGsmRecoveryThroughBioSample:
 
         records = await rel.relations(parse("GSE1"), client=None)
         assert records[0].geo_sample is None
+
+
+class TestAliasAttributionAlongsideSoft:
+    """The alias comes free on a request relations already makes."""
+
+    async def test_the_alias_and_soft_confirm_each_other(self, monkeypatch):
+        """GSE135325 now carries two independent routes for the same GSM, which
+        is a stronger claim than either alone."""
+        import fetch_series.relations as rel
+        from fetch_series.accession import parse
+
+        family = SimpleNamespace(
+            bioprojects=["PRJNA555555"],
+            sample_relations={"GSM4005486": {"biosample": "SAMN12476461"}},
+        )
+
+        async def fetch(client, accession, timeout):
+            return "soft"
+
+        async def report(client, accession, timeout, fields=None, result="read_run"):
+            assert "sample_alias" in (fields or ()), "the alias fields must be requested"
+            return [
+                {
+                    "run_accession": "SRR9895473",
+                    "sample_accession": "SAMN12476461",
+                    "sample_alias": "GSM4005486",
+                }
+            ]
+
+        monkeypatch.setattr(rel.geo, "fetch_soft_family", fetch)
+        monkeypatch.setattr(rel.geo, "parse_soft_family", lambda a, t: family)
+        monkeypatch.setattr(rel.ena_portal, "read_run_report", report)
+
+        records = await rel.relations(parse("GSE135325"), client=None)
+        assert records[0].geo_sample == "GSM4005486"
+        assert rel.ALIAS_ROUTE in records[0].provenance["geo_sample"]
+        assert rel.BIOSAMPLE_RECOVERY in records[0].provenance["geo_sample"]
+        assert not records[0].conflicts
+
+    async def test_a_disagreement_is_surfaced_rather_than_resolved(self, monkeypatch):
+        """Neither archive is silently preferred; the conflict is the finding."""
+        import fetch_series.relations as rel
+        from fetch_series.accession import parse
+
+        family = SimpleNamespace(
+            bioprojects=["PRJNA1"],
+            sample_relations={"GSM999": {"experiment": "SRX1", "biosample": "SAMN1"}},
+        )
+
+        async def fetch(client, accession, timeout):
+            return "soft"
+
+        async def report(client, accession, timeout, fields=None, result="read_run"):
+            return [
+                {
+                    "run_accession": "SRR1",
+                    "experiment_accession": "SRX1",
+                    "sample_alias": "GSM111",
+                }
+            ]
+
+        monkeypatch.setattr(rel.geo, "fetch_soft_family", fetch)
+        monkeypatch.setattr(rel.geo, "parse_soft_family", lambda a, t: family)
+        monkeypatch.setattr(rel.ena_portal, "read_run_report", report)
+
+        records = await rel.relations(parse("GSE1"), client=None)
+        assert records[0].conflicts["geo_sample"] == ["GSM111", "GSM999"]
+
+    async def test_an_arrayexpress_alias_fills_the_ae_column(self, monkeypatch):
+        import fetch_series.relations as rel
+        from fetch_series.accession import parse
+
+        async def report(client, accession, timeout, fields=None, result="read_run"):
+            return [{"run_accession": "ERR2861957", "sample_alias": "E-MTAB-6505:Day2_r1"}]
+
+        monkeypatch.setattr(rel.ena_portal, "read_run_report", report)
+        records = await rel.relations(parse("SRP446371"), client=None)
+        assert records[0].ae_experiment == "E-MTAB-6505"
