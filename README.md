@@ -15,8 +15,9 @@ where getting the wrong file list means reprocessing the wrong data.
 ## Status
 
 The accession graph, the file layer, parity with the incumbent, and the assay layer are all in.
-38 routes across five archives, every one exercised against a curated pathology corpus and the
-important ones measured by census rather than sample.
+**All 38 routes across five archives now carry measured evidence** — a census where one was
+affordable, a named seeded draw where it was not, and a knowledge-base page for every one.
+[The full matrix](docs/routes/index.md).
 
 ```bash
 uv sync --all-groups

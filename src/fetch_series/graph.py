@@ -467,16 +467,18 @@ ROUTES: list[Route] = [
             corpus="arrayexpress-ena",
             surveyed_on=date(2026, 9, 15),
             accessions_queried=20_693,
-            accessions_failed=66,
-            unique_results=20_077,
+            accessions_failed=5,
+            unique_results=20_138,
             notes=(
-                "20,076 resolved, 551 empty. The corpus is every ArrayExpress "
+                "20,137 resolved, 551 empty. The corpus is every ArrayExpress "
                 "study BioStudies records an ENA link for, so those 551 are a "
                 "measurable recall failure rather than an unknown: the link "
                 "exists and the IDF does not declare it. The BioSample fallback "
                 "recovers some of them; E-MTAB-6505 resolves that way. Replaces "
                 "a 2026-03 figure of 7,179/457 whose population was never "
-                "recorded."
+                "recorded. The 5 failures are studies whose IDF is a genuine "
+                "404: the record and the search index carry them, and they "
+                "register no files at all."
             ),
         ),
         known_pathologies=("ae-idf-missing-secondary-accession",),
