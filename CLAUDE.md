@@ -128,6 +128,12 @@ knowledge-base page, promote the route, and remove the test.
 - **Two surveys at once need a SQLite busy timeout.** WAL allows one writer and
   Python's default timeout is five seconds, so the normal way to cover NCBI and
   ENA routes in parallel would lose hours of work to "database is locked".
+- **A UID list in a query string has now cost this project data five times.**
+  ESummary, ESearch history, two ELink run routes, and EFetch. The last one
+  failed as httpx's own `InvalidURL` rather than a server 414, so the request
+  was never sent and GSE241770 — 7,905 runs — was recorded as a permanent
+  failure. Anything joining UIDs into a URL goes by POST above
+  `POST_THRESHOLD_UIDS`.
 - **Dates are UTC, everywhere.** A survey finishing at 00:12 BST is 23:12 UTC the
   day before, and `date.today()` recorded the wrong day — which a CI runner an
   hour behind then rejected as being in the future. Archive surveys are

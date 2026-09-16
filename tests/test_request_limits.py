@@ -3,7 +3,7 @@
 Every bug here is the same shape: an archive quietly caps a response or rejects
 an over-long request, and the naive call reports a truncated or absent answer as
 a success. They are gathered in one file because the pattern matters more than
-any single instance -- it has now cost this project five separate defects.
+any single instance -- it has now cost this project six separate defects.
 """
 
 from __future__ import annotations
@@ -161,3 +161,74 @@ class TestBioStudiesSearchWindow:
         years = 2003 - biostudies.FIRST_RELEASE_YEAR + 1
         assert len(found) == 10 * years
         assert len(set(found)) == len(found)
+
+
+class TestEfetchPostsLargeUidLists:
+    """The fifth time a UID list in a query string cost this project data.
+
+    GSE241770 links to 7,905 runs. Joined into an EFetch query string the URI
+    exceeded httpx's own limit, so the request was refused as `InvalidURL`
+    *before it was sent* — the archive was never asked, and the series was
+    recorded as a permanent failure.
+    """
+
+    @pytest.fixture
+    def recorder(self):
+        class _Response:
+            text = "Run,Experiment\nSRR1,SRX1\n"
+
+        class _Client:
+            api_key = None
+
+            def __init__(self):
+                self.method: str | None = None
+                self.uid_count = 0
+
+            @staticmethod
+            def _uids(sent):
+                # SurveyClient.get drops None params, because httpx encodes them
+                # as empty and NCBI rejects `api_key=` with a 400.
+                ids = (sent or {}).get("id")
+                return len(ids.split(",")) if ids else 0
+
+            async def get(self, url, params=None, timeout=None):
+                self.method = "GET"
+                self.uid_count = self._uids(params)
+                return _Response()
+
+            async def post(self, url, data=None, timeout=None):
+                self.method = "POST"
+                self.uid_count = self._uids(data)
+                return _Response()
+
+        return _Client
+
+    async def test_a_small_list_still_goes_by_get(self, recorder):
+        from fetch_series.providers.eutils import POST_THRESHOLD_UIDS, efetch_text
+
+        client = recorder()
+        await efetch_text(client, db="sra", timeout=10.0, uids=["1"] * POST_THRESHOLD_UIDS)
+        assert client.method == "GET"
+
+    async def test_a_large_list_goes_by_post(self, recorder):
+        from fetch_series.providers.eutils import POST_THRESHOLD_UIDS, efetch_text
+
+        client = recorder()
+        await efetch_text(client, db="sra", timeout=10.0, uids=["1"] * (POST_THRESHOLD_UIDS + 1))
+        assert client.method == "POST"
+
+    async def test_every_uid_survives_the_post(self, recorder):
+        """A POST that silently dropped UIDs would be worse than the 414."""
+        from fetch_series.providers.eutils import efetch_text
+
+        client = recorder()
+        await efetch_text(client, db="sra", timeout=10.0, uids=[str(i) for i in range(7905)])
+        assert client.uid_count == 7905
+
+    async def test_a_history_request_carries_no_uid_list_and_stays_a_get(self, recorder):
+        from fetch_series.providers.eutils import efetch_text
+
+        client = recorder()
+        await efetch_text(client, db="sra", timeout=10.0, webenv="W", query_key="1")
+        assert client.method == "GET"
+        assert client.uid_count == 0

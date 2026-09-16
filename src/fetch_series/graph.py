@@ -716,6 +716,19 @@ ROUTES: list[Route] = [
         kb_page="routes/gse-to-experiment/index.md",
         cost=RouteCost(requests=3, rate_limit_rps=NCBI_EUTILS_RPS),
         known_pathologies=("efetch-returns-fewer-runs-than-esearch-counts",),
+        evidence=RouteEvidence(
+            corpus="reprocessed-gse",
+            surveyed_on=date(2026, 9, 16),
+            accessions_queried=13_045,
+            accessions_failed=0,
+            unique_results=463_803,
+            notes=(
+                "10,751 resolved, 2,294 empty, nothing failed. The 2,294 are "
+                "the same series the experiment-level ELink census reports "
+                "empty, 2,281 of which the SOFT family file resolves -- so the "
+                "defect is in ELink, not in the EFetch step after it."
+            ),
+        ),
     ),
     # --- GEO sample as an entry point -------------------------------------
     Route(

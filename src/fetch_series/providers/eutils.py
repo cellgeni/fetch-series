@@ -195,20 +195,28 @@ async def efetch_text(
     query_key: str | None = None,
     rettype: str = "runinfo",
 ) -> str:
-    """EFetch returning text (runinfo CSV, typically)."""
-    response = await client.get(
-        f"{BASE}/efetch.fcgi",
-        params={
-            "db": db,
-            "id": ",".join(uids) if uids else None,
-            "WebEnv": webenv,
-            "query_key": query_key,
-            "rettype": rettype,
-            "retmode": "text",
-            "api_key": client.api_key,
-        },
-        timeout=timeout,
-    )
+    """EFetch returning text (runinfo CSV, typically).
+
+    Large UID lists go by POST, for the same reason ESummary's do. GSE241770
+    links to enough SRA records that the joined list exceeded httpx's own URI
+    limit -- the request was refused as ``InvalidURL`` before it was sent, so
+    the series was lost without the archive ever being asked. That is the fifth
+    time a UID list in a query string has cost this project data.
+    """
+    params: dict[str, Any] = {
+        "db": db,
+        "id": ",".join(uids) if uids else None,
+        "WebEnv": webenv,
+        "query_key": query_key,
+        "rettype": rettype,
+        "retmode": "text",
+        "api_key": client.api_key,
+    }
+    if uids and len(uids) > POST_THRESHOLD_UIDS:
+        clean = {k: v for k, v in params.items() if v is not None}
+        response = await client.post(f"{BASE}/efetch.fcgi", data=clean, timeout=timeout)
+    else:
+        response = await client.get(f"{BASE}/efetch.fcgi", params=params, timeout=timeout)
     return response.text
 
 
