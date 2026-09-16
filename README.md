@@ -40,6 +40,9 @@ fetch resolve GSM7518069 --to run --explain
 # Inspect the graph and the evidence behind it
 fetch routes list
 fetch survey compare --route A --route B --corpus reprocessed-gse
+
+# What the archives changed since the last snapshot
+fetch cache diff data/snapshots/<earlier>.sqlite
 ```
 
 `fetch links` reproduces **14 of 14** of `fetch10xmeta`'s own nf-test cases — 447 runs, no
@@ -77,14 +80,51 @@ The resolver therefore splits its answer into confirmed and unconfirmed.
 of NCBI-issued projects and **1.4%** of EBI-issued ones. Routes declare which archives they can
 answer for, and the resolver skips the rest rather than spending three requests to learn nothing.
 
+**Coverage is not correctness.** `esummary db=gds` resolves a BioProject for 466 GEO series whose
+SOFT file names none, never fails, and never disagrees with SOFT where both answer — so it wins
+every headline number. And **190 of those 466 (41%) resolve to a species-level umbrella project**:
+`PRJNA30709` alone accounts for 138 of them and holds 7,591 runs, so a two-sample series routed
+through it returns 7,591 and reports success. The ranking was *not* hand-tuned against this; the
+defect is declared on the route and printed beside the value.
+[Why](docs/decisions/route-ranking.md#coverage-is-not-correctness).
+
+**0.77% of runs that reprocessed successfully no longer exist in either archive.** Not in ENA, and
+not in NCBI's `esearch db=sra` either. Withdrawn, suppressed, or moved to controlled access — the
+archives do not distinguish, and nothing announces any of them.
+[The measurement](docs/routes/run-to-experiment/ena-filereport.md).
+
 **A paging bug was hiding 94,895 BioSamples.** Fixing an unpaged ESummary call did not merely clear
 330 failures; it recovered data that had been silently truncated on projects that reported success.
 149,429 unique BioSamples became 244,324.
 
 The comparison tables, every affected accession, and the curl reproducers are in
-[the knowledge base](docs/). How it was all measured — including the methodology mistakes that cost
-real time and one that understated a finding sevenfold — is in
+[the knowledge base](docs/index.md). How it was all measured — including the methodology mistakes
+that cost real time and one that understated a finding sevenfold — is in
 [benchmarks](docs/benchmarks/index.md).
+
+## Why the routes are ordered the way they are
+
+Nothing in this project has a hand-written preference order. `RouteRegistry.ranked()` computes the
+order from the `RouteEvidence` blocks in `graph.py` — corpus, date, measured counts — and a route
+nobody has surveyed sorts behind every route that has been.
+
+That matters because the incumbent tries NCBI's `efetch` before ENA, and the evidence says that is
+backwards by **110,779 runs**. Nobody wrote it down wrongly out of carelessness; it was a
+reasonable guess, held for years, and only a census settled it.
+
+**[`docs/decisions/`](docs/decisions/index.md) records every such choice** — the argument, the
+measurement it rests on, and what would reverse it:
+
+| | |
+|---|---|
+| [How routes are ranked](docs/decisions/route-ranking.md) | why yields are **banded**, why cost only breaks ties, and why a route that answers more can still be the wrong default |
+| [What counts as evidence](docs/decisions/what-counts-as-evidence.md) | three outcomes not two, distinct results not rows, why `hard-cases` is a gate and never evidence |
+| [When archives disagree](docs/decisions/merging-and-provenance.md) | union over fallback, per-value provenance, conflicts surfaced rather than resolved |
+| [Parity before improvement](docs/decisions/parity-before-improvement.md) | why `links.tsv` reproduces the incumbent's ordering, including where ours is better |
+| [No DDBJ provider](docs/decisions/no-ddbj-provider.md), [no ENA browser XML](docs/decisions/ena-browser-xml-not-needed.md) | two planned providers dropped on measurement |
+
+A decision with no stated failure condition is a preference, so each page ends with what would
+change it.
 
 ## Development
 
@@ -102,8 +142,10 @@ Set `NCBI_API_KEY` in a local `.env` to lift the NCBI rate limit from 3 to 10 re
 Never commit it — credentials are redacted from both log output and exception messages, and CI
 rejects credential-shaped strings in tracked files.
 
-See [CLAUDE.md](CLAUDE.md) for the conventions, and for the archive behaviours that have already
-cost time.
+See [CLAUDE.md](CLAUDE.md) for the conventions, the archive behaviours that have already cost
+time, and the design decisions that look like over-complications and are not.
+[CONTRIBUTING.md](CONTRIBUTING.md) has the route-, pathology- and assay-adding workflow;
+[STATUS.md](STATUS.md) is a point-in-time snapshot of what is done and what is left.
 
 ## Licence
 
