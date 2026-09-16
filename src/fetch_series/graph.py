@@ -939,6 +939,37 @@ ROUTES: list[Route] = [
             notes="2,977 resolved, 23 empty. The 23 empties are the same runs that no longer exist in either archive.",
         ),
     ),
+    # --- The submitter's own names --------------------------------------
+    # ENA returns the submitter's alias for every run, experiment and sample,
+    # and for a GEO- or ArrayExpress-brokered submission that alias is usually
+    # the accession itself. One request, and it works on the series where GEO
+    # records no SRA relation -- which the routes that go through GEO cannot.
+    Route(
+        id="run->geo_sample:ena_alias",
+        source=EntityType.RUN,
+        target=EntityType.GEO_SAMPLE,
+        provider="ena_portal",
+        summary="GSM parsed from ENA's sample_alias / experiment_alias / run_alias.",
+        kb_page="routes/run-to-geo-sample/ena-alias.md",
+        cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+        evidence=RouteEvidence(
+            corpus="sample:3000@reprocessed-srr",
+            surveyed_on=date(2026, 9, 16),
+            accessions_queried=3_000,
+            accessions_failed=0,
+            unique_results=2_395,
+            notes="2,477 resolved, 523 empty. Coverage tracks whether the run was submitted through GEO: 82.7% of the reprocessed sample column is GEO samples, and this route resolves a comparable share. Agreement with GEO's own SRA relation is 8,604 of 8,604 over 200 series, with zero contradictions.",
+        ),
+    ),
+    Route(
+        id="run->ae_experiment:ena_alias",
+        source=EntityType.RUN,
+        target=EntityType.AE_EXPERIMENT,
+        provider="ena_portal",
+        summary="ArrayExpress accession parsed from ENA's submitter aliases.",
+        kb_page="routes/run-to-geo-sample/ena-alias.md",
+        cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+    ),
     # --- The file layer ---------------------------------------------------
     # A file is where every other route was heading. These four disagree with
     # each other by design rather than by defect: ENA's fastq columns hold ENA's

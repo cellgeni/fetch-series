@@ -13,6 +13,7 @@ through one table and cannot drift.
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from fetch_series.files import FileRecord, classify, from_ena_row, from_sdl_files, mate_of
@@ -482,6 +483,32 @@ async def ae_to_file_sdrf(accession: str, client: SurveyClient, timeout: float) 
     return sorted({record.url for record in records})
 
 
+# --------------------------------------------------------------------------
+# The submitter's own names
+#
+# ENA returns run_alias, experiment_alias and sample_alias, and for a
+# GEO-brokered submission those are usually the GEO accession itself. That is a
+# route from a run to its GSM that needs neither the SOFT family file nor a
+# BioSample join -- and it works on GSE135325 and GSE137444, the two series
+# where GEO records no SRA relation at all.
+#
+# An alias is free text. It returns nothing for a submitter who named their
+# samples E12, and it must never guess; the parsing is anchored for that reason.
+# --------------------------------------------------------------------------
+
+ALIAS_REPORT_FIELDS = ("run_accession", *ena_portal.ALIAS_FIELDS)
+
+
+def _ena_alias_route(pattern: re.Pattern[str]) -> RouteFn:
+    async def route(accession: str, client: SurveyClient, timeout: float) -> list[str]:
+        rows = await ena_portal.read_run_report(
+            client, accession, timeout, fields=ALIAS_REPORT_FIELDS
+        )
+        return ena_portal.alias_accessions(rows, pattern)
+
+    return route
+
+
 IMPLEMENTATIONS: dict[str, RouteFn] = {
     "gse->bioproject:soft_family": gse_to_bioproject_soft,
     "gse->bioproject:gds_summary": gse_to_bioproject_gds,
@@ -521,4 +548,6 @@ IMPLEMENTATIONS: dict[str, RouteFn] = {
     "run->file:ena_sra": _ena_file_route("sra"),
     "run->file:sdl": run_to_file_sdl,
     "ae_experiment->file:sdrf": ae_to_file_sdrf,
+    "run->geo_sample:ena_alias": _ena_alias_route(ena_portal.GSM_IN_ALIAS),
+    "run->ae_experiment:ena_alias": _ena_alias_route(ena_portal.AE_IN_ALIAS),
 }
