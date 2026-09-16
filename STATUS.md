@@ -88,6 +88,19 @@ reach** ([the assay layer](docs/assays.md)).
 
 ---
 
+## Where the reasoning is written down
+
+The route pages record *what the archives do*.
+[`docs/decisions/`](docs/decisions/index.md) records *what we decided to do about
+it*, which is the part that ages fastest and is hardest to reconstruct from code:
+how routes are ranked and why yields are banded, what qualifies as evidence,
+what happens when two archives disagree, why parity precedes improvement, and
+the two planned providers dropped on measurement.
+
+Each page ends with **what would reverse it**. A decision with no stated failure
+condition is a preference, and the governing rule is that preferences do not
+ship.
+
 ## What is left
 
 ### Needs your decision or your credentials
@@ -109,9 +122,19 @@ reach** ([the assay layer](docs/assays.md)).
    ([`nextflow/fetch10xmeta/`](nextflow/fetch10xmeta/README.md)); it needs an
    image digest to pin, so it waits on (2).
 
-### One honest gap
+### Two honest gaps
 
-5. **Chemistry agreement with `rename10xrun` is unmeasured.** Measuring it needs
+5. **Eleven known archive behaviours have no pathology page.** They are declared
+   on the routes that exhibit them and listed in `PATHOLOGY_BACKLOG`, so
+   `--explain` names them and says *"not yet written up"* rather than offering a
+   path to a file that does not exist. Each is real and observed; what they lack
+   is the page contract — a curl reproducer, an affected-accession list, and a
+   regression test. `megalink-backend-flakiness` is the one worth writing first:
+   3,135 occurrences in the 2026-05 logs, the dominant failure signal in the
+   whole corpus, and an upstream report in its own right.
+   [The list](docs/pathologies/index.md#known-declared-and-not-yet-written-up).
+
+6. **Chemistry agreement with `rename10xrun` is unmeasured.** Measuring it needs
    the FASTQ files, which needs exactly the downloads the metadata layer exists
    to avoid. The right place to close it is the first real pipeline run with
    both enabled — the ids are `rename10xrun`'s verbatim so the two diff without
@@ -119,7 +142,9 @@ reach** ([the assay layer](docs/assays.md)).
 
 ### Deliberately dropped, with the reasons recorded
 
-- **PyPI release** — off the list on your call.
+- **PyPI release** — off the list on your call. Recorded in
+  [the decision log](docs/decisions/index.md#decisions-taken-outside-the-evidence)
+  as a maintainer decision rather than an evidence-based one, because it is.
 - **A DDBJ provider** — ENA resolves 137/137 PRJDB projects and 2,307 DRR runs,
   so a third implementation of a route two archives already answer earns
   nothing. Reverses on evidence if a corpus ever finds PRJDB projects ENA misses.
