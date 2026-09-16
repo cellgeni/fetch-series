@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import csv
+import gzip
 import json
 import logging
 from datetime import UTC, datetime
@@ -840,9 +841,12 @@ def survey_export(
         for recorded_corpus, recorded_route in pairs:
             directory = out / _slug(recorded_corpus)
             directory.mkdir(parents=True, exist_ok=True)
-            path = directory / f"{_slug(recorded_route)}.csv"
+            # Gzipped: the results column holds joined accession lists, which
+            # compress 18x. 92 MB of CSV becomes 15 MB, and the user pays for
+            # LFS. `zgrep`, `zcat` and `pandas.read_csv` all read it directly.
+            path = directory / f"{_slug(recorded_route)}.csv.gz"
             rows = 0
-            with path.open("w", newline="") as handle:
+            with gzip.open(path, "wt", newline="") as handle:
                 writer = csv.writer(handle)
                 writer.writerow(SURVEY_COLUMNS)
                 for result in cache.results(recorded_corpus, recorded_route):

@@ -451,14 +451,16 @@ class TestSurveyExport:
 
     def test_one_row_per_accession_with_its_verdict(self, tmp_path):
         import csv
+        import gzip
 
         cache_path = self._cache_with(tmp_path, "corp")
         result = self._run(cache_path, tmp_path / "out")
         assert result.exit_code == 0
 
-        written = list((tmp_path / "out" / "corp").glob("*.csv"))
+        written = list((tmp_path / "out" / "corp").glob("*.csv.gz"))
         assert len(written) == 1
-        rows = list(csv.DictReader(written[0].open()))
+        with gzip.open(written[0], "rt") as handle:
+            rows = list(csv.DictReader(handle))
         assert [r["accession"] for r in rows] == ["GSE1", "GSE2"]
         assert rows[0]["results"] == "SRX1;SRX2"
         assert rows[0]["outcome"] == "resolved"
@@ -471,7 +473,7 @@ class TestSurveyExport:
         cache_path = self._cache_with(tmp_path, "../../escaped")
         out = tmp_path / "out"
         assert self._run(cache_path, out).exit_code == 0
-        written = list(out.rglob("*.csv"))
+        written = list(out.rglob("*.csv.gz"))
         assert len(written) == 1
         # Exactly one directory deep, not merely somewhere underneath: `..`
         # surviving as its own path component would still satisfy `in parents`.
