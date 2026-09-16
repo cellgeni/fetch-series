@@ -98,6 +98,12 @@ nav:
       - ArrayExpress SDRF mirror URIs: pathologies/ae-sdrf-points-at-decommissioned-mirror.md
   - Benchmarks: benchmarks/index.md
   - Decisions:
+      - Overview: decisions/index.md
+      - How routes are ranked: decisions/route-ranking.md
+      - What counts as evidence: decisions/what-counts-as-evidence.md
+      - When archives disagree: decisions/merging-and-provenance.md
+      - Parity before improvement: decisions/parity-before-improvement.md
+      - No DDBJ provider needed: decisions/no-ddbj-provider.md
       - ENA browser XML not needed: decisions/ena-browser-xml-not-needed.md
   - Upstream reports:
       - Overview: upstream/index.md
