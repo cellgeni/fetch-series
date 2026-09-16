@@ -329,7 +329,12 @@ def load(name: str) -> Corpus:
     # results-of:<route id>@<corpus>
     if name.startswith("results-of:"):
         spec = name.removeprefix("results-of:")
-        route_id, _, source_corpus = spec.rpartition("@")
+        # The FIRST "@", not the last. A route id never contains one -- it is
+        # `source->target:provider` -- while a corpus name routinely does:
+        # `sample:3000@reprocessed-srr`, and a nested
+        # `results-of:A@results-of:B@C`. Splitting on the last "@" parsed the
+        # nested form as route `A@results-of:B`, which resolves to nothing.
+        route_id, _, source_corpus = spec.partition("@")
         if not route_id or not source_corpus:
             raise ValueError(f"Expected results-of:<route-id>@<corpus>, got {name!r}")
         return from_survey(route_id, source_corpus)

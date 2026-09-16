@@ -488,3 +488,35 @@ class TestSurveyExport:
         self._run(cache_path, out)
         manifest = next(out.rglob("manifest.txt"))
         assert manifest.read_text().strip() == "corpus: sample:3000@reprocessed-srr"
+
+
+class TestNestedCorpusNames:
+    """A corpus built from a survey whose corpus was itself built from one."""
+
+    def test_the_route_id_is_taken_from_the_first_at_sign(self, tmp_path):
+        """A route id never contains `@`; a corpus name routinely does. Taking
+        the last one parsed `results-of:A@results-of:B@C` as route
+        `A@results-of:B`, which resolves to nothing."""
+        from fetch_series.cache import SurveyCache
+        from fetch_series.survey.corpora import from_survey
+
+        inner = "results-of:a->b:x@corp"
+        path = tmp_path / "c.sqlite"
+        with SurveyCache(path) as cache:
+            cache.record(RouteResult.from_results("SRX1", "b->c:y", inner, ["SRR1"], 1))
+
+        corpus = from_survey("b->c:y", inner, cache_path=path)
+        assert corpus.values == ("SRR1",)
+        assert corpus.name == f"results-of:b->c:y@{inner}"
+
+    def test_a_sampled_parent_keeps_its_own_at_sign(self, tmp_path):
+        from fetch_series.cache import SurveyCache
+        from fetch_series.survey.corpora import from_survey
+
+        path = tmp_path / "c.sqlite"
+        with SurveyCache(path) as cache:
+            cache.record(
+                RouteResult.from_results("SRR1", "a->b:x", "sample:30@reprocessed-srr", ["SRX1"], 1)
+            )
+        corpus = from_survey("a->b:x", "sample:30@reprocessed-srr", cache_path=path)
+        assert corpus.values == ("SRX1",)
