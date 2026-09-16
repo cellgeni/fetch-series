@@ -19,6 +19,7 @@ trusted for that, and where the archives lose data silently.
 - **Replacing `fetch10xmeta`?** → [The parity record](fetch10xmeta-parity.md)
 - **Want to know how a route gets chosen at runtime?** → [The resolver](resolver.md)
 - **Wondering how any of this was measured?** → [Benchmarks](benchmarks/index.md)
+- **Want to know *why* a route is ranked where it is?** → [Decisions](decisions/index.md)
 
 ## The rules
 
@@ -29,6 +30,11 @@ trusted for that, and where the archives lose data silently.
 | 3 | **A disagreement is the evidence.** Agreement between routes is cheap and tells you little. | The 6 series where two GEO routes disagree taught more than the 144 where they agreed. |
 | 4 | **Cite the accession.** Every claim names the accession that motivated it. | "Sometimes GEO omits the relation" is not actionable; GSE135325 is. |
 | 5 | **Coverage is not correctness.** A route that answers more often can still answer worse. | `gds_summary` beats `soft_family` on every headline number and sends 190 series to a project holding 7,591 unrelated runs. |
+
+Each rule is a decision with evidence behind it, written up in
+[Decisions](decisions/index.md) — including what would reverse it. A decision
+with no stated failure condition is a preference, and preferences do not ship
+here.
 
 ## What has been measured
 
