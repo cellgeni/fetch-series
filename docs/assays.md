@@ -13,7 +13,12 @@ plain in it.
 
 ```bash
 fetch screen GSE109816            # exits 2; nothing here is 10x
-fetch screen GSE111360 --explain  # every run, with the phrases the call rests on
+fetch screen GSE111360 --explain  # every run, with the phrases each call rests on
+```
+
+```
+run          assay  library_type  chemistry
+SRR6798781   10x    VDJ|GEX       10x_5p_v1_v2
 ```
 
 ## What it is not
@@ -101,6 +106,71 @@ Where the text names exactly one family, the type is asserted. The families are
 checked specific-first — ATAC, VDJ, CRISPR, HTO, ADT, then GEX — because almost
 every protocol says "gene expression" somewhere, so ordering decides
 presentation while the ambiguity rule decides truth.
+
+## Chemistry: the one place metadata beats the reads
+
+`rename10xrun`'s `infer_10x_chemistry.py` decides chemistry from the FASTQ files
+— barcode length, UMI length, which whitelist the barcodes hit. That is the
+right way to decide how reads are parsed, it fails closed, and nothing here
+replaces it.
+
+But it cannot answer everything, and it says so itself, in a warning it emits:
+
+> `737K-august-2016` cannot distinguish 3prime v2 from 5prime v1/v2 by FASTQ
+> geometry alone
+
+Both use a 16 bp barcode, a 10 bp UMI and the same whitelist. Geometry is
+genuinely blind there. **Metadata is not**: a protocol naming a *"Chromium Next
+GEM Single Cell 5' Library & Gel Bead Kit"* settles it, and settles it before
+anything is downloaded.
+
+### Measured
+
+2,000 runs from `reprocessed-srr`, 2026-09-16:
+
+| | Runs | |
+|---|---:|---:|
+| Metadata names exactly one chemistry | 648 | 32.4% |
+| …of which **finer than FASTQ geometry can reach** | **292** | **14.6%** |
+| Names more than one (a study that ran both kits) | 12 | 0.6% |
+| Names none | 1,340 | 67.0% |
+
+| Chemistry | Runs |
+|---|---:|
+| `10x_3p_v3_family` | 299 |
+| `10x_5p_v1_v2` | **183** |
+| `10x_3p_v2` | **109** |
+| `10x_multiome_arc_gex` | 42 |
+| `10x_atac_v1_v1.1_v2` | 11 |
+| `10x_5p_v3_gemx`, `10x_3p_v4_gemx`, `10x_3p_v1` | 4 |
+
+The two bolded rows are the payoff: **292 runs where the metadata distinguishes
+3' v2 from 5' v1/v2** and the whitelist cannot. For the other 67% the metadata
+is silent, and silence is the answer it gives.
+
+### What is not measured
+
+**Agreement with the empirical inference.** That needs the FASTQ files, which
+needs exactly the downloads this layer exists to avoid. The honest claim is
+"metadata settles it for 32.4% of runs"; comparing the two is a cross-check for
+whenever the pipeline runs both, and a disagreement there is a finding about the
+submission rather than a tie to break.
+
+The ids are `rename10xrun`'s verbatim — `10x_3p_v3_family`, `10x_5p_v1_v2`,
+`10x_multiome_arc_gex` — so the two answers compare without translation, and a
+test asserts the vocabularies have not drifted apart.
+
+### A study that ran two kits names both
+
+The protocol field describes a study, not a library. GSE111360's names a
+Chromium 3' kit *and* a 5' kit because the study used both, in one field shared
+by every run, so those runs report `10x_3p_v3_family|10x_5p_v1_v2` and assert
+nothing — the same rule the [library type](#library-type-is-study-level-and-says-so)
+follows.
+
+A GEM-X 3' kit is *not* ambiguous with the plain 3' family it implies, nor
+Multiome with ATAC: that is one library described at two levels, and reporting
+it as a conflict would manufacture an ambiguity that is not there.
 
 ## It is an interface, and that is tested
 
