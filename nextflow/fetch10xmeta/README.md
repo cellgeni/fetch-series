@@ -36,12 +36,21 @@ consumes them, and they are not reproduced. What replaces them is
 ENA and ArrayExpress identities joined, plus which route supplied each field
 and where two archives disagreed.
 
-**`screen.tsv` is new and advisory.** It says what assay each run appears to be,
-from metadata, before anything is downloaded. It is deliberately `|| true`:
-`fetch screen` exits non-zero when nothing looks like 10x, and that is a finding
-to record rather than a reason to stop resolving. `RENAME10XRUN` stays
-authoritative — it reads the FASTQ files and fails closed, which is correct for
-the thing that decides how reads are parsed.
+**`screen.tsv` is new and advisory.** Four columns — run, assay, library type,
+chemistry — from metadata, before anything is downloaded. It is deliberately
+`|| true`: `fetch screen` exits non-zero when nothing looks like 10x, and that
+is a finding to record rather than a reason to stop resolving.
+
+`RENAME10XRUN` stays authoritative on chemistry: it reads the FASTQ files and
+fails closed, which is correct for the thing that decides how reads are parsed.
+The two are complementary rather than competing, and the chemistry ids here are
+`rename10xrun`'s own so they can be diffed without translation. For **14.6%** of
+runs the metadata reaches a chemistry the FASTQ whitelist cannot — 3' v2 against
+5' v1/v2 share a barcode length, a UMI length and a whitelist, and
+`infer_10x_chemistry.py` emits a warning saying it cannot separate them.
+
+Where the two disagree, that is a data-quality signal about the submission worth
+recording, not a tie to break. See [the assay layer](../../docs/assays.md).
 
 **`versions.yml` reports a real version.** The incumbent hardcoded
 `reprocess_version=4.1` beside a commented-out line that would have read it from
