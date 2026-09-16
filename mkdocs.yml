@@ -94,6 +94,8 @@ nav:
       - ENA fastq omits the barcode read: pathologies/ena-paired-library-single-fastq.md
       - ArrayExpress SDRF mirror URIs: pathologies/ae-sdrf-points-at-decommissioned-mirror.md
   - Benchmarks: benchmarks/index.md
+  - Decisions:
+      - ENA browser XML not needed: decisions/ena-browser-xml-not-needed.md
   - Upstream reports:
       - Overview: upstream/index.md
       - NCBI ELink gds to sra: upstream/ncbi-elink-gds-sra.md
