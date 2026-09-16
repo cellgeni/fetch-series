@@ -88,6 +88,50 @@ drove the choice.
 
 See [ENA publishes an unpaired fastq for a paired library](pathologies/ena-paired-library-single-fastq.md).
 
+## Do the recommended links actually work?
+
+**1,566 of 1,566.** Every link in the recommended set for a seeded 1,000-run
+draw from `reprocessed-srr` returned HTTP 200 and served **exactly** the byte
+count the archive published (2026-09-16).
+
+| | |
+|---|---:|
+| Runs asked about | 1,000 |
+| Runs with a recommended set | 999 |
+| Links verified | 1,566 |
+| HTTP 200 | **1,566 (100%)** |
+| Served size matches published size | **1,566 (100%)** |
+
+Which routes the recommendations actually came from:
+
+| Source | Links | Format |
+|---|---:|---|
+| `run->file:ena_fastq` | 1,082 | fastq |
+| `run->file:sdl` | 448 | `.sra` |
+| `run->file:ena_submitted` | 36 | fastq |
+
+Verification is a HEAD, so this is a claim about **resolvability and size**, not
+about content. Regenerate it with:
+
+```bash
+uv run python scripts/verify_file_links.py 1000
+```
+
+### The two claims that must not be confused
+
+The links are reliable. **The data behind 39% of the fastq ones is not.**
+
+Nothing in this verification could have caught the
+[missing barcode read](pathologies/ena-paired-library-single-fastq.md): those
+files resolve, their published md5 is correct, and their published size matches
+what is served — because the file ENA published really is that size. It is
+simply half the run.
+
+1,566 links across 999 runs is **1.57 per run**, which is the same signal from
+the other side: for a corpus in which every run is paired, most recommended sets
+are a single file. A verification layer that only checks links would have
+reported this corpus as perfectly healthy.
+
 ## Using it
 
 ```bash
