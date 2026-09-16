@@ -1,0 +1,61 @@
+name: Docs
+
+# Publishes the knowledge base to GitHub Pages.
+#
+# The KB is the product, not the byproduct: the CLI encodes what this project
+# knows, and these pages are how someone else can check it and how an archive
+# can act on it. A knowledge base nobody outside the repository can read cannot
+# do either.
+#
+# `ci.yml` already builds with --strict on every PR, so this job publishes a
+# tree that has passed the same check rather than being the place it is checked.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time, and never cancel one halfway: an interrupted Pages
+# deploy leaves the site serving a partial tree.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false  # docs/ holds no LFS objects
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install
+        run: uv sync --group docs
+
+      - name: Build
+        run: uv run mkdocs build --strict
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

@@ -45,6 +45,11 @@ fetch survey compare --route A --route B --corpus reprocessed-gse
 `fetch links` reproduces **14 of 14** of `fetch10xmeta`'s own nf-test cases — 447 runs, no
 differences. See [the parity record](docs/fetch10xmeta-parity.md).
 
+The knowledge base publishes to
+[cellgeni.github.io/fetch-series](https://cellgeni.github.io/fetch-series/) on
+every push to `main` — every route, every pathology, every measurement with the
+date and corpus it came from. Build it locally with `uv run mkdocs serve`.
+
 ## What the censuses found
 
 Four of these contradicted what the code assumed before anyone measured it.

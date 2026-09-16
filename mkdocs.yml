@@ -1,6 +1,9 @@
 site_name: fetch-series knowledge base
 site_description: Routes between public sequencing accessions, and where the archives lose data.
 repo_url: https://github.com/cellgeni/fetch-series
+# Required for the sitemap and for canonical links to resolve; Material
+# also uses it to decide whether the search index can be prebuilt.
+site_url: https://cellgeni.github.io/fetch-series/
 docs_dir: docs
 site_dir: _site
 use_directory_urls: true
