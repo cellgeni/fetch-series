@@ -86,6 +86,32 @@ Guessing would be worse than answering nothing. An unanchored `GSM\d+` matches
 exist — and for a tool whose whole claim is provenance, attributing data to the
 wrong sample is the failure that matters most.
 
+## The same trick does not work for ArrayExpress
+
+`run->ae_experiment:ena_alias` reads the same fields for an `E-MTAB` accession,
+and it is a much weaker route. Over the **1,547** runs of the ArrayExpress
+studies in `arrayexpress-no-secondary` (2026-09-16):
+
+| | |
+|---|---|
+| Resolved | **91 (5.9%)** |
+| Empty | 1,456 |
+| Failed | 0 |
+| Distinct studies found | **6** |
+
+`ERR2861957`'s alias is `E-MTAB-6505:Day2_r1`, and five other studies do the
+same. The rest do not: ArrayExpress submitters name their samples after their
+own biology, not after the accession the archive will assign them — which is
+what GEO's brokering does automatically and ArrayExpress's does not.
+
+So this is a lucky dip, kept because it costs nothing on a request already being
+made and because 6 studies recovered is 6 more than zero. It is not a substitute
+for [the IDF secondary accession](../ae-experiment-to-study/index.md), and the
+ranking reflects that: a 5.9% yield sorts below every route that answers.
+
+The contrast is the finding. A pattern that is essentially exact for one archive
+transfers to the next one at 5.9%, and only measuring the second told us so.
+
 ## How to use it
 
 As a **cross-check**, not a replacement. It agrees with SOFT on everything SOFT

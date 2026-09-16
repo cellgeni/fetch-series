@@ -969,6 +969,14 @@ ROUTES: list[Route] = [
         summary="ArrayExpress accession parsed from ENA's submitter aliases.",
         kb_page="routes/run-to-geo-sample/ena-alias.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
+        evidence=RouteEvidence(
+            corpus="results-of:biosample->run:ena_filereport@results-of:ae_experiment->biosample:sdrf@arrayexpress-no-secondary",
+            surveyed_on=date(2026, 9, 16),
+            accessions_queried=1_547,
+            accessions_failed=0,
+            unique_results=6,
+            notes="91 resolved, 1,456 empty. Unlike the GEO case, ArrayExpress submitters rarely put the study accession in an alias: 91 of 1,547 runs, 6 distinct studies. E-MTAB-6505 does, most do not, so this is a lucky-dip route rather than a reliable one.",
+        ),
     ),
     # --- The file layer ---------------------------------------------------
     # A file is where every other route was heading. These four disagree with

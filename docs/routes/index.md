@@ -4,7 +4,7 @@ title: The route matrix
 
 # The route matrix
 
-**All 38 declared routes carry measured evidence.** Every row below was produced
+**All 40 declared routes carry measured evidence.** Every row below was produced
 by a survey recorded in the SQLite cache and exported to
 [`data/surveys/`](https://github.com/cellgeni/fetch-series/tree/main/data/surveys);
 the counts here are generated from the `RouteEvidence` blocks in
@@ -49,7 +49,7 @@ uv run fetch routes list
 | `bioproject` → `run` | `sra_be_direct_cgi` | `reprocessed` | 12,756 | 754,277 | **16** |
 | `bioproject` → `run` | `sra_be_elink` | `reprocessed` | 12,756 | 754,332 | **34** |
 | `bioproject` → `study` | `ena_filereport` | `reprocessed-prj` | 12,755 | 12,748 | 0 |
-| `biosample` → `run` | `ena_filereport` | `sample:3000@results-of:bioproject->biosample:ena_filereport@reprocessed-prj` | 3,000 | 4,827 | 0 |
+| `biosample` → `run` | `ena_filereport` | `sample:3000@results-of:bioproject->biosample:ena_filerepo…` | 3,000 | 4,827 | 0 |
 | `experiment` → `biosample` | `ena_filereport` | `sample:3000@reprocessed-srx` | 3,000 | 2,893 | 0 |
 | `experiment` → `run` | `ena_filereport` | `results-of:gse->experiment:soft_family@reprocessed-gse` | 3,000 | 6,580 | 0 |
 | `geo_sample` → `biosample` | `acc_cgi` | `sample:1000@reprocessed-sample` | 825 | 822 | **3** |
@@ -63,16 +63,18 @@ uv run fetch routes list
 | `geo_series` → `geo_sample` | `gds_summary` | `reprocessed-gse` | 13,045 | 319,023 | 0 |
 | `geo_series` → `geo_sample` | `soft_family` | `reprocessed-gse` | 13,045 | 319,023 | **7** |
 | `geo_series` → `run` | `elink_gds_sra` | `reprocessed-gse` | 13,045 | 463,803 | 0 |
+| `run` → `ae_experiment` | `ena_alias` | `results-of:biosample->run:ena_filereport@results-of:ae_ex…` | 1,547 | 6 | 0 |
 | `run` → `biosample` | `ena_filereport` | `sample:3000@reprocessed-srr` | 3,000 | 2,880 | 0 |
 | `run` → `experiment` | `ena_filereport` | `sample:3000@reprocessed-srr` | 3,000 | 2,888 | 0 |
 | `run` → `file` | `ena_fastq` | `sample:3000@reprocessed-srr` | 3,000 | 4,466 | 0 |
 | `run` → `file` | `ena_sra` | `sample:3000@reprocessed-srr` | 3,000 | 0 | 0 |
 | `run` → `file` | `ena_submitted` | `sample:3000@reprocessed-srr` | 3,000 | 601 | 0 |
 | `run` → `file` | `sdl` | `sample:3000@reprocessed-srr` | 3,000 | 3,085 | 0 |
+| `run` → `geo_sample` | `ena_alias` | `sample:3000@reprocessed-srr` | 3,000 | 2,395 | 0 |
 | `sample` → `run` | `ena_filereport` | `sample:3000@reprocessed-srs` | 3,000 | 8,359 | 0 |
-| `study` → `ae_experiment` | `biostudies_search` | `sample:3000@results-of:bioproject->study:ena_filereport@reprocessed-prj` | 3,000 | 101 | 0 |
-| `study` → `bioproject` | `ena_filereport` | `sample:3000@results-of:bioproject->study:ena_filereport@reprocessed-prj` | 3,000 | 2,999 | 0 |
-| `study` → `run` | `ena_filereport` | `sample:3000@results-of:bioproject->study:ena_filereport@reprocessed-prj` | 3,000 | 205,175 | 0 |
+| `study` → `ae_experiment` | `biostudies_search` | `sample:3000@results-of:bioproject->study:ena_filereport@r…` | 3,000 | 101 | 0 |
+| `study` → `bioproject` | `ena_filereport` | `sample:3000@results-of:bioproject->study:ena_filereport@r…` | 3,000 | 2,999 | 0 |
+| `study` → `run` | `ena_filereport` | `sample:3000@results-of:bioproject->study:ena_filereport@r…` | 3,000 | 205,175 | 0 |
 
 ## What the failures are
 
