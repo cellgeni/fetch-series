@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import csv
 import json
 import logging
 from datetime import UTC, datetime
@@ -793,6 +794,79 @@ def cache_stats(
             for recorded_corpus, route_id in store.routes_surveyed(corpus)
         ]
     typer.echo(json.dumps(rows, indent=2))
+
+
+SURVEY_COLUMNS = (
+    "accession",
+    "outcome",
+    "n_results",
+    "results",
+    "error_class",
+    "error_message",
+    "latency_ms",
+    "fetched_at",
+)
+
+
+@survey_app.command("export")
+def survey_export(
+    out: Annotated[Path, typer.Option("-o", "--out", help="Directory to write into.")] = Path(
+        "data/surveys"
+    ),
+    corpus_name: Annotated[str | None, typer.Option("--corpus", help="Only this corpus.")] = None,
+    route_id: Annotated[str | None, typer.Option("--route", help="Only this route.")] = None,
+    cache_path: Annotated[Path, typer.Option("--cache", help="SQLite store.")] = DEFAULT_CACHE_PATH,
+) -> None:
+    """Write every recorded verdict out as CSV, one file per route and corpus.
+
+    The SQLite cache is the working store and is not committed: it carries raw
+    response bodies and runs to hundreds of megabytes. These CSVs are the part
+    worth versioning -- one row per accession, the verdict, what it returned and
+    why it failed -- which is what regenerates a comparison or an
+    affected-accession list months later, when the archive no longer agrees with
+    itself.
+
+    A corpus name can contain `/` (`results-of:a->b:c@corpus`), so names are
+    slugified for the filesystem and the original is written into the manifest
+    beside the file. Reconstructing it from the filename would be guesswork.
+    """
+    written: list[tuple[str, int]] = []
+    with SurveyCache(cache_path) as cache:
+        pairs = [
+            (recorded_corpus, recorded_route)
+            for recorded_corpus, recorded_route in cache.routes_surveyed(corpus_name)
+            if route_id is None or recorded_route == route_id
+        ]
+        for recorded_corpus, recorded_route in pairs:
+            directory = out / _slug(recorded_corpus)
+            directory.mkdir(parents=True, exist_ok=True)
+            path = directory / f"{_slug(recorded_route)}.csv"
+            rows = 0
+            with path.open("w", newline="") as handle:
+                writer = csv.writer(handle)
+                writer.writerow(SURVEY_COLUMNS)
+                for result in cache.results(recorded_corpus, recorded_route):
+                    writer.writerow(
+                        [
+                            result.accession,
+                            result.outcome.value,
+                            result.n_results,
+                            ";".join(result.results),
+                            result.error_class or "",
+                            (result.error_message or "").replace("\n", " "),
+                            result.latency_ms,
+                            result.fetched_at.isoformat(),
+                        ]
+                    )
+                    rows += 1
+            (directory / "manifest.txt").write_text(f"corpus: {recorded_corpus}\n")
+            written.append((str(path), rows))
+
+    for written_path, rows in written:
+        typer.echo(f"{rows:>8,}  {written_path}")
+    typer.secho(
+        f"exported {len(written)} surveys, {sum(r for _, r in written):,} verdicts", err=True
+    )
 
 
 @cache_app.command("diff")

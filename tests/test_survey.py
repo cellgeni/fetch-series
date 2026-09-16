@@ -425,3 +425,64 @@ class TestSampledCorpora:
 
         with pytest.raises(ValueError, match="sample:<n>@<corpus>"):
             load("sample:@hard-cases")
+
+
+class TestSurveyExport:
+    """The CSVs are the committed evidence; the SQLite store is not committed."""
+
+    def _cache_with(self, tmp_path, corpus: str):
+        from fetch_series.cache import SurveyCache
+
+        path = tmp_path / "c.sqlite"
+        with SurveyCache(path) as cache:
+            cache.record(RouteResult.from_results("GSE1", "a->b:x", corpus, ["SRX1", "SRX2"], 5))
+            cache.record(RouteResult.from_results("GSE2", "a->b:x", corpus, [], 3))
+        return path
+
+    def _run(self, cache_path, out):
+        from typer.testing import CliRunner
+
+        from fetch_series.cli import app
+
+        return CliRunner().invoke(
+            app,
+            ["survey", "export", "--out", str(out), "--cache", str(cache_path)],
+        )
+
+    def test_one_row_per_accession_with_its_verdict(self, tmp_path):
+        import csv
+
+        cache_path = self._cache_with(tmp_path, "corp")
+        result = self._run(cache_path, tmp_path / "out")
+        assert result.exit_code == 0
+
+        written = list((tmp_path / "out" / "corp").glob("*.csv"))
+        assert len(written) == 1
+        rows = list(csv.DictReader(written[0].open()))
+        assert [r["accession"] for r in rows] == ["GSE1", "GSE2"]
+        assert rows[0]["results"] == "SRX1;SRX2"
+        assert rows[0]["outcome"] == "resolved"
+        assert rows[1]["outcome"] == "empty"
+
+    def test_a_corpus_name_containing_a_slash_does_not_escape_the_directory(self, tmp_path):
+        """`results-of:a->b:c@corp` is a legal corpus name and contains no slash
+        today, but the naming scheme is open-ended and a path separator in a
+        filename would write outside the export directory."""
+        cache_path = self._cache_with(tmp_path, "../../escaped")
+        out = tmp_path / "out"
+        assert self._run(cache_path, out).exit_code == 0
+        written = list(out.rglob("*.csv"))
+        assert len(written) == 1
+        # Exactly one directory deep, not merely somewhere underneath: `..`
+        # surviving as its own path component would still satisfy `in parents`.
+        assert written[0].parent.parent == out
+        assert ".." not in written[0].parent.name.split("/")
+
+    def test_the_manifest_records_the_unslugified_corpus_name(self, tmp_path):
+        """Reconstructing it from the slug would be guesswork, and the name is
+        what identifies the accession set."""
+        cache_path = self._cache_with(tmp_path, "sample:3000@reprocessed-srr")
+        out = tmp_path / "out"
+        self._run(cache_path, out)
+        manifest = next(out.rglob("manifest.txt"))
+        assert manifest.read_text().strip() == "corpus: sample:3000@reprocessed-srr"
