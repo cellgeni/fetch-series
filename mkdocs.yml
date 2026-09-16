@@ -49,15 +49,56 @@ validation:
 
 nav:
   - Home: index.md
+  - The resolver: resolver.md
+  - The relation table: relations.md
+  - The file layer: files.md
+  - The assay layer: assays.md
+  - Parity with fetch10xmeta: fetch10xmeta-parity.md
+  - The graph:
+      - Accession types: graph/accession-types.md
+      - Routing by archive: graph/routing-by-archive.md
   - Routes:
+      - The full matrix: routes/index.md
+      - GEO series to BioProject: routes/gse-to-bioproject/soft-family.md
+      - GEO series to BioProject via gds: routes/gse-to-bioproject/gds-summary.md
+      - GEO series to GEO sample: routes/gse-to-geo-sample/soft-family.md
+      - GEO series to GEO sample via gds: routes/gse-to-geo-sample/gds-summary.md
       - GEO series to experiment: routes/gse-to-experiment/index.md
+      - Via SOFT BioProject and ENA: routes/gse-to-experiment/soft-bioproject-ena.md
+      - GEO sample to experiment: routes/geo-sample-to-experiment/index.md
+      - BioProject to run: routes/bioproject-to-run/index.md
+      - BioProject to experiment: routes/bioproject-to-experiment/ena-filereport.md
+      - BioProject to study: routes/bioproject-to-study/ena-filereport.md
+      - Study to BioProject: routes/study-to-bioproject/ena-filereport.md
+      - Study to run: routes/study-to-run/ena-filereport.md
+      - Run to experiment: routes/run-to-experiment/ena-filereport.md
+      - Run to BioSample: routes/run-to-biosample/ena-filereport.md
+      - Sample to run: routes/sample-to-run/ena-filereport.md
+      - Experiment to BioSample: routes/experiment-to-biosample/ena-filereport.md
+      - BioSample to run: routes/biosample-to-run/ena-filereport.md
+      - BioProject to GEO series: routes/bioproject-to-geo-series/index.md
+      - BioProject to BioSample: routes/bioproject-to-biosample/index.md
+      - ArrayExpress experiment to study: routes/ae-experiment-to-study/index.md
+      - Study to ArrayExpress experiment: routes/study-to-ae-experiment/biostudies-search.md
+      - Run to file: routes/run-to-file/index.md
+      - ArrayExpress experiment to BioSample: routes/ae-experiment-to-biosample/sdrf.md
+      - ArrayExpress experiment to file: routes/ae-experiment-to-file/index.md
   - Pathologies:
       - Overview: pathologies/index.md
       - ELink gds to sra returns no links: pathologies/elink-gds-sra-missing-links.md
       - GEO omits the SRA relation: pathologies/geo-omits-sample-sra-relation.md
+      - Shared umbrella BioProject: pathologies/series-under-shared-umbrella-bioproject.md
+      - SOFT names experiments with no runs: pathologies/soft-names-experiments-with-no-runs.md
+      - BioStudies 20,000-hit window: pathologies/biostudies-20000-hit-window.md
+      - ENA fastq omits the barcode read: pathologies/ena-paired-library-single-fastq.md
+      - ArrayExpress SDRF mirror URIs: pathologies/ae-sdrf-points-at-decommissioned-mirror.md
+  - Benchmarks: benchmarks/index.md
   - Upstream reports:
       - Overview: upstream/index.md
       - NCBI ELink gds to sra: upstream/ncbi-elink-gds-sra.md
+      - EBI ENA derived fastq: upstream/ebi-ena-derived-fastq-drops-technical-read.md
+      - EBI BioStudies search window: upstream/ebi-biostudies-search-window.md
+      - EBI ArrayExpress SDRF URIs: upstream/ebi-arrayexpress-sdrf-mirror-uris.md
   # Earlier exploration notes, kept because they record how each finding was
   # reached. Being superseded by the per-route pages above.
   - Archive notes:

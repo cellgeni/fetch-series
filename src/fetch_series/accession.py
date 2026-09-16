@@ -53,6 +53,9 @@ class EntityType(StrEnum):
     GEO_PLATFORM = "geo_platform"
     AE_EXPERIMENT = "ae_experiment"
     BIOSTUDY = "biostudy"
+    # A file is not an accession and no rule parses one: it is a terminal node
+    # in the route graph, the thing every other entity exists to reach.
+    FILE = "file"
 
 
 @dataclass(frozen=True, slots=True)

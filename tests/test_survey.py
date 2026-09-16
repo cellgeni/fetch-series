@@ -315,3 +315,176 @@ class TestCorpora:
         from fetch_series.survey.corpora import HARD_CASES
 
         assert all(len(reason) > 20 for reason in HARD_CASES.values())
+
+
+class TestVisitOrder:
+    """Slicing a corpus before shuffling is a biased sample dressed as a limit."""
+
+    def test_shuffled_is_deterministic(self):
+        from fetch_series.survey.runner import shuffled
+
+        values = [f"GSE{i}" for i in range(500)]
+        assert shuffled(values) == shuffled(values)
+
+    def test_shuffled_preserves_membership(self):
+        from fetch_series.survey.runner import shuffled
+
+        values = [f"GSE{i}" for i in range(500)]
+        assert sorted(shuffled(values)) == sorted(values)
+
+    def test_a_prefix_of_the_shuffle_is_not_a_prefix_of_the_sort(self):
+        """The bug this guards.
+
+        Corpora arrive sorted, so the first N of one are the N lowest accession
+        numbers -- the oldest submissions. An early 150-series run sliced that
+        way covered only the oldest fifth of GEO, which made six ELink failures
+        all look like old accessions and produced an age hypothesis the full
+        census then disproved.
+        """
+        from fetch_series.survey.runner import shuffled
+
+        values = sorted((f"GSE{i}" for i in range(1000)), key=lambda a: int(a[3:]))
+        sorted_prefix = [int(a[3:]) for a in values[:100]]
+        visit_prefix = [int(a[3:]) for a in shuffled(values)[:100]]
+        assert max(sorted_prefix) < 200  # the sorted prefix is all low numbers
+        assert max(visit_prefix) > 800  # the visit prefix spans the range
+
+
+class TestSurveyDerivedCorpora:
+    """The results of one survey are the inputs of the next."""
+
+    def test_builds_a_corpus_from_recorded_results(self, tmp_path):
+        from fetch_series.cache import SurveyCache
+        from fetch_series.survey.corpora import from_survey
+
+        path = tmp_path / "c.sqlite"
+        with SurveyCache(path) as cache:
+            cache.record(RouteResult.from_results("GSE1", "r", "c", ["SRX1", "SRX2"], 1))
+            cache.record(RouteResult.from_results("GSE2", "r", "c", ["SRX2", "SRX3"], 1))
+
+        corpus = from_survey("r", "c", cache_path=path)
+        assert corpus.values == ("SRX1", "SRX2", "SRX3")
+        assert "r" in corpus.source and "c" in corpus.source
+
+    def test_refuses_to_build_from_nothing(self, tmp_path):
+        """An empty corpus would survey zero accessions and report success."""
+        from fetch_series.survey.corpora import from_survey
+
+        with pytest.raises(ValueError, match="No recorded results"):
+            from_survey("missing", "c", cache_path=tmp_path / "c.sqlite")
+
+    def test_name_round_trips_through_load(self, tmp_path):
+        from fetch_series.cache import SurveyCache
+        from fetch_series.survey.corpora import from_survey
+
+        path = tmp_path / "c.sqlite"
+        with SurveyCache(path) as cache:
+            cache.record(RouteResult.from_results("GSE1", "a->b:x", "corp", ["SRX1"], 1))
+        corpus = from_survey("a->b:x", "corp", cache_path=path)
+        # The name records exactly which survey produced the population, so a
+        # result can be traced back to the question that generated its inputs.
+        assert corpus.name == "results-of:a->b:x@corp"
+
+
+class TestSampledCorpora:
+    """A sub-sample of a corpus is a corpus in its own right, and says so."""
+
+    def test_draw_is_the_requested_size(self):
+        from fetch_series.survey.corpora import sample_of
+
+        assert len(sample_of("hard-cases", 10)) == 10
+
+    def test_draw_is_deterministic(self):
+        """Two runs recorded under one name have to mean the same accessions."""
+        from fetch_series.survey.corpora import sample_of
+
+        assert sample_of("hard-cases", 12).values == sample_of("hard-cases", 12).values
+
+    def test_draw_is_a_subset_of_its_parent(self):
+        from fetch_series.survey.corpora import hard_cases, sample_of
+
+        parent = set(hard_cases().values)
+        assert set(sample_of("hard-cases", 15).values) <= parent
+
+    def test_name_round_trips_through_load(self):
+        from fetch_series.survey.corpora import load, sample_of
+
+        drawn = sample_of("hard-cases", 8)
+        assert drawn.name == "sample:8@hard-cases"
+        assert load(drawn.name).values == drawn.values
+
+    def test_refuses_to_draw_more_than_the_parent_holds(self):
+        """Silently returning fewer would label a small draw with a large n."""
+        from fetch_series.survey.corpora import sample_of
+
+        with pytest.raises(ValueError, match="holds"):
+            sample_of("hard-cases", 10_000)
+
+    def test_rejects_a_malformed_spec(self):
+        from fetch_series.survey.corpora import load
+
+        with pytest.raises(ValueError, match="sample:<n>@<corpus>"):
+            load("sample:@hard-cases")
+
+
+class TestSurveyExport:
+    """The CSVs are the committed evidence; the SQLite store is not committed."""
+
+    def _cache_with(self, tmp_path, corpus: str):
+        from fetch_series.cache import SurveyCache
+
+        path = tmp_path / "c.sqlite"
+        with SurveyCache(path) as cache:
+            cache.record(RouteResult.from_results("GSE1", "a->b:x", corpus, ["SRX1", "SRX2"], 5))
+            cache.record(RouteResult.from_results("GSE2", "a->b:x", corpus, [], 3))
+        return path
+
+    def _run(self, cache_path, out):
+        from typer.testing import CliRunner
+
+        from fetch_series.cli import app
+
+        return CliRunner().invoke(
+            app,
+            ["survey", "export", "--out", str(out), "--cache", str(cache_path)],
+        )
+
+    def test_one_row_per_accession_with_its_verdict(self, tmp_path):
+        import csv
+        import gzip
+
+        cache_path = self._cache_with(tmp_path, "corp")
+        result = self._run(cache_path, tmp_path / "out")
+        assert result.exit_code == 0
+
+        written = list((tmp_path / "out" / "corp").glob("*.csv.gz"))
+        assert len(written) == 1
+        with gzip.open(written[0], "rt") as handle:
+            rows = list(csv.DictReader(handle))
+        assert [r["accession"] for r in rows] == ["GSE1", "GSE2"]
+        assert rows[0]["results"] == "SRX1;SRX2"
+        assert rows[0]["outcome"] == "resolved"
+        assert rows[1]["outcome"] == "empty"
+
+    def test_a_corpus_name_containing_a_slash_does_not_escape_the_directory(self, tmp_path):
+        """`results-of:a->b:c@corp` is a legal corpus name and contains no slash
+        today, but the naming scheme is open-ended and a path separator in a
+        filename would write outside the export directory."""
+        cache_path = self._cache_with(tmp_path, "../../escaped")
+        out = tmp_path / "out"
+        assert self._run(cache_path, out).exit_code == 0
+        written = list(out.rglob("*.csv.gz"))
+        assert len(written) == 1
+        # Exactly one directory deep, not merely somewhere underneath: `..`
+        # surviving as its own path component would still satisfy `in parents`.
+        assert written[0].parent.parent == out
+        assert ".." not in written[0].parent.name.split("/")
+
+    def test_the_manifest_records_the_unslugified_corpus_name(self, tmp_path):
+        """Reconstructing it from the slug would be guesswork, and the name is
+        what identifies the accession set."""
+        cache_path = self._cache_with(tmp_path, "sample:3000@reprocessed-srr")
+        out = tmp_path / "out"
+        self._run(cache_path, out)
+        manifest = next(out.rglob("manifest.txt"))
+        assert manifest.read_text().strip() == "corpus: sample:3000@reprocessed-srr"

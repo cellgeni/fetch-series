@@ -97,6 +97,18 @@ HARD_CASES: dict[str, str] = {
     "SRS24456482": "submitted to SRA both directly and via GEO; yields more experiments than expected",
     "SRS9029085": "submitted to SRA both directly and via GEO; same pattern as SRS24456482",
     "SRS27109451": "ambiguous: PRJNA1337591 lists 4 experiments, PRJNA1345517 lists 9, same biosample",
+    "GSM7518069": "belongs to two series (GSE236084 and GSE236087), so 'its' series is not singular",
+    "GSM4005486": "in GSE135325, where GEO records the BioSample but no SRA relation",
+    "GSM4274734": "in GSE150508, whose SOFT file names an experiment that carries no runs",
+    "SRR25056225": "the worked example's first run; the end of the chain from PRJNA988806",
+    "ERR2861957": "reached from E-MTAB-6505 only through its BioSample, not its IDF",
+    "SRP446371": "the worked example's study, reached from PRJNA988806",
+    "ERP126408": "EBI-native study; round-trips to E-MTAB-10018 and PRJEB42537",
+    "SRX9670669": "the live experiment GSE150508's SOFT file does not name",
+    "SRX7571191": "the experiment GSE150508 does name, which carries no runs at all",
+    "SAMN36028297": "the worked example's BioSample, reached from GSM7518069",
+    "SAMEA5053920": "E-MTAB-6505's BioSample; the only route to its data when the IDF declares no study",
+    "SAMN12476461": "in GSE135325, which records BioSamples and no SRA relations",
 }
 
 
@@ -157,6 +169,10 @@ def geo_sample(n: int = 1000, seed: int = 20260914, path: Path | None = None) ->
     in for submission date. Sampling uniformly at random would over-represent
     recent years simply because GEO has grown, and route behaviour differs
     sharply between old and new submissions.
+
+    Returns exactly ``n`` accessions or raises. The name is persisted with every
+    verdict as evidence provenance, so a corpus whose size does not match its
+    own label makes two runs quietly incomparable.
     """
     source = path or _gse_list_path()
     accessions = [line.strip() for line in source.read_text().splitlines() if line.strip()]
@@ -164,18 +180,101 @@ def geo_sample(n: int = 1000, seed: int = 20260914, path: Path | None = None) ->
 
     rng = random.Random(seed)
     strata = 10
-    per_stratum = max(1, n // strata)
     size = len(accessions)
+    # Distribute the remainder across strata so the draw is exactly n. Taking
+    # n // strata per stratum silently returned 10 for any n below 20 -- so
+    # geo-sample-15 held 10 accessions while its name, which is persisted with
+    # every verdict as provenance, claimed 15.
+    quota = [n // strata + (1 if i < n % strata else 0) for i in range(strata)]
     drawn: list[str] = []
+    shortfall = 0
     for i in range(strata):
         lo, hi = i * size // strata, (i + 1) * size // strata
         band = accessions[lo:hi]
-        drawn.extend(rng.sample(band, min(per_stratum, len(band))))
+        want = quota[i] + shortfall
+        take = min(want, len(band))
+        shortfall = want - take
+        drawn.extend(rng.sample(band, take))
+
+    if len(drawn) != n:
+        raise ValueError(f"Asked for {n} GEO series but the pool of {size:,} yielded {len(drawn)}")
 
     return _build(
         name=f"geo-sample-{n}",
         description=f"{n} GEO series, stratified into {strata} bands by accession number (seed {seed}).",
         source=f"{source} seed={seed}",
+        raws=drawn,
+    )
+
+
+CORPORA_DIR = DATA_DIR / "corpora"
+
+
+def committed(name: str) -> Corpus:
+    """A corpus enumerated once from a live archive and then committed.
+
+    ``arrayexpress-ena`` is the 20,693 ArrayExpress studies BioStudies records
+    an ENA link for. Re-enumerating it per run would make two surveys weeks
+    apart uncomparable for a reason that has nothing to do with the routes, so
+    the accession list is versioned and the enumeration is a separate, dated
+    act. The manifest beside it records when and how it was built.
+    """
+    path = CORPORA_DIR / name / "accessions.list"
+    if not path.exists():
+        raise ValueError(f"No committed corpus at {path}")
+    raws = [line.strip() for line in path.read_text().splitlines() if line.strip()]
+    manifest = CORPORA_DIR / name / "manifest.md"
+    description = manifest.read_text().strip().splitlines()[0] if manifest.exists() else name
+    return _build(name=name, description=description, source=str(path), raws=raws)
+
+
+def from_survey(route_id: str, corpus: str, cache_path: Path | None = None) -> Corpus:
+    """Build a corpus out of what an earlier survey *returned*.
+
+    The results of one survey are the inputs of the next. The experiments the
+    SOFT census found are the right population for asking "how many experiments
+    GEO names actually carry data" -- the reprocessed table is not, because it
+    holds only accessions that already reprocessed successfully and so excludes
+    the failures the question is about.
+    """
+    from fetch_series.cache import DEFAULT_CACHE_PATH, SurveyCache
+
+    values: set[str] = set()
+    with SurveyCache(cache_path or DEFAULT_CACHE_PATH) as cache:
+        for result in cache.results(corpus, route_id):
+            values.update(result.results)
+    if not values:
+        raise ValueError(f"No recorded results for {route_id} on {corpus}")
+    return _build(
+        name=f"results-of:{route_id}@{corpus}",
+        description=f"Every accession {route_id} returned over {corpus}.",
+        source=f"survey cache: {route_id} @ {corpus}",
+        raws=sorted(values),
+    )
+
+
+def sample_of(name: str, n: int, seed: int = 20260915) -> Corpus:
+    """A seeded draw of ``n`` accessions from another corpus.
+
+    The run, sample and experiment columns of the reprocessed table hold
+    100k-260k accessions, and the ENA routes over them cost one request each.
+    Surveying every one would take most of a day to answer a question a few
+    thousand draws already answers to within a percentage point.
+
+    The draw is named ``sample:<n>@<corpus>`` and seeded, so the name identifies
+    the accession set exactly -- the same property ``geo-sample-<n>`` has, and
+    the reason ``--limit`` is not a substitute: two runs limited differently
+    would both be recorded against the full corpus name and look comparable.
+    """
+    parent = load(name)
+    if n > len(parent):
+        raise ValueError(f"Asked for {n:,} accessions but {name} holds {len(parent):,}")
+    rng = random.Random(seed)
+    drawn = rng.sample([a.value for a in parent.accessions], n)
+    return _build(
+        name=f"sample:{n}@{name}",
+        description=f"{n:,} accessions drawn at random from {name} (seed {seed}).",
+        source=f"{parent.source} sample n={n} seed={seed}",
         raws=drawn,
     )
 
@@ -186,9 +285,59 @@ CORPUS_BUILDERS = {
     "geo-sample": geo_sample,
 }
 
+KNOWN_CORPORA = (
+    "hard-cases",
+    "results-of:<route-id>@<corpus>",
+    "sample:<n>@<corpus>",
+    "reprocessed-<column>   (column: " + ", ".join(SAMPLE_TABLE_COLUMNS[:6]) + ")",
+    "geo-sample[-<n>]",
+    "arrayexpress-ena  (and any other committed data/corpora/<name>/accessions.list)",
+)
+
 
 def load(name: str) -> Corpus:
-    """Build a corpus by name."""
-    if name not in CORPUS_BUILDERS:
-        raise ValueError(f"Unknown corpus {name!r}; known: {', '.join(sorted(CORPUS_BUILDERS))}")
-    return CORPUS_BUILDERS[name]()
+    """Build a corpus by name, accepting the parameterised forms.
+
+    ``reprocessed-gse`` and ``geo-sample-2000`` name a corpus precisely enough
+    that survey results can be attributed to it later. The corpus name is stored
+    with every verdict, so it has to identify the accession set exactly -- two
+    different draws recorded under one name would be uncomparable.
+    """
+    if name in CORPUS_BUILDERS:
+        return CORPUS_BUILDERS[name]()
+
+    if (CORPORA_DIR / name / "accessions.list").exists():
+        return committed(name)
+
+    if name.startswith("reprocessed-"):
+        column = name.removeprefix("reprocessed-")
+        if column in SAMPLE_TABLE_COLUMNS:
+            return reprocessed(column)
+        raise ValueError(
+            f"Unknown column {column!r} in corpus {name!r}; "
+            f"expected one of {', '.join(SAMPLE_TABLE_COLUMNS[:6])}"
+        )
+
+    # sample:<n>@<corpus>
+    if name.startswith("sample:"):
+        spec = name.removeprefix("sample:")
+        size, _, parent = spec.partition("@")
+        if not size.isdigit() or not parent:
+            raise ValueError(f"Expected sample:<n>@<corpus>, got {name!r}")
+        return sample_of(parent, int(size))
+
+    # results-of:<route id>@<corpus>
+    if name.startswith("results-of:"):
+        spec = name.removeprefix("results-of:")
+        route_id, _, source_corpus = spec.rpartition("@")
+        if not route_id or not source_corpus:
+            raise ValueError(f"Expected results-of:<route-id>@<corpus>, got {name!r}")
+        return from_survey(route_id, source_corpus)
+
+    if name.startswith("geo-sample-"):
+        suffix = name.removeprefix("geo-sample-")
+        if suffix.isdigit():
+            return geo_sample(int(suffix))
+        raise ValueError(f"Expected a sample size in corpus {name!r}, got {suffix!r}")
+
+    raise ValueError(f"Unknown corpus {name!r}; known: {'; '.join(KNOWN_CORPORA)}")

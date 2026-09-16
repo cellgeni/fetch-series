@@ -62,8 +62,15 @@ knowledge-base page, promote the route, and remove the test.
 
 - **Never `logging.basicConfig`.** Use `fetch_series.logging_utils.configure_logging`. The NCBI API
   key is a query parameter, so any log line echoing a request URL leaks it — which is exactly how a
-  key reached this public repository once already. The redacting formatter covers tracebacks too,
-  not just format strings.
+  key reached this public repository once already. The redacting formatter covers logged
+  tracebacks, not just format strings.
+- **Redaction is not enough on its own: exceptions leak too.** httpx puts the full request URL into
+  the message of every `HTTPStatusError` and most transport errors, and an *uncaught* traceback is
+  printed by the interpreter without ever passing through logging. A second key was leaked this way,
+  by an ad-hoc script that raised outside any handler. `SurveyClient` and `core.py` now route every
+  request failure through `redact_exception`, which preserves the exception type so `is_retryable`
+  still works. **Any new HTTP call site must do the same** — and never print an exception from a
+  throwaway script without redacting it.
 - **Log files append.** The survey scripts used `mode="w"`, so every re-run destroyed the evidence
   documenting the results sitting next to it. Use `run_logfile()` for per-run timestamped paths.
 - **Parse accessions, don't regex them inline.** `fetch_series.accession.parse` is the single
@@ -95,6 +102,44 @@ knowledge-base page, promote the route, and remove the test.
   becomes `#gpu-cellbender` with one hyphen. The build runs `--strict`, so this breaks CI.
 - **`data/` is Git LFS**, but some files committed before `.gitattributes` are plain blobs. Check
   before assuming.
+- **Rotating an API key mid-survey is destructive.** NCBI answers an invalid key with a 400, which
+  is not retryable, so every remaining accession is recorded as a permanent failure. Stop the run,
+  update `.env`, resume.
+- **A pathology test that fails on a 429 is worse than no test.** The suite is
+  inverted -- a failure is supposed to mean the archive fixed something -- so a
+  transient failure is indistinguishable from the good news. Use the
+  `run_or_skip` fixture in `tests/pathologies/conftest.py`; it skips on anything
+  `is_retryable` recognises. Four false positives appeared the first time a
+  survey and the suite ran at once.
+- **`csv.DictReader` silently keeps only the last value of a repeated column.**
+  SDRF repeats `Comment[FASTQ_URI]` once per mate, so E-MTAB-9221 read through a
+  dict yielded 20 URIs for its 20 runs instead of 40 -- half the data, no error.
+  Use `biostudies.sdrf_raw_rows` for anything that may repeat.
+- **BioStudies file listings are under `items`, not `files`.** A
+  `.get("files", [])` returns an empty list and no error, which reads as "this
+  study registers nothing" -- and since that *is* the finding for E-MTAB-8060,
+  the bug is invisible: it turns every study into E-MTAB-8060.
+- **BioStudies serves 20,000 hits and answers the next page with a 500**, not a
+  400. Every retry policy reads that as transient and retries forever. Partition
+  the query; `search_by_year` does.
+- **Mate markers mean nothing outside a fastq name.** E-MTAB-8060's runs deposit
+  `Sample_1.bam`, where the `_1` is the submitter's sample name. A BAM carries
+  both mates interleaved, so a mate number on one is meaningless.
+- **Two surveys at once need a SQLite busy timeout.** WAL allows one writer and
+  Python's default timeout is five seconds, so the normal way to cover NCBI and
+  ENA routes in parallel would lose hours of work to "database is locked".
+- **A UID list in a query string has now cost this project data five times.**
+  ESummary, ESearch history, two ELink run routes, and EFetch. The last one
+  failed as httpx's own `InvalidURL` rather than a server 414, so the request
+  was never sent and GSE241770 — 7,905 runs — was recorded as a permanent
+  failure. Anything joining UIDs into a URL goes by POST above
+  `POST_THRESHOLD_UIDS`.
+- **Dates are UTC, everywhere.** A survey finishing at 00:12 BST is 23:12 UTC the
+  day before, and `date.today()` recorded the wrong day — which a CI runner an
+  hour behind then rejected as being in the future. Archive surveys are
+  international by nature; a local date is ambiguous to every reader.
+- **Run `hard-cases` before any full corpus.** 34 accessions and seconds. Skipping it cost a partial
+  12,755-accession run on a route whose empty rate should have looked wrong immediately.
 
 ## Things to leave alone
 

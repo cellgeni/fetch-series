@@ -81,3 +81,57 @@ def test_run_logfile_is_per_route_and_timestamped(tmp_path):
     assert path.parent == tmp_path / "bioproject2sra"
     assert path.suffix == ".log"
     assert path.name.endswith("Z.log")
+
+
+class TestExceptionRedaction:
+    """Credentials must not survive into exception text.
+
+    The redacting formatter only helps when an exception is *logged*. An
+    uncaught traceback is printed by the interpreter, which never routes
+    through logging -- and httpx puts the full request URL, api_key included,
+    into the message of every HTTPStatusError. That is how a key reached a
+    session transcript.
+    """
+
+    def test_http_status_error_message_is_redacted(self):
+        import httpx
+
+        from fetch_series.survey.client import redact_exception
+
+        request = httpx.Request("GET", f"https://x/e.fcgi?db=sra&api_key={KEY}")
+        response = httpx.Response(429, request=request)
+        original = httpx.HTTPStatusError(
+            f"Client error '429' for url '{request.url}'", request=request, response=response
+        )
+        redacted = redact_exception(original)
+
+        assert KEY not in str(redacted)
+        assert "db=sra" in str(redacted)
+        # The type and status must survive, because is_retryable dispatches on them.
+        assert isinstance(redacted, httpx.HTTPStatusError)
+        assert redacted.response.status_code == 429
+
+    def test_transport_error_message_is_redacted(self):
+        import httpx
+
+        from fetch_series.survey.client import redact_exception
+
+        redacted = redact_exception(httpx.ConnectError(f"failed for ?api_key={KEY}"))
+        assert KEY not in str(redacted)
+        assert isinstance(redacted, httpx.ConnectError)
+
+    def test_innocuous_exceptions_are_returned_unchanged(self):
+        from fetch_series.survey.client import redact_exception
+
+        exc = ValueError("no credentials here")
+        assert redact_exception(exc) is exc
+
+    def test_redacted_exception_is_still_classified_as_retryable(self):
+        import httpx
+
+        from fetch_series.survey.client import is_retryable, redact_exception
+
+        request = httpx.Request("GET", f"https://x/e?api_key={KEY}")
+        response = httpx.Response(503, request=request)
+        exc = httpx.HTTPStatusError(f"boom {request.url}", request=request, response=response)
+        assert is_retryable(redact_exception(exc))
