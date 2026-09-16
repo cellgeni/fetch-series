@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 
 from fetch_series.accession import EntityType, UnknownAccessionError, parse
 from fetch_series.assays import AssayCall
+from fetch_series.assays.chemistry import ChemistryCall
 from fetch_series.cache import DEFAULT_CACHE_PATH, SurveyCache
 from fetch_series.core import default_api_key
 from fetch_series.entities import MISSING, RELATION_COLUMNS, RunRecord
@@ -741,7 +742,7 @@ def screen_command(
     configure_logging(level=logging.WARNING)
     parsed = resolve_input(accession)
 
-    async def run_it() -> list[tuple[str, AssayCall]]:
+    async def run_it() -> list[tuple[str, AssayCall, ChemistryCall]]:
         async with SurveyClient(
             limits=Limits(rps=5.0, concurrency=6), api_key=default_api_key()
         ) as client:
@@ -752,19 +753,27 @@ def screen_command(
         typer.secho(f"No runs found for {parsed}.", fg=typer.colors.YELLOW, err=True)
         raise typer.Exit(1)
 
-    typer.echo("run\tassay\tlibrary_type")
-    for run, call in calls:
+    typer.echo("run\tassay\tlibrary_type\tchemistry")
+    for run, call, chem in calls:
         kind = call.library_type or (
             "|".join(call.library_types) if call.ambiguous_library_type else MISSING
         )
-        typer.echo(f"{run}\t{call.assay or MISSING}\t{kind}")
+        chemistry = chem.chemistry or ("|".join(chem.candidates) if chem.ambiguous else MISSING)
+        typer.echo(f"{run}\t{call.assay or MISSING}\t{kind}\t{chemistry}")
         if explain:
             typer.echo(f"  {call.explain()}", err=True)
+            typer.echo(f"  {chem.explain()}", err=True)
 
-    recognised = [c for _, c in calls if c.recognised]
-    unknown = [r for r, c in calls if not c.recognised and not c.had_metadata]
-    ambiguous = [r for r, c in calls if c.ambiguous_library_type]
+    recognised = [c for _, c, _ in calls if c.recognised]
+    unknown = [r for r, c, _ in calls if not c.recognised and not c.had_metadata]
+    ambiguous = [r for r, c, _ in calls if c.ambiguous_library_type]
+    chemistries = {chem.chemistry for _, _, chem in calls if chem.chemistry}
+    unsettled = [run for run, _, chem in calls if chem.ambiguous]
     notes = []
+    if chemistries:
+        notes.append("chemistry named: " + ", ".join(sorted(chemistries)))
+    if unsettled:
+        notes.append(f"{len(unsettled)} name more than one chemistry")
     if unknown:
         notes.append(f"{len(unknown)} carry no assay metadata at all")
     if ambiguous:

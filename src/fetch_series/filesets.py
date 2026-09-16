@@ -23,6 +23,7 @@ from dataclasses import dataclass
 
 from fetch_series.accession import Accession, EntityType
 from fetch_series.assays import AssayCall
+from fetch_series.assays.chemistry import ChemistryCall, chemistry_of
 from fetch_series.assays.registry import is_10x
 from fetch_series.export.links import LinkRow, links_for
 from fetch_series.files import FileRecord, FileSet, Recommendation, recommend
@@ -235,7 +236,7 @@ ASSAY_FIELDS = (
 
 async def screen(
     accession: Accession, client: SurveyClient, *, limit: int | None = None
-) -> list[tuple[str, AssayCall]]:
+) -> list[tuple[str, AssayCall, ChemistryCall]]:
     """Ask what assay every run of an accession is, before downloading anything.
 
     One extra ENA request per run, against the same endpoint the file routes
@@ -262,7 +263,7 @@ async def screen(
         except Exception:
             soft_text = {}
 
-    async def one(run: str, geo_sample: str | None) -> tuple[str, AssayCall]:
+    async def one(run: str, geo_sample: str | None) -> tuple[str, AssayCall, ChemistryCall]:
         try:
             rows = await ena_portal.read_run_report(client, run, 60.0, fields=ASSAY_FIELDS)
             row = dict(next((r for r in rows if r.get("run_accession") == run), {}))
@@ -270,6 +271,6 @@ async def screen(
             row = {}
         if geo_sample and (extra := soft_text.get(geo_sample)):
             row.update(extra)
-        return run, is_10x(row)
+        return run, is_10x(row), chemistry_of(row)
 
     return list(await asyncio.gather(*(one(record.run, record.geo_sample) for record in records)))
