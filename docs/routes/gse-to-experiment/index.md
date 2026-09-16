@@ -72,3 +72,35 @@ adds one experiment in 314,009 over the two cheaper routes.
 
 See [ELink returns no links](../../pathologies/elink-gds-sra-missing-links.md) and
 [GEO omits the SRA relation](../../pathologies/geo-omits-sample-sra-relation.md).
+
+## The run-level twin
+
+`gse->run:elink_gds_sra` takes the same ELink hop and follows it with EFetch
+runinfo instead of ESummary, so it returns runs rather than experiments. Over
+the same 13,045 series (2026-09-16):
+
+| | `gse->experiment:elink_gds_sra` | `gse->run:elink_gds_sra` |
+|---|---:|---:|
+| Resolved | 10,752 | 10,751 |
+| Empty | 2,293 | **2,294** |
+| Failed | 0 | 0 |
+| Unique results | 178,879 experiments | 463,803 runs |
+
+**2,293 of the 2,294 empties are the same series**, and 2,281 of those are
+series the SOFT family file resolves without difficulty. Confirming the defect
+from the other side: it is in the ELink hop the two share, not in the ESummary
+or EFetch step that follows it. Changing what you ask ELink to give you does not
+change what ELink cannot find.
+
+### The 39 failures were ours, not NCBI's
+
+The first run of this census recorded 39 permanent failures. Every one was a
+request this project never sent: GSE241770 links to **7,905** runs, and the
+joined UID list overflowed httpx's own URI limit, which refuses as `InvalidURL`
+rather than letting the server answer 414.
+
+Retrying with the UID list posted instead resolved **all 39** and recovered
+**72,777 runs**. It is the fifth time a UID list in a query string has cost this
+project data, and the first time the loss happened client-side — which is worse,
+because nothing in the failure named the archive or the size. The regressions
+for all five now live in one file, `tests/test_request_limits.py`.
