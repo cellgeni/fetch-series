@@ -263,6 +263,37 @@ EBI_RPS = 15.0
 # The GEO FTP mirror is not an API and is slower; do not hammer it.
 NCBI_FTP_RPS = 3.0
 
+# Behaviours a route is known to exhibit that have no knowledge-base page yet.
+#
+# They are listed rather than quietly tolerated. `known_pathologies` is printed
+# by `--explain` as a path into docs/pathologies/, so a slug with no page emits
+# a dead link beside a resolved value -- which is worse than saying nothing,
+# because it looks like documentation that exists.
+#
+# A test asserts every declared slug is either a page or in this set, so the
+# backlog cannot grow silently and a written-up page cannot be forgotten here.
+# Each entry is real and observed; what it lacks is the pathology-page contract:
+# a curl reproducer, an affected-accession list, and a regression test.
+PATHOLOGY_BACKLOG: frozenset[str] = frozenset(
+    {
+        # NCBI E-utilities mechanics, all four observed in the 2026-05 logs.
+        "esummary-500-uid-limit",
+        "elink-history-missing-querykey",
+        "megalink-backend-flakiness",  # 3,135 occurrences; the dominant failure
+        "gprj-falls-through-to-all-fields",
+        "efetch-returns-fewer-runs-than-esearch-counts",
+        "esummary-sra-buries-accessions-in-expxml",
+        # SRA backend CGI.
+        "sra-be-timeout-on-large-projects",
+        # GEO record modelling.
+        "superseries-carries-no-bioproject",
+        "experiments-outside-the-series-bioproject",
+        # EBI.
+        "ae-idf-missing-secondary-accession",
+        "biostudies-silent-25-item-default",
+    }
+)
+
 ROUTES: list[Route] = [
     Route(
         id="bioproject->run:ena_filereport",
@@ -526,6 +557,7 @@ ROUTES: list[Route] = [
     ),
     Route(
         id="study->ae_experiment:biostudies_search",
+        known_pathologies=("biostudies-20000-hit-window",),
         source=EntityType.STUDY,
         target=EntityType.AE_EXPERIMENT,
         provider="biostudies",
@@ -654,7 +686,10 @@ ROUTES: list[Route] = [
                 "BioProject; the other 5 have no released runs at all."
             ),
         ),
-        known_pathologies=("geo-omits-sample-sra-relation",),
+        known_pathologies=(
+            "geo-omits-sample-sra-relation",
+            "soft-names-experiments-with-no-runs",
+        ),
     ),
     Route(
         id="gse->experiment:elink_gds_sra",
@@ -704,7 +739,7 @@ ROUTES: list[Route] = [
             ),
         ),
         known_pathologies=(
-            "series-under-a-shared-umbrella-bioproject",
+            "series-under-shared-umbrella-bioproject",
             "experiments-outside-the-series-bioproject",
         ),
         proves_data_exists=True,
@@ -992,6 +1027,7 @@ ROUTES: list[Route] = [
         provider="ena_portal",
         summary="ENA fastq_ftp/fastq_md5/fastq_bytes columns; ENA's own derived fastqs.",
         kb_page="routes/run-to-file/index.md",
+        known_pathologies=("ena-paired-library-single-fastq",),
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         proves_data_exists=True,
         evidence=RouteEvidence(

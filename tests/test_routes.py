@@ -153,3 +153,48 @@ class TestIdsOnlyListing:
         lines = [line for line in result.stdout.splitlines() if line.strip()]
         assert lines, "no routes listed"
         assert all(REGISTRY[line] for line in lines), "a line was not a route id"
+
+
+class TestPathologyReferences:
+    """`known_pathologies` is printed by --explain as a path into docs/."""
+
+    DOCS = Path("docs")
+
+    @property
+    def _declared(self) -> set[str]:
+        return {slug for route in REGISTRY for slug in route.known_pathologies}
+
+    @property
+    def _pages(self) -> set[str]:
+        return {p.stem for p in (self.DOCS / "pathologies").glob("*.md")} - {"index"}
+
+    def test_every_declared_pathology_has_a_page_or_is_in_the_backlog(self):
+        """A slug with neither emits a dead link beside a resolved value, which
+        is worse than saying nothing: it looks like documentation that exists.
+        `series-under-a-shared-umbrella-bioproject` was declared for months
+        against a page spelled without the `a`."""
+        from fetch_series.graph import PATHOLOGY_BACKLOG
+
+        dangling = sorted(self._declared - self._pages - PATHOLOGY_BACKLOG)
+        assert not dangling, (
+            f"pathologies declared on a route with no page and no backlog entry: {dangling}. "
+            "Write the page, fix the slug, or add it to PATHOLOGY_BACKLOG."
+        )
+
+    def test_a_written_page_is_not_left_in_the_backlog(self):
+        """Otherwise --explain keeps saying 'not yet written up' about a page
+        that now exists."""
+        from fetch_series.graph import PATHOLOGY_BACKLOG
+
+        stale = sorted(PATHOLOGY_BACKLOG & self._pages)
+        assert not stale, f"these now have pages and should leave PATHOLOGY_BACKLOG: {stale}"
+
+    def test_every_pathology_page_is_declared_by_some_route(self):
+        """A pathology nobody's route admits to is a pathology the resolver will
+        never warn about. The 39% derived-fastq defect had a page and no route
+        declaring it."""
+        orphans = sorted(self._pages - self._declared)
+        assert not orphans, (
+            f"pathology pages no route declares: {orphans}. Attach each to the route it "
+            "affects, or explain in the page why no route can detect it."
+        )

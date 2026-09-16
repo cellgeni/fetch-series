@@ -33,7 +33,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 
 from fetch_series.accession import Accession, EntityType, try_parse
-from fetch_series.graph import REGISTRY, Route, RouteRegistry
+from fetch_series.graph import PATHOLOGY_BACKLOG, REGISTRY, Route, RouteRegistry
 from fetch_series.routes import IMPLEMENTATIONS
 from fetch_series.survey.client import SurveyClient
 from fetch_series.survey.runner import RouteFn
@@ -166,7 +166,15 @@ class Resolution:
             # them only for the routes that contributed keeps the warning
             # attached to the value rather than to the catalogue.
             for pathology in REGISTRY[route].known_pathologies if route in REGISTRY else ():
-                lines.append(f"           known defect: docs/pathologies/{pathology}.md")
+                # Only point at a page that exists. A slug still in the backlog
+                # has no page, and printing the path anyway offers the reader
+                # documentation that is not there.
+                where = (
+                    "not yet written up"
+                    if pathology in PATHOLOGY_BACKLOG
+                    else f"docs/pathologies/{pathology}.md"
+                )
+                lines.append(f"           known defect: {pathology} ({where})")
         for route in self.routes_empty:
             lines.append(f"  empty    {route}: the archive holds no such link")
         for route, error in self.routes_failed.items():
