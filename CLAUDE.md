@@ -28,17 +28,72 @@ behind every route that has been.
 The corollary: if you find yourself writing "ENA is usually better here", either measure it or say
 plainly that it is unmeasured. An undated coverage number is not evidence of anything.
 
+**The arguments behind every ranking and fallback decision are in `docs/decisions/`.** Read
+[`route-ranking.md`](docs/decisions/route-ranking.md) before changing anything about ordering;
+it records why banding exists, and why the ranking was *not* hand-tuned when `gds_summary` won
+every headline number and was still the more dangerous route to trust.
+
+### What the ranking does, so you do not reinvent it
+
+`ranked()` sorts on, in order: measured-before-unmeasured; yield **banded** at `YIELD_BAND`
+(1%); failure rate banded at `FAILURE_BAND` (0.1%); cost in requests; route id for stability.
+
+The banding is the part that looks optional and is not. Ranking on raw yield put noise above
+substance twice — `sra_be_elink` beat `sra_be_direct_cgi` on **55 runs out of 754,000** while
+failing twice as often, and `bioproject->geo_series:elink` beat `gds_direct` on **one accession
+out of 12,114**. Routes whose yields are indistinguishable must be separated by reliability, not
+by error bars.
+
+The route id tie-break is not cosmetic either: the id is **recorded as provenance** on every
+resolved value, so an unstable order makes two identical queries produce differently-attributed
+answers.
+
+### When a route answers more but answers worse
+
+Declare the defect on the route (`known_pathologies`) and let `--explain` print it beside the
+value. Do **not** demote the route by hand. Once one ranking is overridden by judgement every
+ranking becomes negotiable, and the rule above stops meaning anything.
+
+### What is and is not evidence
+
+- **`hard-cases` never becomes `RouteEvidence`.** It is adversarial by construction — every
+  accession is there because it broke something — so its empty rate would rank routes by how
+  often they were pointed at withdrawn projects. It is a *gate*: a route must produce a verdict
+  for all 46 before it earns a bigger run.
+- **`--limit` never produces evidence.** It records verdicts against the *full* corpus name, so
+  two differently-limited runs look comparable and are not. Use `sample:<n>@<corpus>`, which is
+  seeded and named for its size.
+- **Count distinct results, not rows.** 69,923 of the 2026-05 survey's 824,216 "runs" were
+  within-BioProject duplicates.
+- **Three outcomes, and absence is a fourth.** `RESOLVED` / `EMPTY` / `FAILED`; never queried is
+  not the same as empty. `survey compare` keys agreement on `(outcome, results)` because an
+  earlier version reported a FAILED and an EMPTY route as agreeing.
+
 ## Layout
 
 ```
 src/fetch_series/
   accession.py     what an identifier is and which archive issued it
   graph.py         routes as declared data + evidence-based ranking
+  resolver.py      the fallback engine: union, per-value provenance, conflicts
+  relations.py     the cross-archive join, one row per run
+  entities.py      RunRecord; set() is first-wins and records conflicts
+  files.py         the file layer: classification, trust, ranked recommendation
+  filesets.py      orchestration — files per run, verification, screening
+  assays/          assay and chemistry recognition, pluggable
+  export/links.py  links.tsv in the incumbent's schema (the M3 parity contract)
+  providers/       one module per API surface; typed calls and parsing, no route logic
+  survey/          the benchmark harness: corpora, runner, rate limiting
+  cache.py         SQLite store of verdicts and raw responses
   core.py          legacy sync helpers (E-utilities, ENA portal, BioStudies)
   logging_utils.py credential redaction; use configure_logging(), not basicConfig()
 scripts/           batch survey scripts (transitional — being folded into the package)
-data/              corpora and survey results, Git LFS
+nextflow/          a drop-in FETCH10XMETA backed by the container
+docker/            the image the Nextflow module runs
+data/corpora/      committed accession lists, one directory per corpus
+data/surveys/      every recorded verdict, gzipped CSV — `fetch survey export`
 docs/              the knowledge base (MkDocs Material)
+docs/decisions/    why each priority, fallback and scoping choice is what it is
 ```
 
 ## Commands
@@ -141,6 +196,38 @@ knowledge-base page, promote the route, and remove the test.
 - **Run `hard-cases` before any full corpus.** 34 accessions and seconds. Skipping it cost a partial
   12,755-accession run on a route whose empty rate should have looked wrong immediately.
 
+## Design decisions you will be tempted to undo
+
+Each of these looks like an over-complication until you read why it is there.
+Full arguments in `docs/decisions/`.
+
+- **Union is the default resolver mode, not a fallback chain.** A chain can only be as complete
+  as its best single route, and no route here is complete: ENA holds 110,779 runs `efetch` never
+  returns, and ~1,800 runs are missing from ENA.
+- **`RunRecord.set()` is first-wins *and* records the loser.** Routes are offered in measured
+  order, so the first answer is the best-evidenced one — but a second, different answer goes into
+  `conflicts` rather than being dropped. Those conflicts are where the pathologies came from.
+- **`proves_data_exists` separates confirmed from unconfirmed.** ENA's `result=read_run` rows
+  *are* runs; GEO's SOFT file names experiments from the submitter's record, and 1.23% of them
+  carry no runs. Merging the two makes a complete-looking list that resolves to nothing
+  indistinguishable from one that works.
+- **`FileSet` keeps every offer.** Collapsing to one pick before the caller sees it is what lost
+  all 36 files of E-MTAB-8060 in the incumbent.
+- **Route order is evidence; *file* choice is requirements.** Which route to try first comes from
+  surveys. Which file to use comes from what STARsolo needs. Do not let the second leak into the
+  first — it would smuggle a preference in as a measurement.
+- **Ambiguity is reported, not resolved.** Library type and chemistry come from a protocol field
+  that describes a whole *study*: GSE111360 names both a 3' and a 5' kit because it used both, so
+  its runs report `10x_3p_v3_family|10x_5p_v1_v2` and assert nothing. Picking one would be a coin
+  flip dressed as a measurement.
+- **Entity types are not merged across archives.** A `GSE` is `GEO_SERIES`, not `STUDY`. The
+  INSDC triples share a type because they are genuinely one entity; GEO and ArrayExpress records
+  are curated records that *point at* one, and `ranked_for()` can only filter by issuing archive
+  because the model keeps them apart.
+- **`links.tsv` reproduces the incumbent's ordering, including where ours is better.** That is
+  the M3 parity contract, measured against `fetch10xmeta`'s own nf-test snapshots (14/14, 447
+  runs). The improvements ship underneath, through `fetch files`.
+
 ## Things to leave alone
 
 - Don't commit `.env`, or logs containing `api_key=`. CI rejects credential-shaped strings in
@@ -148,4 +235,11 @@ knowledge-base page, promote the route, and remove the test.
 - Don't "fix" the bash in `nf-reprocessing-public-10x/modules/cellgeni/fetch10xmeta` from here. Its
   behaviour is the parity contract for M3; changing it moves the target.
 - Don't regenerate the survey result CSVs in `data/` casually. They are dated evidence, and route
-  rankings cite them.
+  rankings cite them. `data/surveys/` is written by `fetch survey export` from the SQLite cache;
+  the cache itself is deliberately **not** committed (raw response bodies, 154 MB against 16 MB
+  for the exports).
+- Don't delete a `docs/decisions/` page because the decision now looks obvious. The argument is
+  the artefact; without it the next person re-litigates it from scratch, which is how the
+  hand-written fallback order got there the first time.
+- Don't file the upstream reports in `docs/upstream/` without asking. They are addressed to NCBI
+  and EBI, and sending them is the maintainer's call.
