@@ -122,6 +122,64 @@ def hard_cases() -> Corpus:
     )
 
 
+# Tier one for the metadata layer, on the model of HARD_CASES: one accession
+# per known way descriptive metadata misleads, each with the reason. Seconds to
+# run, and every one of these was found by running the layer rather than by
+# imagining what might break.
+#
+# Like `hard-cases`, this is a **gate and never evidence**. It is adversarial by
+# construction -- every entry is here because something went wrong -- so its
+# rates would rank sources by how often they were pointed at a known trap.
+METADATA_HARD_CASES: dict[str, str] = {
+    "PRJNA434002": (
+        "study_title names Autism Spectrum Disorder for all 56 runs, controls included, while "
+        "the per-sample disease column is empty in ENA; BioSample has ASD/Control per sample. "
+        "Tests that a study-scoped value never assigns a sample-scoped field"
+    ),
+    "GSE111360": (
+        "ENA, BioSample and GEO all record cell_type = 'CD45+ cells from a fresh kidney tumor "
+        "sample'; no exact ontology match exists and ZOOMA answers CL:0001074, a rare innate "
+        "lymphoid precursor. Tests that an approximate grounding is never asserted"
+    ),
+    "E-MTAB-10553": (
+        "SDRF binds Term Source REF / Term Accession Number to Unit[time unit], so UO_0000036 "
+        "('year') must not attach to Characteristics[age]. Also all-SAMEA, so it must yield no "
+        "scoreable gold verdicts"
+    ),
+    "E-GEOD-25789": (
+        "ArrayExpress's mechanical import of GSE25789: keys renamed (strain -> strain or line), "
+        "values copied verbatim. Tests the key-mapping gold set, and that values from it are "
+        "not treated as independent labels"
+    ),
+    "PRJNA548532": (
+        "mouse sample filed under BioSample package Generic.1.0, so `isolate` cannot be "
+        "resolved from the package and falls to the taxon. Also grounds cleanly end to end"
+    ),
+    "GSE109816": (
+        "880 Smart-seq2 runs; the assay layer's motivating case, here to check the metadata "
+        "layer does not disagree with it about what the study is"
+    ),
+    "E-MTAB-6505": (
+        "IDF declares no secondary study accession, so the ENA-keyed harvest has nothing to "
+        "key on and must degrade to the sources that can answer"
+    ),
+    "GSE135325": (
+        "GEO records BioSamples and no SRA relations, so the sample key must come from the "
+        "BioSample rather than from a run"
+    ),
+}
+
+
+def metadata_hard_cases() -> Corpus:
+    """Tier one for the metadata layer: a gate, never evidence."""
+    return _build(
+        name="metadata-hard-cases",
+        description="Curated accessions, one per known way descriptive metadata misleads.",
+        source="fetch_series.survey.corpora.METADATA_HARD_CASES",
+        raws=METADATA_HARD_CASES.keys(),
+    )
+
+
 def _sample_table_path() -> Path:
     for candidate in (SAMPLE_TABLE, LEGACY_SAMPLE_TABLE):
         if candidate.exists():
@@ -281,12 +339,14 @@ def sample_of(name: str, n: int, seed: int = 20260915) -> Corpus:
 
 CORPUS_BUILDERS = {
     "hard-cases": hard_cases,
+    "metadata-hard-cases": metadata_hard_cases,
     "reprocessed": reprocessed,
     "geo-sample": geo_sample,
 }
 
 KNOWN_CORPORA = (
     "hard-cases",
+    "metadata-hard-cases",
     "results-of:<route-id>@<corpus>",
     "sample:<n>@<corpus>",
     "reprocessed-<column>   (column: " + ", ".join(SAMPLE_TABLE_COLUMNS[:6]) + ")",
