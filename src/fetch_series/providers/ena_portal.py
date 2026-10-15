@@ -37,6 +37,56 @@ IDENTITY_FIELDS = (
 )
 
 
+# The descriptive columns, kept apart from the identity ones for the same
+# reason the file columns are: a caller resolving relations should not pay for
+# metadata it is not going to read, and `read_run_report` takes the field list
+# as a parameter precisely so the two can be asked for separately or together.
+#
+# ENA *defines* tissue_type, cell_type, disease, sex and dev_stage, and
+# populates them less often than the schema suggests: PRJNA434002 fills
+# tissue_type and sex, leaves disease empty for every run, and states the
+# disease in study_title instead -- where it applies to the cases and not to
+# the controls. So these are a source, not the source.
+METADATA_FIELDS = (
+    "run_accession",
+    "sample_accession",
+    "secondary_sample_accession",
+    "tax_id",
+    "scientific_name",
+    # Structured descriptive columns.
+    "tissue_type",
+    "cell_type",
+    "cell_line",
+    "dev_stage",
+    "disease",
+    "sex",
+    "age",
+    "strain",
+    "sub_species",
+    "isolation_source",
+    "host",
+    "host_sex",
+    "host_status",
+    "host_body_site",
+    # Free text, for the rule layer and for stage 2's digest. `sample_title`
+    # and `sample_description` are per-sample; `study_title` is per-study and
+    # must never assign a per-sample field.
+    "sample_title",
+    "sample_description",
+    "sample_alias",
+    "description",
+    "study_title",
+    "experiment_title",
+    "library_construction_protocol",
+)
+
+# Which of the above describe the study rather than the sample. A value from one
+# of these cannot assign a sample-scoped field, however confidently it reads.
+STUDY_SCOPED_FIELDS = frozenset(
+    {"study_title", "experiment_title", "library_construction_protocol"}
+)
+
+
 # ENA carries the submitter's own names for a run, experiment and sample, and
 # for a GEO-brokered submission those names are usually the GEO accession
 # itself. That makes them a route from a run to its GSM that needs neither the
