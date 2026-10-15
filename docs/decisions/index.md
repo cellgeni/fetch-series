@@ -17,6 +17,8 @@ and is hardest to reconstruct from code.
 |---|---|---|
 | [How routes are ranked](route-ranking.md) | census over 12,756 BioProjects and 13,045 GEO series | in force |
 | [What counts as evidence](what-counts-as-evidence.md) | each rule exists because breaking it produced a wrong number | in force |
+| [What counts as a metadata gold set](what-counts-as-a-metadata-gold-set.md) | 120 ArrayExpress studies: 119 carry curated labels, 0 carry an independent sample | in force |
+| [How values are grounded](ontology-grounding.md) | three measured wrong answers, each from an obvious implementation | in force |
 | [What happens when two archives disagree](merging-and-provenance.md) | union, per-value provenance, conflicts surfaced | in force |
 | [Parity before improvement](parity-before-improvement.md) | 14 of 14 of the incumbent's own test cases | in force until the swap lands |
 | [No DDBJ provider is needed](no-ddbj-provider.md) | ENA resolves 137/137 `PRJDB` projects | reverses on a corpus ENA misses |
@@ -32,6 +34,8 @@ so this page stays the index of all of them:
 | Ask every file route, not the first that answers | [the file layer](../files.md#why-every-route-is-asked-not-just-the-first) |
 | Which *files* to use is a requirements question, not an evidence one | [the file layer](../files.md#two-kinds-of-judgement-kept-apart) |
 | Precision is not claimed for the assay screen, and why | [the assay layer](../assays.md#what-is-not-measured-and-why) |
+| Metadata sources are unranked until surveyed, so disagreement is reported | [the metadata layer](../metadata.md#no-source-is-ranked-and-the-code-says-so) |
+| A key whose meaning depends on the record is resolved from the archive's own declaration | [the metadata layer](../metadata.md#what-it-recovers-that-was-being-thrown-away) |
 | Library type and chemistry report ambiguity rather than picking | [the assay layer](../assays.md#library-type-is-study-level-and-says-so) |
 | `hard-cases` gates a route; it never becomes evidence | [benchmarks](../benchmarks/index.md#tier-one-is-a-coverage-check-and-is-not-recorded-as-evidence) |
 | A named draw, never `--limit`, for anything recorded | [benchmarks](../benchmarks/index.md#naming-a-draw-is-not-decoration) |

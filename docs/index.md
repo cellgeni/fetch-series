@@ -16,6 +16,7 @@ trusted for that, and where the archives lose data silently.
 - **Need sample-to-run links across archives?** → [The relation table](relations.md)
 - **Which files should I actually download?** → [The file layer](files.md)
 - **Is this even 10x?** → [The assay layer](assays.md)
+- **What tissue, disease, donor is this sample?** → [The metadata layer](metadata.md)
 - **Replacing `fetch10xmeta`?** → [The parity record](fetch10xmeta-parity.md)
 - **Want to know how a route gets chosen at runtime?** → [The resolver](resolver.md)
 - **Wondering how any of this was measured?** → [Benchmarks](benchmarks/index.md)
@@ -30,6 +31,7 @@ trusted for that, and where the archives lose data silently.
 | 3 | **A disagreement is the evidence.** Agreement between routes is cheap and tells you little. | The 6 series where two GEO routes disagree taught more than the 144 where they agreed. |
 | 4 | **Cite the accession.** Every claim names the accession that motivated it. | "Sometimes GEO omits the relation" is not actionable; GSE135325 is. |
 | 5 | **Coverage is not correctness.** A route that answers more often can still answer worse. | `gds_summary` beats `soft_family` on every headline number and sends 190 series to a project holding 7,591 unrelated runs. |
+| 6 | **A confident identifier is worse than none.** A value a search index will trust must be asserted only where an exact match supports it. | `disease = ASD` exact-matches MONDO's synonym for *atrial septal defect*, in an autism study, with exactly one hit and nothing ambiguous about the lookup. |
 
 Each rule is a decision with evidence behind it, written up in
 [Decisions](decisions/index.md) — including what would reverse it. A decision
@@ -58,6 +60,7 @@ from ENA. GEO series → experiment is covered under [Routes](routes/gse-to-expe
 | **39.2%** | of runs have an ENA fastq missing the read that carries the cell barcode — downloads cleanly, checksums correctly, and no read can be assigned to a cell | [pathology](pathologies/ena-paired-library-single-fastq.md) |
 | **17.6%** | of GEO series with SRA data report none through NCBI's `elink gds→sra`, with zero errors | [pathology](pathologies/elink-gds-sra-missing-links.md) |
 | **125,376** | BioSamples ENA finds that NCBI's link table does not, 93.5% of them in EBI-registered projects | [route](routes/bioproject-to-biosample/index.md) |
+| **every `SAMEA`/`SAMD`** | BioSample that `efetch` is asked for by accession comes back as a *different sample* — prefix stripped, remainder read as a UID, HTTP 200 | [pathology](pathologies/biosample-efetch-ignores-accession-prefix.md) |
 | **41%** | of the BioProjects `esummary db=gds` recovers for series GEO leaves empty are species-level umbrellas | [route](routes/gse-to-bioproject/gds-summary.md) |
 | **0.77%** | of runs that were reprocessed successfully no longer exist in either archive | [route](routes/run-to-experiment/ena-filereport.md) |
 
