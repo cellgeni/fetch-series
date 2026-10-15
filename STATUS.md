@@ -1,7 +1,7 @@
 # Where fetch-series stands
 
-**2026-09-16** · branch `m1-full-corpus-surveys` ·
-[PR #2](https://github.com/cellgeni/fetch-series/pull/2), 136 commits, CI green
+**2026-10-15** · [PR #2](https://github.com/cellgeni/fetch-series/pull/2) (M1–M5,
+CI green) · [PR #3](https://github.com/cellgeni/fetch-series/pull/3) (M6, stacked on #2)
 
 A point-in-time overview. The evidence behind every number here lives in
 [`docs/`](docs/index.md) and in the `RouteEvidence` blocks in
@@ -20,6 +20,7 @@ fetch links GSE111360                      # links.tsv, in the schema the pipeli
 fetch files SRR25056225 --verify --explain # links + checksums + why this set was chosen
 fetch screen GSE109816                     # exits 2 — Smart-seq2, do not download 880 runs
 fetch relations GSE236084 --sample-map     # GEO ↔ SRA ↔ ENA ↔ ArrayExpress, per run
+fetch metadata PRJNA434002 --explain       # tissue/disease/donor per sample, as ontology CURIEs
 fetch resolve GSM7518069 --to run --explain
 ```
 
@@ -30,8 +31,8 @@ Behind it:
 | Routes declared, implemented and **measured** | **40 / 40 / 40** |
 | Archives covered | GEO, SRA, ENA, ArrayExpress/BioStudies, DDBJ |
 | Survey verdicts recorded and committed | **245,117** across 76 files |
-| Offline tests | **383** (plus integration, pathology and slow suites) |
-| Knowledge-base pages | every measured route, 7 pathologies, 4 upstream drafts |
+| Offline tests | **493** (plus integration, pathology and slow suites) |
+| Knowledge-base pages | every measured route, 9 pathologies, 5 upstream drafts |
 
 The governing rule held throughout: **no fallback order, ranking or heuristic
 ships without a survey behind it and a KB page citing that survey.**
@@ -47,6 +48,7 @@ hand-written preference anywhere in the project.
 | **39.2%** | of runs have an ENA fastq missing the read carrying the cell barcode — downloads cleanly, checksums correctly, and every read is unassignable to a cell | [pathology](docs/pathologies/ena-paired-library-single-fastq.md) |
 | **17.6%** | of GEO series with SRA data report none through NCBI's `elink gds→sra`, with zero errors | [pathology](docs/pathologies/elink-gds-sra-missing-links.md) |
 | **125,376** | BioSamples ENA finds that NCBI's link table does not; 93.5% of them in EBI-registered projects | [route](docs/routes/bioproject-to-biosample/index.md) |
+| **every `SAMEA`/`SAMD`** | BioSample asked of `efetch` by accession returns a *different sample* — prefix stripped, remainder read as a UID, HTTP 200, full attribute block | [pathology](docs/pathologies/biosample-efetch-ignores-accession-prefix.md) |
 | **41%** | of the BioProjects `esummary db=gds` recovers for series GEO leaves empty are species-level umbrellas — `PRJNA30709` holds 7,591 runs | [route](docs/routes/gse-to-bioproject/gds-summary.md) |
 | **0.77%** | of runs already reprocessed successfully no longer exist in *either* archive, and nothing announces it | [route](docs/routes/run-to-experiment/ena-filereport.md) |
 | **8,604/8,604** | agreement between GEO's own SRA relation and ENA's submitter alias — a route that works where GEO records no relation at all | [route](docs/routes/run-to-geo-sample/ena-alias.md) |
@@ -76,6 +78,7 @@ checked links would have called the corpus perfectly healthy.
 | **M3** | `fetch10xmeta` parity, container, Nextflow module | **complete** |
 | **M4** | assay layer, chemistry, pre-download screening | **complete** |
 | **M5** | upstream reports, archive monitor, docs site, contribution guide | **drafted** |
+| **M6** | metadata layer: harvest, rule normalisation, ontology grounding | **tiers 0–2 complete** |
 
 **M3 parity:** 14 of 14 of the incumbent's own nf-test cases, 447 runs, no
 differences ([the record](docs/fetch10xmeta-parity.md)). Getting there required
@@ -85,6 +88,17 @@ it replaces.
 **M4:** 90.9% assay recall on a corpus that is 10x by construction; chemistry
 named for 32.4% of runs, of which **14.6% are finer than FASTQ geometry can
 reach** ([the assay layer](docs/assays.md)).
+
+**M6:** descriptive metadata per sample, grounded in UBERON/CL/MONDO/PATO/EFO/
+NCBITaxon, from four archives that were previously read for identity only
+([the metadata layer](docs/metadata.md)). It works with no LLM key. Two archive
+bugs found building it, both with reproducers and inverted tests. **Accuracy is
+deliberately not claimed** — the ArrayExpress gold set the layer was designed
+around turned out to be circular in both of its halves, and
+[that negative result](docs/decisions/what-counts-as-a-metadata-gold-set.md) is
+the most useful thing the measurement produced. Tier 3, model adjudication, is
+designed and not built: it has to beat this baseline on an adjudicated set to
+earn a place.
 
 ---
 
@@ -105,15 +119,23 @@ ship.
 
 ### Needs your decision or your credentials
 
-1. **File the four upstream reports.** Written and ready to paste, each carrying
-   the command that regenerates its evidence first — three to EBI, one to NCBI.
+0. **A fifth upstream report is drafted**, on
+   [BioSample `efetch` ignoring the accession prefix](docs/upstream/ncbi-biosample-efetch-accession-prefix.md).
+   Arguably the most consequential of the five: it silently attributes one
+   organism's metadata to another, with HTTP 200 and no warning. Like the rest
+   it is **not filed** — sending it is outward-facing and yours.
+
+1. **File the five upstream reports.** Written and ready to paste, each carrying
+   the command that regenerates its evidence first — three to EBI, two to NCBI.
    [`docs/upstream/`](docs/upstream/index.md). Left drafted deliberately:
    sending them is outward-facing.
 2. **Publish the container** to `quay.io/cellgeni/fetch-series`. Verified
    working locally and in CI at 253 MB; cannot be pushed to your registry from
    here. [`docker/README.md`](docker/README.md).
-3. **Merge PR #2**, which also switches on the published docs site. GitHub Pages
-   may need enabling in the repository settings first.
+3. **Merge PR #2, then PR #3.** #2 also switches on the published docs site;
+   GitHub Pages may need enabling in the repository settings first. Merge #2
+   with a merge commit and do not delete its branch until #3 is retargeted to
+   `main`.
 
 ### Blocked on the above
 
