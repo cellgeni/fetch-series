@@ -246,13 +246,16 @@ def survey_evidence(
         raise typer.Exit(1)
 
     # EMPTY is a real answer about the archive, not a failure, so it counts
-    # towards the denominator and not towards accessions_failed.
+    # towards the denominator and not towards accessions_failed -- and is
+    # recorded in its own field, because the 2026-05 scripts that lumped the two
+    # together left six routes whose split can never be recovered.
     typer.echo(
         f"""        evidence=RouteEvidence(
             corpus="{corpus_name}",
             surveyed_on=date({datetime.now(UTC).date():%Y, %-m, %-d}),
             accessions_queried={summary["queried"]:_},
             accessions_failed={summary["failed"]:_},
+            accessions_empty={summary["empty"]:_},
             unique_results={summary["unique_results"]:_},
             notes="{summary["resolved"]:,} resolved, {summary["empty"]:,} empty.",
         ),"""

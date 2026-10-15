@@ -1,5 +1,6 @@
 """Offline tests for the route registry and ranking."""
 
+import re
 from datetime import UTC, date, datetime
 
 import pytest
@@ -35,6 +36,42 @@ def _evidence(failed: int, results: int, queried: int = 1000) -> RouteEvidence:
         accessions_failed=failed,
         unique_results=results,
     )
+
+
+class TestRouteEvidence:
+    def test_resolved_is_what_neither_failed_nor_came_back_empty(self):
+        evidence = RouteEvidence(
+            corpus="test",
+            surveyed_on=date(2026, 9, 15),
+            accessions_queried=13_045,
+            accessions_failed=7,
+            accessions_empty=16,
+        )
+        assert evidence.accessions_resolved == 13_022
+
+    def test_an_unrecorded_split_is_unknown_not_zero(self):
+        """None must not read as "nothing came back empty"."""
+        assert _evidence(failed=16, results=754_277).accessions_resolved is None
+
+    def test_rejects_more_verdicts_than_accessions(self):
+        with pytest.raises(ValueError, match="more failed and empty"):
+            RouteEvidence(
+                corpus="test",
+                surveyed_on=date(2026, 9, 15),
+                accessions_queried=10,
+                accessions_failed=4,
+                accessions_empty=7,
+            )
+
+    def test_rejects_negative_counts(self):
+        with pytest.raises(ValueError, match="Negative"):
+            RouteEvidence(
+                corpus="test",
+                surveyed_on=date(2026, 9, 15),
+                accessions_queried=10,
+                accessions_failed=0,
+                accessions_empty=-1,
+            )
 
 
 class TestRegistry:
@@ -241,6 +278,42 @@ class TestSeededRegistry:
                 # date this machine considers today.
                 assert route.evidence.surveyed_on <= datetime.now(UTC).date()
                 assert route.evidence.accessions_failed <= route.evidence.accessions_queried
+
+    def test_evidence_records_the_empty_split(self):
+        """Every route separates EMPTY from FAILED, bar the six that never could.
+
+        Those six were surveyed by the 2026-05 scripts, which kept one boolean
+        per BioProject. The list is closed: a new route has to record the split,
+        and `fetch survey evidence` prints it.
+        """
+        never_recorded = {
+            "bioproject->run:sra_be_direct_cgi",
+            "bioproject->run:sra_be_elink",
+            "bioproject->run:efetch_direct",
+            "bioproject->run:efetch_elink",
+            "bioproject->geo_series:elink",
+            "bioproject->geo_series:gds_direct",
+        }
+        missing = {
+            r.id for r in REGISTRY if r.evidence is not None and r.evidence.accessions_empty is None
+        }
+        assert missing == never_recorded
+
+    def test_empty_counts_agree_with_the_notes(self):
+        """The prose and the field were transcribed from the same survey."""
+        split = re.compile(r"([\d,]+) resolved, ([\d,]+) empty")
+        checked = 0
+        for route in REGISTRY:
+            evidence = route.evidence
+            if evidence is None or not (m := split.search(evidence.notes)):
+                continue
+            resolved, empty = (int(g.replace(",", "")) for g in m.groups())
+            assert (evidence.accessions_resolved, evidence.accessions_empty) == (
+                resolved,
+                empty,
+            ), route.id
+            checked += 1
+        assert checked >= 30
 
     def test_bioproject_to_run_prefers_ena_on_the_evidence(self):
         """The measured ordering, which inverts what fetch10xmeta does today.
