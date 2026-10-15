@@ -162,7 +162,21 @@ class TestPathologyReferences:
 
     @property
     def _declared(self) -> set[str]:
-        return {slug for route in REGISTRY for slug in route.known_pathologies}
+        """Every slug anything in this project admits to exhibiting.
+
+        Routes are not the only thing with defects. Metadata sources declare
+        theirs on `Source.known_pathologies` and the grounding step declares
+        its own, and all three are printed by the relevant `--explain`, which
+        is the property this invariant actually protects.
+        """
+        from fetch_series.metadata.evidence import SOURCES
+        from fetch_series.metadata.ground import GROUNDING_PATHOLOGIES
+
+        return (
+            {slug for route in REGISTRY for slug in route.known_pathologies}
+            | {slug for source in SOURCES for slug in source.known_pathologies}
+            | set(GROUNDING_PATHOLOGIES)
+        )
 
     @property
     def _pages(self) -> set[str]:

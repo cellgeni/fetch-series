@@ -20,6 +20,8 @@ good news — the archive fixed something.
 | [BioStudies 20,000-hit window](biostudies-20000-hit-window.md) | EBI | Enumerating a collection hangs at 96.6%, retrying a permanent 500 |
 | [ENA fastq omits the barcode read](ena-paired-library-single-fastq.md) | EBI | **39.2% of runs.** Downloads cleanly, checksums correctly, and every read is unassignable to a cell |
 | [SDRF URIs on a decommissioned mirror](ae-sdrf-points-at-decommissioned-mirror.md) | EBI | Trusting them discards the real submission; two studies look identical and are not |
+| [BioSample efetch ignores the accession prefix](biosample-efetch-ignores-accession-prefix.md) | NCBI | `id=SAMEA11294529` returns a rumen bacterium where a human liver sample was asked for, with HTTP 200 |
+| [ZOOMA's filter forces a term](zooma-filter-forces-a-term.md) | EBI | Constraining to an ontology selects which wrong answer you get, at confidence `GOOD` |
 
 ## Known, declared, and not yet written up
 
