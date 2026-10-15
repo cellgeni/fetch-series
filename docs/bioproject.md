@@ -1,3 +1,10 @@
+---
+title: BioProject and BioSample records
+---
+
+!!! note "Earlier exploration note"
+    How BioProject and BioSample records relate, written before any census. The worked examples still hold; for measured coverage of every route out of a BioProject, see [the route matrix](routes/index.md).
+
 # BioProject Series
 
 ## Overview

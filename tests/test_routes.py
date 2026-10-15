@@ -6,6 +6,8 @@ modes are parsing failures that need no network to reproduce.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from fetch_series.graph import REGISTRY
@@ -95,3 +97,104 @@ class TestRegistryConsistency:
         import inspect
 
         assert inspect.iscoroutinefunction(IMPLEMENTATIONS[route_id])
+
+
+class TestKnowledgeBaseCoverage:
+    """The governing rule, made enforceable.
+
+    "No route ranking ships without a survey behind it and a knowledge-base page
+    citing that survey." A measured route with no page is a ranking nobody can
+    check, so it fails here. Unmeasured routes are exempt: they sort behind
+    everything measured and influence nothing.
+    """
+
+    DOCS = Path("docs")
+
+    def test_every_measured_route_has_a_knowledge_base_page(self):
+        missing = [
+            (route.id, route.kb_page)
+            for route in REGISTRY
+            if route.is_measured and not (self.DOCS / route.kb_page).exists()
+        ]
+        assert not missing, (
+            "measured routes with no KB page (write the page, or point kb_page at the "
+            f"direction index that documents it): {missing}"
+        )
+
+    def test_kb_pages_are_under_routes(self):
+        for route in REGISTRY:
+            assert route.kb_page.startswith("routes/"), route.id
+            assert route.kb_page.endswith(".md"), route.id
+
+    def test_a_measured_routes_page_cites_a_number(self):
+        """A page that documents a route should carry its measurement.
+
+        Weak on purpose -- it checks that a digit appears, not that the digit is
+        right. Its job is to catch a page that describes a route in prose and
+        never says what was measured.
+        """
+        for route in REGISTRY:
+            if not route.is_measured:
+                continue
+            text = (self.DOCS / route.kb_page).read_text()
+            assert any(ch.isdigit() for ch in text), route.kb_page
+
+
+class TestIdsOnlyListing:
+    """--ids-only is piped into shell loops, so every line must be a route id."""
+
+    def test_the_legend_is_not_emitted(self):
+        from typer.testing import CliRunner
+
+        from fetch_series.cli import app
+
+        result = CliRunner().invoke(app, ["routes", "list", "--implemented", "--ids-only"])
+        assert result.exit_code == 0
+        lines = [line for line in result.stdout.splitlines() if line.strip()]
+        assert lines, "no routes listed"
+        assert all(REGISTRY[line] for line in lines), "a line was not a route id"
+
+
+class TestPathologyReferences:
+    """`known_pathologies` is printed by --explain as a path into docs/."""
+
+    DOCS = Path("docs")
+
+    @property
+    def _declared(self) -> set[str]:
+        return {slug for route in REGISTRY for slug in route.known_pathologies}
+
+    @property
+    def _pages(self) -> set[str]:
+        return {p.stem for p in (self.DOCS / "pathologies").glob("*.md")} - {"index"}
+
+    def test_every_declared_pathology_has_a_page_or_is_in_the_backlog(self):
+        """A slug with neither emits a dead link beside a resolved value, which
+        is worse than saying nothing: it looks like documentation that exists.
+        `series-under-a-shared-umbrella-bioproject` was declared for months
+        against a page spelled without the `a`."""
+        from fetch_series.graph import PATHOLOGY_BACKLOG
+
+        dangling = sorted(self._declared - self._pages - PATHOLOGY_BACKLOG)
+        assert not dangling, (
+            f"pathologies declared on a route with no page and no backlog entry: {dangling}. "
+            "Write the page, fix the slug, or add it to PATHOLOGY_BACKLOG."
+        )
+
+    def test_a_written_page_is_not_left_in_the_backlog(self):
+        """Otherwise --explain keeps saying 'not yet written up' about a page
+        that now exists."""
+        from fetch_series.graph import PATHOLOGY_BACKLOG
+
+        stale = sorted(PATHOLOGY_BACKLOG & self._pages)
+        assert not stale, f"these now have pages and should leave PATHOLOGY_BACKLOG: {stale}"
+
+    def test_every_pathology_page_is_declared_by_some_route(self):
+        """A pathology nobody's route admits to is a pathology the resolver will
+        never warn about. The 39% derived-fastq defect had a page and no route
+        declaring it."""
+        orphans = sorted(self._pages - self._declared)
+        assert not orphans, (
+            f"pathology pages no route declares: {orphans}. Attach each to the route it "
+            "affects, or explain in the page why no route can detect it."
+        )

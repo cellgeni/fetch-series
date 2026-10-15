@@ -69,6 +69,11 @@ class SurveyCache:
         self._conn.row_factory = sqlite3.Row
         # WAL lets a long survey write while an analysis query reads.
         self._conn.execute("PRAGMA journal_mode=WAL")
+        # WAL still allows only one writer at a time, and Python's default busy
+        # timeout is five seconds. Two surveys running side by side -- the normal
+        # way to cover NCBI and ENA routes at once -- would then abort hours of
+        # work with "database is locked" rather than waiting its turn.
+        self._conn.execute("PRAGMA busy_timeout=60000")
         self._conn.executescript(SCHEMA)
         self._conn.commit()
 

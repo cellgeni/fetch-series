@@ -1,3 +1,10 @@
+---
+title: BioProject to GEO troubleshooting
+---
+
+!!! note "Earlier exploration note"
+    The investigation that became this knowledge base: how BioProject → GEO was debugged before there was a survey harness. It is kept because it records *how* the findings were reached, and several traps it names are now in [CLAUDE.md](https://github.com/cellgeni/fetch-series/blob/main/CLAUDE.md). The measured route is [BioProject to GEO series](routes/bioproject-to-geo-series/index.md).
+
 # BioProject to GSE Query Troubleshooting
 
 This note documents the failure modes seen while resolving BioProject

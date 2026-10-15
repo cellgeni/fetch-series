@@ -1,0 +1,48 @@
+name: Archive state
+
+# The inverted pathology suite, against live archives.
+#
+# A failure here is GOOD NEWS: it means an archive fixed something. The run
+# opens nothing and blocks nothing — it exists so that a fix does not go
+# unnoticed for a year, which is roughly how long these defects have been
+# sitting unreported.
+#
+# Deliberately not part of `ci.yml`. A push must not depend on NCBI and EBI
+# being up, and must not spend their rate limit.
+
+on:
+  schedule:
+    # Weekly, off-hours for both Bethesda and Hinxton.
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+jobs:
+  pathologies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install
+        run: uv sync --all-groups
+
+      # Lifts NCBI's limit from 3 req/s to 10. Absent on a fork, where the
+      # suite still runs, just slower.
+      - name: Pathology suite
+        env:
+          NCBI_API_KEY: ${{ secrets.NCBI_API_KEY }}
+        run: uv run pytest -m pathology -v
+
+      - name: What a failure means
+        if: failure()
+        run: |
+          echo "::notice::A pathology test failed. That usually means an archive"
+          echo "::notice::fixed a documented defect. Update the knowledge-base page,"
+          echo "::notice::re-rank the affected route, and delete the test."
+          echo "::notice::Transient failures skip rather than fail, so this is"
+          echo "::notice::unlikely to be a rate limit."

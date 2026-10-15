@@ -31,6 +31,8 @@ from typing import Any, TypeVar
 
 import httpx
 
+from fetch_series.logging_utils import redact
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
@@ -68,6 +70,29 @@ def is_retryable(exc: BaseException) -> bool:
     ):
         return True
     return isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code in RETRYABLE_STATUS
+
+
+def redact_exception(exc: BaseException) -> BaseException:
+    """Return ``exc`` with credentials stripped from its message.
+
+    httpx puts the full request URL into the message of every
+    :class:`httpx.HTTPStatusError` and most transport errors, and the NCBI API
+    key is a query parameter. The redacting log formatter only helps if the
+    exception is *logged*; an uncaught traceback printed by the interpreter
+    bypasses it completely, which is how a key reached a session transcript.
+
+    The exception type is preserved, because :func:`is_retryable` dispatches on
+    it and on ``response.status_code``.
+    """
+    message = redact(str(exc))
+    if message == str(exc):
+        return exc
+    if isinstance(exc, httpx.HTTPStatusError):
+        return httpx.HTTPStatusError(message, request=exc.request, response=exc.response)
+    try:
+        return type(exc)(message)
+    except Exception:
+        return exc
 
 
 @dataclass(frozen=True, slots=True)
@@ -166,10 +191,59 @@ class SurveyClient:
         clean = {k: v for k, v in (params or {}).items() if v is not None}
         async with self._semaphore:
             await self._limiter.acquire()
-            response = await self._client.get(
-                url, params=clean, timeout=timeout or self.limits.base_timeout
-            )
-        response.raise_for_status()
+            try:
+                response = await self._client.get(
+                    url, params=clean, timeout=timeout or self.limits.base_timeout
+                )
+                response.raise_for_status()
+            except Exception as exc:
+                raise redact_exception(exc) from None
+        return response
+
+    async def head(self, url: str, timeout: float | None = None) -> httpx.Response:
+        """One rate-limited HEAD, returned whatever its status.
+
+        Deliberately does not raise for status. A 404 on a published download
+        link is the answer being asked for, not an error in asking -- and a
+        route that raises here would lose the distinction between "the archive
+        says this file is gone" and "the request did not complete".
+
+        Redirects are followed: ENA publishes `ftp.sra.ebi.ac.uk` paths that
+        answer over HTTPS after a redirect, and refusing to follow would report
+        every one of them as unresolvable.
+        """
+        if self._client is None:
+            raise RuntimeError("SurveyClient must be used as an async context manager")
+        async with self._semaphore:
+            await self._limiter.acquire()
+            try:
+                return await self._client.head(
+                    url, timeout=timeout or self.limits.base_timeout, follow_redirects=True
+                )
+            except Exception as exc:
+                raise redact_exception(exc) from None
+
+    async def post(
+        self, url: str, data: dict[str, Any], timeout: float | None = None
+    ) -> httpx.Response:
+        """One rate-limited, concurrency-bounded POST.
+
+        E-utilities documents POST for large ID lists, and it is not optional:
+        a few hundred UIDs in a query string overflows the server's URI limit
+        and comes back as a 414, which is not retryable and loses the series.
+        """
+        if self._client is None:
+            raise RuntimeError("SurveyClient must be used as an async context manager")
+        clean = {k: v for k, v in data.items() if v is not None}
+        async with self._semaphore:
+            await self._limiter.acquire()
+            try:
+                response = await self._client.post(
+                    url, data=clean, timeout=timeout or self.limits.base_timeout
+                )
+                response.raise_for_status()
+            except Exception as exc:
+                raise redact_exception(exc) from None
         return response
 
     async def with_retry(

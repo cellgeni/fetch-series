@@ -39,6 +39,11 @@ class SoftFamily:
     samples: list[str] = field(default_factory=list)
     # GSM -> the SRX and BioSample it declares, where it declares them at all.
     sample_relations: dict[str, dict[str, str]] = field(default_factory=dict)
+    # GSM -> the free-text fields that say what the library actually is. GEO
+    # carries assay information ENA's library_construction_protocol often does
+    # not: GSM5659253 names CellRanger in !Sample_data_processing while its ENA
+    # protocol describes only the tissue dissociation.
+    sample_text: dict[str, dict[str, str]] = field(default_factory=dict)
 
 
 async def fetch_soft_family(client: SurveyClient, series: str, timeout: float) -> str:
@@ -95,8 +100,35 @@ def parse_soft_family(series: str, text: str) -> SoftFamily:
             elif token.startswith("SAM"):
                 relations["biosample"] = token
         family.sample_relations[gsm] = relations
+        family.sample_text[gsm] = _sample_text(block)
 
     return family
+
+
+# The GEO fields that describe what the library is, mapped onto the names the
+# assay layer scans. GEO repeats a key across several lines rather than wrapping
+# one, so the values are joined instead of overwritten -- keeping only the last
+# line of !Sample_data_processing would throw away the line naming CellRanger,
+# which is usually not the last one.
+_TEXT_FIELDS = {
+    "!Sample_title": "sample_title",
+    "!Sample_data_processing": "sample_data_processing",
+    "!Sample_library_construction_protocol": "sample_library_construction_protocol",
+    "!Sample_extract_protocol_ch1": "sample_extract_protocol",
+    "!Sample_growth_protocol_ch1": "sample_extract_protocol",
+    "!Sample_instrument_model": "instrument_model",
+}
+_TEXT_LINE = re.compile(r"^(![A-Za-z_0-9]+)\s*=\s*(.*)$", re.MULTILINE)
+
+
+def _sample_text(block: str) -> dict[str, str]:
+    """The free-text fields of one sample block, joined per key."""
+    collected: dict[str, list[str]] = {}
+    for match in _TEXT_LINE.finditer(block):
+        name = _TEXT_FIELDS.get(match.group(1))
+        if name and (value := match.group(2).strip()):
+            collected.setdefault(name, []).append(value)
+    return {name: " ".join(values) for name, values in collected.items()}
 
 
 async def gds_uid(client: SurveyClient, series: str, timeout: float) -> str | None:
@@ -118,3 +150,57 @@ async def gds_summary(client: SurveyClient, series: str, timeout: float) -> dict
     summaries = await esummary_by_ids(client, db="gds", uids=[uid], timeout=timeout)
     record = summaries.get(uid, {})
     return record if isinstance(record, dict) else {}
+
+
+@dataclass(slots=True)
+class SampleRecord:
+    """What GEO's own record for a single sample says."""
+
+    sample: str
+    experiment: str | None = None
+    biosample: str | None = None
+    # A sample can belong to more than one series: GSM7518069 is in both
+    # GSE236084 and GSE236087. Routing from a sample to "its" series has to
+    # cope with there being several.
+    series: list[str] = field(default_factory=list)
+    organism: str | None = None
+
+
+_SERIES_ID = re.compile(r"^!Sample_series_id\s*=\s*(GSE\d+)", re.MULTILINE)
+_ORGANISM = re.compile(r"^!Sample_organism_ch1\s*=\s*(.+)$", re.MULTILINE)
+
+
+async def fetch_sample_record(client: SurveyClient, sample: str, timeout: float) -> str:
+    """Download GEO's text record for one sample.
+
+    ``acc.cgi`` is a web endpoint rather than an API, and ``view=brief`` still
+    returns the submitter's full protocol prose -- tens of kilobytes for one
+    sample. It is the only place the per-sample SRA relation can be had without
+    downloading the whole series family file, which is far larger again.
+    """
+    response = await client.get(
+        ACC_CGI,
+        params={"acc": sample, "targ": "self", "form": "text", "view": "brief"},
+        timeout=timeout,
+    )
+    text = response.text
+    if not text.lstrip().startswith("^SAMPLE"):
+        raise MalformedResponseError(
+            f"acc.cgi returned no SAMPLE record for {sample}: {text[:120]!r}"
+        )
+    return text
+
+
+def parse_sample_record(sample: str, text: str) -> SampleRecord:
+    """Parse the relations out of a single-sample SOFT record."""
+    record = SampleRecord(sample=sample)
+    # The relation lines have the same shape as in a family file, so reuse that
+    # parser rather than writing a second one that can drift from it.
+    family = parse_soft_family(sample, text)
+    relations = family.sample_relations.get(sample, {})
+    record.experiment = relations.get("experiment")
+    record.biosample = relations.get("biosample")
+    record.series = sorted(set(_SERIES_ID.findall(text)))
+    organism = _ORGANISM.search(text)
+    record.organism = organism.group(1).strip() if organism else None
+    return record

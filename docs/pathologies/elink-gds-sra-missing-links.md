@@ -69,8 +69,15 @@ recovers the link either.
 
 **Not an age effect.** The first hypothesis was that the link table was never backfilled for
 older submissions. It does not hold: ELink succeeds on GSE21739, which is older than all six
-failures, and on GSE56066, which is newer than all of them. The accession ranges overlap
-almost completely (failures 27,679–49,780; successes 21,739–56,066).
+failures, and on GSE56066, which is newer than all of them.
+
+That hypothesis only arose because the run that produced it was **biased**. A 150-series
+sample was taken by slicing a sorted corpus, which returns the lowest accession numbers
+rather than a sample — it covered only GSE ≤ 59,184, the oldest fifth of GEO, so every
+failure in it was necessarily an old accession. The census settled the question properly:
+affected series span 2011 to 2022, and include GSE106544, a 2,396-sample series that
+returns nothing. The slicing bug is fixed, and
+[the benchmarks page](../benchmarks/index.md) records it.
 
 **Not a client bug.** The links are absent with and without `linkname`, under `cmd=neighbor`
 and `cmd=neighbor_history`.

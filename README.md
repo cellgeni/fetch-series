@@ -14,29 +14,117 @@ where getting the wrong file list means reprocessing the wrong data.
 
 ## Status
 
-Early. Milestone 1 (the accession-graph survey) is in progress; see
-`docs/` for what has been measured so far. The CLI currently resolves BioProject → GEO only.
+The accession graph, the file layer, parity with the incumbent, and the assay layer are all in.
+**All 40 routes across five archives now carry measured evidence** — a census where one was
+affordable, a named seeded draw where it was not, and a knowledge-base page for every one.
+[The full matrix](docs/routes/index.md).
 
 ```bash
-uv sync
-uv run fetch PRJNA988806      # -> GSE236084
+uv sync --all-groups
+
+# Download links, with checksums and the reason each set was chosen
+fetch files SRR25056225 --explain --verify
+
+# links.tsv in the schema the reprocessing pipeline reads today
+fetch links GSE111360
+
+# Is this even 10x? Ask before downloading 880 runs of Smart-seq2
+fetch screen GSE109816
+
+# One row per run, joining what only GEO knows onto what ENA reports
+fetch relations GSE236084 --sample-map
+
+# Resolve between any two entity types, walking multi-hop paths when needed
+fetch resolve GSM7518069 --to run --explain
+
+# Inspect the graph and the evidence behind it
+fetch routes list
+fetch survey compare --route A --route B --corpus reprocessed-gse
+
+# What the archives changed since the last snapshot
+fetch cache diff data/snapshots/<earlier>.sqlite
 ```
 
-## What is already measured
+`fetch links` reproduces **14 of 14** of `fetch10xmeta`'s own nf-test cases — 447 runs, no
+differences. See [the parity record](docs/fetch10xmeta-parity.md).
 
-Nine routes surveyed across 12,756 BioProjects. At the unique-run level:
+The knowledge base publishes to
+[cellgeni.github.io/fetch-series](https://cellgeni.github.io/fetch-series/) on
+every push to `main` — every route, every pathology, every measurement with the
+date and corpus it came from. Build it locally with `uv run mkdocs serve`.
 
-| BioProject → runs | Unique runs | Failed accessions |
-|---|---|---|
-| ENA portal `filereport` | **784,026** | 15 |
-| SRA `sra-db-be` (direct CGI) | 754,277 | 16 |
-| SRA `sra-db-be` (via ELink) | 754,332 | 34 |
-| NCBI `efetch` runinfo (via ELink) | 674,186 | 31 |
-| NCBI `efetch` runinfo (direct `[GPRJ]`) | 673,157 | 15 |
+## What the censuses found
 
-ENA is a near-superset: it holds 111,665 runs `efetch` never returns, while only ~1,800 runs are
-missing from it. For GEO, the ELink and direct `db=gds` routes are functionally identical — zero
-accessions where they disagree.
+Four of these contradicted what the code assumed before anyone measured it.
+
+**ENA's derived fastq omits the read that carries the cell barcode — for 39.2% of runs.** Over a
+random 3,000-run draw from the reprocessed corpus, 1,201 runs declare `library_layout=PAIRED` and
+publish a single fastq; for **1,177 of them SRA holds more bases than ENA serves** — 5.93 Tb
+unpublished, a median ratio of 1.40. The missing ~28 bp read is the 10x barcode and UMI. The
+download succeeds, the published md5 matches, and every read in the result is unassignable to a
+cell. Only **8.2%** of runs have any submitted original to fall back on, so for most of them the
+SRA object is the sole complete source.
+[The measurement](docs/pathologies/ena-paired-library-single-fastq.md).
+
+**NCBI's `elink gds→sra` is missing 17.6% of GEO series, silently.** Over all 13,045 series in the
+reprocessed corpus it resolves 82.4% against the SOFT family file's 99.8%, and returns 178,879
+experiments against 308,639 — with **zero** errors, so no caller can detect the shortfall.
+[The report is drafted](docs/upstream/ncbi-elink-gds-sra.md).
+
+**An accession is not evidence that data exists.** 1.23% of the experiments named in GEO SOFT
+files — roughly 3,807 of 308,639 — have no runs at all. Two series name experiment sets that are the same size as, and completely
+disjoint from, what their project actually holds — so a complete-looking answer downloads nothing.
+The resolver therefore splits its answer into confirmed and unconfirmed.
+
+**Archives only index their own accessions.** NCBI's ELink resolves BioProject → BioSample for 99.3%
+of NCBI-issued projects and **1.4%** of EBI-issued ones. Routes declare which archives they can
+answer for, and the resolver skips the rest rather than spending three requests to learn nothing.
+
+**Coverage is not correctness.** `esummary db=gds` resolves a BioProject for 466 GEO series whose
+SOFT file names none, never fails, and never disagrees with SOFT where both answer — so it wins
+every headline number. And **190 of those 466 (41%) resolve to a species-level umbrella project**:
+`PRJNA30709` alone accounts for 138 of them and holds 7,591 runs, so a two-sample series routed
+through it returns 7,591 and reports success. The ranking was *not* hand-tuned against this; the
+defect is declared on the route and printed beside the value.
+[Why](docs/decisions/route-ranking.md#coverage-is-not-correctness).
+
+**0.77% of runs that reprocessed successfully no longer exist in either archive.** Not in ENA, and
+not in NCBI's `esearch db=sra` either. Withdrawn, suppressed, or moved to controlled access — the
+archives do not distinguish, and nothing announces any of them.
+[The measurement](docs/routes/run-to-experiment/ena-filereport.md).
+
+**A paging bug was hiding 94,895 BioSamples.** Fixing an unpaged ESummary call did not merely clear
+330 failures; it recovered data that had been silently truncated on projects that reported success.
+149,429 unique BioSamples became 244,324.
+
+The comparison tables, every affected accession, and the curl reproducers are in
+[the knowledge base](docs/index.md). How it was all measured — including the methodology mistakes
+that cost real time and one that understated a finding sevenfold — is in
+[benchmarks](docs/benchmarks/index.md).
+
+## Why the routes are ordered the way they are
+
+Nothing in this project has a hand-written preference order. `RouteRegistry.ranked()` computes the
+order from the `RouteEvidence` blocks in `graph.py` — corpus, date, measured counts — and a route
+nobody has surveyed sorts behind every route that has been.
+
+That matters because the incumbent tries NCBI's `efetch` before ENA, and the evidence says that is
+backwards by **110,779 runs**. Nobody wrote it down wrongly out of carelessness; it was a
+reasonable guess, held for years, and only a census settled it.
+
+**[`docs/decisions/`](docs/decisions/index.md) records every such choice** — the argument, the
+measurement it rests on, and what would reverse it:
+
+| | |
+|---|---|
+| [How routes are ranked](docs/decisions/route-ranking.md) | why yields are **banded**, why cost only breaks ties, and why a route that answers more can still be the wrong default |
+| [What counts as evidence](docs/decisions/what-counts-as-evidence.md) | three outcomes not two, distinct results not rows, why `hard-cases` is a gate and never evidence |
+| [When archives disagree](docs/decisions/merging-and-provenance.md) | union over fallback, per-value provenance, conflicts surfaced rather than resolved |
+| [Parity before improvement](docs/decisions/parity-before-improvement.md) | why `links.tsv` reproduces the incumbent's ordering, including where ours is better |
+| [No DDBJ provider](docs/decisions/no-ddbj-provider.md), [no ENA browser XML](docs/decisions/ena-browser-xml-not-needed.md) | two planned providers dropped on measurement |
+
+A decision with no stated failure condition is a preference, so each page ends with what would
+change it.
 
 ## Development
 
@@ -47,11 +135,17 @@ uv run mypy
 uv run pytest                    # offline unit tests
 uv run pytest -m integration     # hits live archive APIs
 uv run pytest -m pathology       # known archive bugs; a FAILURE means one was fixed
+uv run mkdocs serve              # the knowledge base
 ```
 
 Set `NCBI_API_KEY` in a local `.env` to lift the NCBI rate limit from 3 to 10 requests/second.
-Never commit it — `fetch_series.logging_utils` redacts credentials from log output, and CI rejects
-credential-shaped strings in tracked files.
+Never commit it — credentials are redacted from both log output and exception messages, and CI
+rejects credential-shaped strings in tracked files.
+
+See [CLAUDE.md](CLAUDE.md) for the conventions, the archive behaviours that have already cost
+time, and the design decisions that look like over-complications and are not.
+[CONTRIBUTING.md](CONTRIBUTING.md) has the route-, pathology- and assay-adding workflow;
+[STATUS.md](STATUS.md) is a point-in-time snapshot of what is done and what is left.
 
 ## Licence
 

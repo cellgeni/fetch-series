@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import csv
 import io
+import re
 from typing import Any
 
 from fetch_series.survey.client import SurveyClient
@@ -34,6 +35,34 @@ IDENTITY_FIELDS = (
     "library_strategy",
     "library_source",
 )
+
+
+# ENA carries the submitter's own names for a run, experiment and sample, and
+# for a GEO-brokered submission those names are usually the GEO accession
+# itself. That makes them a route from a run to its GSM that needs neither the
+# SOFT family file nor a BioSample join -- and it works on GSE135325 and
+# GSE137444, the two series where GEO records no SRA relation at all.
+#
+# `sample_alias` first: it is the GSM exactly in most cases, where the other two
+# carry a `_r1` suffix. Anchored, and required to end at a non-alphanumeric, so
+# a submitter name that merely starts with those letters cannot be mistaken for
+# an accession. An alias is free text -- SRR27190799's is `E12` and
+# DRR188691's is `SAMD00142600` -- so this route is expected to return nothing
+# often, and must never guess.
+ALIAS_FIELDS = ("sample_alias", "experiment_alias", "run_alias")
+GSM_IN_ALIAS = re.compile(r"^(GSM\d+)(?![A-Za-z0-9])")
+AE_IN_ALIAS = re.compile(r"^(E-[A-Z]{4}-\d+)(?![A-Za-z0-9])")
+
+
+def alias_accessions(rows: list[dict[str, Any]], pattern: re.Pattern[str]) -> list[str]:
+    """Accessions the submitter's own aliases carry, where they carry one."""
+    found: set[str] = set()
+    for row in rows:
+        for field in ALIAS_FIELDS:
+            if match := pattern.match((row.get(field) or "").strip()):
+                found.add(match.group(1))
+                break
+    return sorted(found)
 
 
 async def read_run_report(
