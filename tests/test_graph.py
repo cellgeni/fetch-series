@@ -63,6 +63,17 @@ class TestRouteEvidence:
                 accessions_empty=7,
             )
 
+    def test_positional_arguments_keep_their_meaning(self):
+        """accessions_empty was added later, so it must not shift older fields.
+
+        Inserted beside accessions_failed, it silently took the place of
+        unique_results for any caller passing arguments by position.
+        """
+        evidence = RouteEvidence("test", date(2026, 5, 12), 12_756, 16, 754_277, "notes")
+        assert evidence.unique_results == 754_277
+        assert evidence.notes == "notes"
+        assert evidence.accessions_empty is None
+
     def test_rejects_negative_counts(self):
         with pytest.raises(ValueError, match="Negative"):
             RouteEvidence(

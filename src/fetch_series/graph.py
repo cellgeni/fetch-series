@@ -63,22 +63,25 @@ class RouteEvidence:
             undated coverage number is not evidence of anything.
         accessions_queried: how many source accessions were attempted.
         accessions_failed: how many produced no verdict at all.
+        unique_results: distinct target accessions returned, where counted.
+        notes: anything that qualifies the numbers.
         accessions_empty: how many produced a verdict of "the archive holds no
             such link". ``None`` means the survey did not record the split, which
             is not the same as zero: the 2026-05 scripts kept a single boolean
             that lumped EMPTY in with FAILED, so for their routes the two cannot
             be separated after the fact.
-        unique_results: distinct target accessions returned, where counted.
-        notes: anything that qualifies the numbers.
     """
 
     corpus: str
     surveyed_on: date
     accessions_queried: int
     accessions_failed: int
-    accessions_empty: int | None = None
     unique_results: int | None = None
     notes: str = ""
+    # Last, not beside accessions_failed: added after the class shipped, and a
+    # field inserted mid-signature would shift every positional caller's
+    # unique_results into it without an error.
+    accessions_empty: int | None = None
 
     def __post_init__(self) -> None:
         counts = (self.accessions_queried, self.accessions_failed, self.accessions_empty or 0)
