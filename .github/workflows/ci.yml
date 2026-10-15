@@ -26,10 +26,10 @@ jobs:
         run: uv sync --all-groups
 
       - name: Lint
-        run: uv run ruff check src tests scripts
+        run: uv run ruff check src tests scripts hooks
 
       - name: Format
-        run: uv run ruff format --check src tests
+        run: uv run ruff format --check src tests hooks
 
       - name: Type check
         run: uv run mypy
