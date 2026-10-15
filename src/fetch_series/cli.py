@@ -32,6 +32,12 @@ from fetch_series.filesets import (
 )
 from fetch_series.graph import REGISTRY, Route
 from fetch_series.logging_utils import configure_logging, run_logfile
+from fetch_series.metadata.collect import Collection, collect
+from fetch_series.metadata.evidence import SOURCES as metadata_source_list
+from fetch_series.metadata.evidence import source_of as metadata_source_of
+from fetch_series.metadata.fields import FIELD_NAMES
+from fetch_series.metadata.gold import agreement
+from fetch_series.metadata.ground import GROUNDING_PATHOLOGIES
 from fetch_series.relations import relations as build_relations
 from fetch_series.relations import resolve_input, sample_to_runs
 from fetch_series.resolver import Mode, Resolution, resolve_path
@@ -786,6 +792,213 @@ def screen_command(
     )
     if not recognised:
         raise typer.Exit(2)
+
+
+@app.command("metadata")
+def metadata_command(
+    accession: Annotated[str, typer.Argument(help="A series, project, study or experiment.")],
+    out: Annotated[
+        Path | None, typer.Option("-o", "--out", help="Write TSV here instead of stdout.")
+    ] = None,
+    limit: Annotated[int | None, typer.Option(help="At most this many runs.")] = None,
+    explain: Annotated[
+        bool, typer.Option("--explain", help="Show every claim, its source and its evidence.")
+    ] = False,
+    review: Annotated[
+        bool, typer.Option("--review", help="The review queue, commonest reason first.")
+    ] = False,
+    keys: Annotated[
+        bool, typer.Option("--keys", help="Raw attribute keys no rule mapped, by frequency.")
+    ] = False,
+    agreement_report: Annotated[
+        bool, typer.Option("--agreement", help="Pairwise agreement between archives, per field.")
+    ] = False,
+    sources: Annotated[
+        bool, typer.Option("--sources", help="Declared sources and whether each is measured.")
+    ] = False,
+    no_ground: Annotated[
+        bool,
+        typer.Option("--no-ground", help="Stop after tier 1, to measure what grounding adds."),
+    ] = False,
+) -> None:
+    """Resolve descriptive metadata per sample, grounded in ontologies.
+
+    Tiers 0-2: harvest what the four archives already state, normalise the keys
+    and values, and ground each value in the ontology its field declares. No
+    LLM key is needed and none is used.
+
+    A value is grounded only by exact match or a curated annotation, and a
+    field whose sources disagree is reported rather than resolved -- nobody has
+    surveyed which archive to believe, so choosing would be a preference
+    dressed as a measurement. ``--agreement`` reports how often they differ;
+    ``--review`` lists what a human should settle.
+    """
+    load_dotenv()
+    configure_logging(level=logging.WARNING)
+
+    if sources:
+        typer.echo("source\tcost\tmeasured\tknown_defects\tsummary")
+        for source in metadata_source_list:
+            state = "yes" if source.measured else "NO"
+            defects = ",".join(source.known_pathologies) or MISSING
+            typer.echo(f"{source.id}\t{source.cost}\t{state}\t{defects}\t{source.summary}")
+        for slug in GROUNDING_PATHOLOGIES:
+            typer.echo(
+                f"(grounding)\t-\tNO\t{slug}\taffects every value grounded by the approximate step"
+            )
+        typer.secho(
+            "No source carries a measurement: value accuracy for this layer is unmeasured, "
+            "and docs/metadata.md says why. Ranking therefore falls back to source id and "
+            "disagreements are reported rather than resolved.",
+            fg=typer.colors.YELLOW,
+            err=True,
+        )
+        return
+
+    parsed = resolve_input(accession)
+
+    async def run_it() -> Collection:
+        async with SurveyClient(
+            limits=Limits(rps=5.0, concurrency=6), api_key=default_api_key()
+        ) as client:
+            return await collect(parsed, client, limit=limit, ground=not no_ground)
+
+    collection = asyncio.run(run_it())
+    if not collection.records:
+        typer.secho(f"No samples found for {parsed}.", fg=typer.colors.YELLOW, err=True)
+        raise typer.Exit(1)
+
+    if keys:
+        backlog = collection.unmapped_keys()
+        typer.echo("key\tsamples")
+        for key, count in backlog.items():
+            typer.echo(f"{key}\t{count}")
+        typer.secho(
+            f"{len(backlog)} unmapped keys over {len(collection.records)} samples; "
+            "a key on many samples earns a synonym entry, one on a single sample does not",
+            err=True,
+        )
+        return
+
+    if review:
+        queue = collection.review_queue
+        typer.echo("sample\treason")
+        for sample, reason in queue:
+            typer.echo(f"{sample}\t{reason}")
+        for sample, conflicted in collection.conflicts.items():
+            for name, said in conflicted.items():
+                detail = "; ".join(f"{src}={'|'.join(v)}" for src, v in said.items())
+                typer.echo(f"{sample}\t{name} disagrees between archives: {detail}")
+        typer.secho(
+            f"{len(queue)} flagged claims and {len(collection.conflicts)} samples with "
+            "cross-archive conflicts",
+            fg=typer.colors.YELLOW if queue or collection.conflicts else typer.colors.GREEN,
+            err=True,
+        )
+        return
+
+    if agreement_report:
+        typer.echo("field\tleft\tright\tagreed\tdisagreed\tonly_left\tonly_right")
+        for pair in agreement(collection.records):
+            typer.echo(
+                f"{pair.field}\t{pair.left}\t{pair.right}\t{pair.agreed}\t"
+                f"{pair.disagreed}\t{pair.only_left}\t{pair.only_right}"
+            )
+        typer.secho(
+            "Agreement is consistency, not correctness: two archives can agree and both be "
+            "wrong. Pairs are counted only where both sources were consulted.",
+            err=True,
+        )
+        return
+
+    header = ["sample", *FIELD_NAMES]
+    lines = ["\t".join(header)]
+    for record in sorted(collection.records, key=lambda r: r.sample):
+        row = [record.sample]
+        for name in FIELD_NAMES:
+            values = record.values(name)
+            if not values:
+                row.append(MISSING)
+                continue
+            # A CURIE is shown for every grounded value, whatever the field's
+            # cardinality. Reading it off `asserted()` alone dropped the terms
+            # from every multivalued field -- cell_type and tissue among them
+            # -- because `asserted` is None there by design.
+            #
+            # A claim flagged for review renders the *submitter's* string with
+            # the CURIE marked `?`, not the ontology label. The label is the
+            # part under suspicion: GSE111360's `CD45+ cells from a fresh
+            # kidney tumor sample` grounds to a rare innate lymphoid
+            # precursor, and printing that label as the value would pass the
+            # guess on as the finding.
+            rendered: list[str] = []
+            for value in values:
+                claim = next((c for c in record.claims.get(name, ()) if c.value == value), None)
+                if claim is None or claim.term is None:
+                    rendered.append(value)
+                elif claim.needs_review:
+                    rendered.append(f"{claim.raw or claim.evidence} [{claim.term.curie}?]")
+                else:
+                    rendered.append(f"{value} [{claim.term.curie}]")
+            # The pipe join lives here and only here: the library returns
+            # candidates, and flattening them is a presentation decision.
+            row.append("|".join(rendered))
+        lines.append("\t".join(row))
+
+    if out is not None:
+        out.write_text("\n".join(lines) + "\n")
+        typer.echo(f"wrote {len(collection.records)} samples to {out}", err=True)
+    else:
+        for line in lines:
+            typer.echo(line)
+
+    if explain:
+        for record in sorted(collection.records, key=lambda r: r.sample):
+            for line in record.explain():
+                typer.echo(line, err=True)
+        # Known defects of the sources that actually contributed, printed
+        # beside the values as routes' pathologies are. A source that answered
+        # nothing here gets no warning, because it affected nothing.
+        contributed = {
+            declared.id
+            for record in collection.records
+            for claims in record.claims.values()
+            for claim in claims
+            if (declared := metadata_source_of(claim.source)) is not None
+        }
+        for source in metadata_source_list:
+            if source.id in contributed:
+                for slug in source.known_pathologies:
+                    typer.echo(
+                        f"  known defect of {source.id}: {slug} (docs/pathologies/{slug}.md)",
+                        err=True,
+                    )
+        if collection.stats.approximate:
+            for slug in GROUNDING_PATHOLOGIES:
+                typer.echo(
+                    f"  known defect of the approximate grounding step: {slug} "
+                    f"(docs/pathologies/{slug}.md)",
+                    err=True,
+                )
+        if collection.study_text:
+            typer.echo("  study-scoped text, never assigned to a sample:", err=True)
+            for origin, text in collection.study_text.items():
+                typer.echo(f"    {origin} = {text[:160]!r}", err=True)
+
+    ungrounded = {name for record in collection.records for name in record.ungrounded}
+    notes = [collection.stats.summary()]
+    if ungrounded:
+        notes.append("ungrounded fields: " + ", ".join(sorted(ungrounded)))
+    if collection.conflicts:
+        notes.append(f"{len(collection.conflicts)} samples where archives disagree (--review)")
+    queue = collection.review_queue
+    if queue:
+        notes.append(f"{len(queue)} claims flagged for review (--review)")
+    typer.secho(
+        f"{len(collection.records)} samples; " + "; ".join(notes),
+        fg=typer.colors.YELLOW if queue or collection.conflicts else typer.colors.GREEN,
+        err=True,
+    )
 
 
 cache_app = typer.Typer(help="Inspect the survey cache and diff archive state over time.")

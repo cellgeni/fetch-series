@@ -11,9 +11,11 @@ from __future__ import annotations
 import csv
 import io
 import re
+from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
+from fetch_series.accession import try_parse
 from fetch_series.survey.client import SurveyClient
 
 FILES = "https://www.ebi.ac.uk/biostudies/files"
@@ -260,3 +262,174 @@ def sdrf_fastq_uris(
         for run in runs:
             by_run.setdefault(run, []).extend(kept)
     return {run: sorted(dict.fromkeys(uris)) for run, uris in by_run.items() if uris}
+
+
+# ---------------------------------------------------------------------------
+# SDRF characteristics
+#
+# ArrayExpress is the only one of these archives whose descriptive metadata was
+# curated by a human against a controlled key vocabulary, and some of it carries
+# the ontology term the curator chose. That makes it the label half of the
+# evaluation corpus in `fetch_series.metadata.gold`, joined back to GEO/SRA free
+# text through `Comment[BioSD_SAMPLE]` or `Comment[ENA_SAMPLE]`.
+#
+# The positional rule is the part that is easy to get wrong. `Term Source REF`
+# and `Term Accession Number` qualify the **immediately preceding qualifiable
+# column**, and that column is not always a characteristic. E-MTAB-10553's
+# header runs:
+#
+#   5:Characteristics[age]  6:Unit[time unit]  7:Term Source REF  8:Term Accession Number
+#
+# and its first row runs `84`, `year`, `EFO`, `UO_0000036`. `UO_0000036` is the
+# Units Ontology term for *year* -- it qualifies the unit, not the age. Binding
+# term columns to the nearest `Characteristics[...]` instead of the nearest
+# qualifiable column would record every such age as having an ontology term,
+# and record the wrong one.
+# ---------------------------------------------------------------------------
+
+_QUALIFIABLE = re.compile(r"^\s*(characteristics|factor\s*value|unit)\s*\[(.+)\]\s*$", re.I)
+_TERM_SOURCE = "term source ref"
+_TERM_ACCESSION = "term accession number"
+# A curator writes `UBERON_0002107`; some SDRFs carry the full PURL instead.
+_ACCESSION_SHAPE = re.compile(r"([A-Za-z]+)[_:](\w+)\s*$")
+
+# Columns that identify which sample a row is about, most joinable first.
+SAMPLE_KEY_COLUMNS = ("comment[biosd_sample]", "comment[ena_sample]", "source name")
+
+
+@dataclass(frozen=True, slots=True)
+class SdrfCharacteristic:
+    """One curated attribute of one sample, with its term where there is one."""
+
+    key: str
+    value: str
+    #: ``characteristics`` or ``factor value``. A factor value is a
+    #: characteristic the study varied deliberately, which makes it the better
+    #: evidence for grouping -- and still a characteristic.
+    kind: str
+    term_source: str | None = None
+    #: As written by the curator: ``UBERON_0002107``, or a full PURL.
+    term_accession: str | None = None
+
+    @property
+    def curie(self) -> str | None:
+        """``UBERON_0002107`` -> ``UBERON:0002107``, or ``None``.
+
+        Returns ``None`` rather than a guess for anything that does not match
+        the shape. A term accession that cannot be turned into a CURIE is not
+        validated against an ontology, so storing it as one would assert a
+        grounding that was never checked.
+        """
+        if not self.term_accession:
+            return None
+        if found := _ACCESSION_SHAPE.search(self.term_accession.strip()):
+            return f"{found.group(1).upper()}:{found.group(2)}"
+        return None
+
+
+def _bind_term_columns(header: list[str]) -> dict[int, tuple[str, str, int | None, int | None]]:
+    """Map each qualifiable column index to its key and its term columns.
+
+    Only ``Characteristics`` and ``Factor Value`` columns are returned. A
+    ``Unit`` column is tracked -- so that term columns following it are bound to
+    it and therefore *not* offered to the characteristic before it -- and then
+    dropped.
+    """
+    bound: dict[int, tuple[str, str, int | None, int | None]] = {}
+    current: int | None = None
+    for index, raw in enumerate(header):
+        name = raw.strip().lower()
+        if found := _QUALIFIABLE.match(raw):
+            kind = " ".join(found.group(1).lower().split())
+            key = found.group(2).strip()
+            if kind == "unit":
+                # Claims the following term columns away from the preceding
+                # characteristic, which is the whole point of tracking it.
+                current = None
+            else:
+                current = index
+                bound[index] = (key, kind, None, None)
+        elif name == _TERM_SOURCE and current is not None:
+            key, kind, _, accession = bound[current]
+            bound[current] = (key, kind, index, accession)
+        elif name == _TERM_ACCESSION and current is not None:
+            key, kind, source, _ = bound[current]
+            bound[current] = (key, kind, source, index)
+        elif name not in (_TERM_SOURCE, _TERM_ACCESSION):
+            current = None
+    return bound
+
+
+def _sample_accession(key: str) -> str:
+    """An accession from an SDRF sample key, where the key carries one.
+
+    ``E-GEOD-*`` SDRFs have no ``Comment[BioSD_SAMPLE]`` column, so the key
+    falls back to ``Source Name`` -- which for those studies is the GEO sample
+    plus a suffix: ``GSM677627 1``. Returned as ``GSM677627``, because the
+    whole point of the key is to join against the relation table and
+    ``GSM677627 1`` joins to nothing.
+
+    A key carrying no recognisable accession is returned unchanged rather than
+    dropped: it is still the only identity that study offers, and a submitter
+    name keys an SDRF to itself perfectly well.
+    """
+    head = key.split()[0] if key.split() else key
+    parsed = try_parse(head)
+    return parsed.value if parsed is not None else key
+
+
+def _cell(row: list[str], index: int | None) -> str | None:
+    """A cell by index, tolerating the short rows hand-edited SDRFs contain."""
+    if index is None or index >= len(row):
+        return None
+    return row[index].strip() or None
+
+
+def sdrf_characteristics(rows: list[list[str]]) -> dict[str, list[SdrfCharacteristic]]:
+    """Curated characteristics per sample, from raw SDRF field lists.
+
+    Takes ``sdrf_raw_rows`` output, never ``sdrf_rows``: the header repeats
+    ``Term Source REF`` and ``Term Accession Number`` once per annotated column,
+    and reading it through ``csv.DictReader`` keeps only the last of each --
+    which silently strips the ontology terms from every characteristic but one.
+
+    Keyed by the row's BioSample accession where the SDRF gives one, else its
+    ENA sample, else the submitter's source name. One SDRF row is one
+    *assay*, so several rows commonly describe one sample; their characteristics
+    are merged and de-duplicated.
+    """
+    if not rows:
+        return {}
+    header, *data = rows
+    bound = _bind_term_columns(header)
+    key_columns = [
+        (name, index)
+        for name in SAMPLE_KEY_COLUMNS
+        for index, raw in enumerate(header)
+        if raw.strip().lower() == name
+    ]
+
+    collected: dict[str, list[SdrfCharacteristic]] = {}
+    for row in data:
+        sample = next(
+            (value for _, index in key_columns if (value := _cell(row, index))),
+            None,
+        )
+        if sample is None:
+            continue
+        sample = _sample_accession(sample)
+        found = collected.setdefault(sample, [])
+        for index, (key, kind, source_index, accession_index) in bound.items():
+            value = _cell(row, index)
+            if not value:
+                continue
+            characteristic = SdrfCharacteristic(
+                key=key,
+                value=value,
+                kind=kind,
+                term_source=_cell(row, source_index),
+                term_accession=_cell(row, accession_index),
+            )
+            if characteristic not in found:
+                found.append(characteristic)
+    return collected

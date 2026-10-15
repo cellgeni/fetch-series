@@ -44,6 +44,19 @@ class SoftFamily:
     # not: GSM5659253 names CellRanger in !Sample_data_processing while its ENA
     # protocol describes only the tissue dissociation.
     sample_text: dict[str, dict[str, str]] = field(default_factory=dict)
+    # GSM -> the submitter's own characteristics pairs, in declaration order.
+    #
+    # A list of pairs rather than a dict: !Sample_characteristics_ch1 repeats,
+    # once per attribute, and a submitter may legitimately repeat a *key* too
+    # ("tissue: lung" then "tissue: lymph node" for a mixed sample). Reading
+    # these through a dict keeps the last value only -- the same trap
+    # csv.DictReader sets for SDRF columns, with the same silent result.
+    sample_characteristics: dict[str, list[tuple[str, str]]] = field(default_factory=dict)
+    # Fields that describe the *series*. Kept separate from sample_text rather
+    # than merged into it, because they are study-scoped: GEO's !Series_summary
+    # is one paragraph shared by every sample, so a disease named in it applies
+    # to the study's design and not to any particular sample.
+    series_text: dict[str, str] = field(default_factory=dict)
 
 
 async def fetch_soft_family(client: SurveyClient, series: str, timeout: float) -> str:
@@ -101,8 +114,61 @@ def parse_soft_family(series: str, text: str) -> SoftFamily:
                 relations["biosample"] = token
         family.sample_relations[gsm] = relations
         family.sample_text[gsm] = _sample_text(block)
+        family.sample_characteristics[gsm] = _characteristics(block)
 
+    family.series_text = _series_text(text)
     return family
+
+
+# !Sample_characteristics_ch1 = tissue: prefrontal cortex
+_CHARACTERISTIC = re.compile(r"^!Sample_characteristics(?:_ch\d+)?\s*=\s*(.+)$", re.MULTILINE)
+
+
+def _characteristics(block: str) -> list[tuple[str, str]]:
+    """The ``key: value`` characteristics of one sample, in declaration order.
+
+    Split on the **first** colon only. ``age: 60-65`` is unaffected either way,
+    but ``diagnosis: stage II, ER+: yes`` is, and a value containing a colon is
+    far more common than a key containing one.
+
+    A line with no colon is dropped rather than stored under an empty key --
+    submitters do write bare values there, and inventing a key for one would
+    put an unattributable string into a field set where every value is supposed
+    to name what it describes.
+    """
+    pairs: list[tuple[str, str]] = []
+    for match in _CHARACTERISTIC.finditer(block):
+        key, separator, value = match.group(1).partition(":")
+        if separator and key.strip() and value.strip():
+            pairs.append((key.strip(), value.strip()))
+    return pairs
+
+
+# Study-scoped fields. !Series_summary is the abstract; !Series_overall_design
+# is where submitters describe the sample groups, which makes it the most
+# informative single field for grouping and the most dangerous one to read as
+# a per-sample statement.
+_SERIES_FIELDS = {
+    "!Series_title": "series_title",
+    "!Series_summary": "series_summary",
+    "!Series_overall_design": "series_overall_design",
+}
+
+
+def _series_text(text: str) -> dict[str, str]:
+    """The series-level free text, joined per key.
+
+    Read from the whole document, not from a ``^SERIES`` block: GEO writes the
+    series header first and a SuperSeries repeats nothing, so there is no block
+    to bound it with. Lines are joined for the same reason sample fields are --
+    GEO wraps a long summary across several lines with the key repeated.
+    """
+    collected: dict[str, list[str]] = {}
+    for match in _TEXT_LINE.finditer(text):
+        name = _SERIES_FIELDS.get(match.group(1))
+        if name and (value := match.group(2).strip()):
+            collected.setdefault(name, []).append(value)
+    return {name: " ".join(values) for name, values in collected.items()}
 
 
 # The GEO fields that describe what the library is, mapped onto the names the
@@ -117,6 +183,12 @@ _TEXT_FIELDS = {
     "!Sample_extract_protocol_ch1": "sample_extract_protocol",
     "!Sample_growth_protocol_ch1": "sample_extract_protocol",
     "!Sample_instrument_model": "instrument_model",
+    # Descriptive rather than assay-related, so the assay layer ignores them,
+    # but they are where a tissue often is when there are no characteristics.
+    "!Sample_source_name_ch1": "sample_source_name",
+    "!Sample_organism_ch1": "sample_organism",
+    "!Sample_description": "sample_description",
+    "!Sample_treatment_protocol_ch1": "sample_treatment_protocol",
 }
 _TEXT_LINE = re.compile(r"^(![A-Za-z_0-9]+)\s*=\s*(.*)$", re.MULTILINE)
 

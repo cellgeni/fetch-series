@@ -56,6 +56,10 @@ nav:
   - The relation table: relations.md
   - The file layer: files.md
   - The assay layer: assays.md
+  - The metadata layer:
+      - Overview: metadata.md
+      - Fields and their ontologies: metadata/fields.md
+      - Sources: metadata/sources.md
   - Parity with fetch10xmeta: fetch10xmeta-parity.md
   - The graph:
       - Accession types: graph/accession-types.md
@@ -96,11 +100,15 @@ nav:
       - BioStudies 20,000-hit window: pathologies/biostudies-20000-hit-window.md
       - ENA fastq omits the barcode read: pathologies/ena-paired-library-single-fastq.md
       - ArrayExpress SDRF mirror URIs: pathologies/ae-sdrf-points-at-decommissioned-mirror.md
+      - BioSample efetch ignores the accession prefix: pathologies/biosample-efetch-ignores-accession-prefix.md
+      - ZOOMA's filter forces a term: pathologies/zooma-filter-forces-a-term.md
   - Benchmarks: benchmarks/index.md
   - Decisions:
       - Overview: decisions/index.md
       - How routes are ranked: decisions/route-ranking.md
       - What counts as evidence: decisions/what-counts-as-evidence.md
+      - What counts as a metadata gold set: decisions/what-counts-as-a-metadata-gold-set.md
+      - How values are grounded: decisions/ontology-grounding.md
       - When archives disagree: decisions/merging-and-provenance.md
       - Parity before improvement: decisions/parity-before-improvement.md
       - No DDBJ provider needed: decisions/no-ddbj-provider.md
@@ -111,6 +119,7 @@ nav:
       - EBI ENA derived fastq: upstream/ebi-ena-derived-fastq-drops-technical-read.md
       - EBI BioStudies search window: upstream/ebi-biostudies-search-window.md
       - EBI ArrayExpress SDRF URIs: upstream/ebi-arrayexpress-sdrf-mirror-uris.md
+      - NCBI BioSample efetch prefix: upstream/ncbi-biosample-efetch-accession-prefix.md
   # Earlier exploration notes, kept because they record how each finding was
   # reached. Being superseded by the per-route pages above.
   - Archive notes:

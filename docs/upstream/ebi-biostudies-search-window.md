@@ -5,6 +5,7 @@ title: EBI — BioStudies search returns HTTP 500 past 20,000 hits
 # EBI — BioStudies search returns HTTP 500 past 20,000 hits
 
 **Status:** draft, not filed **Archive:** EBI BioStudies
+**Re-checked:** 2026-10-15 — page 200 returns 200 and page 201 returns 500, as above; all four pathology tests pass live.
 **Evidence:** [pathologies/biostudies-20000-hit-window.md](../pathologies/biostudies-20000-hit-window.md)
 **Where to file:** `biostudies@ebi.ac.uk`
 

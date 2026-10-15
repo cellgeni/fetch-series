@@ -81,6 +81,7 @@ src/fetch_series/
   files.py         the file layer: classification, trust, ranked recommendation
   filesets.py      orchestration — files per run, verification, screening
   assays/          assay and chemistry recognition, pluggable
+  metadata/        descriptive metadata: harvest, rules, ontology grounding, measurement
   export/links.py  links.tsv in the incumbent's schema (the M3 parity contract)
   providers/       one module per API surface; typed calls and parsing, no route logic
   survey/          the benchmark harness: corpora, runner, rate limiting
@@ -193,6 +194,40 @@ knowledge-base page, promote the route, and remove the test.
   day before, and `date.today()` recorded the wrong day — which a CI runner an
   hour behind then rejected as being in the future. Archive surveys are
   international by nature; a local date is ambiguous to every reader.
+- **`efetch db=biosample` does not accept accessions, and pretends it does.** It strips the
+  alphabetic prefix and reads the remainder as a UID. For `SAMN` the number *is* the UID, so the
+  bug is invisible on most samples; `id=SAMEA11294529` returns `SAMN11294529` — a rumen bacterium
+  where a human liver sample was asked for — with HTTP 200 and a full attribute block. Resolve
+  through `esearch ... [accession]` and **check every returned accession against what was asked
+  for**. Affects every EBI and DDBJ BioSample, of which this corpus has many.
+- **An ontology service will always find you something.** ZOOMA's `ontologies:[...]` filter does
+  not prevent a wrong answer, it selects which one you get: `male` constrained to UBERON returns
+  `UBERON:0003101` *male organism* at confidence `GOOD`. And OLS's `exact=true` returns 40
+  documents for `male` including *male with DSD*, while `ontology=cl` returns GO terms. Re-check
+  every hit against its own label or synonyms, and against the field's declared ontology prefix.
+- **An abbreviation is the most dangerous thing to ground.** `ASD` exact-matches MONDO's synonym
+  for *atrial septal defect* and nothing else — in an autism study, with **one** hit, so nothing
+  looks ambiguous. `PBMC` → `CL:2000001` is the same shape and correct. Nothing internal
+  distinguishes them, so an abbreviation matched by synonym is never asserted without the study
+  text corroborating the expansion.
+- **ZOOMA echoes the queried string back as the annotated property.** Using it as the term's
+  label printed `CL:0001074 (CD45+ cells from a fresh kidney tumor sample)` — a CURIE labelled
+  with prose it does not mean, which hid the fact that CL:0001074 is a rare innate lymphoid
+  precursor. Resolve the label through OLS.
+- **`Term Source REF` qualifies the preceding *qualifiable* column, which may be a `Unit`.**
+  E-MTAB-10553 runs `Characteristics[age]  Unit[time unit]  Term Source REF  Term Accession
+  Number` over `84  year  EFO  UO_0000036`. `UO_0000036` is *year*. Binding term columns to the
+  nearest `Characteristics[...]` grounds every such age, and grounds it to a unit.
+- **ENA's `filereport` rejects an ArrayExpress accession too**, not only a GEO one. Key the
+  request on the resolved project or study accession, which also returns every sample in one
+  request instead of one per run.
+- **A study-scoped value cannot assign a sample-scoped field, and an invariant one can.** These
+  are opposite traps. PRJNA434002's `study_title` names Autism Spectrum Disorder for all 56 runs,
+  controls included — never assign from it. But twenty samples all reading `tissue: lung` *are*
+  all lung: the submitter wrote it once per sample, and refusing invariant values discards
+  correct metadata from every single-tissue study.
+- **Conflict is a property of sources disagreeing, not of a field's cardinality.** Keying it on
+  `multivalued` reported "ENA says lung, GEO says brain" as a *mixture* and hid it.
 - **Run `hard-cases` before any full corpus.** 34 accessions and seconds. Skipping it cost a partial
   12,755-accession run on a route whose empty rate should have looked wrong immediately.
 
@@ -224,6 +259,20 @@ Full arguments in `docs/decisions/`.
   INSDC triples share a type because they are genuinely one entity; GEO and ArrayExpress records
   are curated records that *point at* one, and `ranked_for()` can only filter by issuing archive
   because the model keeps them apart.
+- **Metadata sources are deliberately unranked, and `asserted()` therefore declines to choose.**
+  `RunRecord.set()` is first-wins because routes arrive in *measured* order. Nobody has surveyed
+  whether BioSample's `tissue` beats GEO's, so first-wins there would be declaration order
+  presented as evidence. Every `Source` carries empty `evidence` and that changes behaviour.
+- **Metadata accuracy is not measured, and the reason is a finding.** The ArrayExpress gold set
+  the layer was designed around does not exist: of 120 studies sampled, 119 carry curated
+  characteristics and **0** carry an independently registered sample. `E-MTAB-*` records come from
+  the same submission as their SDRF; `E-GEOD-*` SDRFs are a mechanical copy of GEO's own values.
+  Both halves are circular. Read `docs/decisions/what-counts-as-a-metadata-gold-set.md` before
+  trying to build it again.
+- **Tier 1 reads keys; tier 3 reads prose.** `5864_BA9` is donor 5864, Brodmann area 9, and a
+  regex for it would work on one study. It would also be indistinguishable in the output from a
+  rule that generalises, which inflates tier 1 at the model's expense — and the whole point of
+  building the deterministic tiers first is being able to say what the model adds.
 - **`links.tsv` reproduces the incumbent's ordering, including where ours is better.** That is
   the M3 parity contract, measured against `fetch10xmeta`'s own nf-test snapshots (14/14, 447
   runs). The improvements ship underneath, through `fetch files`.

@@ -19,6 +19,13 @@ The accession graph, the file layer, parity with the incumbent, and the assay la
 affordable, a named seeded draw where it was not, and a knowledge-base page for every one.
 [The full matrix](docs/routes/index.md).
 
+Newest: a [metadata layer](docs/metadata.md) that resolves tissue, disease, cell type, donor and
+sex per sample and grounds each value in UBERON, CL, MONDO, PATO, EFO or NCBI Taxonomy — from four
+archives this project previously read for identity alone. It needs no LLM key. It asserts only
+exact ontology matches, reports everything else for review, and **does not claim an accuracy
+figure**, because the evaluation corpus it was designed around
+[turned out to be circular in both of its halves](docs/decisions/what-counts-as-a-metadata-gold-set.md).
+
 ```bash
 uv sync --all-groups
 
@@ -33,6 +40,10 @@ fetch screen GSE109816
 
 # One row per run, joining what only GEO knows onto what ENA reports
 fetch relations GSE236084 --sample-map
+
+# What tissue, disease and donor is each sample? As ontology identifiers
+fetch metadata PRJNA434002 --explain
+fetch metadata PRJNA434002 --review      # and what a human should settle
 
 # Resolve between any two entity types, walking multi-hop paths when needed
 fetch resolve GSM7518069 --to run --explain
