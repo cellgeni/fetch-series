@@ -5,6 +5,7 @@ title: NCBI — efetch db=biosample ignores the accession prefix and returns a d
 # NCBI — `efetch db=biosample` ignores the accession prefix
 
 **Status:** draft, not filed **Archive:** NCBI E-utilities / BioSample
+**Re-checked:** 2026-10-15 — `id=SAMEA11294529` still returns `SAMN11294529`, and esearch still finds the requested sample as UID 23423599. The pathology tests pass live.
 **Evidence:** [pathologies/biosample-efetch-ignores-accession-prefix.md](../pathologies/biosample-efetch-ignores-accession-prefix.md)
 **Where to file:** `eutilities@ncbi.nlm.nih.gov`, cc `info@ncbi.nlm.nih.gov`
 

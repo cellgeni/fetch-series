@@ -5,6 +5,7 @@ title: EBI — ArrayExpress SDRF files point at a decommissioned mirror
 # EBI — ArrayExpress SDRF files point at a decommissioned mirror
 
 **Status:** draft, not filed **Archive:** EBI ArrayExpress / BioStudies
+**Re-checked:** 2026-10-15 — both studies reproduce as above (E-MTAB-8060: 2 files, 0 fastq; E-MTAB-9221: 43 files, 40 fastq), and the pathology test passes live.
 **Evidence:** [pathologies/ae-sdrf-points-at-decommissioned-mirror.md](../pathologies/ae-sdrf-points-at-decommissioned-mirror.md)
 **Where to file:** `biostudies@ebi.ac.uk`
 

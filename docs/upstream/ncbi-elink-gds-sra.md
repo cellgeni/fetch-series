@@ -5,17 +5,28 @@ title: NCBI — ELink gds→sra returns no links for series with SRA data
 # NCBI — ELink `gds`→`sra` returns no links for series with SRA data
 
 **Status:** draft, not filed **Archive:** NCBI Entrez
+**Re-checked:** 2026-10-15 — the census was not re-run. On a fresh `geo-sample-1000`, a different population, ELink returns nothing for **128 of the 669** series whose SOFT file names experiments (19.1%, against 17.5% in the census), and the six series on the [pathology page](../pathologies/elink-gds-sra-missing-links.md) still reproduce in its test.
 **Evidence:** [pathologies/elink-gds-sra-missing-links.md](../pathologies/elink-gds-sra-missing-links.md)
 **Where to file:** `info@ncbi.nlm.nih.gov`, or the NCBI Help Desk
 
-Regenerate the affected list before filing:
+Regenerate the affected list before filing. The table below is a census of
+`reprocessed-gse`, so that is the corpus to re-run — into a **fresh cache**: `survey run`
+resumes by default, so against the main cache it would skip every series and replay
+the dated answers, and `--no-resume` there would overwrite them.
 
 ```bash
-fetch survey run --route "gse->experiment:soft_family"    --corpus geo-sample --limit 150
-fetch survey run --route "gse->experiment:elink_gds_sra"  --corpus geo-sample --limit 150
+CACHE=/tmp/elink-recheck.sqlite
+for route in "gse->experiment:soft_family" "gse->experiment:elink_gds_sra"; do
+  fetch survey run --route "$route" --corpus reprocessed-gse --cache "$CACHE"
+done
 fetch survey compare --route "gse->experiment:soft_family" \
-                     --route "gse->experiment:elink_gds_sra" --corpus geo-sample-1000
+                     --route "gse->experiment:elink_gds_sra" \
+                     --corpus reprocessed-gse --cache "$CACHE"
 ```
+
+The census is several hours of E-utilities traffic. `--corpus geo-sample-1000` is the
+quick check that the rate has not moved; it is a different population, so its rate is
+not the headline below.
 
 ---
 

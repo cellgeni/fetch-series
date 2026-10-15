@@ -5,6 +5,7 @@ title: EBI — the derived fastq omits the read carrying the cell barcode
 # EBI — the derived fastq omits the read carrying the cell barcode
 
 **Status:** draft, not filed **Archive:** EBI ENA
+**Re-checked:** 2026-10-15 — a fresh run of the same 3,000-run sample, into a separate cache: **all 1,225** runs that offered one fastq file in September still do, and 2 of the 5 runs published since then join them. SRR29534765 still serves mate `/3` only. The pathology test passes live.
 **Evidence:** [pathologies/ena-paired-library-single-fastq.md](../pathologies/ena-paired-library-single-fastq.md)
 **Where to file:** the ENA support form at `https://www.ebi.ac.uk/ena/browser/support`
 
@@ -12,8 +13,12 @@ Regenerate the affected list before filing — archive contents drift, and a rep
 citing stale accessions invites the answer that the problem cannot be reproduced:
 
 ```bash
-fetch survey run --route "run->file:ena_fastq" --corpus "sample:3000@reprocessed-srr"
+fetch survey run --route "run->file:ena_fastq" --corpus "sample:3000@reprocessed-srr" \
+                 --cache /tmp/ena-recheck.sqlite
 ```
+
+Use a fresh cache: `survey run` resumes by default, so against the main cache it would
+skip all 3,000 runs and replay the dated answers.
 
 Runs with exactly one entry in `fastq_ftp` are the candidates; the affected ones
 are those whose `library_layout` is `PAIRED`.
