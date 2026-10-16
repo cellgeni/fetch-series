@@ -54,6 +54,15 @@ this project ever needs DDBJ's own curation — DRA submission metadata that doe
 not cross into ENA — that lives only at DDBJ, and this page should be revisited
 rather than cited.
 
+## Since: a parser, not a provider for routes
+
+`providers/ddbj.py` now exists, and this decision stands. It parses DDBJ
+Search's `dblink` answer for [the link catalogue](../graph/catalogue.md),
+which probes every link an archive API offers whether or not a route uses it.
+It backs no route, and nothing that resolves an accession calls it. Writing a
+route on it would need a corpus where ENA cannot resolve a `PRJDB` project,
+which is still the condition above.
+
 ## Related
 
 The same reasoning, applied to a different plan item and reaching the same

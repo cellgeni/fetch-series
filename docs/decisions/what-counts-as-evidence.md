@@ -5,7 +5,7 @@ title: What counts as evidence
 # What counts as evidence
 
 **Status:** in force · **Enforced by:** `tests/test_routes.py`,
-`tests/test_graph.py`
+`tests/test_graph.py`, `tests/test_catalogue_probes.py`
 
 [The ranking](route-ranking.md) is computed from evidence, so what qualifies as
 evidence is not a methodological footnote — it is the input to every routing
@@ -66,6 +66,34 @@ the ranking would order routes by how often they were deliberately pointed at
 withdrawn projects and private series.
 
 Tier one proves a route *runs*. Only a representative corpus measures how well.
+
+## A probe is not evidence
+
+[The link catalogue](../graph/catalogue.md) confirms each link no route
+measures with one live request: `GSE60450`'s gds record names `GPL13112`, so
+GEO series → GEO platform exists. That is all it shows.
+
+A probe is **one accession out of one**. It cannot say how often a link
+answers, how often it fails, or whether it agrees with another, so it has none
+of the properties `ranked()` sorts on, and recording it as `RouteEvidence`
+would put a 100% yield into the ranking on the strength of a single request.
+The rule is the same as for `hard-cases`, for a related reason: both are
+chosen, not sampled.
+
+So a probe:
+
+- never becomes `RouteEvidence`, and a catalogue link never enters `REGISTRY`
+  without a survey behind it;
+- is drawn on [the route graph](../routes/graph.md) as a dotted line with no
+  counts, no rank and no ink;
+- is kept, with its date and accession, in `catalogue/probes.json`, and a test
+  fails if a probe is recorded beside a measured link, or used an accession
+  other than its link's fixed one.
+
+A probe that found nothing leaves its link *documented, not confirmed*, which
+is not the same as absent: the mechanism exists, and the record chosen did not
+carry the field. Promoting an untested link means surveying it, over a named
+corpus, like any other route.
 
 ## An undated number is not evidence
 
