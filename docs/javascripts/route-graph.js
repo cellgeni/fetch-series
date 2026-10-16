@@ -1,17 +1,20 @@
 /* The route graph page (routes/graph.md).
  *
  * The data is embedded at build time by hooks/route_graph.py from
- * fetch_series.export.graph.route_graph(): layers, nodes, one edge per route
- * with its RouteEvidence and its rank, and every type path. Nothing that
- * involves a judgement -- ranking, path finding -- is recomputed here; this
- * file only draws.
+ * fetch_series.export.graph.route_graph(): the catalogue's nodes, one
+ * *measured* edge per declared route with its RouteEvidence and rank, one
+ * *untested* edge per node pair the catalogue links and no route measures,
+ * the unconfirmed links that are listed but never drawn, and the paths over
+ * each. Nothing that involves a judgement -- ranking, path finding, gaps -- is
+ * recomputed here; this file only draws.
  *
- * The drawing is plain SVG. Two channels say what a node is: its colour is the
- * archive family that issues it, its shape is the layer it sits at (dataset,
- * sample, library, run, file), and its position repeats both -- layers run top
- * to bottom, families left to right. Each route is its own line, named along
- * its length, and the line itself is split into what its survey found:
- * resolved, then empty, then failed, from source to target.
+ * Two channels say what a node is: its colour is the archive family that
+ * issues it, its shape is the level it sits at, and its position repeats both
+ * -- levels run top to bottom, families left to right. A measured route is a
+ * solid line, its width the accessions it resolved and its ink the share of
+ * queried accessions that resolved. An untested link is a thin dotted line with
+ * a hollow arrowhead: a probe found it answering once, which proves it exists
+ * and measures nothing.
  *
  * Loaded on every page (extra_javascript) but does nothing unless the page
  * carries #route-graph. Material's instant navigation swaps pages without a
@@ -24,36 +27,45 @@
 
   // ------------------------------------------------------------- layout
 
-  // Layers top to bottom, one row each. Across each row the positions were
-  // searched rather than drawn by hand: every placement scored by how many
-  // route bundles it drives through a node they do not belong to (none, here),
-  // whether each span leaves room for its routes' names, then by crossings and
-  // total line length, keeping GEO to the left and ArrayExpress to the right.
-  // Libraries sit under GEO because that is where most routes to them start.
-  const ROW = { dataset: 110, sample: 350, library: 570, run: 790, file: 1000, other: 1120 };
+  // Levels top to bottom, one row each; x positions searched, not drawn by
+  // hand, by scripts/route_graph_layout.py over `fetch routes graph`. Rerun it
+  // when nodes or links change and paste its output here.
+  // LAYOUT-BEGIN
+  // {'energy': 14744.1, 'through': {'routes': 0, 'untested': 23}, 'crossings': 1238} -- scripts/route_graph_layout.py, 6 seeds x 12000
+  const ROW = { dataset: 150, sample: 410, library: 650, run: 870, file: 1090, other: 1310 };
   const POSITIONS = {
-    geo_series: { x: 525, y: ROW.dataset },
-    bioproject: { x: 875, y: ROW.dataset },
-    study: { x: 1225, y: ROW.dataset },
-    ae_experiment: { x: 1625, y: ROW.dataset },
-    geo_sample: { x: 350, y: ROW.sample },
-    biosample: { x: 750, y: ROW.sample },
-    sample: { x: 1000, y: ROW.sample },
-    experiment: { x: 425, y: ROW.library },
-    run: { x: 875, y: ROW.run },
-    file: { x: 1100, y: ROW.file },
+    bioproject: { x: 975, y: ROW.dataset },
+    study: { x: 1600, y: ROW.dataset },
+    geo_series: { x: 625, y: ROW.dataset },
+    ae_experiment: { x: 2200, y: ROW.dataset },
+    biostudy: { x: 2500, y: ROW.dataset },
+    biosample: { x: 1450, y: ROW.sample },
+    sample: { x: 1875, y: ROW.sample },
+    geo_sample: { x: 250, y: ROW.sample },
+    ae_sample: { x: 2450, y: ROW.sample },
+    experiment: { x: 250, y: ROW.library },
+    run: { x: 1625, y: ROW.run },
+    ena_files: { x: 2100, y: ROW.file },
+    sra_files: { x: 650, y: ROW.file },
+    ae_files: { x: 2500, y: ROW.file },
+    geo_files: { x: 250, y: ROW.file },
+    submission: { x: 1475, y: ROW.other },
+    analysis: { x: 1825, y: ROW.other },
+    geo_platform: { x: 1200, y: ROW.other },
   };
-
-  // How far a bundle bows from the straight line, as a fraction of its length.
-  // Most directions take the default; these are tuned so that no bundle runs
-  // through a node it does not belong to.
-  const BOW = {};
+  // LAYOUT-END
 
   const NODE_HEIGHT = 54;
-  const LANE = 26; // between parallel routes mid-way: room for each one's name
-  const PORT = 9; // between parallel routes where they meet a node
+  const LANE = 26; // between parallel lanes mid-way: room for each one's name
+  const PORT = 9; // between parallel lanes where they meet a node
   const ARROW = 11;
   const LABEL_FONT = 15;
+  const LOOP_RISE = 78;
+  const DETAIL_ZOOM = 0.9;
+
+  // Lower bounds of the resolved-share bins, matching --rg-ramp-0 .. -4.
+  const SHARE_BINS = [0, 0.25, 0.5, 0.75, 0.95];
+  const SHARE_LABELS = ["under 25%", "25–50%", "50–75%", "75–95%", "95% or more"];
 
   const number = new Intl.NumberFormat("en-GB");
   const percent = new Intl.NumberFormat("en-GB", { style: "percent", maximumFractionDigits: 1 });
@@ -77,7 +89,7 @@
       else if (key.startsWith("on")) node.addEventListener(key.slice(2), value);
       else node.setAttribute(key, value === true ? "" : value);
     }
-    for (const child of children.flat()) {
+    for (const child of children.flat(Infinity)) {
       if (child === null || child === undefined || child === false) continue;
       node.append(child instanceof Node ? child : document.createTextNode(String(child)));
     }
@@ -86,15 +98,31 @@
 
   const code = (text) => el("code", { text });
   const variant = (route) => route.id.split(":").slice(1).join(":") || route.id;
+  const measured = (edge) => edge.status === "measured";
 
   function share(evidence) {
     if (!evidence || evidence.resolved === null || !evidence.queried) return null;
     return evidence.resolved / evidence.queried;
   }
 
-  /* The outcome parts of a route, in drawing order: what resolved, what came
-   * back empty, what failed. Where the survey never separated resolved from
-   * empty, the answered accessions are one "unknown" part. */
+  function shareBin(value) {
+    let bin = 0;
+    SHARE_BINS.forEach((lower, i) => {
+      if (value >= lower) bin = i;
+    });
+    return bin;
+  }
+
+  /* What the line's width stands for: accessions resolved. Where the survey
+   * never split resolved from empty, the answered count is the most that can
+   * be said, and the line is hatched to say so. */
+  function resolvedCount(evidence) {
+    if (!evidence) return 0;
+    return evidence.resolved ?? evidence.queried - evidence.failed;
+  }
+
+  /* The outcome parts of a route, in drawing order. Where the survey never
+   * separated resolved from empty, the answered accessions are one part. */
   function outcomeParts(evidence) {
     if (!evidence || !evidence.queried) return [];
     const parts =
@@ -155,17 +183,6 @@
     return { p0: at(q, a), c: blend(a, b), p1: at(q, b) };
   }
 
-  function length(q) {
-    let total = 0;
-    let previous = q.p0;
-    for (let i = 1; i <= 48; i++) {
-      const point = at(q, i / 48);
-      total += dist(previous, point);
-      previous = point;
-    }
-    return total;
-  }
-
   /* Bisect for the parameter where `test` flips between lo and hi. */
   function bisect(lo, hi, test) {
     const inside = test(lo);
@@ -189,12 +206,13 @@
     );
   }
 
-  /* One silhouette per layer, centred on the origin.
+  /* One silhouette per level, centred on the origin.
    *   dataset  a stack of sheets: a record that holds other records
    *   sample   a capsule: one specimen
    *   library  a hexagon: the prepared molecule
    *   run      a slanted bar: a pass through the sequencer
-   *   file     a page with its corner folded */
+   *   file     a page with its corner folded
+   *   other    a plain card: a record about the data, not a level of it */
   function shape(layer, w, h) {
     const x = w / 2;
     const y = h / 2;
@@ -231,7 +249,7 @@
   }
 
   const SHAPE_PADDING = { dataset: 44, sample: 52, library: 70, run: 64, file: 56, other: 40 };
-  const FAMILY_LABELS = { insdc: "INSDC: NCBI, EBI and DDBJ", geo: "GEO", arrayexpress: "ArrayExpress", file: "Files" };
+  const FAMILY_LABELS = { insdc: "INSDC: NCBI, EBI and DDBJ", geo: "GEO", arrayexpress: "ArrayExpress and BioStudies", file: "Files" };
 
   // --------------------------------------------------------- the graph
 
@@ -241,12 +259,19 @@
       this.data = data;
       this.layers = data.layers;
       this.nodes = new Map(data.nodes.map((n) => [n.id, n]));
-      this.edges = new Map(data.edges.map((e) => [e.id, e]));
-      this.providers = [...new Set(data.edges.map((e) => e.provider))].sort();
+      this.allEdges = new Map(data.edges.map((e) => [e.id, e]));
+      this.mechanisms = data.mechanisms;
+      this.unconfirmed = new Map(data.unconfirmed.map((u) => [`${u.source}>${u.target}`, u]));
+      this.providers = [...new Set(data.edges.filter(measured).map((e) => e.provider))].sort();
+      const measuredEdges = data.edges.filter(measured);
+      this.maxResolved = Math.max(1, ...measuredEdges.map((e) => resolvedCount(e.evidence)));
       this.state = {
+        view: "all", // "all" | "measured"
+        showOther: false,
         providers: new Set(this.providers),
         topOnly: false,
-        selected: null, // { kind: "edge" | "node", id }
+        includeUntested: false,
+        selected: null, // { kind: "edge" | "node" | "pair", id, source, target }
         path: null, // { from, to, index }
         sort: { key: "direction", ascending: true },
       };
@@ -254,11 +279,9 @@
       this.viewMoved = false;
 
       this.buildDom();
-      this.layout();
-      this.draw();
-      this.applyFilters();
+      this.rebuild();
       this.renderLegend();
-      this.fit();
+      this.renderMatrix();
 
       this.resizeObserver = new ResizeObserver(() => {
         if (!this.viewMoved) this.fit();
@@ -269,6 +292,36 @@
     destroy() {
       this.resizeObserver.disconnect();
       this.tooltip.remove();
+    }
+
+    /* Re-lay and redraw for the current view: which edges and nodes exist on
+     * the canvas changes the bundles, so lanes are recomputed, not hidden. */
+    rebuild() {
+      this.edges = new Map([...this.allEdges].filter(([, e]) => this.inView(e)));
+      this.layout();
+      this.draw();
+      this.applyFilters();
+      this.fit();
+    }
+
+    /* ---------------------------------------------------------- visibility */
+
+    nodeShown(id) {
+      return this.state.showOther || this.nodes.get(id).layer !== "other";
+    }
+
+    /* On the canvas at all, under the two view toggles. */
+    inView(edge) {
+      if (!measured(edge) && this.state.view === "measured") return false;
+      return this.nodeShown(edge.source) && this.nodeShown(edge.target);
+    }
+
+    /* On the canvas and not filtered out. Providers and rank apply to routes,
+     * which are the only edges that have either. */
+    visible(edge) {
+      if (!this.edges.has(edge.id)) return false;
+      if (!measured(edge)) return true;
+      return this.state.providers.has(edge.provider) && (!this.state.topOnly || edge.rank === 1);
     }
 
     /* ---------------------------------------------------------------- DOM */
@@ -286,7 +339,7 @@
       const providers = el(
         "details",
         { class: "rg-dropdown" },
-        el("summary", { class: "rg-button", text: "Providers" }),
+        el("summary", { class: "rg-button", text: "Route providers" }),
         el(
           "div",
           { class: "rg-dropdown-body" },
@@ -309,9 +362,43 @@
         ),
       );
 
+      const viewChoice = (value, label) =>
+        el(
+          "label",
+          {},
+          el("input", {
+            type: "radio",
+            name: "rg-view",
+            value,
+            checked: this.state.view === value,
+            onchange: () => this.setView(value),
+          }),
+          el("span", { text: label }),
+        );
+      this.viewControl = el(
+        "fieldset",
+        { class: "rg-segmented" },
+        el("legend", { class: "rg-visually-hidden", text: "Show" }),
+        viewChoice("measured", "Measured routes"),
+        viewChoice("all", "All known links"),
+      );
+      this.otherToggle = el("input", {
+        type: "checkbox",
+        onchange: (event) => this.setShowOther(event.target.checked),
+      });
+      this.untestedPaths = el("input", {
+        type: "checkbox",
+        onchange: (event) => {
+          this.state.includeUntested = event.target.checked;
+          this.choosePath();
+        },
+      });
+
       const controls = el(
         "div",
         { class: "rg-controls" },
+        this.viewControl,
+        el("label", {}, this.otherToggle, "Show submissions, analyses, platforms"),
         el(
           "div",
           { class: "rg-path-finder" },
@@ -319,6 +406,7 @@
           this.fromSelect,
           el("span", { "aria-hidden": "true", text: "→" }),
           this.toSelect,
+          el("label", {}, this.untestedPaths, "include untested"),
         ),
         el(
           "label",
@@ -336,9 +424,8 @@
         el("button", { class: "rg-button", type: "button", text: "Clear selection", onclick: () => this.clear() }),
       );
 
-      this.svg = svg("svg", { class: "rg-svg", role: "img", "aria-label": "Route graph; the table below lists the same routes" });
-      // The texture for a resolved/empty split that was never recorded: the
-      // same diagonal hatch the bars use.
+      this.svg = svg("svg", { class: "rg-svg", role: "img", "aria-label": "Route graph; the matrix and table below list the same links" });
+      // The texture for a resolved/empty split that was never recorded.
       this.defs = svg(
         "defs",
         {},
@@ -359,15 +446,43 @@
         el("button", { class: "rg-button", type: "button", "aria-label": "Zoom out", text: "−", onclick: () => this.zoomBy(0.8) }),
         el("button", { class: "rg-button", type: "button", text: "Fit", onclick: () => this.fit() }),
       );
-      const hint = el("p", { class: "rg-hint", text: "Click a route or a type for details · drag to pan · pinch or ⌘/Ctrl + scroll to zoom" });
+      const hint = el("p", { class: "rg-hint", text: "Click a line or a type for details · drag to pan · pinch or ⌘/Ctrl + scroll to zoom" });
       this.stage = el("div", { class: "rg-stage" }, this.svg, this.panel, zoom, hint);
       this.legend = el("div", { class: "rg-legend" });
+      this.matrixWrap = el("section", { class: "rg-matrix-section", "aria-label": "Reachability matrix" });
       this.tableWrap = el("div", { class: "rg-table-wrap" });
       this.tooltip = el("div", { class: "rg-tooltip rg-root", hidden: true });
 
-      this.root.replaceChildren(controls, this.stage, this.legend, this.tableWrap);
+      this.root.replaceChildren(controls, this.stage, this.legend, this.matrixWrap, this.tableWrap);
       document.body.append(this.tooltip);
       this.bindViewport();
+    }
+
+    setView(value) {
+      this.state.view = value;
+      for (const input of this.viewControl.querySelectorAll("input")) input.checked = input.value === value;
+      this.dropHiddenSelection();
+      this.rebuild();
+    }
+
+    setShowOther(on) {
+      this.state.showOther = on;
+      this.otherToggle.checked = on;
+      this.dropHiddenSelection();
+      this.rebuild();
+      this.renderMatrix();
+    }
+
+    /* A selection the new view cannot show is cleared rather than left
+     * highlighting nothing. */
+    dropHiddenSelection() {
+      const s = this.state.selected;
+      if (!s) return;
+      const nodes = s.kind === "node" ? [s.id] : s.kind === "pair" ? [s.source, s.target] : [];
+      const edge = s.kind === "edge" ? this.allEdges.get(s.id) : null;
+      const hidden =
+        nodes.some((id) => !this.nodeShown(id)) || (edge && !(this.nodeShown(edge.source) && this.nodeShown(edge.target)));
+      if (hidden || (edge && !measured(edge) && this.state.view === "measured")) this.state.selected = null;
     }
 
     /* ------------------------------------------------------------- layout */
@@ -376,7 +491,7 @@
       const measure = document.createElement("canvas").getContext("2d");
       measure.font = `600 ${LABEL_FONT}px ${getComputedStyle(this.root).fontFamily}`;
 
-      // A type the layout does not know yet goes at the end of its layer's row.
+      // A type the layout does not know yet goes at the end of its row.
       const rowEnds = {};
       for (const [id, p] of Object.entries(POSITIONS)) {
         const layer = this.nodes.get(id)?.layer;
@@ -395,15 +510,23 @@
         this.place.set(node.id, { ...position, w: width, h: NODE_HEIGHT });
       }
 
-      // Lanes: every route is one, grouped by direction and ordered by rank.
+      // Lanes: every edge is one, grouped by direction. Routes go first, in
+      // the order the resolver tries them; the untested lane goes last.
       const directions = new Map();
-      for (const route of this.edges.values()) {
-        const key = `${route.source}>${route.target}`;
-        if (!directions.has(key)) directions.set(key, { key, source: route.source, target: route.target, routes: [] });
-        directions.get(key).routes.push(route);
+      for (const edge of this.edges.values()) {
+        const key = `${edge.source}>${edge.target}`;
+        if (!directions.has(key)) directions.set(key, { key, source: edge.source, target: edge.target, routes: [] });
+        directions.get(key).routes.push(edge);
       }
+      const order = (e) => (measured(e) ? e.rank : 999);
+      this.lanes = new Map();
+      const spans = [];
       for (const bundle of directions.values()) {
-        bundle.routes.sort((a, b) => a.rank - b.rank);
+        bundle.routes.sort((a, b) => order(a) - order(b));
+        if (bundle.source === bundle.target) {
+          bundle.routes.forEach((edge, i) => this.lanes.set(edge.id, this.loop(bundle.source, i)));
+          continue;
+        }
         const s = this.place.get(bundle.source);
         const t = this.place.get(bundle.target);
         bundle.chord = dist(s, t);
@@ -413,24 +536,14 @@
         // its own width; a lone direction keeps a gentle curve.
         const halfWidth = ((bundle.routes.length - 1) / 2) * LANE;
         const reverse = directions.has(`${bundle.target}>${bundle.source}`);
-        bundle.bow = BOW[bundle.key] ?? (reverse ? Math.max(0.06, (halfWidth + 20) / bundle.chord) : 0.03);
+        bundle.bow = reverse ? Math.max(0.06, (halfWidth + 20) / bundle.chord) : 0.03;
         bundle.middle = add(scale(add(s, t), 0.5), scale(bundle.left, bundle.bow * bundle.chord));
+        spans.push(bundle);
       }
-      this.ports(directions);
-      this.lanes = new Map();
-      for (const bundle of directions.values()) {
-        bundle.routes.forEach((route, i) => this.lanes.set(route.id, this.lane(bundle, i)));
+      this.ports(spans);
+      for (const bundle of spans) {
+        bundle.routes.forEach((edge, i) => this.lanes.set(edge.id, this.lane(bundle, i)));
       }
-
-      const points = [...this.place.values()].flatMap((p) => [
-        { x: p.x - p.w / 2, y: p.y - p.h / 2 - 16 },
-        { x: p.x + p.w / 2 + 16, y: p.y + p.h / 2 },
-      ]);
-      for (const lane of this.lanes.values()) points.push(at(lane.curve, 0.5));
-      const xs = points.map((p) => p.x);
-      const ys = points.map((p) => p.y);
-      const top = Math.min(...ys) - 40;
-      this.bounds = { x: 0, y: top, width: Math.max(...xs) + 40, height: Math.max(...ys) + 40 - top };
     }
 
     /* Ports: each direction meeting a node gets its own stretch of the side it
@@ -444,7 +557,7 @@
         return dx < 0 ? "left" : "right";
       };
       const sides = new Map();
-      for (const bundle of directions.values()) {
+      for (const bundle of directions) {
         for (const [end, nodeId, otherId] of [
           ["start", bundle.source, bundle.target],
           ["end", bundle.target, bundle.source],
@@ -474,7 +587,7 @@
       }
     }
 
-    /* The curve one route is drawn along, from its port on the source to its
+    /* The curve one lane is drawn along, from its port on the source to its
      * port on the target, trimmed to the nodes' outlines and shortened to leave
      * room for its arrowhead. */
     lane(bundle, i) {
@@ -483,7 +596,7 @@
       const n = bundle.routes.length;
       const k = i - (n - 1) / 2;
       // Lane order at each port follows the lanes' order across the bundle, so
-      // parallel routes never twist round each other.
+      // parallel lanes never twist round each other.
       const at_ = (port) => add(port.anchor, scale(port.axis, Math.sign(port.axis.x * bundle.left.x + port.axis.y * bundle.left.y || 1) * k * port.pitch));
       const a = at_(bundle.start);
       const b = at_(bundle.end);
@@ -502,108 +615,124 @@
       const tip = at(q, t1);
       const t2 = bisect(t0, t1, (u) => dist(at(q, u), tip) > ARROW);
       const curve = piece(q, t0, t2);
-      return { curve, tip, base: at(q, t2), length: length(curve) };
+      // Names read left to right whichever way a lane runs, and bottom to top
+      // on a steep one, so a bundle's names all read the same way.
+      const heading = (Math.atan2(curve.p1.y - curve.p0.y, curve.p1.x - curve.p0.x) * 180) / Math.PI;
+      const labelCurve = heading > 80 || heading < -100 ? reversed(curve) : curve;
+      return { d: qPath(curve), labelD: qPath(labelCurve), tip, base: at(q, t2), mid: at(curve, 0.5) };
+    }
+
+    /* A self link -- a SubSeries, an umbrella project -- as a loop over the
+     * top of its node, entering where it left. */
+    loop(nodeId, i) {
+      const p = this.place.get(nodeId);
+      // Clear of the sheets stacked behind a dataset.
+      const top = p.y - p.h / 2 - (this.nodes.get(nodeId).layer === "dataset" ? 12 : 2);
+      const spread = p.w * (0.2 + 0.08 * i);
+      const rise = LOOP_RISE + 18 * i;
+      const p0 = { x: p.x - spread, y: top };
+      const tip = { x: p.x + spread, y: top };
+      const c1 = { x: p.x - spread * 2.1, y: top - rise };
+      const c2 = { x: p.x + spread * 2.1, y: top - rise };
+      const into = scale(sub(tip, c2), 1 / dist(tip, c2));
+      const base = sub(tip, scale(into, ARROW));
+      const d = `M${fmt(p0)} C${fmt(c1)} ${fmt(c2)} ${fmt(base)}`;
+      return { d, labelD: d, tip, base, mid: { x: p.x, y: top - rise * 0.75 } };
     }
 
     /* --------------------------------------------------------------- draw */
 
-    draw() {
-      const maxResults = Math.max(1, ...this.data.edges.map((e) => e.evidence?.unique_results ?? 0));
-      const widthOf = (route) =>
-        2 + (3.5 * Math.log10(1 + (route.evidence?.unique_results ?? 0))) / Math.log10(1 + maxResults);
+    widthOf(edge) {
+      if (!measured(edge)) return 1.6;
+      return 2 + (4.5 * Math.log10(1 + resolvedCount(edge.evidence))) / Math.log10(1 + this.maxResolved);
+    }
 
-      // Layer rows: a label in the gutter and a faint rule behind everything.
+    inkClass(edge) {
+      if (!measured(edge)) return "rg-line--untested";
+      const value = share(edge.evidence);
+      return value === null ? "rg-line--unknown" : `rg-line--share rg-share-${shareBin(value)}`;
+    }
+
+    laneName(edge) {
+      if (measured(edge)) return variant(edge);
+      const names = [...new Set(edge.links.map((l) => this.mechanisms[l.mechanism].name))];
+      return names.slice(0, 2).join(" · ") + (names.length > 2 ? ` · +${names.length - 2}` : "");
+    }
+
+    draw() {
+      // Level rows: a label in the gutter and a faint rule behind everything.
       const rows = svg("g", { class: "rg-rows", "aria-hidden": "true" });
-      const used = new Set([...this.nodes.values()].map((n) => n.layer));
+      const shownNodes = [...this.nodes.values()].filter((n) => this.nodeShown(n.id));
+      const used = new Set(shownNodes.map((n) => n.layer));
+      const right = Math.max(...shownNodes.map((n) => this.place.get(n.id).x + this.place.get(n.id).w / 2)) + 40;
       for (const layer of this.layers) {
         if (!used.has(layer.id)) continue;
         const y = ROW[layer.id] ?? ROW.other;
         rows.append(
-          svg("line", { class: "rg-row-rule", x1: 130, x2: this.bounds.width - 20, y1: y, y2: y }),
+          svg("line", { class: "rg-row-rule", x1: 130, x2: right, y1: y, y2: y }),
           svg("text", { class: "rg-row-label", x: 20, y, dy: "0.35em", text: layer.label.toUpperCase() }),
         );
       }
 
+      // Untested lanes first, so a measured route is never drawn under one.
       const lanes = svg("g", { class: "rg-lanes" });
       const labels = svg("g", { class: "rg-lane-labels" });
       this.laneEls = new Map();
       this.labelEls = new Map();
-      let index = 0;
-      for (const route of this.edges.values()) {
-        const lane = this.lanes.get(route.id);
-        const width = widthOf(route);
-        const d = qPath(lane.curve);
-        const group = svg("g", { class: "rg-lane", "data-route": route.id });
+      for (const old of this.defs.querySelectorAll("path[id^='rg-label-']")) old.remove();
+      const ordered = [...this.edges.values()].sort((a, b) => Number(measured(a)) - Number(measured(b)));
+      ordered.forEach((edge, index) => {
+        const lane = this.lanes.get(edge.id);
+        const width = this.widthOf(edge);
+        const group = svg("g", { class: `rg-lane ${measured(edge) ? "rg-lane--measured" : "rg-lane--untested"}`, "data-edge": edge.id });
+        group.append(svg("path", { class: `rg-line ${this.inkClass(edge)}`, d: lane.d, "stroke-width": width.toFixed(2) }));
 
-        // The line, split along its length into what the survey found. A
-        // non-zero part is never drawn shorter than 4px, so a handful of
-        // failures in thirteen thousand still shows.
-        const parts = outcomeParts(route.evidence);
-        const total = parts.reduce((sum, [, count]) => sum + count, 0) || 1;
-        const lengths = parts.map(([, count]) => Math.max(4, (lane.length * count) / total));
-        const excess = lengths.reduce((a, b) => a + b, 0) - lane.length;
-        if (excess > 0) lengths[lengths.indexOf(Math.max(...lengths))] -= excess;
-        let start = 0;
-        parts.forEach(([kind], i) => {
-          const gap = i < parts.length - 1 ? 2 : 0;
-          const dash = Math.max(0.5, lengths[i] - gap);
-          group.append(
-            svg("path", {
-              class: `rg-line rg-line--${kind}`,
-              d,
-              "stroke-width": width.toFixed(2),
-              "stroke-dasharray": `0 ${start.toFixed(1)} ${dash.toFixed(1)} ${(lane.length + 10).toFixed(1)}`,
-            }),
-          );
-          start += lengths[i];
-        });
-        if (!parts.length) group.append(svg("path", { class: "rg-line rg-line--unknown", d, "stroke-width": width.toFixed(2) }));
-
-        // Arrowhead, then the moving dots shown on a focused route.
+        // Arrowhead: filled in the line's ink for a route, hollow for an
+        // untested link -- a link that exists, not a quantity that flows.
         const dir = scale(sub(lane.tip, lane.base), 1 / ARROW);
         const across = { x: dir.y, y: -dir.x };
-        const half = 4 + width * 0.6;
+        const half = measured(edge) ? 4 + width * 0.6 : 4;
         const a = add(lane.base, scale(across, half));
         const b = add(lane.base, scale(across, -half));
         group.append(
-          svg("path", { class: "rg-arrow", d: `M${fmt(lane.tip)} L${fmt(a)} L${fmt(b)} Z` }),
-          svg("path", { class: "rg-flow", d, "stroke-width": Math.max(1.5, width - 1.5).toFixed(2) }),
+          svg("path", { class: `rg-arrow ${measured(edge) ? this.inkClass(edge) : "rg-arrow--hollow"}`, d: `M${fmt(lane.tip)} L${fmt(a)} L${fmt(b)} Z` }),
+          svg("path", { class: "rg-flow", d: lane.d, "stroke-width": Math.max(1.5, width - 1.5).toFixed(2) }),
           // A generous invisible stroke to hover and click.
-          svg("path", { class: "rg-hit", d }),
+          svg("path", { class: "rg-hit", d: lane.d }),
         );
 
-        // The route's name along its line, on the upper side, read left to
-        // right whichever way the route runs -- and bottom to top on a steep
-        // one, so a bundle's names all read the same way. Labels sit in their
-        // own layer above every line so a crossing route cannot strike one out.
-        const labelId = `rg-label-${index++}`;
-        const heading = (Math.atan2(lane.curve.p1.y - lane.curve.p0.y, lane.curve.p1.x - lane.curve.p0.x) * 180) / Math.PI;
-        const labelCurve = heading > 80 || heading < -100 ? reversed(lane.curve) : lane.curve;
-        this.defs.append(svg("path", { id: labelId, d: qPath(labelCurve) }));
+        // The lane's name along it, on the upper side. Labels sit in their own
+        // layer above every line so a crossing lane cannot strike one out.
+        const labelId = `rg-label-${index}`;
+        this.defs.append(svg("path", { id: labelId, d: lane.labelD }));
         const label = svg(
           "text",
-          { class: "rg-lane-label", dy: (-(width / 2 + 5)).toFixed(1), "data-route": route.id },
-          svg("textPath", { href: `#${labelId}`, startOffset: "50%", "text-anchor": "middle", text: variant(route) }),
+          {
+            class: `rg-lane-label ${measured(edge) ? "" : "rg-lane-label--untested"}`,
+            dy: (-(width / 2 + 5)).toFixed(1),
+            "data-edge": edge.id,
+          },
+          svg("textPath", { href: `#${labelId}`, startOffset: "50%", "text-anchor": "middle", text: this.laneName(edge) }),
         );
         labels.append(label);
-        this.labelEls.set(route.id, label);
+        this.labelEls.set(edge.id, label);
 
         for (const target of [group, label]) {
-          target.addEventListener("pointerenter", (event) => this.hover("edge", route.id, event));
+          target.addEventListener("pointerenter", (event) => this.hover("edge", edge.id, event));
           target.addEventListener("pointermove", (event) => this.moveTooltip(event));
           target.addEventListener("pointerleave", () => this.unhover());
           target.addEventListener("click", (event) => {
             event.stopPropagation();
-            this.select("edge", route.id);
+            this.selectEdge(edge.id);
           });
         }
         lanes.append(group);
-        this.laneEls.set(route.id, group);
-      }
+        this.laneEls.set(edge.id, group);
+      });
 
       const nodes = svg("g", { class: "rg-nodes" });
       this.nodeEls = new Map();
-      for (const node of this.nodes.values()) {
+      for (const node of shownNodes) {
         const p = this.place.get(node.id);
         const outline = shape(node.layer, p.w, p.h);
         const group = svg(
@@ -613,7 +742,7 @@
             transform: `translate(${p.x},${p.y})`,
             tabindex: 0,
             role: "button",
-            "aria-label": `${node.label}: ${node.routes_out} routes out, ${node.routes_in} in`,
+            "aria-label": `${node.label}: ${node.routes_out} routes out, ${node.untested_out} untested links out`,
           },
           outline.back.map((d) => svg("path", { class: "rg-node-back", d })),
           svg("path", { class: "rg-node-body", d: outline.body }),
@@ -645,14 +774,41 @@
     applyView() {
       const { x, y, k } = this.view;
       this.viewport.setAttribute("transform", `translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${k.toFixed(4)})`);
+      // An untested lane's mechanisms are named only once there is room to
+      // read them: at the zoom that fits a hundred dotted lanes on screen,
+      // their names are noise over the routes'. Hover or focus names one.
+      this.svg.classList.toggle("is-detailed", k >= DETAIL_ZOOM);
     }
 
-    fit() {
+    fit(resized = false) {
       const box = this.svg.getBoundingClientRect();
       if (!box.width || !box.height) return;
-      const b = this.bounds;
-      const k = Math.min(box.width / b.width, box.height / b.height);
-      this.view = { k, x: (box.width - b.width * k) / 2 - b.x * k, y: (box.height - b.height * k) / 2 - b.y * k };
+      // Everything drawn, measured in the drawing's own units.
+      this.viewport.removeAttribute("transform");
+      const b = this.viewport.getBBox();
+      const pad = 24;
+      // The hint and the zoom buttons sit over the bottom of the stage; the
+      // drawing fits above them rather than under them.
+      const reserve = 52;
+      // On a wide screen the stage takes the drawing's own proportions, so a
+      // fit leaves no empty band above and below it; CSS bounds the height,
+      // and a narrow screen keeps the taller stage to zoom into.
+      // Once only: where CSS clamps the height, it never comes out as asked.
+      if (!resized && box.width >= 900) {
+        const wanted = Math.round((box.width * (b.height + 2 * pad)) / (b.width + 2 * pad)) + reserve;
+        if (Math.abs(wanted - box.height) > 4) {
+          this.stage.style.height = `${wanted}px`;
+          this.fit(true);
+          return;
+        }
+      }
+      const room = box.height - reserve;
+      const k = Math.min(box.width / (b.width + 2 * pad), room / (b.height + 2 * pad));
+      this.view = {
+        k,
+        x: (box.width - b.width * k) / 2 - b.x * k,
+        y: (room - b.height * k) / 2 - b.y * k,
+      };
       this.viewMoved = false;
       this.applyView();
     }
@@ -661,7 +817,7 @@
       const box = this.svg.getBoundingClientRect();
       const px = cx ?? box.width / 2;
       const py = cy ?? box.height / 2;
-      const k = Math.min(4, Math.max(0.2, this.view.k * factor));
+      const k = Math.min(4, Math.max(0.15, this.view.k * factor));
       const ratio = k / this.view.k;
       this.view = { k, x: px - (px - this.view.x) * ratio, y: py - (py - this.view.y) * ratio };
       this.viewMoved = true;
@@ -718,30 +874,58 @@
 
     /* ------------------------------------------------------------ tooltip */
 
+    label(id) {
+      return this.nodes.get(id).label;
+    }
+
+    probeLine(entry) {
+      const probe = entry.probe;
+      const name = this.mechanisms[entry.mechanism].name;
+      if (!probe) return `${name}: not probed`;
+      if (probe.outcome === "failed") return `${name}: probe of ${probe.accession} failed`;
+      if (!probe.found_count) return `${name}: ${probe.accession} found nothing`;
+      return `${name}: ${probe.accession} → ${number.format(probe.found_count)} (${probe.found[0]}${probe.found_count > 1 ? ", …" : ""})`;
+    }
+
     hover(kind, id, event) {
       if (this.svg.classList.contains("is-panning")) return;
       this.unhover();
       if (kind === "edge") {
-        const route = this.edges.get(id);
-        const evidence = route.evidence;
-        this.tooltip.replaceChildren(
-          el("div", { class: "rg-tooltip-title", text: route.id }),
-          el("div", { class: "rg-tooltip-values", text: outcomeText(evidence) }),
-          outcomeBar(evidence),
-          evidence
-            ? el("div", {}, `of ${number.format(evidence.queried)} queried · ${number.format(evidence.unique_results ?? 0)} distinct results`)
-            : null,
-          route.of > 1 ? el("div", {}, `Rank ${route.rank} of ${route.of} for this direction`) : null,
-        );
+        const edge = this.edges.get(id);
+        if (measured(edge)) {
+          const evidence = edge.evidence;
+          this.tooltip.replaceChildren(
+            el("div", { class: "rg-tooltip-title", text: edge.id }),
+            el("div", { class: "rg-tooltip-values", text: outcomeText(evidence) }),
+            outcomeBar(evidence),
+            evidence
+              ? el(
+                  "div",
+                  {},
+                  `${share(evidence) === null ? "split not recorded" : `${percent.format(share(evidence))} resolved`} of ` +
+                    `${number.format(evidence.queried)} queried · ${number.format(evidence.unique_results ?? 0)} distinct results`,
+                )
+              : null,
+            edge.of > 1 ? el("div", {}, `Rank ${edge.rank} of ${edge.of} for this direction`) : null,
+          );
+        } else {
+          this.tooltip.replaceChildren(
+            el("div", { class: "rg-tooltip-title", text: `${this.label(edge.source)} → ${this.label(edge.target)}` }),
+            el("div", { class: "rg-tooltip-values", text: `Untested · ${edge.links.length} mechanism${edge.links.length === 1 ? "" : "s"}` }),
+            el("div", { class: "rg-muted", text: "Confirmed by one probe each; nothing measured." }),
+            el("ul", { class: "rg-tooltip-list" }, edge.links.map((entry) => el("li", { text: this.probeLine(entry) }))),
+          );
+        }
         this.mark(id);
       } else {
         const node = this.nodes.get(id);
         this.tooltip.replaceChildren(
           el("div", { class: "rg-tooltip-values", text: node.label }),
           el("div", {}, `${node.routes_out} routes out · ${node.routes_in} in`),
+          el("div", {}, `${node.untested_out} untested links out · ${node.untested_in} in`),
         );
-        for (const route of this.edges.values()) {
-          if (route.source === id || route.target === id) this.mark(route.id);
+        for (const edge of this.edges.values()) {
+          if (edge.source === id || edge.target === id) this.mark(edge.id);
         }
         this.nodeEls.get(id).classList.add("is-hover");
       }
@@ -750,12 +934,12 @@
       this.moveTooltip(event);
     }
 
-    mark(routeId) {
-      this.laneEls.get(routeId).classList.add("is-hover");
-      this.labelEls.get(routeId).classList.add("is-hover");
-      const route = this.edges.get(routeId);
-      this.nodeEls.get(route.source).classList.add("is-hover");
-      this.nodeEls.get(route.target).classList.add("is-hover");
+    mark(edgeId) {
+      this.laneEls.get(edgeId)?.classList.add("is-hover");
+      this.labelEls.get(edgeId)?.classList.add("is-hover");
+      const edge = this.edges.get(edgeId);
+      this.nodeEls.get(edge.source)?.classList.add("is-hover");
+      this.nodeEls.get(edge.target)?.classList.add("is-hover");
     }
 
     unhover() {
@@ -775,10 +959,6 @@
 
     /* ------------------------------------------------- filters & emphasis */
 
-    visible(route) {
-      return this.state.providers.has(route.provider) && (!this.state.topOnly || route.rank === 1);
-    }
-
     applyFilters() {
       for (const [id, group] of this.laneEls) {
         const hidden = !this.visible(this.edges.get(id));
@@ -790,14 +970,14 @@
       this.renderTable();
     }
 
-    /* The best visible route for one hop: lowest rank, i.e. what the resolver
-     * would try first, among the routes the filters leave on screen. */
-    hopRoute(source, target) {
-      return (
-        [...this.edges.values()]
-          .filter((r) => r.source === source && r.target === target && this.visible(r))
-          .sort((a, b) => a.rank - b.rank)[0] ?? null
-      );
+    /* The edge one hop of a path is drawn along: the best visible route,
+     * which is what the resolver would try first; else, where untested hops
+     * are allowed, the untested link. */
+    hopEdge(source, target) {
+      const candidates = [...this.edges.values()].filter((e) => e.source === source && e.target === target && this.visible(e));
+      const routes = candidates.filter(measured).sort((a, b) => a.rank - b.rank);
+      if (routes.length) return routes[0];
+      return this.state.includeUntested ? candidates.find((e) => !measured(e)) ?? null : null;
     }
 
     emphasis() {
@@ -806,24 +986,28 @@
         const steps = this.paths(path.from, path.to)[path.index];
         const edges = [];
         for (let i = 0; i < steps.length - 1; i++) {
-          const route = this.hopRoute(steps[i], steps[i + 1]);
-          if (route) edges.push(route.id);
+          const edge = this.hopEdge(steps[i], steps[i + 1]);
+          if (edge) edges.push(edge.id);
         }
         return { nodes: new Set(steps), edges: new Set(edges) };
       }
       if (selected?.kind === "edge") {
-        const route = this.edges.get(selected.id);
-        return { nodes: new Set([route.source, route.target]), edges: new Set([route.id]) };
+        const edge = this.allEdges.get(selected.id);
+        return { nodes: new Set([edge.source, edge.target]), edges: new Set([edge.id]) };
+      }
+      if (selected?.kind === "pair") {
+        const edges = [...this.edges.values()].filter((e) => e.source === selected.source && e.target === selected.target && this.visible(e));
+        return { nodes: new Set([selected.source, selected.target]), edges: new Set(edges.map((e) => e.id)) };
       }
       if (selected?.kind === "node") {
         const nodes = new Set([selected.id]);
         const edges = new Set();
-        for (const route of this.edges.values()) {
-          if (!this.visible(route)) continue;
-          if (route.source === selected.id || route.target === selected.id) {
-            edges.add(route.id);
-            nodes.add(route.source);
-            nodes.add(route.target);
+        for (const edge of this.edges.values()) {
+          if (!this.visible(edge)) continue;
+          if (edge.source === selected.id || edge.target === selected.id) {
+            edges.add(edge.id);
+            nodes.add(edge.source);
+            nodes.add(edge.target);
           }
         }
         return { nodes, edges };
@@ -842,19 +1026,41 @@
       for (const [id, group] of this.nodeEls) group.classList.toggle("is-focus", Boolean(focus?.nodes.has(id)));
     }
 
+    /* A route opens its own panel; an untested lane is its node pair. */
+    selectEdge(id) {
+      const edge = this.allEdges.get(id);
+      if (measured(edge)) this.select("edge", id);
+      else this.selectPair(edge.source, edge.target);
+    }
+
     select(kind, id) {
       this.state.selected = { kind, id };
+      this.resetPath();
+      this.refresh();
+    }
+
+    /* Select a node pair, switching the view so it can be seen: a pair that
+     * only untested links reach needs "All known links", and one touching a
+     * submission, analysis or platform needs those shown. */
+    selectPair(source, target) {
+      const needsOther = !this.nodeShown(source) || !this.nodeShown(target);
+      const hasMeasured = [...this.allEdges.values()].some((e) => measured(e) && e.source === source && e.target === target);
+      if (needsOther) this.setShowOther(true);
+      if (!hasMeasured && this.state.view === "measured") this.setView("all");
+      this.state.selected = { kind: "pair", source, target };
+      this.resetPath();
+      this.refresh();
+    }
+
+    resetPath() {
       this.state.path = null;
       this.fromSelect.value = "";
       this.toSelect.value = "";
-      this.refresh();
     }
 
     clear() {
       this.state.selected = null;
-      this.state.path = null;
-      this.fromSelect.value = "";
-      this.toSelect.value = "";
+      this.resetPath();
       this.refresh();
     }
 
@@ -862,15 +1068,21 @@
       this.emphasise();
       this.renderPanel();
       this.highlightRow();
+      this.highlightCell();
     }
 
+    /* Measured paths come from the registry's own search; with untested
+     * links included, the catalogue's shortest paths and those one hop longer.
+     * A path through a hidden node is not offered. */
     paths(from, to) {
-      return this.data.paths[from]?.[to] ?? [];
+      const source = this.state.includeUntested ? this.data.paths_all : this.data.paths_measured;
+      return (source[from]?.[to] ?? []).filter((steps) => steps.every((id) => this.nodeShown(id)));
     }
 
     choosePath() {
       const from = this.fromSelect.value;
       const to = this.toSelect.value;
+      if (this.state.includeUntested && this.state.view === "measured") this.setView("all");
       this.state.selected = null;
       this.state.path = from && to ? { from, to, index: this.paths(from, to).length ? 0 : null } : null;
       this.refresh();
@@ -895,11 +1107,44 @@
       );
     }
 
+    /* One mechanism of a link: the request, the field, what the docs say, and
+     * the probe -- the whole case for the link existing. */
+    mechanismBlock(entry) {
+      const m = this.mechanisms[entry.mechanism];
+      const probe = entry.probe;
+      let probeLine = null;
+      if (probe) {
+        const found = probe.found_count
+          ? [`found ${number.format(probe.found_count)}: `, ...probe.found.slice(0, 3).flatMap((v, i) => [i ? ", " : "", code(v)]), probe.found_count > 3 ? ", …" : ""]
+          : [probe.outcome === "failed" ? `failed: ${probe.error}` : "found nothing"];
+        probeLine = el("p", { class: "rg-probe" }, el("strong", { text: "Probe " }), code(probe.accession), ` on ${probe.checked_on} — `, ...found);
+      }
+      return el(
+        "li",
+        { class: "rg-mechanism" },
+        el("div", {}, el("strong", { text: m.name }), el("span", { class: "rg-muted", text: ` · ${m.api}` })),
+        el("div", { class: "rg-endpoint" }, code(m.endpoint)),
+        el("div", {}, el("span", { class: "rg-muted", text: "Read from " }), code(entry.field)),
+        m.via.length ? el("div", { class: "rg-muted", text: `Through ${m.via.map((v) => this.label(v)).join(", ")}, unseen by the caller.` }) : null,
+        el(
+          "div",
+          {},
+          m.basis === "documented"
+            ? el("a", { href: m.citation_url, rel: "noopener", text: "Documented" })
+            : el("span", { class: "rg-badge", text: "live-only" }),
+          m.basis === "documented" ? "" : el("span", { class: "rg-muted", text: " no documentation names this field; the probe is the evidence" }),
+        ),
+        probeLine,
+        m.note ? el("p", { class: "rg-muted", text: m.note }) : null,
+      );
+    }
+
     renderPanel() {
       const { selected, path } = this.state;
       let parts = null;
       if (path) parts = this.pathPanel(path);
-      else if (selected?.kind === "edge") parts = this.edgePanel(this.edges.get(selected.id));
+      else if (selected?.kind === "edge") parts = this.edgePanel(this.allEdges.get(selected.id));
+      else if (selected?.kind === "pair") parts = this.pairPanel(selected.source, selected.target);
       else if (selected?.kind === "node") parts = this.nodePanel(this.nodes.get(selected.id));
       this.panel.hidden = !parts;
       if (!parts) return;
@@ -911,23 +1156,17 @@
 
     edgePanel(route) {
       const evidence = route.evidence;
-      const source = this.nodes.get(route.source).label;
-      const target = this.nodes.get(route.target).label;
       const parts = [
-        el("p", { class: "rg-panel-kicker", text: `${source} → ${target}` }),
+        el("p", { class: "rg-panel-kicker", text: `Measured route · ${this.label(route.source)} → ${this.label(route.target)}` }),
         el("h3", {}, code(variant(route))),
         el("p", { text: route.summary }),
         el(
           "p",
           { class: "rg-muted" },
-          route.of > 1
-            ? `Rank ${route.rank} of ${route.of} for this direction, as the resolver tries them.`
-            : "The only route for this direction.",
+          route.of > 1 ? `Rank ${route.rank} of ${route.of} for this direction, as the resolver tries them.` : "The only route for this direction.",
         ),
       ];
-      if (!evidence) {
-        parts.push(el("p", { class: "rg-muted", text: "No survey has measured this route yet." }));
-      } else {
+      if (evidence) {
         const counts =
           evidence.empty === null
             ? [
@@ -944,18 +1183,11 @@
             "div",
             { class: "rg-counts" },
             counts.map(([count, label, kind]) =>
-              el(
-                "div",
-                { class: "rg-count" },
-                el("strong", { text: number.format(count) }),
-                el("span", {}, el("span", { class: `rg-swatch rg-swatch--${kind}` }), label),
-              ),
+              el("div", { class: "rg-count" }, el("strong", { text: number.format(count) }), el("span", {}, el("span", { class: `rg-swatch rg-swatch--${kind}` }), label)),
             ),
           ),
           outcomeBar(evidence),
-          evidence.empty === null
-            ? el("p", { class: "rg-muted" }, "This survey did not separate resolved from empty, so they are shown together.")
-            : null,
+          evidence.empty === null ? el("p", { class: "rg-muted" }, "This survey did not separate resolved from empty, so they are shown together.") : null,
           el(
             "dl",
             {},
@@ -972,13 +1204,7 @@
             el("dt", { text: "Provider" }),
             el("dd", {}, code(route.provider)),
             el("dt", { text: "Cost" }),
-            el(
-              "dd",
-              {},
-              `${route.cost.requests} request${route.cost.requests === 1 ? "" : "s"} per accession, ` +
-                `${route.cost.rate_limit_rps} req/s` +
-                (route.cost.paginates ? ", paginates" : ""),
-            ),
+            el("dd", {}, `${route.cost.requests} request${route.cost.requests === 1 ? "" : "s"} per accession, ${route.cost.rate_limit_rps} req/s` + (route.cost.paginates ? ", paginates" : "")),
             route.source_archives.length ? el("dt", { text: "Accepts" }) : null,
             route.source_archives.length ? el("dd", { text: `${route.source_archives.join(", ")} accessions only` }) : null,
           ),
@@ -995,76 +1221,123 @@
           el(
             "ul",
             {},
-            route.pathologies.map((p) =>
-              el(
-                "li",
-                {},
-                p.url ? el("a", { href: p.url, text: p.slug }) : code(p.slug),
-                p.url ? null : el("span", { class: "rg-muted" }, " (not yet written up)"),
-              ),
-            ),
+            route.pathologies.map((p) => el("li", {}, p.url ? el("a", { href: p.url, text: p.slug }) : code(p.slug), p.url ? null : el("span", { class: "rg-muted" }, " (not yet written up)"))),
           ),
         );
       }
+      parts.push(el("h4", { text: "Mechanism" }), el("ul", { class: "rg-mechanisms" }, this.mechanismBlock(route.link)));
       parts.push(el("p", {}, el("a", { href: route.kb_url }, "Read the route page →")));
       return parts;
     }
 
+    pairPanel(source, target) {
+      const routes = [...this.allEdges.values()].filter((e) => measured(e) && e.source === source && e.target === target).sort((a, b) => a.rank - b.rank);
+      const untested = [...this.allEdges.values()].find((e) => !measured(e) && e.source === source && e.target === target);
+      const unconfirmed = this.unconfirmed.get(`${source}>${target}`);
+      const parts = [
+        el("p", { class: "rg-panel-kicker", text: source === target ? "Self link" : "Node pair" }),
+        el("h3", { text: source === target ? `${this.label(source)} → another ${this.label(source)}` : `${this.label(source)} → ${this.label(target)}` }),
+      ];
+      if (!routes.length && !untested && !unconfirmed) {
+        parts.push(el("p", { text: "No archive API this catalogue knows links these in one request." }));
+        return parts;
+      }
+      if (routes.length) parts.push(el("h4", { text: `Measured routes (${routes.length})` }), el("ul", {}, routes.map((r) => el("li", {}, this.routeItem(r)))));
+      if (untested) {
+        parts.push(
+          el("h4", { text: `Untested (${untested.links.length})` }),
+          el("p", { class: "rg-muted", text: "No survey has measured these. Each was confirmed by one live request, which proves the link exists and measures nothing." }),
+          el("ul", { class: "rg-mechanisms" }, untested.links.map((entry) => this.mechanismBlock(entry))),
+        );
+      }
+      if (unconfirmed) {
+        parts.push(
+          el("h4", { text: `Documented, not confirmed (${unconfirmed.links.length})` }),
+          el("p", { class: "rg-muted", text: "Declared, and the probe found nothing, so these are not drawn." }),
+          el("ul", { class: "rg-mechanisms" }, unconfirmed.links.map((entry) => this.mechanismBlock(entry))),
+        );
+      }
+      return parts;
+    }
+
     nodePanel(node) {
-      const group = (routes, other) => {
-        const byOther = new Map();
-        for (const route of routes) {
-          if (!byOther.has(route[other])) byOther.set(route[other], []);
-          byOther.get(route[other]).push(route);
-        }
-        return [...byOther.entries()]
-          .sort(([a], [b]) => this.nodes.get(a).label.localeCompare(this.nodes.get(b).label))
-          .map(([key, list]) =>
-            el(
-              "li",
-              {},
-              el("strong", { text: this.nodes.get(key).label }),
-              list.sort((a, b) => a.rank - b.rank).map((route) => this.routeItem(route)),
-            ),
-          );
-      };
-      const routes = [...this.edges.values()].filter((r) => this.visible(r));
-      const out = routes.filter((r) => r.source === node.id);
-      const into = routes.filter((r) => r.target === node.id);
       const layer = this.layers.find((l) => l.id === node.layer)?.label ?? node.layer;
-      return [
-        el("p", { class: "rg-panel-kicker", text: `${layer} · ${FAMILY_LABELS[node.family] ?? node.family}` }),
+      const reach = new Map();
+      for (const edge of this.allEdges.values()) {
+        if (edge.source !== node.id) continue;
+        if (!reach.has(edge.target)) reach.set(edge.target, { routes: [], untested: null });
+        if (measured(edge)) reach.get(edge.target).routes.push(edge);
+        else reach.get(edge.target).untested = edge;
+      }
+      const reachItem = (target, { routes, untested }) => {
+        const best = routes.sort((a, b) => a.rank - b.rank)[0];
+        const value = best ? share(best.evidence) : null;
+        const status = routes.length
+          ? `${routes.length} route${routes.length === 1 ? "" : "s"}` + (best ? `, best ${value === null ? "split not recorded" : `${percent.format(value)} resolved`}` : "")
+          : "";
+        const names = untested ? [...new Set(untested.links.map((l) => this.mechanisms[l.mechanism].name))] : [];
+        return el(
+          "li",
+          {},
+          el(
+            "button",
+            { class: "rg-item", type: "button", onclick: () => this.selectPair(node.id, target) },
+            el("strong", { text: target === node.id ? `another ${this.label(target)}` : this.label(target) }),
+            routes.length ? el("span", { class: "rg-item-meta" }, el("span", { class: "rg-chip rg-chip--measured", text: "measured" }), status) : null,
+            untested ? el("span", { class: "rg-item-meta" }, el("span", { class: "rg-chip rg-chip--untested", text: "untested" }), names.join(" · ")) : null,
+          ),
+        );
+      };
+      const order = (id) => this.data.nodes.findIndex((n) => n.id === id);
+      const reached = [...reach.entries()].sort(([a], [b]) => order(a) - order(b));
+      const documented = [...this.unconfirmed.values()].filter((u) => u.source === node.id && !reach.has(u.target));
+      const gaps = (this.data.unreachable[node.id] ?? []).filter((t) => !documented.some((u) => u.target === t));
+      const parts = [
+        el("p", { class: "rg-panel-kicker", text: `${layer} · ${node.database} · ${FAMILY_LABELS[node.family] ?? node.family}` }),
         el("h3", { text: node.label }),
+        node.note ? el("p", { text: node.note }) : null,
         node.accessions.length
           ? el("dl", {}, node.accessions.flatMap((a) => [el("dt", {}, code(a.pattern)), el("dd", { text: a.description })]))
-          : el("p", { class: "rg-muted", text: "Reached through routes, never parsed from an identifier." }),
-        el("h4", { text: `From ${node.label}` }),
-        out.length ? el("ul", {}, group(out, "target")) : el("p", { class: "rg-muted", text: "None shown." }),
-        el("h4", { text: `To ${node.label}` }),
-        into.length ? el("ul", {}, group(into, "source")) : el("p", { class: "rg-muted", text: "None shown." }),
+          : el("p", { class: "rg-muted", text: node.entity === "file" ? "Reached through links, never parsed from an identifier." : "Has no accession of its own." }),
       ];
+      if (node.layer === "file") {
+        parts.push(el("p", { class: "rg-muted", text: "A file is where links end: nothing links onward from it." }));
+      } else {
+        parts.push(
+          el("h4", { text: `Reaches in one hop (${reached.length})` }),
+          reached.length ? el("ul", {}, reached.map(([target, entry]) => reachItem(target, entry))) : el("p", { class: "rg-muted", text: "Nothing." }),
+          documented.length ? el("h4", { text: "Documented, not confirmed" }) : null,
+          documented.length
+            ? el("ul", {}, documented.map((u) => el("li", {}, el("button", { class: "rg-item", type: "button", onclick: () => this.selectPair(node.id, u.target) }, this.label(u.target)))))
+            : null,
+          el("h4", { text: `No one-hop link to (${gaps.length})` }),
+          gaps.length ? el("p", { text: gaps.map((t) => this.label(t)).join(" · ") }) : el("p", { class: "rg-muted", text: "Every other node is one hop away." }),
+        );
+      }
+      const into = [...this.allEdges.values()].filter((e) => e.target === node.id && measured(e));
+      if (into.length) {
+        parts.push(el("h4", { text: `Measured routes into ${node.label} (${into.length})` }), el("ul", {}, into.sort((a, b) => this.label(a.source).localeCompare(this.label(b.source)) || a.rank - b.rank).map((r) => el("li", {}, el("span", { class: "rg-muted", text: `from ${this.label(r.source)} ` }), this.routeItem(r)))));
+      }
+      return parts;
     }
 
     pathPanel(path) {
-      const from = this.nodes.get(path.from).label;
-      const to = this.nodes.get(path.to).label;
       const found = this.paths(path.from, path.to);
-      const parts = [el("p", { class: "rg-panel-kicker", text: "Paths" }), el("h3", { text: `${from} → ${to}` })];
+      const parts = [el("p", { class: "rg-panel-kicker", text: this.state.includeUntested ? "Paths, untested links included" : "Paths over measured routes" }), el("h3", { text: `${this.label(path.from)} → ${this.label(path.to)}` })];
       if (!found.length) {
-        parts.push(el("p", { text: "No declared route connects these, within four hops." }));
+        parts.push(el("p", { text: this.state.includeUntested ? "No known link connects these within four hops." : "No measured route connects these within four hops. Try including untested links." }));
         return parts;
       }
       parts.push(
         el(
           "p",
           { class: "rg-muted" },
-          `${found.length} type path${found.length === 1 ? "" : "s"}, shortest first. ` +
-            "Each hop uses the best-ranked route the filters leave visible.",
+          `${found.length} path${found.length === 1 ? "" : "s"}, shortest first. ` + "Each hop uses the best-ranked route the filters leave visible" + (this.state.includeUntested ? ", else an untested link." : "."),
         ),
       );
       found.forEach((steps, index) => {
         const hops = [];
-        for (let i = 0; i < steps.length - 1; i++) hops.push(this.hopRoute(steps[i], steps[i + 1]));
+        for (let i = 0; i < steps.length - 1; i++) hops.push(this.hopEdge(steps[i], steps[i + 1]));
         parts.push(
           el(
             "button",
@@ -1078,11 +1351,11 @@
                 this.renderPanel();
               },
             },
-            steps.map((s) => this.nodes.get(s).label).join(" → "),
+            steps.map((s) => this.label(s)).join(" → "),
             el(
               "span",
               { class: "rg-item-meta" },
-              hops.every(Boolean) ? hops.map(variant).join(" · ") : "a hop has no route under the current filters",
+              hops.every(Boolean) ? hops.map((h) => (measured(h) ? variant(h) : `untested: ${this.laneName(h)}`)).join("  ·  ") : "a hop has no line under the current filters",
             ),
           ),
         );
@@ -1107,56 +1380,117 @@
           ),
         );
       };
-      const line = (kind) =>
-        svg(
-          "svg",
-          { class: "rg-legend-line", viewBox: "0 0 30 8", "aria-hidden": "true" },
-          svg("path", { class: `rg-line rg-line--${kind}`, d: "M1,4 H29", "stroke-width": 3 }),
-        );
+      const line = (cls, width = 3) =>
+        svg("svg", { class: "rg-legend-line", viewBox: "0 0 30 8", "aria-hidden": "true" }, svg("path", { class: `rg-line ${cls}`, d: "M1,4 H29", "stroke-width": width }));
       const item = (key, label) => el("span", { class: "rg-legend-item" }, key, label);
       const order = Object.keys(FAMILY_LABELS);
-      const families = [...new Set(this.data.nodes.map((n) => n.family))].sort(
-        (x, y) => (order.indexOf(x) + 1 || 99) - (order.indexOf(y) + 1 || 99),
-      );
-      const usedLayers = new Set(this.data.nodes.map((n) => n.layer));
+      const families = [...new Set(this.data.nodes.map((n) => n.family))].sort((x, y) => (order.indexOf(x) + 1 || 99) - (order.indexOf(y) + 1 || 99));
 
       this.legend.replaceChildren(
+        el("div", { class: "rg-legend-group" }, el("span", { class: "rg-legend-title", text: "Shape is the level" }), this.layers.map((l) => item(icon(l.id), l.label.toLowerCase()))),
+        el("div", { class: "rg-legend-group" }, el("span", { class: "rg-legend-title", text: "Colour is the archive" }), families.map((f) => item(el("span", { class: `rg-swatch rg-family-${f}` }), FAMILY_LABELS[f] ?? f))),
         el(
           "div",
           { class: "rg-legend-group" },
-          el("span", { class: "rg-legend-title", text: "Shape is the layer" }),
-          this.layers.filter((l) => usedLayers.has(l.id)).map((l) => item(icon(l.id), l.label.toLowerCase())),
+          el("span", { class: "rg-legend-title", text: "A measured route's ink: share of queried accessions resolved" }),
+          SHARE_LABELS.map((label, i) => item(line(`rg-line--share rg-share-${i}`), label)),
+          item(line("rg-line--unknown"), "resolved/empty split not recorded"),
+          el("span", { class: "rg-legend-note", text: "Width is accessions resolved, log scale." }),
         ),
         el(
           "div",
           { class: "rg-legend-group" },
-          el("span", { class: "rg-legend-title", text: "Colour is the archive" }),
-          families.map((f) => item(el("span", { class: `rg-swatch rg-family-${f}` }), FAMILY_LABELS[f] ?? f)),
-        ),
-        el(
-          "div",
-          { class: "rg-legend-group" },
-          el("span", { class: "rg-legend-title", text: "Each route's line, from source to target" }),
-          item(line("resolved"), "resolved"),
-          item(line("empty"), "empty"),
-          item(line("failed"), "failed"),
-          item(line("unknown"), "resolved or empty, not recorded"),
-          el("span", { class: "rg-legend-note", text: "Width is distinct results, log scale." }),
+          el("span", { class: "rg-legend-title", text: "An untested link" }),
+          item(line("rg-line--untested", 1.6), "one per node pair, confirmed by a probe; measures nothing"),
         ),
       );
+    }
+
+    /* ------------------------------------------------------------- matrix */
+
+    /* Every node against every node: filled by the best route's resolved
+     * share where a route measures the pair, outlined where only untested
+     * links do, dashed where a link is documented and its probe found
+     * nothing, blank where no link exists. The gaps are the point. */
+    renderMatrix() {
+      const nodes = this.data.nodes.filter((n) => this.nodeShown(n.id));
+      const cellFor = (source, target) => {
+        const routes = [...this.allEdges.values()].filter((e) => measured(e) && e.source === source && e.target === target).sort((a, b) => a.rank - b.rank);
+        const untested = [...this.allEdges.values()].some((e) => !measured(e) && e.source === source && e.target === target);
+        const unconfirmed = this.unconfirmed.has(`${source}>${target}`);
+        if (routes.length) {
+          const value = share(routes[0].evidence);
+          return {
+            kind: value === null ? "unknown" : `share-${shareBin(value)}`,
+            text: `${routes.length} measured route${routes.length === 1 ? "" : "s"}; best ${value === null ? "split not recorded" : `resolves ${percent.format(value)}`}` + (untested ? "; untested links too" : ""),
+          };
+        }
+        if (untested) return { kind: "untested", text: "untested links only" };
+        if (unconfirmed) return { kind: "unconfirmed", text: "documented, not confirmed" };
+        return { kind: "none", text: "no one-hop link" };
+      };
+
+      const head = el("tr", {}, el("th", { class: "rg-matrix-corner", scope: "col" }, el("span", { text: "from ↓  to →" })), nodes.map((n) => el("th", { scope: "col", class: "rg-matrix-col" }, el("span", { text: n.label }))));
+      const rows = nodes.map((source) =>
+        el(
+          "tr",
+          {},
+          el("th", { scope: "row", class: "rg-matrix-row" }, source.label),
+          nodes.map((target) => {
+            const cell = cellFor(source.id, target.id);
+            const self = source.id === target.id;
+            if (cell.kind === "none") return el("td", { class: self ? "rg-cell rg-cell--self" : "rg-cell", "aria-label": `${source.label} → ${target.label}: ${cell.text}` });
+            return el(
+              "td",
+              { class: "rg-cell" },
+              el("button", {
+                type: "button",
+                class: `rg-cell-mark rg-cell--${cell.kind}`,
+                "data-pair": `${source.id}>${target.id}`,
+                "aria-label": `${source.label} → ${self ? `another ${target.label}` : target.label}: ${cell.text}`,
+                title: `${source.label} → ${self ? `another ${target.label}` : target.label}: ${cell.text}`,
+                onclick: () => {
+                  this.selectPair(source.id, target.id);
+                  this.stage.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                },
+              }),
+            );
+          }),
+        ),
+      );
+      const key = (kind, label) => el("span", { class: "rg-legend-item" }, el("span", { class: `rg-cell-mark rg-cell-key rg-cell--${kind}`, "aria-hidden": "true" }), label);
+      this.matrixWrap.replaceChildren(
+        el("h2", { class: "rg-matrix-title", text: "Who reaches whom in one request" }),
+        el(
+          "div",
+          { class: "rg-legend rg-matrix-legend" },
+          key("share-4", "measured, filled by the best route's resolved share"),
+          key("untested", "untested only"),
+          key("unconfirmed", "documented, probe found nothing"),
+          el("span", { class: "rg-legend-item" }, el("span", { class: "rg-cell-key rg-cell-key--blank", "aria-hidden": "true" }), "no link"),
+        ),
+        el("div", { class: "rg-matrix-wrap" }, el("table", { class: "rg-matrix" }, el("thead", {}, head), el("tbody", {}, rows))),
+      );
+      this.highlightCell();
+    }
+
+    highlightCell() {
+      const s = this.state.selected;
+      const pair = s?.kind === "pair" ? `${s.source}>${s.target}` : s?.kind === "edge" ? (() => { const e = this.allEdges.get(s.id); return `${e.source}>${e.target}`; })() : null;
+      for (const cell of this.matrixWrap.querySelectorAll("[data-pair]")) cell.classList.toggle("is-selected", cell.dataset.pair === pair);
     }
 
     /* -------------------------------------------------------------- table */
 
     columns() {
       const ev = (r) => r.evidence ?? {};
-      const label = (id) => this.nodes.get(id).label;
       return [
-        { key: "direction", title: "Direction", value: (r) => `${label(r.source)} → ${label(r.target)}` },
-        { key: "route", title: "Route", value: (r) => r.id },
-        { key: "rank", title: "Rank", numeric: true, value: (r) => r.rank },
-        { key: "corpus", title: "Corpus", value: (r) => ev(r).corpus ?? "" },
-        { key: "surveyed", title: "Surveyed", value: (r) => ev(r).surveyed_on ?? "" },
+        { key: "direction", title: "Direction", value: (r) => `${this.label(r.source)} → ${this.label(r.target)}` },
+        { key: "status", title: "Status", value: (r) => r.status },
+        { key: "route", title: "Route or mechanisms", value: (r) => (measured(r) ? r.id : this.laneName(r)) },
+        { key: "rank", title: "Rank", numeric: true, value: (r) => (measured(r) ? r.rank : 999) },
+        { key: "corpus", title: "Corpus or probe", value: (r) => (measured(r) ? ev(r).corpus ?? "" : r.links[0].probe?.accession ?? "") },
+        { key: "surveyed", title: "Date", value: (r) => (measured(r) ? ev(r).surveyed_on ?? "" : r.links[0].probe?.checked_on ?? "") },
         { key: "queried", title: "Queried", numeric: true, value: (r) => ev(r).queried ?? -1 },
         { key: "resolved", title: "Resolved", numeric: true, value: (r) => ev(r).resolved ?? -1 },
         { key: "empty", title: "Empty", numeric: true, value: (r) => ev(r).empty ?? -1 },
@@ -1175,8 +1509,8 @@
         const x = column.value(a);
         const y = column.value(b);
         const order = typeof x === "number" ? x - y : String(x).localeCompare(String(y));
-        // Ties fall back to direction then rank, so the order is stable.
-        const tie = columns[0].value(a).localeCompare(columns[0].value(b)) || a.rank - b.rank;
+        // Ties fall back to direction, routes before untested, then rank.
+        const tie = columns[0].value(a).localeCompare(columns[0].value(b)) || columns[3].value(a) - columns[3].value(b);
         return (ascending ? order : -order) || tie;
       });
 
@@ -1199,17 +1533,22 @@
         ),
       );
 
-      const cell = (value) =>
-        value === null || value === undefined
-          ? el("td", { class: "rg-num rg-muted", text: "not recorded" })
-          : el("td", { class: "rg-num", text: number.format(value) });
+      const cell = (value, untested) =>
+        untested
+          ? el("td", { class: "rg-num rg-muted", text: "—" })
+          : value === null || value === undefined
+            ? el("td", { class: "rg-num rg-muted", text: "not recorded" })
+            : el("td", { class: "rg-num", text: number.format(value) });
 
-      const body = rows.map((route) => {
-        const evidence = route.evidence ?? {};
+      const body = rows.map((edge) => {
+        const evidence = edge.evidence ?? {};
+        const untested = !measured(edge);
+        const probes = untested ? edge.links.map((l) => l.probe).filter(Boolean) : [];
         return el(
           "tr",
-          { "data-route": route.id },
-          el("td", { text: columns[0].value(route) }),
+          { "data-edge": edge.id },
+          el("td", { text: columns[0].value(edge) }),
+          el("td", {}, el("span", { class: `rg-chip rg-chip--${edge.status}`, text: edge.status })),
           el(
             "td",
             {},
@@ -1219,22 +1558,24 @@
                 class: "rg-route-button",
                 type: "button",
                 onclick: () => {
-                  this.select("edge", route.id);
+                  this.selectEdge(edge.id);
                   this.stage.scrollIntoView({ behavior: "smooth", block: "nearest" });
                 },
               },
-              code(route.id),
+              untested ? edge.links.map((l, i) => [i ? " · " : "", code(this.mechanisms[l.mechanism].name)]) : code(edge.id),
             ),
           ),
-          el("td", { class: "rg-num rg-nowrap", text: `${route.rank} of ${route.of}` }),
-          el("td", { class: "rg-corpus", title: evidence.corpus ?? "", text: evidence.corpus ?? "unmeasured" }),
-          el("td", { class: "rg-nowrap", text: evidence.surveyed_on ?? "" }),
-          cell(evidence.queried),
-          cell(evidence.resolved),
-          cell(evidence.empty),
-          cell(evidence.failed),
-          cell(evidence.unique_results),
-          el("td", {}, outcomeBar(route.evidence, true)),
+          el("td", { class: "rg-num rg-nowrap", text: untested ? "—" : `${edge.rank} of ${edge.of}` }),
+          untested
+            ? el("td", { class: "rg-corpus", title: [...new Set(probes.map((p) => p.accession))].join(", "), text: `probe ${[...new Set(probes.map((p) => p.accession))].join(", ")}` })
+            : el("td", { class: "rg-corpus", title: evidence.corpus ?? "", text: evidence.corpus ?? "unmeasured" }),
+          el("td", { class: "rg-nowrap", text: untested ? probes[0]?.checked_on ?? "" : evidence.surveyed_on ?? "" }),
+          cell(evidence.queried, untested),
+          cell(evidence.resolved, untested),
+          cell(evidence.empty, untested),
+          cell(evidence.failed, untested),
+          cell(evidence.unique_results, untested),
+          el("td", {}, untested ? el("span", { class: "rg-muted", text: "not measured" }) : outcomeBar(edge.evidence, true)),
         );
       });
 
@@ -1243,9 +1584,11 @@
     }
 
     highlightRow() {
-      const id = this.state.selected?.kind === "edge" ? this.state.selected.id : null;
-      for (const row of this.tableWrap.querySelectorAll("tr[data-route]")) {
-        row.classList.toggle("rg-row--selected", row.dataset.route === id);
+      const s = this.state.selected;
+      for (const row of this.tableWrap.querySelectorAll("tr[data-edge]")) {
+        const edge = this.allEdges.get(row.dataset.edge);
+        const on = s?.kind === "edge" ? row.dataset.edge === s.id : s?.kind === "pair" ? edge.source === s.source && edge.target === s.target : false;
+        row.classList.toggle("rg-row--selected", on);
       }
     }
   }
@@ -1266,13 +1609,7 @@
       current = new RouteGraph(root, JSON.parse(source.textContent));
     } catch (error) {
       root.replaceChildren(
-        el(
-          "p",
-          { class: "rg-error" },
-          `The graph could not be drawn (${error.message}). The same numbers are in `,
-          el("a", { href: "../", text: "the route matrix" }),
-          ".",
-        ),
+        el("p", { class: "rg-error" }, `The graph could not be drawn (${error.message}). The same numbers are in `, el("a", { href: "../", text: "the route matrix" }), "."),
       );
       throw error;
     }
