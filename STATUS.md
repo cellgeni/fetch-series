@@ -1,7 +1,8 @@
 # Where fetch-series stands
 
-**2026-10-15** · [PR #2](https://github.com/cellgeni/fetch-series/pull/2) (M1–M5,
-CI green) · [PR #3](https://github.com/cellgeni/fetch-series/pull/3) (M6, stacked on #2)
+**2026-10-15** · M1–M6 on `main` ([PR #2](https://github.com/cellgeni/fetch-series/pull/2),
+[PR #3](https://github.com/cellgeni/fetch-series/pull/3)) · knowledge base published at
+[cellgeni.github.io/fetch-series](https://cellgeni.github.io/fetch-series/)
 
 A point-in-time overview. The evidence behind every number here lives in
 [`docs/`](docs/index.md) and in the `RouteEvidence` blocks in
@@ -132,21 +133,17 @@ ship.
 2. **Publish the container** to `quay.io/cellgeni/fetch-series`. Verified
    working locally and in CI at 253 MB; cannot be pushed to your registry from
    here. [`docker/README.md`](docker/README.md).
-3. **Merge PR #2, then PR #3.** #2 also switches on the published docs site;
-   GitHub Pages may need enabling in the repository settings first. Merge #2
-   with a merge commit and do not delete its branch until #3 is retargeted to
-   `main`.
 
 ### Blocked on the above
 
-4. **A PR on `nf-reprocessing-public-10x`** swapping the bash module for the
+3. **A PR on `nf-reprocessing-public-10x`** swapping the bash module for the
    container. The drop-in is written and parity-tested
    ([`nextflow/fetch10xmeta/`](nextflow/fetch10xmeta/README.md)); it needs an
    image digest to pin, so it waits on (2).
 
 ### Two honest gaps
 
-5. **Eleven known archive behaviours have no pathology page.** They are declared
+4. **Eleven known archive behaviours have no pathology page.** They are declared
    on the routes that exhibit them and listed in `PATHOLOGY_BACKLOG`, so
    `--explain` names them and says *"not yet written up"* rather than offering a
    path to a file that does not exist. Each is real and observed; what they lack
@@ -156,7 +153,7 @@ ship.
    whole corpus, and an upstream report in its own right.
    [The list](docs/pathologies/index.md#known-declared-and-not-yet-written-up).
 
-6. **Chemistry agreement with `rename10xrun` is unmeasured.** Measuring it needs
+5. **Chemistry agreement with `rename10xrun` is unmeasured.** Measuring it needs
    the FASTQ files, which needs exactly the downloads the metadata layer exists
    to avoid. The right place to close it is the first real pipeline run with
    both enabled — the ids are `rename10xrun`'s verbatim so the two diff without
