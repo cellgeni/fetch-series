@@ -331,9 +331,10 @@ def _elink(
     *,
     route: tuple[tuple[str, str], str] | None = None,
     self_link: bool = False,
+    probe_with: dict[str, str] | None = None,
 ) -> Mechanism:
-    dbfrom, _, db = linkname.partition("_")
-    db = db.removesuffix("_all")
+    dbfrom, _, rest = linkname.partition("_")
+    db = rest.split("_")[0]
     return Mechanism(
         id=f"elink_{linkname}",
         name="ELink",
@@ -345,6 +346,7 @@ def _elink(
         outputs=targets,
         self_link=self_link,
         routes=dict([route]) if route else {},
+        probe_with=probe_with or {},
     )
 
 
@@ -365,11 +367,22 @@ _ELINK: tuple[Mechanism, ...] = (
         {"geo_series": "gds accession (GSE)"},
         route=(("bioproject", "geo_series"), "bioproject->geo_series:elink"),
     ),
+    # The undirected bioproject_bioproject link answers nothing; the umbrella
+    # relation is carried by the directed pair. NCBI records no umbrella for
+    # PRJNA258286, where ENA's parent_study_accession names PRJNA9559.
     _elink(
-        "bioproject_bioproject",
+        "bioproject_bioproject_u2d",
         ("bioproject",),
-        {"bioproject": "a parent or child project"},
+        {"bioproject": "a child project"},
         self_link=True,
+        probe_with={"bioproject": "PRJNA988804"},
+    ),
+    _elink(
+        "bioproject_bioproject_d2u",
+        ("bioproject",),
+        {"bioproject": "the umbrella project"},
+        self_link=True,
+        probe_with={"bioproject": "PRJNA988806"},
     ),
     _elink("biosample_bioproject", ("biosample",), {"bioproject": "project accession"}),
     _elink("biosample_sra", ("biosample",), {"experiment": "Experiment@acc in ExpXml"}),

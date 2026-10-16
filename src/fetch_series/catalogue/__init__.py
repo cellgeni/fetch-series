@@ -23,8 +23,9 @@ from __future__ import annotations
 
 import json
 from collections import deque
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Mapping
 from datetime import date
+from enum import StrEnum
 from pathlib import Path
 
 from fetch_series.accession import EntityType
@@ -44,11 +45,38 @@ __all__ = [
     "Mechanism",
     "Node",
     "Probe",
+    "Status",
     "load_probes",
     "save_probes",
+    "status",
 ]
 
 PROBES_PATH = Path(__file__).with_name("probes.json")
+
+
+class Status(StrEnum):
+    """What is known about one link.
+
+    ``MEASURED``: a declared route measures it, so it has evidence and a rank.
+    ``UNTESTED``: no survey has measured it, and one probe found it answering.
+    ``UNCONFIRMED``: declared, and the probe found nothing or did not complete --
+    listed, never drawn, because a line would claim a link nobody has seen.
+    ``UNPROBED``: not probed yet; a test keeps this from shipping.
+    """
+
+    MEASURED = "measured"
+    UNTESTED = "untested"
+    UNCONFIRMED = "unconfirmed"
+    UNPROBED = "unprobed"
+
+
+def status(link: Link, probes: Mapping[str, Probe]) -> Status:
+    if link.measured:
+        return Status.MEASURED
+    probe = probes.get(link.id)
+    if probe is None:
+        return Status.UNPROBED
+    return Status.UNTESTED if probe.confirmed else Status.UNCONFIRMED
 
 
 class Catalogue:

@@ -7,6 +7,7 @@ import csv
 import gzip
 import json
 import logging
+from collections import Counter
 from datetime import UTC, datetime
 from importlib.metadata import version
 from pathlib import Path
@@ -19,6 +20,10 @@ from fetch_series.accession import EntityType, UnknownAccessionError, parse
 from fetch_series.assays import AssayCall
 from fetch_series.assays.chemistry import ChemistryCall
 from fetch_series.cache import DEFAULT_CACHE_PATH, SurveyCache
+from fetch_series.catalogue import CATALOGUE, PROBES_PATH, Probe, load_probes, save_probes
+from fetch_series.catalogue import Status as CatalogueStatus
+from fetch_series.catalogue import status as catalogue_status
+from fetch_series.catalogue.probe import host_limits, probe_links
 from fetch_series.core import default_api_key
 from fetch_series.entities import MISSING, RELATION_COLUMNS, RunRecord
 from fetch_series.export.graph import route_graph
@@ -43,6 +48,7 @@ from fetch_series.relations import relations as build_relations
 from fetch_series.relations import resolve_input, sample_to_runs
 from fetch_series.resolver import Mode, Resolution, resolve_path
 from fetch_series.resolver import resolve as resolver_resolve
+from fetch_series.results import Outcome
 from fetch_series.routes import IMPLEMENTATIONS
 from fetch_series.survey import Limits, SurveyClient, corpora, run_route
 from fetch_series.survey.runner import shuffled
@@ -78,8 +84,13 @@ def _root(
 
 survey_app = typer.Typer(help="Run and compare route surveys.", no_args_is_help=True)
 routes_app = typer.Typer(help="Inspect the route graph.", no_args_is_help=True)
+catalogue_app = typer.Typer(
+    help="The link catalogue: every one-hop link the archives offer, measured or not.",
+    no_args_is_help=True,
+)
 app.add_typer(survey_app, name="survey")
 app.add_typer(routes_app, name="routes")
+app.add_typer(catalogue_app, name="catalogue")
 
 
 def _slug(route_id: str) -> str:
@@ -150,6 +161,102 @@ def routes_graph() -> None:
     anything the page shows can be checked from here.
     """
     typer.echo(json.dumps(route_graph(), indent=2))
+
+
+@catalogue_app.command("list")
+def catalogue_list(
+    only: Annotated[
+        str | None,
+        typer.Option("--status", help="Only links of this status: measured, untested, ..."),
+    ] = None,
+) -> None:
+    """Nodes, every link with its status and mechanisms, and the gaps between them."""
+    probes = load_probes()
+    typer.echo(f"{len(CATALOGUE.nodes)} nodes")
+    for node in CATALOGUE.nodes.values():
+        typer.echo(f"  {node.id:14s} {node.level:8s} {node.database:13s} {node.label}")
+
+    by_pair: dict[tuple[str, str], list[tuple[CatalogueStatus, str]]] = {}
+    for link in CATALOGUE:
+        found = catalogue_status(link, probes)
+        if only and found != only:
+            continue
+        label = link.route_id or CATALOGUE.mechanisms[link.mechanism].id
+        by_pair.setdefault((link.source, link.target), []).append((found, label))
+    counts = Counter(catalogue_status(link, probes) for link in CATALOGUE)
+    typer.echo(
+        f"\n{len(CATALOGUE.links)} links: "
+        + ", ".join(f"{counts[s]} {s}" for s in CatalogueStatus)
+        + f"; {len({(link.source, link.target) for link in CATALOGUE})} node pairs"
+    )
+    for (source, target), entries in sorted(by_pair.items()):
+        typer.echo(f"  {source} -> {target}")
+        for found, label in sorted(entries):
+            typer.echo(f"      {found:12s} {label}")
+
+    if only:
+        return
+    drawn = {
+        (link.source, link.target)
+        for link in CATALOGUE
+        if catalogue_status(link, probes) in (CatalogueStatus.MEASURED, CatalogueStatus.UNTESTED)
+    }
+    typer.echo("\nNo confirmed one-hop link:")
+    for source in CATALOGUE.nodes:
+        missing = [t for t in CATALOGUE.nodes if t != source and (source, t) not in drawn]
+        typer.echo(f"  {source:14s} -> {', '.join(missing) or '(reaches every node)'}")
+
+
+@catalogue_app.command("probe")
+def catalogue_probe(
+    link_ids: Annotated[
+        list[str] | None, typer.Option("--link", help="Probe only this link; repeatable.")
+    ] = None,
+    write: Annotated[
+        bool, typer.Option("--write", help="Merge the results into probes.json.")
+    ] = False,
+) -> None:
+    """Make one live request per untested link and report what each found.
+
+    A probe proves a link exists and measures nothing: it is never evidence.
+    """
+    load_dotenv()
+    configure_logging(level=logging.WARNING)
+    if link_ids:
+        try:
+            targets = [CATALOGUE.link(link_id) for link_id in link_ids]
+        except KeyError as exc:
+            typer.secho(f"Unknown link: {exc.args[0]}", fg=typer.colors.RED, err=True)
+            raise typer.Exit(2) from None
+    else:
+        targets = CATALOGUE.untested
+    api_key = default_api_key()
+
+    async def main() -> list[Probe]:
+        limits = host_limits(has_api_key=bool(api_key))
+        async with (
+            SurveyClient(limits["ncbi"], api_key=api_key) as ncbi,
+            SurveyClient(limits["ebi"]) as ebi,
+            SurveyClient(limits["ddbj"]) as ddbj,
+        ):
+            return await probe_links(targets, {"ncbi": ncbi, "ebi": ebi, "ddbj": ddbj})
+
+    probes = asyncio.run(main())
+    for probe in sorted(probes, key=lambda p: p.link):
+        shown = ", ".join(probe.found[:3]) + (" ..." if probe.found_count > 3 else "")
+        typer.echo(
+            f"{probe.outcome:9s} {probe.link:58s} {probe.accession:22s} "
+            f"{probe.found_count:>6} {probe.error or shown}"
+        )
+    outcomes = Counter(p.outcome for p in probes)
+    typer.echo(", ".join(f"{outcomes[o]} {o}" for o in Outcome), err=True)
+    if write:
+        merged = {**load_probes(), **{p.link: p for p in probes}}
+        # A probe of a link the catalogue no longer declares is dropped rather
+        # than kept: it would describe a line that is not drawn.
+        declared = {link.id for link in CATALOGUE}
+        save_probes(p for link_id, p in merged.items() if link_id in declared)
+        typer.echo(f"wrote {len(merged)} probes to {PROBES_PATH}", err=True)
 
 
 @survey_app.command("run")

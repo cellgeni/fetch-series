@@ -38,6 +38,62 @@ async def idf_secondary_accessions(
     return sorted(set(SECONDARY.findall(response.text)))
 
 
+async def fetch_idf(client: SurveyClient, accession: str, timeout: float) -> str:
+    """A study's IDF file, as text."""
+    response = await client.get(f"{FILES}/{accession}/{accession}.idf.txt", timeout=timeout)
+    return response.text
+
+
+_IDF_COMMENT = re.compile(r"^Comment\s*\[([^\]]+)\]\t(.*)$", re.MULTILINE)
+
+
+def idf_comments(text: str) -> dict[str, list[str]]:
+    """Every ``Comment[...]`` row of an IDF, by name, values in order.
+
+    A name can repeat: E-GEOD-60450 declares ``Comment[SecondaryAccession]``
+    twice, once for GSE60450 and once for SRP045534, so the rows are collected
+    rather than overwritten.
+    """
+    found: dict[str, list[str]] = {}
+    for match in _IDF_COMMENT.finditer(text):
+        values = [value.strip() for value in match.group(2).split("\t") if value.strip()]
+        found.setdefault(match.group(1).strip(), []).extend(values)
+    return found
+
+
+def _column_key(name: str) -> str:
+    """``Comment [ENA_RUN]`` and ``Comment[ENA_RUN]`` are one column; both spellings occur."""
+    return re.sub(r"\s+", "", name).lower()
+
+
+def sdrf_values(
+    rows: list[list[str]], columns: tuple[str, ...], *, source_name: str | None = None
+) -> dict[str, list[str]]:
+    """Distinct values of each named column, from raw SDRF rows.
+
+    Every column of a repeated name is read, not the last: E-MTAB-9221 carries
+    ``Comment[FASTQ_URI]`` once per mate. ``source_name`` keeps only the rows of
+    one sample, which is how an ArrayExpress sample -- an SDRF row with no
+    accession of its own -- is addressed.
+    """
+    if not rows:
+        return {column: [] for column in columns}
+    header, *data = rows
+    keys = [_column_key(name) for name in header]
+    wanted = {_column_key(column): column for column in columns}
+    source_index = keys.index("sourcename") if "sourcename" in keys else None
+    found: dict[str, set[str]] = {column: set() for column in columns}
+    for row in data:
+        if source_name is not None and (
+            source_index is None or _cell(row, source_index) != source_name
+        ):
+            continue
+        for index, key in enumerate(keys):
+            if key in wanted and (value := _cell(row, index)):
+                found[wanted[key]].add(value)
+    return {column: sorted(values) for column, values in found.items()}
+
+
 async def sdrf_raw_rows(client: SurveyClient, accession: str, timeout: float) -> list[list[str]]:
     """The SDRF as raw field lists, header included.
 
@@ -111,6 +167,46 @@ async def registered_files(
     return collected
 
 
+async def study(client: SurveyClient, accession: str, timeout: float) -> dict[str, Any]:
+    """A study's BioStudies JSON record."""
+    response = await client.get(f"{API}/studies/{accession}", timeout=timeout)
+    payload = response.json()
+    return payload if isinstance(payload, dict) else {}
+
+
+def study_links(payload: dict[str, Any]) -> list[tuple[str, str | None]]:
+    """``(url, Type)`` for every link in a study record, however deeply nested.
+
+    Links sit in ``section.links`` and in every subsection, either singly or in
+    groups. E-MTAB-5061 types its links (``ENA``, ``Biostudies``, ``DOI``); a
+    Europe PMC record's links carry ``Type: null``, so a caller must read a
+    link by what it says rather than by what it is labelled.
+    """
+    found: list[tuple[str, str | None]] = []
+
+    def walk(section: dict[str, Any]) -> None:
+        for group in section.get("links") or []:
+            for item in group if isinstance(group, list) else [group]:
+                if not isinstance(item, dict) or not item.get("url"):
+                    continue
+                kind = next(
+                    (
+                        a.get("value")
+                        for a in item.get("attributes") or []
+                        if a.get("name") == "Type"
+                    ),
+                    None,
+                )
+                found.append((str(item["url"]).strip(), kind))
+        for sub in section.get("subsections") or []:
+            for child in sub if isinstance(sub, list) else [sub]:
+                if isinstance(child, dict):
+                    walk(child)
+
+    walk(payload.get("section") or {})
+    return found
+
+
 def registered_names(files: list[dict[str, Any]]) -> set[str]:
     """The bare filenames a study registers, for comparing against SDRF URIs."""
     return {
@@ -121,6 +217,7 @@ def registered_names(files: list[dict[str, Any]]) -> set[str]:
 
 
 SEARCH = f"{API}/{{collection}}/search"
+SEARCH_ALL = f"{API}/search"
 
 # BioStudies caps pageSize; 100 is accepted everywhere and keeps a full
 # enumeration of the ArrayExpress collection to a few hundred requests.
@@ -142,7 +239,7 @@ async def search(
     client: SurveyClient,
     timeout: float,
     query: str | None = None,
-    collection: str = "arrayexpress",
+    collection: str | None = "arrayexpress",
     facets: dict[str, str] | None = None,
     max_pages: int | None = None,
 ) -> list[str]:
@@ -151,7 +248,8 @@ async def search(
     ``totalHits`` is authoritative and is used to stop, rather than trusting an
     empty page: BioStudies returns the first 25 hits and no warning when no
     explicit size is given, which is the pathology this project already
-    documents for the files endpoint.
+    documents for the files endpoint. ``collection=None`` searches every
+    collection, Europe PMC's citation records among them.
     """
     params: dict[str, str | int] = {"pageSize": SEARCH_PAGE_SIZE}
     if query:
@@ -162,9 +260,8 @@ async def search(
     accessions: list[str] = []
     page = 1
     while True:
-        response = await client.get(
-            SEARCH.format(collection=collection), params={**params, "page": page}, timeout=timeout
-        )
+        url = SEARCH.format(collection=collection) if collection else SEARCH_ALL
+        response = await client.get(url, params={**params, "page": page}, timeout=timeout)
         payload = response.json()
         hits = payload.get("hits") or []
         total = payload.get("totalHits", 0)
