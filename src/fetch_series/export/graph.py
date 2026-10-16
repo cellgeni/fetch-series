@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fetch_series.accession import EntityType
+from fetch_series.accession import RULES, EntityType
 from fetch_series.graph import PATHOLOGY_BACKLOG, REGISTRY, Route, RouteRegistry
 from fetch_series.routes import IMPLEMENTATIONS
 
@@ -37,6 +37,38 @@ FAMILIES: dict[EntityType, str] = {
     EntityType.AE_EXPERIMENT: "arrayexpress",
     EntityType.BIOSTUDY: "arrayexpress",
     EntityType.FILE: "file",
+}
+
+# How fine-grained a record is, coarsest first. A dataset holds samples, a sample
+# is sequenced as one or more libraries (INSDC "experiments"), a library is run
+# one or more times, and a run carries the files. The page draws each layer as
+# its own shape and row, which is why it is declared here with the families
+# rather than guessed from names in the browser.
+LAYERS: tuple[tuple[str, str], ...] = (
+    ("dataset", "Dataset"),
+    ("sample", "Sample"),
+    ("library", "Library"),
+    ("run", "Run"),
+    ("file", "File"),
+    ("other", "Other"),
+)
+
+LAYER_OF: dict[EntityType, str] = {
+    EntityType.GEO_SERIES: "dataset",
+    EntityType.BIOPROJECT: "dataset",
+    EntityType.STUDY: "dataset",
+    EntityType.AE_EXPERIMENT: "dataset",
+    EntityType.BIOSTUDY: "dataset",
+    EntityType.GEO_SAMPLE: "sample",
+    EntityType.BIOSAMPLE: "sample",
+    EntityType.SAMPLE: "sample",
+    EntityType.EXPERIMENT: "library",
+    EntityType.RUN: "run",
+    EntityType.FILE: "file",
+    # Administrative or descriptive records rather than a level of the data.
+    EntityType.SUBMISSION: "other",
+    EntityType.ANALYSIS: "other",
+    EntityType.GEO_PLATFORM: "other",
 }
 
 LABELS: dict[EntityType, str] = {
@@ -119,6 +151,14 @@ def route_graph(registry: RouteRegistry = REGISTRY) -> dict[str, Any]:
             "id": str(entity),
             "label": _label(entity),
             "family": FAMILIES[entity],
+            "layer": LAYER_OF[entity],
+            # What an identifier of this type looks like, from the one registry
+            # that parses them. A file has none: it is reached, never parsed.
+            "accessions": [
+                {"pattern": rule.pattern.pattern, "description": rule.description}
+                for rule in RULES
+                if rule.entity is entity
+            ],
             "routes_out": sum(r.source is entity for r in routes),
             "routes_in": sum(r.target is entity for r in routes),
         }
@@ -136,4 +176,5 @@ def route_graph(registry: RouteRegistry = REGISTRY) -> dict[str, Any]:
                     [str(step) for step in path] for path in found
                 ]
 
-    return {"nodes": nodes, "edges": edges, "paths": paths}
+    layers = [{"id": layer, "label": label} for layer, label in LAYERS]
+    return {"layers": layers, "nodes": nodes, "edges": edges, "paths": paths}

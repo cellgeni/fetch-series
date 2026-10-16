@@ -43,8 +43,7 @@ hooks:
 extra_css:
   - stylesheets/route-graph.css
 
-# A no-op on every page but routes/graph.md, which it draws (loading
-# Cytoscape.js only there).
+# A no-op on every page but routes/graph.md, which it draws as plain SVG.
 extra_javascript:
   - javascripts/route-graph.js
 
