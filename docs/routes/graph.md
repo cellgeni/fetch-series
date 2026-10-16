@@ -8,7 +8,10 @@ hide:
 # The route graph
 
 Every declared route between accession types, with what its survey found: how
-many lookups resolved, came back empty, or failed.
+many lookups resolved, came back empty, or failed. Colour says which archive
+issues a record, shape says what level of the data it is -- dataset, sample,
+library, run or file -- and each route's line is split along its length into
+its outcomes.
 
 <div id="route-graph" class="rg-root" aria-label="Interactive route graph"></div>
 
@@ -21,11 +24,18 @@ The interactive graph needs JavaScript. The same numbers are in
 
 ## How to read it
 
-Every declared route is one edge: a source accession type, a target, and the
-provider that answers it. Where several routes answer the same direction they
-run in parallel, numbered in the order the resolver tries them. That order is
-`RouteRegistry.ranked()` over the evidence, not a hand-written preference
-([how routes are ranked](../decisions/route-ranking.md)).
+Every declared route is one line, named along its length: a source accession
+type, a target, and the provider that answers it. Where several routes answer
+the same direction they run side by side, in the order the resolver tries them.
+That order is `RouteRegistry.ranked()` over the evidence, not a hand-written
+preference ([how routes are ranked](../decisions/route-ranking.md)).
+
+Each line runs from its source to the arrowhead at its target and is divided in
+proportion to what the survey found: **resolved** in ink first, then **empty**
+in pale grey, then **failed** in red. Any non-zero part is drawn at least a few
+pixels long, so a handful of failures among thirteen thousand still shows;
+hover or click a line for the exact counts. Line width is the number of distinct
+results, on a log scale.
 
 The counts on each route come from its `RouteEvidence`: one dated survey over
 one named corpus. Each queried accession ends in one of three outcomes:
@@ -36,7 +46,7 @@ no such link) or **failed** (no verdict at all). These are defined in
 
 Six routes were measured by the 2026-05 scripts, which kept a single boolean
 per BioProject that lumped empty in with failed. Their split is drawn as
-**not recorded** (dashed edges, hatched bars) rather than guessed.
+**not recorded** (hatched lines and bars) rather than guessed.
 
 Paths are type paths of up to four hops, from `RouteRegistry.find_paths()`.
 For each hop the path finder uses the best-ranked route the filters leave

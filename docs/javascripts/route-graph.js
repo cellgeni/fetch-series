@@ -1,92 +1,78 @@
 /* The route graph page (routes/graph.md).
  *
  * The data is embedded at build time by hooks/route_graph.py from
- * fetch_series.export.graph.route_graph(): nodes, one edge per route with its
- * RouteEvidence and its rank, and every type path. Nothing that involves a
- * judgement -- ranking, path finding -- is recomputed here; this file only draws.
+ * fetch_series.export.graph.route_graph(): layers, nodes, one edge per route
+ * with its RouteEvidence and its rank, and every type path. Nothing that
+ * involves a judgement -- ranking, path finding -- is recomputed here; this
+ * file only draws.
  *
- * Loaded on every page (extra_javascript), but does nothing unless the page
- * carries #route-graph, and only then fetches Cytoscape.js. Material's instant
- * navigation swaps pages without a reload, so mounting hangs off document$.
+ * The drawing is plain SVG. Two channels say what a node is: its colour is the
+ * archive family that issues it, its shape is the layer it sits at (dataset,
+ * sample, library, run, file), and its position repeats both -- layers run top
+ * to bottom, families left to right. Each route is its own line, named along
+ * its length, and the line itself is split into what its survey found:
+ * resolved, then empty, then failed, from source to target.
+ *
+ * Loaded on every page (extra_javascript) but does nothing unless the page
+ * carries #route-graph. Material's instant navigation swaps pages without a
+ * reload, so mounting hangs off document$.
  */
 (() => {
   "use strict";
 
-  const CYTOSCAPE = {
-    src: "https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.4/cytoscape.min.js",
-    integrity:
-      "sha512-xpXUCbrkyJCwC5noJXZqec9rSXdRgFfDoL7Q9/pCPe54Y04OlqwPobMcNuA5NPJ7DRR51OIr6xcOH2wUspyKDQ==",
-  };
+  const SVG_NS = "http://www.w3.org/2000/svg";
 
-  // Layered left to right: where you usually start (series, projects,
-  // ArrayExpress experiments), through the INSDC records, to runs and files.
-  // Each archive family is drawn as a region, so position also says who issued
-  // a type. A type not listed here falls back to an automatic layout.
+  // ------------------------------------------------------------- layout
+
+  // Layers top to bottom, one row each. Across each row the positions were
+  // searched rather than drawn by hand: every placement scored by how many
+  // route bundles it drives through a node they do not belong to (none, here),
+  // whether each span leaves room for its routes' names, then by crossings and
+  // total line length, keeping GEO to the left and ArrayExpress to the right.
+  // Libraries sit under GEO because that is where most routes to them start.
+  const ROW = { dataset: 110, sample: 350, library: 570, run: 790, file: 1000, other: 1120 };
   const POSITIONS = {
-    geo_series: { x: 100, y: 70 },
-    geo_sample: { x: 470, y: 70 },
-    bioproject: { x: 100, y: 330 },
-    study: { x: 330, y: 470 },
-    sample: { x: 330, y: 610 },
-    experiment: { x: 580, y: 260 },
-    biosample: { x: 580, y: 450 },
-    run: { x: 840, y: 380 },
-    ae_experiment: { x: 100, y: 790 },
-    file: { x: 1110, y: 380 },
+    geo_series: { x: 525, y: ROW.dataset },
+    bioproject: { x: 875, y: ROW.dataset },
+    study: { x: 1225, y: ROW.dataset },
+    ae_experiment: { x: 1625, y: ROW.dataset },
+    geo_sample: { x: 350, y: ROW.sample },
+    biosample: { x: 750, y: ROW.sample },
+    sample: { x: 1000, y: ROW.sample },
+    experiment: { x: 425, y: ROW.library },
+    run: { x: 875, y: ROW.run },
+    file: { x: 1100, y: ROW.file },
   };
 
-  // Where each region's name sits: in clear space at the top of the region.
-  // Labels are their own small nodes, drawn above the edges -- a compound
-  // node's own label is drawn beneath them, and the INSDC one was unreadable.
-  const REGION_LABELS = {
-    geo: { x: 285, y: 28 },
-    insdc: { x: 330, y: 205 },
-    arrayexpress: { x: 100, y: 745 },
-    file: { x: 1110, y: 335 },
-  };
+  // How far a bundle bows from the straight line, as a fraction of its length.
+  // Most directions take the default; these are tuned so that no bundle runs
+  // through a node it does not belong to.
+  const BOW = {};
 
-  const FAMILIES = {
-    geo: "GEO",
-    insdc: "INSDC: NCBI, EBI and DDBJ",
-    arrayexpress: "ArrayExpress",
-    file: "Files",
-  };
-
-  // Lower bounds of the resolved-share bins, matching --rg-ramp-0 .. -4.
-  const SHARE_BINS = [0, 0.25, 0.5, 0.75, 0.95];
-  const SHARE_LABELS = ["under 25%", "25–50%", "50–75%", "75–95%", "95% or more"];
+  const NODE_HEIGHT = 54;
+  const LANE = 26; // between parallel routes mid-way: room for each one's name
+  const PORT = 9; // between parallel routes where they meet a node
+  const ARROW = 11;
+  const LABEL_FONT = 15;
 
   const number = new Intl.NumberFormat("en-GB");
   const percent = new Intl.NumberFormat("en-GB", { style: "percent", maximumFractionDigits: 1 });
 
-  let loading = null;
-
-  function loadCytoscape() {
-    if (window.cytoscape) return Promise.resolve(window.cytoscape);
-    if (!loading) {
-      loading = new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = CYTOSCAPE.src;
-        script.integrity = CYTOSCAPE.integrity;
-        script.crossOrigin = "anonymous";
-        script.referrerPolicy = "no-referrer";
-        script.onload = () => resolve(window.cytoscape);
-        script.onerror = () => {
-          loading = null;
-          reject(new Error("Cytoscape.js could not be loaded"));
-        };
-        document.head.append(script);
-      });
-    }
-    return loading;
-  }
+  // ----------------------------------------------------------- helpers
 
   /* Build DOM without innerHTML: route notes and corpus names are data. */
   function el(tag, attrs = {}, ...children) {
-    const node = document.createElement(tag);
+    return fill(document.createElement(tag), attrs, children);
+  }
+
+  function svg(tag, attrs = {}, ...children) {
+    return fill(document.createElementNS(SVG_NS, tag), attrs, children);
+  }
+
+  function fill(node, attrs, children) {
     for (const [key, value] of Object.entries(attrs)) {
       if (value === null || value === undefined || value === false) continue;
-      if (key === "class") node.className = value;
+      if (key === "class") node.setAttribute("class", value);
       else if (key === "text") node.textContent = value;
       else if (key.startsWith("on")) node.addEventListener(key.slice(2), value);
       else node.setAttribute(key, value === true ? "" : value);
@@ -99,25 +85,18 @@
   }
 
   const code = (text) => el("code", { text });
+  const variant = (route) => route.id.split(":").slice(1).join(":") || route.id;
 
   function share(evidence) {
     if (!evidence || evidence.resolved === null || !evidence.queried) return null;
     return evidence.resolved / evidence.queried;
   }
 
-  function shareBin(value) {
-    let bin = 0;
-    SHARE_BINS.forEach((lower, i) => {
-      if (value >= lower) bin = i;
-    });
-    return bin;
-  }
-
-  /* The stacked outcome bar: resolved | empty | failed, or the unrecorded
-   * remainder as texture when the survey never separated resolved from empty. */
-  function outcomeBar(evidence, mini = false) {
-    const bar = el("div", { class: mini ? "rg-bar rg-bar--mini" : "rg-bar", "aria-hidden": "true" });
-    if (!evidence || !evidence.queried) return bar;
+  /* The outcome parts of a route, in drawing order: what resolved, what came
+   * back empty, what failed. Where the survey never separated resolved from
+   * empty, the answered accessions are one "unknown" part. */
+  function outcomeParts(evidence) {
+    if (!evidence || !evidence.queried) return [];
     const parts =
       evidence.empty === null
         ? [
@@ -129,10 +108,13 @@
             ["empty", evidence.empty],
             ["failed", evidence.failed],
           ];
-    for (const [kind, count] of parts) {
-      if (count > 0) {
-        bar.append(el("span", { class: `rg-seg rg-seg--${kind}`, style: `flex: ${count} 0 0` }));
-      }
+    return parts.filter(([, count]) => count > 0);
+  }
+
+  function outcomeBar(evidence, mini = false) {
+    const bar = el("div", { class: mini ? "rg-bar rg-bar--mini" : "rg-bar", "aria-hidden": "true" });
+    for (const [kind, count] of outcomeParts(evidence)) {
+      bar.append(el("span", { class: `rg-seg rg-seg--${kind}`, style: `flex: ${count} 0 0` }));
     }
     return bar;
   }
@@ -148,127 +130,150 @@
     );
   }
 
+  // ----------------------------------------------------------- geometry
+
+  const add = (a, b) => ({ x: a.x + b.x, y: a.y + b.y });
+  const sub = (a, b) => ({ x: a.x - b.x, y: a.y - b.y });
+  const scale = (a, k) => ({ x: a.x * k, y: a.y * k });
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+  /* A point on the quadratic curve p0 -c- p1. */
+  function at(q, t) {
+    const u = 1 - t;
+    return {
+      x: u * u * q.p0.x + 2 * u * t * q.c.x + t * t * q.p1.x,
+      y: u * u * q.p0.y + 2 * u * t * q.c.y + t * t * q.p1.y,
+    };
+  }
+
+  /* The piece of a quadratic between parameters a and b, itself a quadratic. */
+  function piece(q, a, b) {
+    const blend = (s, t) => ({
+      x: (1 - s) * (1 - t) * q.p0.x + ((1 - s) * t + s * (1 - t)) * q.c.x + s * t * q.p1.x,
+      y: (1 - s) * (1 - t) * q.p0.y + ((1 - s) * t + s * (1 - t)) * q.c.y + s * t * q.p1.y,
+    });
+    return { p0: at(q, a), c: blend(a, b), p1: at(q, b) };
+  }
+
+  function length(q) {
+    let total = 0;
+    let previous = q.p0;
+    for (let i = 1; i <= 48; i++) {
+      const point = at(q, i / 48);
+      total += dist(previous, point);
+      previous = point;
+    }
+    return total;
+  }
+
+  /* Bisect for the parameter where `test` flips between lo and hi. */
+  function bisect(lo, hi, test) {
+    const inside = test(lo);
+    for (let i = 0; i < 30; i++) {
+      const mid = (lo + hi) / 2;
+      if (test(mid) === inside) lo = mid;
+      else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
+  const fmt = (p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+  const qPath = (q) => `M${fmt(q.p0)} Q${fmt(q.c)} ${fmt(q.p1)}`;
+  const reversed = (q) => ({ p0: q.p1, c: q.c, p1: q.p0 });
+
+  function roundedRect(x, y, w, h, r) {
+    return (
+      `M${x + r},${y} H${x + w - r} A${r},${r} 0 0 1 ${x + w},${y + r} V${y + h - r} ` +
+      `A${r},${r} 0 0 1 ${x + w - r},${y + h} H${x + r} A${r},${r} 0 0 1 ${x},${y + h - r} ` +
+      `V${y + r} A${r},${r} 0 0 1 ${x + r},${y} Z`
+    );
+  }
+
+  /* One silhouette per layer, centred on the origin.
+   *   dataset  a stack of sheets: a record that holds other records
+   *   sample   a capsule: one specimen
+   *   library  a hexagon: the prepared molecule
+   *   run      a slanted bar: a pass through the sequencer
+   *   file     a page with its corner folded */
+  function shape(layer, w, h) {
+    const x = w / 2;
+    const y = h / 2;
+    switch (layer) {
+      case "dataset": {
+        const lift = Math.max(3, h * 0.2);
+        const r = Math.min(7, h * 0.15);
+        return {
+          back: [roundedRect(-x + 2 * lift, -y - 2 * lift, w, h, r), roundedRect(-x + lift, -y - lift, w, h, r)],
+          body: roundedRect(-x, -y, w, h, r),
+        };
+      }
+      case "sample":
+        return { back: [], body: roundedRect(-x, -y, w, h, y) };
+      case "library": {
+        const k = y * 0.8;
+        return { back: [], body: `M${-x},0 L${-x + k},${-y} H${x - k} L${x},0 L${x - k},${y} H${-x + k} Z` };
+      }
+      case "run": {
+        const k = h * 0.3;
+        return { back: [], body: `M${-x + k},${-y} H${x} L${x - k},${y} H${-x} Z` };
+      }
+      case "file": {
+        const c = h * 0.3;
+        return {
+          back: [],
+          body: `M${-x},${-y} H${x - c} L${x},${-y + c} V${y} H${-x} Z`,
+          fold: `M${x - c},${-y} V${-y + c} H${x}`,
+        };
+      }
+      default:
+        return { back: [], body: roundedRect(-x, -y, w, h, 4) };
+    }
+  }
+
+  const SHAPE_PADDING = { dataset: 44, sample: 52, library: 70, run: 64, file: 56, other: 40 };
+  const FAMILY_LABELS = { insdc: "INSDC: NCBI, EBI and DDBJ", geo: "GEO", arrayexpress: "ArrayExpress", file: "Files" };
+
+  // --------------------------------------------------------- the graph
+
   class RouteGraph {
-    constructor(root, data, cytoscape) {
+    constructor(root, data) {
       this.root = root;
       this.data = data;
+      this.layers = data.layers;
       this.nodes = new Map(data.nodes.map((n) => [n.id, n]));
       this.edges = new Map(data.edges.map((e) => [e.id, e]));
       this.providers = [...new Set(data.edges.map((e) => e.provider))].sort();
       this.state = {
-        colourBy: "share",
         providers: new Set(this.providers),
         topOnly: false,
         selected: null, // { kind: "edge" | "node", id }
         path: null, // { from, to, index }
         sort: { key: "direction", ascending: true },
       };
-      this.maxResults = Math.max(1, ...data.edges.map((e) => e.evidence?.unique_results ?? 0));
+      this.view = { x: 0, y: 0, k: 1 };
+      this.viewMoved = false;
 
       this.buildDom();
-      this.cy = cytoscape({
-        container: this.canvas,
-        elements: this.elements(),
-        style: this.style(),
-        layout: this.layout(),
-        minZoom: 0.25,
-        maxZoom: 3,
-        boxSelectionEnabled: false,
-        // Selection and emphasis are this page's state, not Cytoscape's.
-        autounselectify: true,
-      });
-      this.bindGraphEvents();
+      this.layout();
+      this.draw();
       this.applyFilters();
-      this.renderPanel();
       this.renderLegend();
-      this.renderTable();
+      this.fit();
 
-      // Cytoscape keeps its zoom when the container changes size, which on a
-      // rotated phone or a resized window leaves the graph half off-canvas.
       this.resizeObserver = new ResizeObserver(() => {
-        this.cy.resize();
-        this.cy.fit(undefined, 40);
+        if (!this.viewMoved) this.fit();
       });
-      this.resizeObserver.observe(this.canvas);
-
-      // Material toggles light/dark by attribute, without reloading the page.
-      this.schemeObserver = new MutationObserver(() => this.restyle());
-      this.schemeObserver.observe(document.body, { attributes: true, attributeFilter: ["data-md-color-scheme"] });
+      this.resizeObserver.observe(this.stage);
     }
 
     destroy() {
-      this.unbind();
       this.resizeObserver.disconnect();
-      this.schemeObserver.disconnect();
-      this.cy.destroy();
       this.tooltip.remove();
     }
 
     /* ---------------------------------------------------------------- DOM */
 
     buildDom() {
-      const colourBy = el(
-        "fieldset",
-        {},
-        el("legend", { text: "Colour edges by" }),
-        ...[
-          ["share", "share resolved"],
-          ["failures", "failures"],
-        ].map(([value, label]) =>
-          el(
-            "label",
-            {},
-            el("input", {
-              type: "radio",
-              name: "rg-colour",
-              value,
-              checked: value === this.state.colourBy,
-              onchange: () => {
-                this.state.colourBy = value;
-                this.restyle();
-                this.renderLegend();
-              },
-            }),
-            label,
-          ),
-        ),
-      );
-
-      const providers = el(
-        "fieldset",
-        {},
-        el("legend", { text: "Providers" }),
-        ...this.providers.map((provider) =>
-          el(
-            "label",
-            {},
-            el("input", {
-              type: "checkbox",
-              checked: true,
-              onchange: (event) => {
-                if (event.target.checked) this.state.providers.add(provider);
-                else this.state.providers.delete(provider);
-                this.applyFilters();
-              },
-            }),
-            code(provider),
-          ),
-        ),
-      );
-
-      const topOnly = el(
-        "label",
-        {},
-        el("input", {
-          type: "checkbox",
-          onchange: (event) => {
-            this.state.topOnly = event.target.checked;
-            this.applyFilters();
-          },
-        }),
-        "Top-ranked route per direction only",
-      );
-
       const typeOptions = (placeholder) => [
         el("option", { value: "", text: placeholder }),
         ...[...this.nodes.values()]
@@ -277,325 +282,493 @@
       ];
       this.fromSelect = el("select", { "aria-label": "Path from", onchange: () => this.choosePath() }, typeOptions("from…"));
       this.toSelect = el("select", { "aria-label": "Path to", onchange: () => this.choosePath() }, typeOptions("to…"));
-      const pathFinder = el(
-        "div",
-        { class: "rg-path-finder" },
-        el("span", { class: "rg-control-label", text: "Find a path" }),
-        this.fromSelect,
-        " → ",
-        this.toSelect,
-      );
 
-      // Cytoscape owns its container outright, so the buttons sit beside it.
-      this.canvas = el("div", { class: "rg-cy", role: "img", "aria-label": "Route graph; the table below lists the same routes" });
-      const stage = el(
-        "div",
-        { class: "rg-canvas" },
-        this.canvas,
+      const providers = el(
+        "details",
+        { class: "rg-dropdown" },
+        el("summary", { class: "rg-button", text: "Providers" }),
         el(
           "div",
-          { class: "rg-canvas-actions" },
-          el("button", { class: "rg-button", type: "button", text: "Clear", onclick: () => this.clear() }),
-          el("button", { class: "rg-button", type: "button", text: "Reset view", onclick: () => this.resetView() }),
+          { class: "rg-dropdown-body" },
+          this.providers.map((provider) =>
+            el(
+              "label",
+              {},
+              el("input", {
+                type: "checkbox",
+                checked: true,
+                onchange: (event) => {
+                  if (event.target.checked) this.state.providers.add(provider);
+                  else this.state.providers.delete(provider);
+                  this.applyFilters();
+                },
+              }),
+              code(provider),
+            ),
+          ),
         ),
       );
-      this.panel = el("aside", { class: "rg-panel", "aria-live": "polite" });
+
+      const controls = el(
+        "div",
+        { class: "rg-controls" },
+        el(
+          "div",
+          { class: "rg-path-finder" },
+          el("span", { class: "rg-control-label", text: "Find a path" }),
+          this.fromSelect,
+          el("span", { "aria-hidden": "true", text: "→" }),
+          this.toSelect,
+        ),
+        el(
+          "label",
+          {},
+          el("input", {
+            type: "checkbox",
+            onchange: (event) => {
+              this.state.topOnly = event.target.checked;
+              this.applyFilters();
+            },
+          }),
+          "Only the top-ranked route per direction",
+        ),
+        providers,
+        el("button", { class: "rg-button", type: "button", text: "Clear selection", onclick: () => this.clear() }),
+      );
+
+      this.svg = svg("svg", { class: "rg-svg", role: "img", "aria-label": "Route graph; the table below lists the same routes" });
+      // The texture for a resolved/empty split that was never recorded: the
+      // same diagonal hatch the bars use.
+      this.defs = svg(
+        "defs",
+        {},
+        svg(
+          "pattern",
+          { id: "rg-hatch", width: 5, height: 5, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" },
+          svg("rect", { class: "rg-hatch-ink", width: 2.5, height: 5 }),
+        ),
+      );
+      this.viewport = svg("g", { class: "rg-viewport" });
+      this.svg.append(this.defs, this.viewport);
+
+      this.panel = el("aside", { class: "rg-panel", "aria-live": "polite", hidden: true });
+      const zoom = el(
+        "div",
+        { class: "rg-zoom" },
+        el("button", { class: "rg-button", type: "button", "aria-label": "Zoom in", text: "+", onclick: () => this.zoomBy(1.25) }),
+        el("button", { class: "rg-button", type: "button", "aria-label": "Zoom out", text: "−", onclick: () => this.zoomBy(0.8) }),
+        el("button", { class: "rg-button", type: "button", text: "Fit", onclick: () => this.fit() }),
+      );
+      const hint = el("p", { class: "rg-hint", text: "Click a route or a type for details · drag to pan · pinch or ⌘/Ctrl + scroll to zoom" });
+      this.stage = el("div", { class: "rg-stage" }, this.svg, this.panel, zoom, hint);
       this.legend = el("div", { class: "rg-legend" });
       this.tableWrap = el("div", { class: "rg-table-wrap" });
       this.tooltip = el("div", { class: "rg-tooltip rg-root", hidden: true });
 
-      this.root.replaceChildren(
-        el("div", { class: "rg-controls" }, colourBy, pathFinder, topOnly, providers),
-        el("div", { class: "rg-main" }, stage, this.panel),
-        this.legend,
-        this.tableWrap,
-      );
+      this.root.replaceChildren(controls, this.stage, this.legend, this.tableWrap);
       document.body.append(this.tooltip);
+      this.bindViewport();
     }
 
-    /* -------------------------------------------------------------- graph */
-
-    elements() {
-      const families = new Set(this.data.nodes.map((n) => n.family));
-      const measure = document.createElement("canvas").getContext("2d");
-      measure.font = `500 13px ${getComputedStyle(this.root).fontFamily}`;
-
-      const placed = this.data.nodes.every((n) => POSITIONS[n.id]);
-      const parents = [...families].map((family) => ({
-        group: "nodes",
-        data: {
-          id: `family:${family}`,
-          // Under the fallback layout there are no fixed label positions, so
-          // the region carries its own name instead.
-          label: placed && REGION_LABELS[family] ? "" : FAMILIES[family] ?? family,
-          kind: "family",
-        },
-        selectable: false,
-        grabbable: false,
-      }));
-      const labels = placed
-        ? [...families]
-            .filter((family) => REGION_LABELS[family])
-            .map((family) => ({
-              group: "nodes",
-              data: {
-                id: `label:${family}`,
-                label: FAMILIES[family] ?? family,
-                kind: "region",
-                parent: `family:${family}`,
-              },
-              position: { ...REGION_LABELS[family] },
-              selectable: false,
-              grabbable: false,
-            }))
-        : [];
-      const nodes = this.data.nodes.map((n) => ({
-        group: "nodes",
-        data: {
-          id: n.id,
-          label: n.label,
-          kind: "type",
-          parent: `family:${n.family}`,
-          width: Math.ceil(measure.measureText(n.label).width) + 28,
-        },
-        position: POSITIONS[n.id] ? { ...POSITIONS[n.id] } : undefined,
-      }));
-      const edges = this.data.edges.map((e) => ({
-        group: "edges",
-        data: {
-          id: e.id,
-          source: e.source,
-          target: e.target,
-          kind: "route",
-          rankLabel: e.of > 1 ? `#${e.rank}` : "",
-          width: 1.5 + (5 * Math.log10(1 + (e.evidence?.unique_results ?? 0))) / Math.log10(1 + this.maxResults),
-        },
-      }));
-      return [...parents, ...labels, ...nodes, ...edges];
-    }
+    /* ------------------------------------------------------------- layout */
 
     layout() {
-      const placed = this.data.nodes.every((n) => POSITIONS[n.id]);
-      return placed ? { name: "preset", padding: 40 } : { name: "breadthfirst", directed: true, padding: 40 };
-    }
+      const measure = document.createElement("canvas").getContext("2d");
+      measure.font = `600 ${LABEL_FONT}px ${getComputedStyle(this.root).fontFamily}`;
 
-    tokens() {
-      const css = getComputedStyle(this.root);
-      const v = (name) => css.getPropertyValue(name).trim();
-      return {
-        surface: v("--rg-cy-surface"),
-        region: v("--rg-cy-region"),
-        hairline: v("--rg-cy-hairline"),
-        ink: v("--rg-cy-ink"),
-        ink2: v("--rg-cy-ink-2"),
-        muted: v("--rg-muted"),
-        nodeBorder: v("--rg-node-border"),
-        accent: v("--rg-cy-accent"),
-        failed: v("--rg-failed"),
-        quiet: v("--rg-quiet"),
-        ramp: [0, 1, 2, 3, 4].map((i) => v(`--rg-ramp-${i}`)),
-        font: css.fontFamily,
-      };
-    }
-
-    edgeColour(route, t) {
-      const evidence = route.evidence;
-      if (this.state.colourBy === "failures") {
-        return evidence && evidence.failed > 0 ? t.failed : t.quiet;
+      // A type the layout does not know yet goes at the end of its layer's row.
+      const rowEnds = {};
+      for (const [id, p] of Object.entries(POSITIONS)) {
+        const layer = this.nodes.get(id)?.layer;
+        if (layer) rowEnds[layer] = Math.max(rowEnds[layer] ?? 0, p.x);
       }
-      const value = share(evidence);
-      return value === null ? t.muted : t.ramp[shareBin(value)];
+
+      this.place = new Map();
+      for (const node of this.nodes.values()) {
+        let position = POSITIONS[node.id];
+        if (!position) {
+          const x = (rowEnds[node.layer] ?? 0) + 300;
+          rowEnds[node.layer] = x;
+          position = { x, y: ROW[node.layer] ?? ROW.other };
+        }
+        const width = Math.max(130, Math.ceil(measure.measureText(node.label).width) + (SHAPE_PADDING[node.layer] ?? 40));
+        this.place.set(node.id, { ...position, w: width, h: NODE_HEIGHT });
+      }
+
+      // Lanes: every route is one, grouped by direction and ordered by rank.
+      const directions = new Map();
+      for (const route of this.edges.values()) {
+        const key = `${route.source}>${route.target}`;
+        if (!directions.has(key)) directions.set(key, { key, source: route.source, target: route.target, routes: [] });
+        directions.get(key).routes.push(route);
+      }
+      for (const bundle of directions.values()) {
+        bundle.routes.sort((a, b) => a.rank - b.rank);
+        const s = this.place.get(bundle.source);
+        const t = this.place.get(bundle.target);
+        bundle.chord = dist(s, t);
+        const along = scale(sub(t, s), 1 / bundle.chord);
+        bundle.left = { x: along.y, y: -along.x }; // left of travel, with y down
+        // A direction with a reverse partner bows clear of it by at least half
+        // its own width; a lone direction keeps a gentle curve.
+        const halfWidth = ((bundle.routes.length - 1) / 2) * LANE;
+        const reverse = directions.has(`${bundle.target}>${bundle.source}`);
+        bundle.bow = BOW[bundle.key] ?? (reverse ? Math.max(0.06, (halfWidth + 20) / bundle.chord) : 0.03);
+        bundle.middle = add(scale(add(s, t), 0.5), scale(bundle.left, bundle.bow * bundle.chord));
+      }
+      this.ports(directions);
+      this.lanes = new Map();
+      for (const bundle of directions.values()) {
+        bundle.routes.forEach((route, i) => this.lanes.set(route.id, this.lane(bundle, i)));
+      }
+
+      const points = [...this.place.values()].flatMap((p) => [
+        { x: p.x - p.w / 2, y: p.y - p.h / 2 - 16 },
+        { x: p.x + p.w / 2 + 16, y: p.y + p.h / 2 },
+      ]);
+      for (const lane of this.lanes.values()) points.push(at(lane.curve, 0.5));
+      const xs = points.map((p) => p.x);
+      const ys = points.map((p) => p.y);
+      const top = Math.min(...ys) - 40;
+      this.bounds = { x: 0, y: top, width: Math.max(...xs) + 40, height: Math.max(...ys) + 40 - top };
     }
 
-    style() {
-      const t = this.tokens();
-      const route = (ele) => this.edges.get(ele.id());
-      return [
-        {
-          selector: "node[kind = 'family']",
-          style: {
-            shape: "round-rectangle",
-            "background-color": t.region,
-            "background-opacity": 1,
-            "border-width": 1,
-            "border-color": t.hairline,
-            padding: 26,
-            label: "data(label)",
-            "text-valign": "top",
-            "text-halign": "center",
-            "text-margin-y": -6,
-            "text-background-color": t.surface,
-            "text-background-opacity": 1,
-            "text-background-padding": 3,
-            "text-background-shape": "roundrectangle",
-            color: t.ink2,
-            "font-family": t.font,
-            "font-size": 12,
-            "font-weight": 700,
-            events: "no",
-          },
-        },
-        {
-          selector: "node[kind = 'region']",
-          style: {
-            width: 1,
-            height: 1,
-            "background-opacity": 0,
-            "border-width": 0,
-            label: "data(label)",
-            "text-valign": "center",
-            "text-halign": "center",
-            "text-background-color": t.region,
-            "text-background-opacity": 1,
-            "text-background-padding": 3,
-            color: t.ink2,
-            "font-family": t.font,
-            "font-size": 12,
-            "font-weight": 700,
-            "z-compound-depth": "top",
-            events: "no",
-          },
-        },
-        {
-          selector: "node[kind = 'type']",
-          style: {
-            shape: "round-rectangle",
-            width: "data(width)",
-            height: 34,
-            "background-color": t.surface,
-            "border-width": 1.5,
-            "border-color": t.nodeBorder,
-            label: "data(label)",
-            "text-valign": "center",
-            "text-halign": "center",
-            color: t.ink,
-            "font-family": t.font,
-            "font-size": 13,
-            "font-weight": 500,
-            "overlay-opacity": 0,
-          },
-        },
-        {
-          selector: "edge",
-          style: {
-            "curve-style": "bezier",
-            "control-point-step-size": 26,
-            width: "data(width)",
-            "line-color": (ele) => this.edgeColour(route(ele), t),
-            "target-arrow-color": (ele) => this.edgeColour(route(ele), t),
-            "target-arrow-shape": "triangle",
-            "arrow-scale": 0.85,
-            "line-cap": "round",
-            "line-style": (ele) =>
-              this.state.colourBy === "share" && share(route(ele).evidence) === null ? "dashed" : "solid",
-            "line-dash-pattern": [7, 5],
-            label: "data(rankLabel)",
-            "font-family": t.font,
-            "font-size": 10,
-            color: t.ink2,
-            "text-background-color": t.surface,
-            "text-background-opacity": 0.9,
-            "text-background-padding": 2,
-            "text-background-shape": "roundrectangle",
-            "min-zoomed-font-size": 8,
-            "overlay-opacity": 0,
-          },
-        },
-        { selector: ".rg-hidden", style: { display: "none" } },
-        { selector: ".rg-faded", style: { opacity: 0.12 } },
-        {
-          selector: "edge.rg-focus",
-          style: {
-            "underlay-color": t.accent,
-            "underlay-opacity": 0.25,
-            "underlay-padding": 4,
-            "z-index": 10,
-          },
-        },
-        {
-          selector: "node.rg-focus",
-          style: { "border-color": t.accent, "border-width": 2.5 },
-        },
-      ];
-    }
-
-    restyle() {
-      this.cy.style().fromJson(this.style()).update();
-    }
-
-    resetView() {
-      this.cy.nodes("[kind = 'type'], [kind = 'region']").forEach((node) => {
-        const [prefix, family] = node.id().split(":");
-        const position = prefix === "label" ? REGION_LABELS[family] : POSITIONS[node.id()];
-        if (position) node.position({ ...position });
-      });
-      this.cy.fit(undefined, 40);
-    }
-
-    bindGraphEvents() {
-      this.cy.on("tap", "edge", (event) => this.select("edge", event.target.id()));
-      this.cy.on("tap", "node[kind = 'type']", (event) => this.select("node", event.target.id()));
-      this.cy.on("tap", (event) => {
-        if (event.target === this.cy) this.clear();
-      });
-
-      this.cy.on("mouseover", "edge, node[kind = 'type']", (event) => {
-        this.canvas.style.cursor = "pointer";
-        this.showTooltip(event);
-      });
-      this.cy.on("mousemove", "edge, node[kind = 'type']", (event) => this.moveTooltip(event.originalEvent));
-      this.cy.on("mouseout", "edge, node[kind = 'type']", () => {
-        this.canvas.style.cursor = "";
-        this.tooltip.hidden = true;
-      });
-      // A fast pointer can leave the canvas without Cytoscape seeing a mouseout.
-      const hide = () => {
-        this.tooltip.hidden = true;
+    /* Ports: each direction meeting a node gets its own stretch of the side it
+     * arrives on, ordered by where its bundle runs, so bundles meet a node side
+     * by side instead of piling onto its centre. */
+    ports(directions) {
+      const sideOf = (node, other) => {
+        const dx = other.x - node.x;
+        const dy = other.y - node.y;
+        if (Math.abs(dy) * node.w >= Math.abs(dx) * node.h) return dy < 0 ? "top" : "bottom";
+        return dx < 0 ? "left" : "right";
       };
-      this.cy.on("viewport", hide);
-      this.canvas.addEventListener("mouseleave", hide);
-      window.addEventListener("scroll", hide, { passive: true });
-      this.unbind = () => window.removeEventListener("scroll", hide);
+      const sides = new Map();
+      for (const bundle of directions.values()) {
+        for (const [end, nodeId, otherId] of [
+          ["start", bundle.source, bundle.target],
+          ["end", bundle.target, bundle.source],
+        ]) {
+          const node = this.place.get(nodeId);
+          const side = sideOf(node, this.place.get(otherId));
+          const key = `${nodeId}:${side}`;
+          if (!sides.has(key)) sides.set(key, { node, side, ends: [] });
+          sides.get(key).ends.push({ bundle, end });
+        }
+      }
+      for (const { node, side, ends } of sides.values()) {
+        const vertical = side === "left" || side === "right";
+        const axis = vertical ? { x: 0, y: 1 } : { x: 1, y: 0 };
+        const usable = vertical ? node.h - 14 : node.w * 0.62;
+        const lanes = ends.reduce((sum, e) => sum + e.bundle.routes.length, 0);
+        const pitch = Math.min(PORT, usable / Math.max(1, lanes));
+        // Order by where each bundle actually runs (its bowed middle), which
+        // also keeps a direction and its reverse from crossing at the node.
+        ends.sort((a, b) => (vertical ? a.bundle.middle.y - b.bundle.middle.y : a.bundle.middle.x - b.bundle.middle.x));
+        let cursor = (-lanes * pitch) / 2;
+        for (const { bundle, end } of ends) {
+          const width = bundle.routes.length * pitch;
+          bundle[end] = { anchor: add(node, scale(axis, cursor + width / 2)), axis, pitch };
+          cursor += width;
+        }
+      }
+    }
+
+    /* The curve one route is drawn along, from its port on the source to its
+     * port on the target, trimmed to the nodes' outlines and shortened to leave
+     * room for its arrowhead. */
+    lane(bundle, i) {
+      const s = this.place.get(bundle.source);
+      const t = this.place.get(bundle.target);
+      const n = bundle.routes.length;
+      const k = i - (n - 1) / 2;
+      // Lane order at each port follows the lanes' order across the bundle, so
+      // parallel routes never twist round each other.
+      const at_ = (port) => add(port.anchor, scale(port.axis, Math.sign(port.axis.x * bundle.left.x + port.axis.y * bundle.left.y || 1) * k * port.pitch));
+      const a = at_(bundle.start);
+      const b = at_(bundle.end);
+      const mid = scale(add(a, b), 0.5);
+      const chordMid = scale(add(s, t), 0.5);
+      const already = (mid.x - chordMid.x) * bundle.left.x + (mid.y - chordMid.y) * bundle.left.y;
+      const offset = bundle.bow * bundle.chord + k * LANE;
+      const q = { p0: a, p1: b, c: add(mid, scale(bundle.left, 2 * (offset - already))) };
+
+      const inside = (node, pad) => (p) =>
+        Math.abs(p.x - node.x) <= node.w / 2 + pad && Math.abs(p.y - node.y) <= node.h / 2 + pad;
+      const inSource = inside(s, 6);
+      const inTarget = inside(t, 5);
+      const t0 = inSource(at(q, 0)) ? bisect(0, 0.5, (u) => inSource(at(q, u))) : 0;
+      const t1 = inTarget(at(q, 1)) ? bisect(0.5, 1, (u) => inTarget(at(q, u))) : 1;
+      const tip = at(q, t1);
+      const t2 = bisect(t0, t1, (u) => dist(at(q, u), tip) > ARROW);
+      const curve = piece(q, t0, t2);
+      return { curve, tip, base: at(q, t2), length: length(curve) };
+    }
+
+    /* --------------------------------------------------------------- draw */
+
+    draw() {
+      const maxResults = Math.max(1, ...this.data.edges.map((e) => e.evidence?.unique_results ?? 0));
+      const widthOf = (route) =>
+        2 + (3.5 * Math.log10(1 + (route.evidence?.unique_results ?? 0))) / Math.log10(1 + maxResults);
+
+      // Layer rows: a label in the gutter and a faint rule behind everything.
+      const rows = svg("g", { class: "rg-rows", "aria-hidden": "true" });
+      const used = new Set([...this.nodes.values()].map((n) => n.layer));
+      for (const layer of this.layers) {
+        if (!used.has(layer.id)) continue;
+        const y = ROW[layer.id] ?? ROW.other;
+        rows.append(
+          svg("line", { class: "rg-row-rule", x1: 130, x2: this.bounds.width - 20, y1: y, y2: y }),
+          svg("text", { class: "rg-row-label", x: 20, y, dy: "0.35em", text: layer.label.toUpperCase() }),
+        );
+      }
+
+      const lanes = svg("g", { class: "rg-lanes" });
+      const labels = svg("g", { class: "rg-lane-labels" });
+      this.laneEls = new Map();
+      this.labelEls = new Map();
+      let index = 0;
+      for (const route of this.edges.values()) {
+        const lane = this.lanes.get(route.id);
+        const width = widthOf(route);
+        const d = qPath(lane.curve);
+        const group = svg("g", { class: "rg-lane", "data-route": route.id });
+
+        // The line, split along its length into what the survey found. A
+        // non-zero part is never drawn shorter than 4px, so a handful of
+        // failures in thirteen thousand still shows.
+        const parts = outcomeParts(route.evidence);
+        const total = parts.reduce((sum, [, count]) => sum + count, 0) || 1;
+        const lengths = parts.map(([, count]) => Math.max(4, (lane.length * count) / total));
+        const excess = lengths.reduce((a, b) => a + b, 0) - lane.length;
+        if (excess > 0) lengths[lengths.indexOf(Math.max(...lengths))] -= excess;
+        let start = 0;
+        parts.forEach(([kind], i) => {
+          const gap = i < parts.length - 1 ? 2 : 0;
+          const dash = Math.max(0.5, lengths[i] - gap);
+          group.append(
+            svg("path", {
+              class: `rg-line rg-line--${kind}`,
+              d,
+              "stroke-width": width.toFixed(2),
+              "stroke-dasharray": `0 ${start.toFixed(1)} ${dash.toFixed(1)} ${(lane.length + 10).toFixed(1)}`,
+            }),
+          );
+          start += lengths[i];
+        });
+        if (!parts.length) group.append(svg("path", { class: "rg-line rg-line--unknown", d, "stroke-width": width.toFixed(2) }));
+
+        // Arrowhead, then the moving dots shown on a focused route.
+        const dir = scale(sub(lane.tip, lane.base), 1 / ARROW);
+        const across = { x: dir.y, y: -dir.x };
+        const half = 4 + width * 0.6;
+        const a = add(lane.base, scale(across, half));
+        const b = add(lane.base, scale(across, -half));
+        group.append(
+          svg("path", { class: "rg-arrow", d: `M${fmt(lane.tip)} L${fmt(a)} L${fmt(b)} Z` }),
+          svg("path", { class: "rg-flow", d, "stroke-width": Math.max(1.5, width - 1.5).toFixed(2) }),
+          // A generous invisible stroke to hover and click.
+          svg("path", { class: "rg-hit", d }),
+        );
+
+        // The route's name along its line, on the upper side, read left to
+        // right whichever way the route runs -- and bottom to top on a steep
+        // one, so a bundle's names all read the same way. Labels sit in their
+        // own layer above every line so a crossing route cannot strike one out.
+        const labelId = `rg-label-${index++}`;
+        const heading = (Math.atan2(lane.curve.p1.y - lane.curve.p0.y, lane.curve.p1.x - lane.curve.p0.x) * 180) / Math.PI;
+        const labelCurve = heading > 80 || heading < -100 ? reversed(lane.curve) : lane.curve;
+        this.defs.append(svg("path", { id: labelId, d: qPath(labelCurve) }));
+        const label = svg(
+          "text",
+          { class: "rg-lane-label", dy: (-(width / 2 + 5)).toFixed(1), "data-route": route.id },
+          svg("textPath", { href: `#${labelId}`, startOffset: "50%", "text-anchor": "middle", text: variant(route) }),
+        );
+        labels.append(label);
+        this.labelEls.set(route.id, label);
+
+        for (const target of [group, label]) {
+          target.addEventListener("pointerenter", (event) => this.hover("edge", route.id, event));
+          target.addEventListener("pointermove", (event) => this.moveTooltip(event));
+          target.addEventListener("pointerleave", () => this.unhover());
+          target.addEventListener("click", (event) => {
+            event.stopPropagation();
+            this.select("edge", route.id);
+          });
+        }
+        lanes.append(group);
+        this.laneEls.set(route.id, group);
+      }
+
+      const nodes = svg("g", { class: "rg-nodes" });
+      this.nodeEls = new Map();
+      for (const node of this.nodes.values()) {
+        const p = this.place.get(node.id);
+        const outline = shape(node.layer, p.w, p.h);
+        const group = svg(
+          "g",
+          {
+            class: `rg-node rg-family-${node.family} rg-layer-${node.layer}`,
+            transform: `translate(${p.x},${p.y})`,
+            tabindex: 0,
+            role: "button",
+            "aria-label": `${node.label}: ${node.routes_out} routes out, ${node.routes_in} in`,
+          },
+          outline.back.map((d) => svg("path", { class: "rg-node-back", d })),
+          svg("path", { class: "rg-node-body", d: outline.body }),
+          outline.fold ? svg("path", { class: "rg-node-fold", d: outline.fold }) : null,
+          svg("text", { class: "rg-node-label", "text-anchor": "middle", dy: "0.35em", text: node.label }),
+        );
+        group.addEventListener("pointerenter", (event) => this.hover("node", node.id, event));
+        group.addEventListener("pointermove", (event) => this.moveTooltip(event));
+        group.addEventListener("pointerleave", () => this.unhover());
+        group.addEventListener("click", (event) => {
+          event.stopPropagation();
+          this.select("node", node.id);
+        });
+        group.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            this.select("node", node.id);
+          }
+        });
+        nodes.append(group);
+        this.nodeEls.set(node.id, group);
+      }
+
+      this.viewport.replaceChildren(rows, lanes, labels, nodes);
+    }
+
+    /* ------------------------------------------------------ zoom and pan */
+
+    applyView() {
+      const { x, y, k } = this.view;
+      this.viewport.setAttribute("transform", `translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${k.toFixed(4)})`);
+    }
+
+    fit() {
+      const box = this.svg.getBoundingClientRect();
+      if (!box.width || !box.height) return;
+      const b = this.bounds;
+      const k = Math.min(box.width / b.width, box.height / b.height);
+      this.view = { k, x: (box.width - b.width * k) / 2 - b.x * k, y: (box.height - b.height * k) / 2 - b.y * k };
+      this.viewMoved = false;
+      this.applyView();
+    }
+
+    zoomBy(factor, cx, cy) {
+      const box = this.svg.getBoundingClientRect();
+      const px = cx ?? box.width / 2;
+      const py = cy ?? box.height / 2;
+      const k = Math.min(4, Math.max(0.2, this.view.k * factor));
+      const ratio = k / this.view.k;
+      this.view = { k, x: px - (px - this.view.x) * ratio, y: py - (py - this.view.y) * ratio };
+      this.viewMoved = true;
+      this.applyView();
+    }
+
+    bindViewport() {
+      // Drag anywhere to pan. A drag that moved does not also count as a
+      // click, which would clear the selection or select what it ended on.
+      let drag = null;
+      this.svg.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0) return;
+        drag = { x: event.clientX, y: event.clientY, view: { ...this.view }, moved: false };
+      });
+      this.svg.addEventListener("pointermove", (event) => {
+        if (!drag) return;
+        const dx = event.clientX - drag.x;
+        const dy = event.clientY - drag.y;
+        if (!drag.moved && Math.hypot(dx, dy) < 4) return;
+        if (!drag.moved) {
+          this.svg.setPointerCapture(event.pointerId);
+          this.unhover();
+        }
+        drag.moved = true;
+        this.svg.classList.add("is-panning");
+        this.view = { ...drag.view, x: drag.view.x + dx, y: drag.view.y + dy };
+        this.viewMoved = true;
+        this.applyView();
+      });
+      const end = (event) => {
+        if (drag?.moved) {
+          if (this.svg.hasPointerCapture(event.pointerId)) this.svg.releasePointerCapture(event.pointerId);
+          this.svg.addEventListener("click", (e) => e.stopPropagation(), { capture: true, once: true });
+        }
+        drag = null;
+        this.svg.classList.remove("is-panning");
+      };
+      this.svg.addEventListener("pointerup", end);
+      this.svg.addEventListener("pointercancel", end);
+      this.svg.addEventListener("click", () => this.clear());
+
+      // Plain scrolling scrolls the page; pinching or ctrl/cmd + scroll zooms.
+      this.svg.addEventListener(
+        "wheel",
+        (event) => {
+          if (!event.ctrlKey && !event.metaKey) return;
+          event.preventDefault();
+          const box = this.svg.getBoundingClientRect();
+          this.zoomBy(Math.exp(-event.deltaY * 0.002), event.clientX - box.left, event.clientY - box.top);
+        },
+        { passive: false },
+      );
     }
 
     /* ------------------------------------------------------------ tooltip */
 
-    showTooltip(event) {
-      const target = event.target;
-      if (target.isEdge()) {
-        const route = this.edges.get(target.id());
+    hover(kind, id, event) {
+      if (this.svg.classList.contains("is-panning")) return;
+      this.unhover();
+      if (kind === "edge") {
+        const route = this.edges.get(id);
         const evidence = route.evidence;
         this.tooltip.replaceChildren(
           el("div", { class: "rg-tooltip-title", text: route.id }),
           el("div", { class: "rg-tooltip-values", text: outcomeText(evidence) }),
           outcomeBar(evidence),
           evidence
-            ? el(
-                "div",
-                {},
-                `of ${number.format(evidence.queried)} queried · ` +
-                  `${number.format(evidence.unique_results ?? 0)} distinct results`,
-              )
+            ? el("div", {}, `of ${number.format(evidence.queried)} queried · ${number.format(evidence.unique_results ?? 0)} distinct results`)
             : null,
           route.of > 1 ? el("div", {}, `Rank ${route.rank} of ${route.of} for this direction`) : null,
         );
+        this.mark(id);
       } else {
-        const node = this.nodes.get(target.id());
+        const node = this.nodes.get(id);
         this.tooltip.replaceChildren(
           el("div", { class: "rg-tooltip-values", text: node.label }),
           el("div", {}, `${node.routes_out} routes out · ${node.routes_in} in`),
         );
+        for (const route of this.edges.values()) {
+          if (route.source === id || route.target === id) this.mark(route.id);
+        }
+        this.nodeEls.get(id).classList.add("is-hover");
       }
+      this.svg.classList.add("has-hover");
       this.tooltip.hidden = false;
-      this.moveTooltip(event.originalEvent);
+      this.moveTooltip(event);
+    }
+
+    mark(routeId) {
+      this.laneEls.get(routeId).classList.add("is-hover");
+      this.labelEls.get(routeId).classList.add("is-hover");
+      const route = this.edges.get(routeId);
+      this.nodeEls.get(route.source).classList.add("is-hover");
+      this.nodeEls.get(route.target).classList.add("is-hover");
+    }
+
+    unhover() {
+      this.svg.classList.remove("has-hover");
+      for (const element of this.svg.querySelectorAll(".is-hover")) element.classList.remove("is-hover");
+      this.tooltip.hidden = true;
     }
 
     moveTooltip(pointer) {
       if (!pointer || this.tooltip.hidden) return;
-      const { innerWidth, innerHeight } = window;
       const box = this.tooltip.getBoundingClientRect();
-      const x = pointer.clientX + 14 + box.width > innerWidth ? pointer.clientX - box.width - 14 : pointer.clientX + 14;
-      const y = pointer.clientY + 14 + box.height > innerHeight ? pointer.clientY - box.height - 14 : pointer.clientY + 14;
+      const x = pointer.clientX + 16 + box.width > window.innerWidth ? pointer.clientX - box.width - 16 : pointer.clientX + 16;
+      const y = pointer.clientY + 16 + box.height > window.innerHeight ? pointer.clientY - box.height - 16 : pointer.clientY + 16;
       this.tooltip.style.left = `${Math.max(4, x)}px`;
       this.tooltip.style.top = `${Math.max(4, y)}px`;
     }
@@ -607,11 +780,11 @@
     }
 
     applyFilters() {
-      this.cy.batch(() => {
-        this.cy.edges().forEach((edge) => {
-          edge.toggleClass("rg-hidden", !this.visible(this.edges.get(edge.id())));
-        });
-      });
+      for (const [id, group] of this.laneEls) {
+        const hidden = !this.visible(this.edges.get(id));
+        group.classList.toggle("is-hidden", hidden);
+        this.labelEls.get(id).classList.toggle("is-hidden", hidden);
+      }
       this.emphasise();
       this.renderPanel();
       this.renderTable();
@@ -660,16 +833,13 @@
 
     emphasise() {
       const focus = this.emphasis();
-      this.cy.batch(() => {
-        this.cy.elements().removeClass("rg-faded rg-focus");
-        if (!focus) return;
-        this.cy.nodes("[kind = 'type']").forEach((node) => {
-          node.addClass(focus.nodes.has(node.id()) ? "rg-focus" : "rg-faded");
-        });
-        this.cy.edges().forEach((edge) => {
-          edge.addClass(focus.edges.has(edge.id()) ? "rg-focus" : "rg-faded");
-        });
-      });
+      this.svg.classList.toggle("has-focus", Boolean(focus));
+      for (const [id, group] of this.laneEls) {
+        const on = Boolean(focus?.edges.has(id));
+        group.classList.toggle("is-focus", on);
+        this.labelEls.get(id).classList.toggle("is-focus", on);
+      }
+      for (const [id, group] of this.nodeEls) group.classList.toggle("is-focus", Boolean(focus?.nodes.has(id)));
     }
 
     select(kind, id) {
@@ -677,9 +847,7 @@
       this.state.path = null;
       this.fromSelect.value = "";
       this.toSelect.value = "";
-      this.emphasise();
-      this.renderPanel();
-      this.highlightRow();
+      this.refresh();
     }
 
     clear() {
@@ -687,6 +855,10 @@
       this.state.path = null;
       this.fromSelect.value = "";
       this.toSelect.value = "";
+      this.refresh();
+    }
+
+    refresh() {
       this.emphasise();
       this.renderPanel();
       this.highlightRow();
@@ -700,78 +872,41 @@
       const from = this.fromSelect.value;
       const to = this.toSelect.value;
       this.state.selected = null;
-      if (!from || !to) {
-        this.state.path = null;
-      } else {
-        const found = this.paths(from, to);
-        this.state.path = { from, to, index: found.length ? 0 : null };
-      }
-      this.emphasise();
-      this.renderPanel();
-      this.highlightRow();
+      this.state.path = from && to ? { from, to, index: this.paths(from, to).length ? 0 : null } : null;
+      this.refresh();
     }
 
     /* -------------------------------------------------------------- panel */
 
-    routeItem(route, pressed = false) {
-      const evidence = route.evidence;
-      const value = share(evidence);
+    routeItem(route) {
+      const value = share(route.evidence);
       return el(
         "button",
-        {
-          class: "rg-item",
-          type: "button",
-          "aria-pressed": pressed ? "true" : "false",
-          onclick: () => this.select("edge", route.id),
-        },
-        route.of > 1 ? `#${route.rank} ` : "",
-        code(route.id),
+        { class: "rg-item", type: "button", onclick: () => this.select("edge", route.id) },
+        code(variant(route)),
+        route.of > 1 ? el("span", { class: "rg-muted", text: ` · rank ${route.rank} of ${route.of}` }) : null,
         el(
           "span",
           { class: "rg-item-meta" },
-          outcomeBar(evidence, true),
-          " ",
+          outcomeBar(route.evidence, true),
           value === null ? "split not recorded" : `${percent.format(value)} resolved`,
-          evidence && evidence.failed ? ` · ${number.format(evidence.failed)} failed` : "",
+          route.evidence?.failed ? ` · ${number.format(route.evidence.failed)} failed` : "",
         ),
       );
     }
 
     renderPanel() {
       const { selected, path } = this.state;
-      let parts;
+      let parts = null;
       if (path) parts = this.pathPanel(path);
       else if (selected?.kind === "edge") parts = this.edgePanel(this.edges.get(selected.id));
       else if (selected?.kind === "node") parts = this.nodePanel(this.nodes.get(selected.id));
-      else parts = this.overviewPanel();
+      this.panel.hidden = !parts;
+      if (!parts) return;
+      const close = el("button", { class: "rg-panel-close", type: "button", "aria-label": "Close", text: "×", onclick: () => this.clear() });
       // replaceChildren would print a skipped optional part as the text "null".
-      this.panel.replaceChildren(...parts.filter(Boolean));
+      this.panel.replaceChildren(close, ...parts.filter(Boolean));
       this.panel.scrollTop = 0;
-    }
-
-    overviewPanel() {
-      const routes = [...this.edges.values()];
-      const directions = new Set(routes.map((r) => `${r.source}>${r.target}`));
-      const split = routes.filter((r) => r.evidence && r.evidence.empty !== null).length;
-      const failing = routes.filter((r) => r.evidence && r.evidence.failed > 0).length;
-      return [
-        el("h3", { text: "Every route, measured" }),
-        el(
-          "p",
-          {},
-          `${routes.length} routes across ${directions.size} directions between ${this.nodes.size} accession types. ` +
-            `${split} record how many lookups came back empty; ${failing} failed on at least one accession.`,
-        ),
-        el("h4", { text: "To explore" }),
-        el(
-          "ul",
-          {},
-          el("li", {}, "Click an edge for its evidence: outcomes, corpus, date, cost and known pathologies."),
-          el("li", {}, "Click a type for every route into and out of it, best first."),
-          el("li", {}, "Pick two types under “Find a path” to see how to get from one to the other."),
-          el("li", {}, "Hover for the numbers; scroll to zoom; drag to pan."),
-        ),
-      ];
     }
 
     edgePanel(route) {
@@ -779,18 +914,19 @@
       const source = this.nodes.get(route.source).label;
       const target = this.nodes.get(route.target).label;
       const parts = [
-        el("h3", {}, code(route.id)),
+        el("p", { class: "rg-panel-kicker", text: `${source} → ${target}` }),
+        el("h3", {}, code(variant(route))),
         el("p", { text: route.summary }),
         el(
           "p",
-          {},
+          { class: "rg-muted" },
           route.of > 1
-            ? `Rank ${route.rank} of ${route.of} for ${source} → ${target}, as the resolver tries them.`
-            : `The only route from ${source} to ${target}.`,
+            ? `Rank ${route.rank} of ${route.of} for this direction, as the resolver tries them.`
+            : "The only route for this direction.",
         ),
       ];
       if (!evidence) {
-        parts.push(el("p", { class: "rg-unrecorded", text: "No survey has measured this route yet." }));
+        parts.push(el("p", { class: "rg-muted", text: "No survey has measured this route yet." }));
       } else {
         const counts =
           evidence.empty === null
@@ -804,7 +940,6 @@
                 [evidence.failed, "failed", "failed"],
               ];
         parts.push(
-          el("h4", { text: "Outcomes" }),
           el(
             "div",
             { class: "rg-counts" },
@@ -819,11 +954,7 @@
           ),
           outcomeBar(evidence),
           evidence.empty === null
-            ? el(
-                "p",
-                { class: "rg-unrecorded" },
-                "This survey did not separate resolved from empty, so the answered accessions are shown together.",
-              )
+            ? el("p", { class: "rg-muted" }, "This survey did not separate resolved from empty, so they are shown together.")
             : null,
           el(
             "dl",
@@ -838,33 +969,26 @@
             el("dd", {}, code(evidence.corpus)),
             el("dt", { text: "Surveyed" }),
             el("dd", { text: evidence.surveyed_on }),
+            el("dt", { text: "Provider" }),
+            el("dd", {}, code(route.provider)),
+            el("dt", { text: "Cost" }),
+            el(
+              "dd",
+              {},
+              `${route.cost.requests} request${route.cost.requests === 1 ? "" : "s"} per accession, ` +
+                `${route.cost.rate_limit_rps} req/s` +
+                (route.cost.paginates ? ", paginates" : ""),
+            ),
+            route.source_archives.length ? el("dt", { text: "Accepts" }) : null,
+            route.source_archives.length ? el("dd", { text: `${route.source_archives.join(", ")} accessions only` }) : null,
           ),
+          evidence.notes ? el("p", { text: evidence.notes }) : null,
         );
-        if (evidence.notes) parts.push(el("p", { text: evidence.notes }));
       }
-
       parts.push(
-        el("h4", { text: "Route" }),
-        el(
-          "dl",
-          {},
-          el("dt", { text: "Provider" }),
-          el("dd", {}, code(route.provider)),
-          el("dt", { text: "Cost" }),
-          el(
-            "dd",
-            {},
-            `${route.cost.requests} request${route.cost.requests === 1 ? "" : "s"} per accession, ` +
-              `${route.cost.rate_limit_rps} req/s` +
-              (route.cost.paginates ? ", paginates" : ""),
-          ),
-          route.source_archives.length ? el("dt", { text: "Accepts" }) : null,
-          route.source_archives.length ? el("dd", { text: `${route.source_archives.join(", ")} accessions only` }) : null,
-        ),
         route.proves_data_exists ? el("span", { class: "rg-badge", text: "results are confirmed data" }) : null,
         route.implemented ? null : el("span", { class: "rg-badge", text: "declared, not implemented" }),
       );
-
       if (route.pathologies.length) {
         parts.push(
           el("h4", { text: "Known pathologies" }),
@@ -876,7 +1000,7 @@
                 "li",
                 {},
                 p.url ? el("a", { href: p.url, text: p.slug }) : code(p.slug),
-                p.url ? null : el("span", { class: "rg-unrecorded" }, " (not yet written up)"),
+                p.url ? null : el("span", { class: "rg-muted" }, " (not yet written up)"),
               ),
             ),
           ),
@@ -890,9 +1014,8 @@
       const group = (routes, other) => {
         const byOther = new Map();
         for (const route of routes) {
-          const key = route[other];
-          if (!byOther.has(key)) byOther.set(key, []);
-          byOther.get(key).push(route);
+          if (!byOther.has(route[other])) byOther.set(route[other], []);
+          byOther.get(route[other]).push(route);
         }
         return [...byOther.entries()]
           .sort(([a], [b]) => this.nodes.get(a).label.localeCompare(this.nodes.get(b).label))
@@ -908,13 +1031,17 @@
       const routes = [...this.edges.values()].filter((r) => this.visible(r));
       const out = routes.filter((r) => r.source === node.id);
       const into = routes.filter((r) => r.target === node.id);
+      const layer = this.layers.find((l) => l.id === node.layer)?.label ?? node.layer;
       return [
+        el("p", { class: "rg-panel-kicker", text: `${layer} · ${FAMILY_LABELS[node.family] ?? node.family}` }),
         el("h3", { text: node.label }),
-        el("p", {}, `${node.routes_out} routes out, ${node.routes_in} in.`),
+        node.accessions.length
+          ? el("dl", {}, node.accessions.flatMap((a) => [el("dt", {}, code(a.pattern)), el("dd", { text: a.description })]))
+          : el("p", { class: "rg-muted", text: "Reached through routes, never parsed from an identifier." }),
         el("h4", { text: `From ${node.label}` }),
-        out.length ? el("ul", {}, group(out, "target")) : el("p", { class: "rg-unrecorded", text: "None shown." }),
+        out.length ? el("ul", {}, group(out, "target")) : el("p", { class: "rg-muted", text: "None shown." }),
         el("h4", { text: `To ${node.label}` }),
-        into.length ? el("ul", {}, group(into, "source")) : el("p", { class: "rg-unrecorded", text: "None shown." }),
+        into.length ? el("ul", {}, group(into, "source")) : el("p", { class: "rg-muted", text: "None shown." }),
       ];
     }
 
@@ -922,7 +1049,7 @@
       const from = this.nodes.get(path.from).label;
       const to = this.nodes.get(path.to).label;
       const found = this.paths(path.from, path.to);
-      const parts = [el("h3", { text: `${from} → ${to}` })];
+      const parts = [el("p", { class: "rg-panel-kicker", text: "Paths" }), el("h3", { text: `${from} → ${to}` })];
       if (!found.length) {
         parts.push(el("p", { text: "No declared route connects these, within four hops." }));
         return parts;
@@ -930,19 +1057,14 @@
       parts.push(
         el(
           "p",
-          {},
+          { class: "rg-muted" },
           `${found.length} type path${found.length === 1 ? "" : "s"}, shortest first. ` +
-            "Each hop uses the best-ranked route the current filters leave visible.",
+            "Each hop uses the best-ranked route the filters leave visible.",
         ),
       );
       found.forEach((steps, index) => {
         const hops = [];
-        let complete = true;
-        for (let i = 0; i < steps.length - 1; i++) {
-          const route = this.hopRoute(steps[i], steps[i + 1]);
-          if (!route) complete = false;
-          hops.push(route);
-        }
+        for (let i = 0; i < steps.length - 1; i++) hops.push(this.hopRoute(steps[i], steps[i + 1]));
         parts.push(
           el(
             "button",
@@ -960,9 +1082,7 @@
             el(
               "span",
               { class: "rg-item-meta" },
-              complete
-                ? hops.map((route) => route.id.split(":")[1]).join(" · ")
-                : "a hop has no route under the current filters",
+              hops.every(Boolean) ? hops.map(variant).join(" · ") : "a hop has no route under the current filters",
             ),
           ),
         );
@@ -973,40 +1093,55 @@
     /* ------------------------------------------------------------- legend */
 
     renderLegend() {
+      const icon = (layer) => {
+        const outline = shape(layer, 30, 16);
+        return svg(
+          "svg",
+          { class: "rg-legend-shape", viewBox: "-20 -18 42 30", "aria-hidden": "true" },
+          svg(
+            "g",
+            { class: "rg-node rg-family-neutral" },
+            outline.back.map((d) => svg("path", { class: "rg-node-back", d })),
+            svg("path", { class: "rg-node-body", d: outline.body }),
+            outline.fold ? svg("path", { class: "rg-node-fold", d: outline.fold }) : null,
+          ),
+        );
+      };
+      const line = (kind) =>
+        svg(
+          "svg",
+          { class: "rg-legend-line", viewBox: "0 0 30 8", "aria-hidden": "true" },
+          svg("path", { class: `rg-line rg-line--${kind}`, d: "M1,4 H29", "stroke-width": 3 }),
+        );
       const item = (key, label) => el("span", { class: "rg-legend-item" }, key, label);
-      const line = (colour, dashed = false) =>
-        el("span", { class: dashed ? "rg-key rg-key--dashed" : "rg-key", style: `border-top-color: ${colour}` });
-      const t = this.tokens();
-      const edges =
-        this.state.colourBy === "share"
-          ? el(
-              "div",
-              { class: "rg-legend-group" },
-              el("span", { class: "rg-legend-title", text: "Edge colour: share of queried accessions resolved" }),
-              SHARE_LABELS.map((label, i) => item(line(t.ramp[i]), label)),
-              item(line(t.muted, true), "split not recorded"),
-            )
-          : el(
-              "div",
-              { class: "rg-legend-group" },
-              el("span", { class: "rg-legend-title", text: "Edge colour: failures" }),
-              item(line(t.quiet), "none failed"),
-              item(line(t.failed), "at least one failed"),
-            );
+      const order = Object.keys(FAMILY_LABELS);
+      const families = [...new Set(this.data.nodes.map((n) => n.family))].sort(
+        (x, y) => (order.indexOf(x) + 1 || 99) - (order.indexOf(y) + 1 || 99),
+      );
+      const usedLayers = new Set(this.data.nodes.map((n) => n.layer));
+
       this.legend.replaceChildren(
-        edges,
         el(
           "div",
           { class: "rg-legend-group" },
-          el("span", { class: "rg-legend-title", text: "Bars" }),
-          ["resolved", "empty", "failed"].map((kind) => item(el("span", { class: `rg-swatch rg-swatch--${kind}` }), kind)),
-          item(el("span", { class: "rg-swatch rg-swatch--unknown" }), "resolved or empty, not separated"),
+          el("span", { class: "rg-legend-title", text: "Shape is the layer" }),
+          this.layers.filter((l) => usedLayers.has(l.id)).map((l) => item(icon(l.id), l.label.toLowerCase())),
         ),
         el(
           "div",
           { class: "rg-legend-group" },
-          el("span", { class: "rg-legend-title", text: "Width" }),
-          "distinct results, log scale · #n is the rank within a direction",
+          el("span", { class: "rg-legend-title", text: "Colour is the archive" }),
+          families.map((f) => item(el("span", { class: `rg-swatch rg-family-${f}` }), FAMILY_LABELS[f] ?? f)),
+        ),
+        el(
+          "div",
+          { class: "rg-legend-group" },
+          el("span", { class: "rg-legend-title", text: "Each route's line, from source to target" }),
+          item(line("resolved"), "resolved"),
+          item(line("empty"), "empty"),
+          item(line("failed"), "failed"),
+          item(line("unknown"), "resolved or empty, not recorded"),
+          el("span", { class: "rg-legend-note", text: "Width is distinct results, log scale." }),
         ),
       );
     }
@@ -1041,8 +1176,7 @@
         const y = column.value(b);
         const order = typeof x === "number" ? x - y : String(x).localeCompare(String(y));
         // Ties fall back to direction then rank, so the order is stable.
-        const tie =
-          columns[0].value(a).localeCompare(columns[0].value(b)) || a.rank - b.rank;
+        const tie = columns[0].value(a).localeCompare(columns[0].value(b)) || a.rank - b.rank;
         return (ascending ? order : -order) || tie;
       });
 
@@ -1052,10 +1186,7 @@
         columns.map((c) =>
           el(
             "th",
-            {
-              class: c.numeric ? "rg-num" : null,
-              "aria-sort": c.key === key ? (ascending ? "ascending" : "descending") : null,
-            },
+            { class: c.numeric ? "rg-num" : null, "aria-sort": c.key === key ? (ascending ? "ascending" : "descending") : null },
             el("button", {
               type: "button",
               text: c.title,
@@ -1068,10 +1199,10 @@
         ),
       );
 
-      const cell = (value, numeric) =>
+      const cell = (value) =>
         value === null || value === undefined
-          ? el("td", { class: numeric ? "rg-num rg-unrecorded" : "rg-unrecorded", text: "not recorded" })
-          : el("td", { class: numeric ? "rg-num" : null, text: numeric ? number.format(value) : value });
+          ? el("td", { class: "rg-num rg-muted", text: "not recorded" })
+          : el("td", { class: "rg-num", text: number.format(value) });
 
       const body = rows.map((route) => {
         const evidence = route.evidence ?? {};
@@ -1089,7 +1220,7 @@
                 type: "button",
                 onclick: () => {
                   this.select("edge", route.id);
-                  this.canvas.parentElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                  this.stage.scrollIntoView({ behavior: "smooth", block: "nearest" });
                 },
               },
               code(route.id),
@@ -1098,23 +1229,16 @@
           el("td", { class: "rg-num rg-nowrap", text: `${route.rank} of ${route.of}` }),
           el("td", { class: "rg-corpus", title: evidence.corpus ?? "", text: evidence.corpus ?? "unmeasured" }),
           el("td", { class: "rg-nowrap", text: evidence.surveyed_on ?? "" }),
-          cell(evidence.queried, true),
-          cell(evidence.resolved, true),
-          cell(evidence.empty, true),
-          cell(evidence.failed, true),
-          cell(evidence.unique_results, true),
+          cell(evidence.queried),
+          cell(evidence.resolved),
+          cell(evidence.empty),
+          cell(evidence.failed),
+          cell(evidence.unique_results),
           el("td", {}, outcomeBar(route.evidence, true)),
         );
       });
 
-      this.tableWrap.replaceChildren(
-        el(
-          "table",
-          { class: "rg-table" },
-          el("thead", {}, head),
-          el("tbody", {}, body),
-        ),
-      );
+      this.tableWrap.replaceChildren(el("table", { class: "rg-table" }, el("thead", {}, head), el("tbody", {}, body)));
       this.highlightRow();
     }
 
@@ -1138,24 +1262,20 @@
     const root = document.getElementById("route-graph");
     const source = document.getElementById("route-graph-data");
     if (!root || !source) return;
-
-    const data = JSON.parse(source.textContent);
-    loadCytoscape()
-      .then((cytoscape) => {
-        // The reader may have navigated away while the library loaded.
-        if (document.getElementById("route-graph") === root) current = new RouteGraph(root, data, cytoscape);
-      })
-      .catch((error) => {
-        root.replaceChildren(
-          el(
-            "p",
-            { class: "rg-error" },
-            `The graph could not be drawn (${error.message}). The same numbers are in `,
-            el("a", { href: "../", text: "the route matrix" }),
-            ".",
-          ),
-        );
-      });
+    try {
+      current = new RouteGraph(root, JSON.parse(source.textContent));
+    } catch (error) {
+      root.replaceChildren(
+        el(
+          "p",
+          { class: "rg-error" },
+          `The graph could not be drawn (${error.message}). The same numbers are in `,
+          el("a", { href: "../", text: "the route matrix" }),
+          ".",
+        ),
+      );
+      throw error;
+    }
   }
 
   if (window.document$) window.document$.subscribe(mount);

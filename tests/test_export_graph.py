@@ -63,3 +63,18 @@ def test_cli_prints_the_same_graph():
     result = CliRunner().invoke(app, ["routes", "graph"])
     assert result.exit_code == 0
     assert json.loads(result.output) == json.loads(json.dumps(route_graph()))
+
+
+def test_every_type_has_a_family_and_a_layer():
+    """The page draws family as colour and layer as shape, so neither may be missing."""
+    from fetch_series.export.graph import FAMILIES, LAYER_OF, LAYERS
+
+    assert set(FAMILIES) == set(EntityType)
+    assert set(LAYER_OF) == set(EntityType)
+    assert set(LAYER_OF.values()) <= {layer for layer, _ in LAYERS}
+
+
+def test_nodes_carry_their_accession_patterns():
+    nodes = {n["id"]: n for n in route_graph()["nodes"]}
+    assert any(a["pattern"] == r"[SED]RR\d+" for a in nodes["run"]["accessions"])
+    assert nodes["file"]["accessions"] == []
