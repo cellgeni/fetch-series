@@ -11,6 +11,7 @@ trusted for that, and where the archives lose data silently.
 
 - **What is this identifier, and who issued it?** → [Accession types](graph/accession-types.md)
 - **Resolving an accession and want to know which route to use?** → [The route matrix](routes/index.md)
+- **Want to see every route at once, with what each one resolved?** → [The route graph](routes/graph.md)
 - **A series came back empty and you suspect it shouldn't have?** → [Pathologies](pathologies/index.md)
 - **Want to report something to an archive?** → [Upstream reports](upstream/index.md)
 - **Need sample-to-run links across archives?** → [The relation table](relations.md)

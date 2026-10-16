@@ -83,6 +83,7 @@ src/fetch_series/
   assays/          assay and chemistry recognition, pluggable
   metadata/        descriptive metadata: harvest, rules, ontology grounding, measurement
   export/links.py  links.tsv in the incumbent's schema (the M3 parity contract)
+  export/graph.py  the route graph as data: what the KB's route-graph page draws
   providers/       one module per API surface; typed calls and parsing, no route logic
   survey/          the benchmark harness: corpora, runner, rate limiting
   cache.py         SQLite store of verdicts and raw responses
@@ -95,14 +96,15 @@ data/corpora/      committed accession lists, one directory per corpus
 data/surveys/      every recorded verdict, gzipped CSV — `fetch survey export`
 docs/              the knowledge base (MkDocs Material)
 docs/decisions/    why each priority, fallback and scoping choice is what it is
+hooks/             MkDocs build hooks: embeds the route graph from REGISTRY at build time
 ```
 
 ## Commands
 
 ```bash
 uv sync --all-groups
-uv run ruff check src tests scripts
-uv run ruff format src tests
+uv run ruff check src tests scripts hooks
+uv run ruff format src tests hooks
 uv run mypy
 uv run pytest                    # offline unit tests; the default
 uv run pytest -m integration     # hits live archive APIs

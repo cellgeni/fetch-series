@@ -17,6 +17,9 @@ Regenerate this table's underlying numbers with:
 uv run fetch routes list
 ```
 
+The same routes are drawn as a graph, with each one's resolved, empty and
+failed counts, on [the route graph](graph.md).
+
 ## How to read it
 
 - **Queried** is how many accessions the route was actually asked about. It is

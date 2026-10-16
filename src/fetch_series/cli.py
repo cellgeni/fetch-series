@@ -21,6 +21,7 @@ from fetch_series.assays.chemistry import ChemistryCall
 from fetch_series.cache import DEFAULT_CACHE_PATH, SurveyCache
 from fetch_series.core import default_api_key
 from fetch_series.entities import MISSING, RELATION_COLUMNS, RunRecord
+from fetch_series.export.graph import route_graph
 from fetch_series.export.links import LINKS_COLUMNS, LinkRow
 from fetch_series.files import Recommendation
 from fetch_series.filesets import (
@@ -141,6 +142,16 @@ def routes_list(
         typer.echo("\n'!' marks a declared route with no implementation yet.")
 
 
+@routes_app.command("graph")
+def routes_graph() -> None:
+    """Print the route graph as JSON: nodes, ranked edges with evidence, type paths.
+
+    This is the data the knowledge base's route-graph page is drawn from, so
+    anything the page shows can be checked from here.
+    """
+    typer.echo(json.dumps(route_graph(), indent=2))
+
+
 @survey_app.command("run")
 def survey_run(
     route_id: Annotated[str, typer.Option("--route", help="Route id to survey.")],
@@ -246,13 +257,16 @@ def survey_evidence(
         raise typer.Exit(1)
 
     # EMPTY is a real answer about the archive, not a failure, so it counts
-    # towards the denominator and not towards accessions_failed.
+    # towards the denominator and not towards accessions_failed -- and is
+    # recorded in its own field, because the 2026-05 scripts that lumped the two
+    # together left six routes whose split can never be recovered.
     typer.echo(
         f"""        evidence=RouteEvidence(
             corpus="{corpus_name}",
             surveyed_on=date({datetime.now(UTC).date():%Y, %-m, %-d}),
             accessions_queried={summary["queried"]:_},
             accessions_failed={summary["failed"]:_},
+            accessions_empty={summary["empty"]:_},
             unique_results={summary["unique_results"]:_},
             notes="{summary["resolved"]:,} resolved, {summary["empty"]:,} empty.",
         ),"""

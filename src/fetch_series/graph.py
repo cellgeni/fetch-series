@@ -65,6 +65,11 @@ class RouteEvidence:
         accessions_failed: how many produced no verdict at all.
         unique_results: distinct target accessions returned, where counted.
         notes: anything that qualifies the numbers.
+        accessions_empty: how many produced a verdict of "the archive holds no
+            such link". ``None`` means the survey did not record the split, which
+            is not the same as zero: the 2026-05 scripts kept a single boolean
+            that lumped EMPTY in with FAILED, so for their routes the two cannot
+            be separated after the fact.
     """
 
     corpus: str
@@ -73,6 +78,27 @@ class RouteEvidence:
     accessions_failed: int
     unique_results: int | None = None
     notes: str = ""
+    # Last, not beside accessions_failed: added after the class shipped, and a
+    # field inserted mid-signature would shift every positional caller's
+    # unique_results into it without an error.
+    accessions_empty: int | None = None
+
+    def __post_init__(self) -> None:
+        counts = (self.accessions_queried, self.accessions_failed, self.accessions_empty or 0)
+        if min(counts) < 0:
+            raise ValueError(f"Negative count in evidence for {self.corpus}: {counts}")
+        if self.accessions_failed + (self.accessions_empty or 0) > self.accessions_queried:
+            raise ValueError(
+                f"Evidence for {self.corpus} records more failed and empty verdicts "
+                f"than accessions queried: {counts}"
+            )
+
+    @property
+    def accessions_resolved(self) -> int | None:
+        """Accessions that returned at least one result, where the split is known."""
+        if self.accessions_empty is None:
+            return None
+        return self.accessions_queried - self.accessions_failed - self.accessions_empty
 
     @property
     def failure_rate(self) -> float:
@@ -308,6 +334,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=12_755,
             accessions_failed=0,
+            accessions_empty=23,
             unique_results=783_936,
             notes=(
                 "Census through the harness. 12,732 resolved, 23 empty, zero failures. "
@@ -455,6 +482,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=12_755,
             accessions_failed=0,
+            accessions_empty=675,
             unique_results=244_324,
             notes=(
                 "Census. 12,080 resolved, 675 empty, zero failures -- against the 2026-05 "
@@ -482,6 +510,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=12_755,
             accessions_failed=0,
+            accessions_empty=23,
             unique_results=12_748,
             notes="12,732 resolved, 23 empty. 12,748 distinct studies for 12,732 projects: a handful of projects carry more than one.",
         ),
@@ -499,6 +528,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=20_693,
             accessions_failed=5,
+            accessions_empty=551,
             unique_results=20_138,
             notes=(
                 "20,137 resolved, 551 empty. The corpus is every ArrayExpress "
@@ -528,6 +558,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
             accessions_failed=11,
+            accessions_empty=1_768,
             unique_results=63_153,
             notes=(
                 "1,221 resolved, 1,768 empty. Split entirely by provenance: "
@@ -551,6 +582,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
             accessions_failed=0,
+            accessions_empty=0,
             unique_results=4_827,
             notes="3,000 resolved, 0 empty.",
         ),
@@ -569,6 +601,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
             accessions_failed=0,
+            accessions_empty=2_900,
             unique_results=101,
             notes="100 resolved, 2,900 empty. The corpus is studies reached from the reprocessed 10x BioProjects, which are overwhelmingly NCBI submissions; a low yield here is a fact about that population, not a failure of the route.",
         ),
@@ -587,6 +620,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
             accessions_failed=0,
+            accessions_empty=0,
             unique_results=2_999,
             notes="3,000 resolved, 0 empty.",
         ),
@@ -609,6 +643,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=13_045,
             accessions_failed=7,
+            accessions_empty=466,
             unique_results=12_572,
             notes="12,572 resolved, 466 empty.",
         ),
@@ -626,6 +661,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=13_045,
             accessions_failed=0,
+            accessions_empty=7,
             unique_results=12_830,
             notes="13,038 resolved, 7 empty. Resolves 466 series the SOFT file leaves empty, and never fails -- but 190 of those 466 resolve to a species-level umbrella project holding thousands of unrelated runs, so the extra coverage is not usable for routing without checking the project's size.",
         ),
@@ -644,6 +680,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=13_045,
             accessions_failed=7,
+            accessions_empty=0,
             unique_results=319_023,
             notes="13,038 resolved, 0 empty.",
         ),
@@ -661,6 +698,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=13_045,
             accessions_failed=0,
+            accessions_empty=7,
             unique_results=319_023,
             notes="13,038 resolved, 7 empty. Identical to the SOFT route on all 13,038 series both answer -- the same 319,023 samples, sample for sample.",
         ),
@@ -678,6 +716,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 14),
             accessions_queried=13_045,
             accessions_failed=7,
+            accessions_empty=16,
             unique_results=308_639,
             notes=(
                 "Census of every GEO series in the reprocessed table. 13,022 resolved, "
@@ -704,6 +743,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=13_045,
             accessions_failed=0,
+            accessions_empty=2_293,
             unique_results=178_879,
             notes=(
                 "Census. 10,752 resolved, 2,293 empty. Reports 17.6% of series as having "
@@ -730,6 +770,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=13_045,
             accessions_failed=7,
+            accessions_empty=487,
             unique_results=290_462,
             notes=(
                 "Census. 12,551 resolved, 487 empty. Covers 92.5% of the three-route "
@@ -758,6 +799,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 16),
             accessions_queried=13_045,
             accessions_failed=0,
+            accessions_empty=2_294,
             unique_results=463_803,
             notes=(
                 "10,751 resolved, 2,294 empty, nothing failed. The 2,294 are "
@@ -781,6 +823,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=825,
             accessions_failed=3,
+            accessions_empty=0,
             unique_results=822,
             notes=(
                 "822 resolved, 0 empty. 825 of the 1,000 drawn are GEO samples; "
@@ -803,6 +846,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=825,
             accessions_failed=3,
+            accessions_empty=0,
             unique_results=822,
             notes="822 resolved, 0 empty. 825 of the 1,000 drawn are GEO samples; the other 175 are INSDC samples this route cannot accept.",
         ),
@@ -820,6 +864,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=825,
             accessions_failed=3,
+            accessions_empty=0,
             unique_results=849,
             notes="822 resolved, 0 empty. 825 of the 1,000 drawn are GEO samples; the other 175 are INSDC samples this route cannot accept.",
         ),
@@ -839,6 +884,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=12_755,
             accessions_failed=0,
+            accessions_empty=23,
             unique_results=481_315,
             notes="12,732 resolved, 23 empty. Nothing failed.",
         ),
@@ -857,6 +903,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=12_755,
             accessions_failed=0,
+            accessions_empty=25,
             unique_results=363_885,
             notes="12,730 resolved, 25 empty.",
         ),
@@ -875,6 +922,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
             accessions_failed=0,
+            accessions_empty=0,
             unique_results=205_175,
             notes="3,000 resolved, 0 empty.",
         ),
@@ -892,6 +940,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
             accessions_failed=0,
+            accessions_empty=37,
             unique_results=6_580,
             notes=(
                 "Tier two over the experiments the GEO census returned. 2,963 resolved, "
@@ -916,6 +965,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
             accessions_failed=0,
+            accessions_empty=41,
             unique_results=2_893,
             notes="2,959 resolved, 41 empty.",
         ),
@@ -934,6 +984,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
             accessions_failed=0,
+            accessions_empty=13,
             unique_results=8_359,
             notes="2,987 resolved, 13 empty.",
         ),
@@ -952,6 +1003,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
             accessions_failed=0,
+            accessions_empty=23,
             unique_results=2_888,
             notes="2,977 resolved, 23 empty.",
         ),
@@ -970,6 +1022,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
             accessions_failed=0,
+            accessions_empty=23,
             unique_results=2_880,
             notes="2,977 resolved, 23 empty. The 23 empties are the same runs that no longer exist in either archive.",
         ),
@@ -992,6 +1045,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 16),
             accessions_queried=3_000,
             accessions_failed=0,
+            accessions_empty=523,
             unique_results=2_395,
             notes="2,477 resolved, 523 empty. Coverage tracks whether the run was submitted through GEO: 82.7% of the reprocessed sample column is GEO samples, and this route resolves a comparable share. Agreement with GEO's own SRA relation is 8,604 of 8,604 over 200 series, with zero contradictions.",
         ),
@@ -1009,6 +1063,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 16),
             accessions_queried=1_547,
             accessions_failed=0,
+            accessions_empty=1_456,
             unique_results=6,
             notes="91 resolved, 1,456 empty. Unlike the GEO case, ArrayExpress submitters rarely put the study accession in an alias: 91 of 1,547 runs, 6 distinct studies. E-MTAB-6505 does, most do not, so this is a lucky-dip route rather than a reliable one.",
         ),
@@ -1035,6 +1090,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
             accessions_failed=0,
+            accessions_empty=156,
             unique_results=4_466,
             notes="2,844 resolved, 156 empty. 1,225 of the 2,844 resolved runs offer exactly one fastq file.",
         ),
@@ -1053,6 +1109,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
             accessions_failed=0,
+            accessions_empty=2_754,
             unique_results=601,
             notes="246 resolved, 2,754 empty.",
         ),
@@ -1071,6 +1128,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
             accessions_failed=0,
+            accessions_empty=3_000,
             unique_results=0,
             notes="0 resolved, 3,000 empty. ENA populates sra_ftp for none of them; the column is documented, returnable, and empty.",
         ),
@@ -1089,6 +1147,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
             accessions_failed=11,
+            accessions_empty=673,
             unique_results=197_089,
             notes=(
                 "2,316 resolved, 673 empty. 1,385 of 1,398 E-MTAB studies (99%) "
@@ -1111,6 +1170,7 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
             accessions_failed=0,
+            accessions_empty=4,
             unique_results=3_085,
             notes="2,996 resolved, 4 empty.",
         ),

@@ -1,0 +1,512 @@
+/* The route graph page (routes/graph.md), drawn by javascripts/route-graph.js.
+ *
+ * Colours are roles, defined once per Material scheme. The outcome palette
+ * (resolved / empty / failed) and the five-step resolved-share ramp were run
+ * through a CVD and contrast validator against both of Material's surfaces:
+ * worst adjacent colour-blind separation is dE 9.1, and every step clears 3:1
+ * (ramp ends 2:1, the ordinal floor). Empty is deliberately grey -- it is "the
+ * archive holds no such link", a neutral answer, not a category or a fault.
+ * Failed uses the reserved critical red and always carries a text label.
+ */
+
+.rg-root {
+  --rg-surface: var(--md-default-bg-color);
+  --rg-region: rgba(11, 11, 11, 0.035);
+  --rg-hairline: rgba(11, 11, 11, 0.12);
+  --rg-ink: var(--md-default-fg-color);
+  --rg-ink-2: var(--md-default-fg-color--light);
+  --rg-muted: #898781;
+  --rg-node-border: #52514e;
+  --rg-accent: var(--md-accent-fg-color);
+
+  --rg-resolved: #2a78d6;
+  --rg-empty: #898781;
+  --rg-failed: #d03b3b;
+  --rg-quiet: #c3c2b7;
+
+  /* Share of queried accessions resolved: <25%, 25-50, 50-75, 75-95, >=95%. */
+  --rg-ramp-0: #86b6ef;
+  --rg-ramp-1: #5598e7;
+  --rg-ramp-2: #2a78d6;
+  --rg-ramp-3: #1c5cab;
+  --rg-ramp-4: #104281;
+
+  /* The canvas is drawn by Cytoscape, which drops the alpha of rgba() and does
+   * not read every CSS colour syntax, so it gets plain hex: Material's surfaces
+   * and inks, flattened. */
+  --rg-cy-surface: #ffffff;
+  --rg-cy-region: #f3f3f1;
+  --rg-cy-hairline: #dcdbd4;
+  --rg-cy-ink: #1f1f1e;
+  --rg-cy-ink-2: #52514e;
+  --rg-cy-accent: #526cfe;
+
+  margin: 1.2rem 0 2rem;
+}
+
+[data-md-color-scheme="slate"] .rg-root {
+  --rg-region: rgba(255, 255, 255, 0.04);
+  --rg-hairline: rgba(255, 255, 255, 0.12);
+  --rg-node-border: #c3c2b7;
+  --rg-resolved: #3987e5;
+  --rg-quiet: #52514e;
+
+  /* Selected for the dark surface, not flipped: low shares recede toward it. */
+  --rg-ramp-0: #184f95;
+  --rg-ramp-1: #256abf;
+  --rg-ramp-2: #3987e5;
+  --rg-ramp-3: #6da7ec;
+  --rg-ramp-4: #9ec5f4;
+
+  /* Material's slate surface, hsl(232 15% 14%). */
+  --rg-cy-surface: #1e2029;
+  --rg-cy-region: #262935;
+  --rg-cy-hairline: #3b3e4c;
+  --rg-cy-ink: #e3e4e8;
+  --rg-cy-ink-2: #a9acb6;
+  --rg-cy-accent: #7c8fff;
+}
+
+/* This page is the graph, so it takes the width the navigation would have. */
+.md-main__inner:has(.rg-root) {
+  max-width: 120rem;
+}
+
+/* Controls: one row above everything they scope. */
+.rg-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.4rem;
+  margin-bottom: 0.8rem;
+  font-size: 0.7rem;
+}
+
+.rg-controls fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.7rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.rg-controls legend,
+.rg-control-label {
+  float: left;
+  margin-right: 0.4rem;
+  color: var(--rg-ink-2);
+  font-weight: 700;
+}
+
+.rg-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.rg-controls select,
+.rg-button {
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--rg-hairline);
+  border-radius: 0.2rem;
+  background: var(--rg-surface);
+  color: var(--rg-ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.rg-button:hover,
+.rg-button:focus-visible {
+  border-color: var(--rg-accent);
+}
+
+/* Canvas and side panel. */
+.rg-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 22rem;
+  gap: 1rem;
+}
+
+.rg-canvas,
+.rg-panel {
+  height: clamp(32rem, 74vh, 56rem);
+  border: 1px solid var(--rg-hairline);
+  border-radius: 0.3rem;
+  background: var(--rg-surface);
+}
+
+.rg-canvas {
+  position: relative;
+}
+
+.rg-cy {
+  position: absolute;
+  inset: 0;
+}
+
+.rg-canvas-actions {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  display: flex;
+  gap: 0.3rem;
+  font-size: 0.65rem;
+}
+
+.rg-panel {
+  overflow-y: auto;
+  padding: 0.9rem 1rem;
+  font-size: 0.7rem;
+}
+
+.md-typeset .rg-panel h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.85rem;
+}
+
+.md-typeset .rg-panel h4 {
+  margin: 1rem 0 0.3rem;
+  color: var(--rg-ink-2);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.md-typeset .rg-panel p {
+  margin: 0.3rem 0;
+}
+
+.rg-panel dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.15rem 0.8rem;
+  margin: 0.4rem 0;
+}
+
+.rg-panel dt {
+  color: var(--rg-ink-2);
+}
+
+.rg-panel dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.rg-panel ul {
+  margin: 0.2rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.md-typeset .rg-panel ul li {
+  margin: 0;
+}
+
+.rg-badge {
+  display: inline-block;
+  margin: 0.15rem 0.3rem 0 0;
+  padding: 0 0.35rem;
+  border: 1px solid var(--rg-hairline);
+  border-radius: 0.6rem;
+  color: var(--rg-ink-2);
+  font-size: 0.6rem;
+}
+
+/* A route or path offered as something to click, in the panel. */
+.rg-item {
+  display: block;
+  width: 100%;
+  margin: 0.25rem 0;
+  padding: 0.35rem 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rg-item:hover,
+.rg-item:focus-visible {
+  border-color: var(--rg-hairline);
+  background: var(--rg-region);
+}
+
+.rg-item[aria-pressed="true"] {
+  border-color: var(--rg-accent);
+}
+
+.rg-item code {
+  font-size: 0.65rem;
+}
+
+.rg-item-meta {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--rg-ink-2);
+}
+
+/* Outcome counts: the value leads, the name follows. */
+.rg-counts {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  justify-content: start;
+  gap: 0.1rem 1rem;
+  margin: 0.4rem 0;
+}
+
+.rg-count strong {
+  display: block;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.rg-count span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--rg-ink-2);
+}
+
+/* Stacked outcome bar. Segments are separated by a 2px surface gap rather than
+ * a stroke; the data end is rounded and the baseline square. */
+.rg-bar {
+  display: flex;
+  gap: 2px;
+  width: 100%;
+  height: 0.55rem;
+  margin: 0.3rem 0;
+}
+
+.rg-bar--mini {
+  width: 7rem;
+  height: 0.45rem;
+  margin: 0;
+}
+
+.rg-seg {
+  min-width: 2px;
+}
+
+.rg-seg:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.rg-seg--resolved,
+.rg-swatch--resolved {
+  background: var(--rg-resolved);
+}
+
+.rg-seg--empty,
+.rg-swatch--empty {
+  background: var(--rg-empty);
+}
+
+.rg-seg--failed,
+.rg-swatch--failed {
+  background: var(--rg-failed);
+}
+
+/* Resolved and empty together, unseparated: texture, not a colour, so it can
+ * never be read as a fourth outcome. */
+.rg-seg--unknown,
+.rg-swatch--unknown {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--rg-empty) 0 2px,
+    transparent 2px 5px
+  );
+  box-shadow: inset 0 0 0 1px var(--rg-empty);
+}
+
+.rg-swatch {
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 2px;
+}
+
+/* Legend, under the canvas. Line keys for edges, rectangles for bar segments. */
+.rg-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.6rem;
+  margin: 0.6rem 0 0;
+  color: var(--rg-ink-2);
+  font-size: 0.65rem;
+}
+
+.rg-legend-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.8rem;
+}
+
+.rg-legend-title {
+  color: var(--rg-ink);
+  font-weight: 700;
+}
+
+.rg-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.rg-key {
+  display: inline-block;
+  width: 1.2rem;
+  border-top: 3px solid var(--rg-muted);
+}
+
+.rg-key--dashed {
+  border-top-style: dashed;
+}
+
+/* Tooltip: one, following the pointer, never the only place a value lives. */
+.rg-tooltip {
+  position: fixed;
+  z-index: 10;
+  margin: 0;
+  max-width: 20rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--rg-hairline);
+  border-radius: 0.25rem;
+  background: var(--rg-surface);
+  box-shadow: var(--md-shadow-z2);
+  color: var(--rg-ink);
+  font-size: 0.65rem;
+  pointer-events: none;
+}
+
+.rg-tooltip[hidden] {
+  display: none;
+}
+
+.rg-tooltip-title {
+  color: var(--rg-ink-2);
+  font-family: var(--md-code-font-family);
+}
+
+.rg-tooltip-values {
+  margin: 0.15rem 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The table: the same data, readable without the picture. */
+.rg-table-wrap {
+  overflow-x: auto;
+  margin-top: 1.6rem;
+}
+
+/* Material styles only class-less tables, so this one carries its own. */
+.md-typeset .rg-table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.65rem;
+}
+
+.md-typeset .rg-table th,
+.md-typeset .rg-table td {
+  padding: 0.45em 0.7em;
+  border-bottom: 1px solid var(--rg-hairline);
+  vertical-align: middle;
+}
+
+.md-typeset .rg-table th {
+  color: var(--rg-ink-2);
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.md-typeset .rg-table tbody tr:hover td {
+  background: var(--rg-region);
+}
+
+.md-typeset .rg-table th button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.md-typeset .rg-table th[aria-sort="ascending"] button::after {
+  content: " \2191";
+}
+
+.md-typeset .rg-table th[aria-sort="descending"] button::after {
+  content: " \2193";
+}
+
+.md-typeset .rg-table td.rg-num,
+.md-typeset .rg-table th.rg-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.md-typeset .rg-table td.rg-corpus {
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.md-typeset .rg-table tr.rg-row--selected td {
+  background: var(--rg-region);
+}
+
+.md-typeset .rg-table tr.rg-row--selected td:first-child {
+  box-shadow: inset 3px 0 0 var(--rg-accent);
+}
+
+.rg-route-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--md-typeset-a-color);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rg-route-button code {
+  font-size: inherit;
+  white-space: nowrap;
+}
+
+.md-typeset .rg-table td.rg-nowrap {
+  white-space: nowrap;
+}
+
+.rg-unrecorded {
+  color: var(--rg-ink-2);
+  font-style: italic;
+}
+
+.rg-error {
+  padding: 1rem;
+  color: var(--rg-ink-2);
+}
+
+@media screen and (max-width: 60em) {
+  .rg-main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rg-panel {
+    height: auto;
+    max-height: 32rem;
+  }
+}
