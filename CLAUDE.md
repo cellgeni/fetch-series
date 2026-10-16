@@ -29,7 +29,10 @@ The corollary: if you find yourself writing "ENA is usually better here", either
 plainly that it is unmeasured. An undated coverage number is not evidence of anything.
 
 **A link that exists is not a route.** `src/fetch_series/catalogue/` lists every one-hop link the
-archive APIs offer (432 of them), each confirmed by one live probe. Catalogue links are never ranked
+archive APIs offer between 39 nodes (1,130 of them, INSDC objects split by archive), each measured by
+a route's survey or confirmed by one live probe — and a probe into a file or document confirms it only
+if what it found is usable. A route's per-pair split (`route_splits.json`) is filtered measurement,
+not new evidence. Catalogue links are never ranked
 and never enter `REGISTRY` without a survey, and **a probe never becomes `RouteEvidence`**: it is one
 accession out of one, which proves existence and measures nothing. Promoting a catalogue link to a
 route means surveying it like any other.

@@ -2,21 +2,32 @@
 
     uv run fetch routes graph | uv run python scripts/route_graph_layout.py
 
-Prints the ``ROW`` and ``POSITIONS`` constants that
-``docs/javascripts/route-graph.js`` draws with. Rows are fixed -- one per level,
-top to bottom -- so only each node's x is searched. A placement is scored the
-way the first hand-tuned layout was judged, in order of weight:
+Prints the ``ROW``, ``COLUMNS`` and ``POSITIONS`` constants that
+``docs/javascripts/route-graph.js`` draws with. Two things are fixed, and only
+what is left is searched:
+
+* **Rows**, one per level, top to bottom: datasets, samples, libraries, runs,
+  the records about the data, then read files, supplementary files and metadata
+  documents. A record all three INSDC archives share -- a BioProject, a
+  BioSample -- and BioSample metadata sit on a row of their own beside their
+  level, over a band the page draws across the three INSDC columns. They are
+  nodes of ordinary width, not the band itself: a node as wide as the span
+  would sit across every line from the BioProject down, and a line passing
+  under a node reads as though it started there.
+* **Columns**, one per archive, left to right: GEO, NCBI, EBI, DDBJ,
+  ArrayExpress and BioStudies. Every node stays inside its archive's column;
+  a read format belongs to no archive, so the five share the INSDC span.
+
+Within those bounds each node's x is searched, scored the way the first
+hand-tuned layout was judged, in order of weight:
 
 1. **No bundle through a node it does not belong to.** A line that passes
    under a third node reads as though it starts or ends there. A bundle of
-   measured routes weighs three times a dotted untested one: the first layout
-   had none, and the routes are what the page is for.
+   measured routes weighs three times a dotted untested one.
 2. **Nodes in a row never overlap**, and keep room between them.
 3. **Room for labels.** Every lane is named along its length, so a bundle's
    span must fit its longest name.
-4. **Archive order across a row**: GEO left, INSDC in the middle, ArrayExpress
-   right, as the families are coloured.
-5. **Few crossings, then short lines.**
+4. **Few crossings, then short lines.**
 
 Two views are scored together, because the page draws both: the default, which
 hides submissions, analyses and platforms, and the full one. The default
@@ -36,33 +47,55 @@ import sys
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-ROW = {"dataset": 150, "sample": 410, "library": 650, "run": 870, "file": 1090, "other": 1310}
+# Row y. The `_shared` rows hold the records and documents all three INSDC
+# archives share, just above the level they belong to.
+ROW = {
+    "dataset_shared": 120,
+    "dataset": 250,
+    "sample_shared": 440,
+    "sample": 570,
+    "library": 760,
+    "run": 940,
+    "other": 1120,
+    "file": 1320,
+    "supplementary": 1500,
+    "metadata": 1680,
+    "metadata_shared": 1810,
+}
+SHARED_ROW = {"bioproject": "dataset_shared", "biosample": "sample_shared"}
+SHARED_ROW_OF_METADATA = {"metadata_biosample": "metadata_shared"}
+
+# Column bands, left edge to right edge.
+COLUMN_WIDTH = 520
+COLUMNS = ("geo", "ncbi", "ebi", "ddbj", "arrayexpress")
+LEFT = 200
+BAND = {
+    column: (LEFT + i * COLUMN_WIDTH, LEFT + (i + 1) * COLUMN_WIDTH)
+    for i, column in enumerate(COLUMNS)
+}
+BAND["insdc"] = (BAND["ncbi"][0], BAND["ddbj"][1])
+
 NODE_HEIGHT = 54
 LANE = 26  # between parallel lanes mid-way, as in route-graph.js
 ARROW = 11
 LABEL_CHAR = 7.2  # 12px monospace
 NODE_CHAR = 8.6  # 15px semibold
-SHAPE_PADDING = {"dataset": 44, "sample": 52, "library": 70, "run": 64, "file": 56, "other": 40}
-X_MIN, X_MAX, STEP = 250, 2500, 25
-GAP = 70  # between neighbours in a row
-
-# Left to right within a row. Files and the "other" records are placed by the
-# archive whose record they are.
-ARCHIVE_ORDER = {
-    "geo_series": 0,
-    "geo_sample": 0,
-    "geo_files": 0,
-    "geo_platform": 0,
-    "ae_experiment": 2,
-    "biostudy": 3,
-    "ae_sample": 2,
-    "ae_files": 2,
+SHAPE_PADDING = {
+    "dataset": 44,
+    "sample": 52,
+    "library": 70,
+    "run": 64,
+    "other": 40,
+    "file": 56,
+    "supplementary": 56,
+    "metadata": 48,
 }
+STEP = 10
+GAP = 36  # between neighbours in a row
 
 W_THROUGH = 1000.0
 W_OVERLAP = 5000.0
 W_LABEL = 2.0
-W_ORDER = 150.0
 W_CROSS = 3.0
 W_LENGTH = 0.004
 W_DEFAULT, W_FULL = 1.0, 0.5
@@ -88,8 +121,7 @@ def bundles(graph: dict) -> list[Bundle]:
             continue  # a self link is a loop above its node, not a span
         if edge["status"] == "measured":
             routes.add((edge["source"], edge["target"]))
-            name = edge["id"].split(":", 1)[1]
-            length = len(name)
+            length = len(edge["route"].split(":", 1)[1])
         else:
             names = sorted({graph["mechanisms"][e["mechanism"]]["name"] for e in edge["links"]})
             shown = names[:2] + ([f"+{len(names) - 2}"] if len(names) > 2 else [])
@@ -101,11 +133,16 @@ def bundles(graph: dict) -> list[Bundle]:
     ]
 
 
+def row_of(node: dict) -> str:
+    return SHARED_ROW.get(node["id"]) or SHARED_ROW_OF_METADATA.get(node["id"]) or node["layer"]
+
+
 def widths(graph: dict) -> dict[str, float]:
-    return {
-        n["id"]: max(130.0, len(n["label"]) * NODE_CHAR + SHAPE_PADDING[n["layer"]])
-        for n in graph["nodes"]
-    }
+    found = {}
+    for n in graph["nodes"]:
+        text = max(len(n["label"]), len(n.get("prefix") or "") * 0.85)
+        found[n["id"]] = max(120.0, text * NODE_CHAR + SHAPE_PADDING[n["layer"]])
+    return found
 
 
 def _clip(p, q, box) -> bool:
@@ -142,8 +179,15 @@ class Layout:
     def __init__(self, graph: dict) -> None:
         self.nodes = [n["id"] for n in graph["nodes"]]
         self.layer = {n["id"]: n["layer"] for n in graph["nodes"]}
-        self.family = {n["id"]: n["family"] for n in graph["nodes"]}
+        self.row = {n["id"]: row_of(n) for n in graph["nodes"]}
         self.width = widths(graph)
+        self.fixed: set[str] = set()
+        self.column = {n["id"]: n["column"] for n in graph["nodes"]}
+        self.band = {}
+        for n in graph["nodes"]:
+            lo, hi = BAND[n["column"]]
+            half = self.width[n["id"]] / 2
+            self.band[n["id"]] = (lo + half + GAP / 2, hi - half - GAP / 2)
         self.bundles = bundles(graph)
         self.other = {n for n in self.nodes if self.layer[n] == "other"}
         self.incident: dict[str, list[int]] = {n: [] for n in self.nodes}
@@ -151,21 +195,16 @@ class Layout:
             self.incident[b.source].append(i)
             self.incident[b.target].append(i)
         self.row_mates = {
-            n: [m for m in self.nodes if m != n and self.layer[m] == self.layer[n]]
-            for n in self.nodes
+            n: [m for m in self.nodes if m != n and self.row[m] == self.row[n]] for n in self.nodes
         }
+        self.movable = [n for n in self.nodes if n not in self.fixed]
         self.x: dict[str, float] = {}
 
     def at(self, node: str) -> tuple[float, float]:
-        return (self.x[node], ROW[self.layer[node]])
+        return (self.x[node], ROW[self.row[node]])
 
     def _weight(self, *nodes: str) -> float:
         return W_FULL if any(n in self.other for n in nodes) else W_DEFAULT + W_FULL
-
-    def _order(self, node: str) -> int:
-        if node in ARCHIVE_ORDER:
-            return ARCHIVE_ORDER[node]
-        return {"geo": 0, "insdc": 1, "arrayexpress": 2}.get(self.family[node], 1)
 
     # -------------------------------------------------------------- terms
 
@@ -183,7 +222,9 @@ class Layout:
         """Label shortfall and length of one bundle."""
         b = self.bundles[i]
         (x0, y0), (x1, y1) = self.at(b.source), self.at(b.target)
-        chord = math.hypot(x1 - x0, y1 - y0) or 1.0
+        chord = math.hypot(x1 - x0, y1 - y0)
+        if chord < 1.0:
+            return W_OVERLAP  # two ends on one spot: no room for anything
         ux, uy = abs(x1 - x0) / chord, abs(y1 - y0) / chord
 
         def inside(node: str) -> float:
@@ -202,14 +243,9 @@ class Layout:
         hit = _cross(self.at(a.source), self.at(a.target), self.at(b.source), self.at(b.target))
         return W_CROSS * self._weight(a.source, a.target, b.source, b.target) if hit else 0.0
 
-    def row(self, node: str, mate: str) -> float:
-        score = 0.0
-        if abs(self.x[node] - self.x[mate]) < (self.width[node] + self.width[mate]) / 2 + GAP:
-            score += W_OVERLAP
-        left, right = (node, mate) if self.x[node] < self.x[mate] else (mate, node)
-        if self._order(left) > self._order(right):
-            score += W_ORDER
-        return score
+    def overlap(self, node: str, mate: str) -> float:
+        room = (self.width[node] + self.width[mate]) / 2 + GAP
+        return W_OVERLAP if abs(self.x[node] - self.x[mate]) < room else 0.0
 
     def touching(self, node: str) -> float:
         """Every term that involves ``node``, each once."""
@@ -229,7 +265,7 @@ class Layout:
             if i not in mine_set:
                 total += self.through(i, node)
         for mate in self.row_mates[node]:
-            total += self.row(node, mate)
+            total += self.overlap(node, mate)
         return total
 
     def energy(self) -> float:
@@ -243,10 +279,16 @@ class Layout:
         for n in self.nodes:
             for m in self.row_mates[n]:
                 if n < m:
-                    total += self.row(n, m)
+                    total += self.overlap(n, m)
         return total
 
     # ------------------------------------------------------------- search
+
+    def clamp(self, node: str, x: float) -> float:
+        lo, hi = self.band[node]
+        if lo > hi:  # a node as wide as its band sits in its middle
+            return round((lo + hi) / 2 / STEP) * STEP
+        return min(hi, max(lo, round(x / STEP) * STEP))
 
     def move(self, node: str, x: float) -> float:
         """Move ``node`` to ``x`` and return the change in energy."""
@@ -259,14 +301,16 @@ class Layout:
         best, best_x = energy, dict(self.x)
         for k in range(iterations):
             temperature = 300.0 * (1 - k / iterations) + 0.5
-            node = rng.choice(self.nodes)
+            node = rng.choice(self.movable)
             old = dict(self.x)
-            if self.row_mates[node] and rng.random() < 0.3:
-                mate = rng.choice(self.row_mates[node])
-                delta = self.move(node, old[mate]) + self.move(mate, old[node])
+            mates = [m for m in self.row_mates[node] if m in self.movable]
+            if mates and rng.random() < 0.3:
+                mate = rng.choice(mates)
+                delta = self.move(node, self.clamp(node, old[mate])) + self.move(
+                    mate, self.clamp(mate, old[node])
+                )
             else:
-                shift = round(rng.gauss(0, 140) / STEP) * STEP
-                x = min(X_MAX, max(X_MIN, old[node] + shift))
+                x = self.clamp(node, old[node] + rng.gauss(0, 120))
                 if x == old[node]:
                     continue
                 delta = self.move(node, x)
@@ -279,7 +323,7 @@ class Layout:
         self.x = best_x
         return best
 
-    def report(self) -> dict[str, float]:
+    def report(self) -> dict[str, object]:
         through = {
             kind: sum(
                 1
@@ -297,19 +341,30 @@ class Layout:
             for j in range(i + 1, len(self.bundles))
             if self.crossing(i, j)
         )
-        return {"energy": round(self.energy(), 1), "through": through, "crossings": crossings}
+        overlaps = sum(
+            1 for n in self.nodes for m in self.row_mates[n] if n < m and self.overlap(n, m)
+        )
+        return {
+            "energy": round(self.energy(), 1),
+            "through": through,
+            "crossings": crossings,
+            "overlaps": overlaps,
+        }
 
 
 def initial(layout: Layout, rng: random.Random) -> None:
-    """Spread each row evenly, in archive order, with a little jitter."""
-    for level in ROW:
-        members = sorted(
-            (n for n in layout.nodes if layout.layer[n] == level),
-            key=lambda n: (layout._order(n), rng.random()),
-        )
-        span = (X_MAX - X_MIN) / (len(members) + 1)
+    """Spread each row's nodes evenly across their bands, with a little jitter."""
+    for node in layout.fixed:
+        lo, hi = BAND["insdc"]
+        layout.x[node] = (lo + hi) / 2
+    cells: dict[tuple[str, str], list[str]] = {}
+    for node in layout.movable:
+        cells.setdefault((layout.row[node], layout.column[node]), []).append(node)
+    for (_, column), members in cells.items():
+        rng.shuffle(members)
+        lo, hi = BAND[column]
         for k, node in enumerate(members, start=1):
-            layout.x[node] = round((X_MIN + k * span) / STEP) * STEP
+            layout.x[node] = layout.clamp(node, lo + k * (hi - lo) / (len(members) + 1))
 
 
 def search(graph: dict, seeds: Iterable[int], iterations: int) -> Layout:
@@ -334,11 +389,19 @@ def main() -> None:
     args = parser.parse_args()
     graph = json.load(sys.stdin)
     layout = search(graph, range(args.seeds), args.iterations)
-    print(f"// {layout.report()} -- scripts/route_graph_layout.py, {args.seeds} seeds x {args.iterations}")
-    print("const ROW = { " + ", ".join(f"{level}: {y}" for level, y in ROW.items()) + " };")
+    print(
+        f"// {layout.report()} -- scripts/route_graph_layout.py, "
+        f"{args.seeds} seeds x {args.iterations}"
+    )
+    print("const ROW = { " + ", ".join(f"{row}: {y}" for row, y in ROW.items()) + " };")
+    print(
+        "const COLUMNS = { "
+        + ", ".join(f"{c}: [{BAND[c][0]}, {BAND[c][1]}]" for c in COLUMNS)
+        + " };"
+    )
     print("const POSITIONS = {")
     for node in layout.nodes:
-        print(f"  {node}: {{ x: {int(layout.x[node])}, y: ROW.{layout.layer[node]} }},")
+        print(f"  {node}: {{ x: {int(layout.x[node])}, y: ROW.{layout.row[node]} }},")
     print("};")
 
 

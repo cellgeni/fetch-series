@@ -5,7 +5,7 @@ title: What counts as evidence
 # What counts as evidence
 
 **Status:** in force · **Enforced by:** `tests/test_routes.py`,
-`tests/test_graph.py`, `tests/test_catalogue_probes.py`
+`tests/test_graph.py`, `tests/test_catalogue_probes.py`, `tests/test_catalogue.py`
 
 [The ranking](route-ranking.md) is computed from evidence, so what qualifies as
 evidence is not a methodological footnote — it is the input to every routing
@@ -94,6 +94,32 @@ A probe that found nothing leaves its link *documented, not confirmed*, which
 is not the same as absent: the mechanism exists, and the record chosen did not
 carry the field. Promoting an untested link means surveying it, over a named
 corpus, like any other route.
+
+A probe into a file or a document confirms its link only when what it found is
+**usable**: a read file that downloads at the size the archive published, has a
+published md5 and size, and holds both reads a 10x run needs; a supplementary
+file that downloads and whose size can be checked; a metadata document that
+downloads and parses. A link that names a file nobody can fetch is not a route
+to that file. Each check is recorded with the probe, so an unconfirmed link says
+which check it failed.
+
+## A route's split is not new evidence
+
+INSDC objects are split by archive on the graph, so one route covers several
+links: `bioproject->run:ena_filereport` reaches SRRs, ERRs and DRRs. How it did
+on each is read out of its own recorded verdicts (`catalogue/splits.py`), by
+the archive each accession's prefix names and the format each file's name
+names. That is **filtered measurement**: the same survey, the same corpus, the
+same date, cut by source and target. It adds no evidence and is never ranked;
+`RouteRegistry.ranked()` still sees one route with one `RouteEvidence`.
+
+Two things follow. A split is drawn only where the survey actually queried that
+source: `experiment->run:ena_filereport` was surveyed on GEO series'
+experiments, which are all SRXs, so it measured nothing about an ERX and that
+link is probed like any untested one. And a split whose source was queried and
+never reached the target is a *measured absence*, listed and not drawn:
+`run->file:ena_submitted` found submitted files for all 246 ERRs it was asked
+about and for none of 2,737 SRRs.
 
 ## An undated number is not evidence
 

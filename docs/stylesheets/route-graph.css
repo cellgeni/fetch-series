@@ -3,9 +3,17 @@
  * Three palettes, each run through a validator against both of Material's
  * surfaces (white, and slate at hsl(232 15% 14%) = #1e2129):
  *
- * - Archive families, on nodes: the first three categorical slots, which are
- *   the most that separate on every pair (worst colour-blind dE 9.2 light,
- *   9.4 dark). Files are not an archive, so they stay neutral.
+ * - Archives, on nodes: five categorical hues in column order -- GEO orange,
+ *   NCBI blue, EBI green, DDBJ violet, ArrayExpress amber -- so every pair of
+ *   neighbouring columns passes the validator in both modes (worst adjacent
+ *   colour-blind dE 24.7 light, 26.8 dark; worst normal-vision dE 27.5). They
+ *   do NOT pass on every pair: NCBI blue and DDBJ violet are dE 1.9 apart to a
+ *   protan reader, GEO orange and EBI green 3.2. Colour is therefore never the
+ *   only channel: each archive is a column, and every label names its archive
+ *   ("SRA run", "ENA run", "DRA run"). Amber is 2.17:1 on white, so its nodes
+ *   carry their name inside them -- the relief the validator requires.
+ *   Records all three INSDC archives hold, and read formats no archive owns,
+ *   are neutral.
  * - Resolved share, on measured route lines and matrix cells: a five-step
  *   neutral ink ramp, so it cannot be read as the blue of an INSDC node.
  *   Ordinal checks pass in both modes: lightness monotone, every step gap at
@@ -29,9 +37,12 @@
   --rg-ink-2: var(--md-default-fg-color--light);
   --rg-accent: var(--md-accent-fg-color);
 
-  --rg-insdc: #2a78d6;
   --rg-geo: #eb6834;
-  --rg-arrayexpress: #1baf7a;
+  --rg-ncbi: #2a78d6;
+  --rg-ebi: #008300;
+  --rg-ddbj: #6250d6;
+  --rg-arrayexpress: #eda100;
+  --rg-shared: #6f6e69;
   --rg-file: #898781;
   --rg-neutral: #6f6e69;
 
@@ -55,9 +66,12 @@
   --rg-region: rgba(255, 255, 255, 0.04);
   --rg-hairline: rgba(255, 255, 255, 0.12);
 
-  --rg-insdc: #3987e5;
   --rg-geo: #d95926;
-  --rg-arrayexpress: #199e70;
+  --rg-ncbi: #3987e5;
+  --rg-ebi: #008300;
+  --rg-ddbj: #9085e9;
+  --rg-arrayexpress: #c98500;
+  --rg-shared: #a9a89f;
   --rg-neutral: #a9a89f;
 
   --rg-resolved: #d9d8d2;
@@ -270,9 +284,12 @@
 
 /* -------------------------------------------------------------- the nodes */
 
-.rg-family-insdc { --rg-fam: var(--rg-insdc); }
 .rg-family-geo { --rg-fam: var(--rg-geo); }
+.rg-family-ncbi { --rg-fam: var(--rg-ncbi); }
+.rg-family-ebi { --rg-fam: var(--rg-ebi); }
+.rg-family-ddbj { --rg-fam: var(--rg-ddbj); }
 .rg-family-arrayexpress { --rg-fam: var(--rg-arrayexpress); }
+.rg-family-shared { --rg-fam: var(--rg-shared); }
 .rg-family-file { --rg-fam: var(--rg-file); }
 .rg-family-neutral { --rg-fam: var(--rg-neutral); }
 
@@ -307,6 +324,48 @@
   font-size: 15px;
   font-weight: 600;
   pointer-events: none;
+}
+
+/* How an identifier of the node is spelt: SRR, PRJ*, E-XXXX-n. */
+.rg-node-prefix {
+  fill: var(--rg-ink-2);
+  font-family: var(--md-code-font-family, monospace);
+  font-size: 11.5px;
+  pointer-events: none;
+}
+
+/* The archive columns: a name over each, a hairline between them. The name
+ * is in ink, with the archive's colour as an underline-weight rule, so the
+ * text stays legible whatever the hue. */
+.rg-column-label {
+  fill: var(--rg-ink);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-decoration: underline;
+  text-decoration-color: var(--rg-fam);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 6px;
+}
+
+/* The band the shared records sit on: across the INSDC columns, behind the lines. */
+.rg-shared-band {
+  fill: var(--rg-region);
+  stroke: var(--rg-hairline);
+  stroke-dasharray: 3 5;
+}
+
+.rg-shared-label {
+  fill: var(--rg-ink-2);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.rg-column-rule {
+  stroke: var(--rg-row);
+  stroke-width: 1;
+  stroke-dasharray: 2 6;
 }
 
 .rg-node:focus-visible {
@@ -678,9 +737,12 @@
   border-radius: 2px;
 }
 
-.rg-swatch.rg-family-insdc,
 .rg-swatch.rg-family-geo,
+.rg-swatch.rg-family-ncbi,
+.rg-swatch.rg-family-ebi,
+.rg-swatch.rg-family-ddbj,
 .rg-swatch.rg-family-arrayexpress,
+.rg-swatch.rg-family-shared,
 .rg-swatch.rg-family-file {
   width: 0.75rem;
   height: 0.75rem;
@@ -1103,6 +1165,54 @@
   opacity: 0.55;
 }
 
+/* Measured, and nothing ever reached the target: a struck-through outline. */
+.rg-cell--none-measured {
+  border: 1.5px solid var(--rg-untested);
+  background: linear-gradient(
+    to top right,
+    transparent calc(50% - 0.75px),
+    var(--rg-untested) calc(50% - 0.75px),
+    var(--rg-untested) calc(50% + 0.75px),
+    transparent calc(50% + 0.75px)
+  );
+  opacity: 0.7;
+}
+
+/* What a probe checked a found file or document for. Pass, fail and
+ * undetermined each carry a glyph as well as a colour. */
+.rg-checks {
+  margin: 0.2rem 0 0.3rem;
+  padding: 0;
+  list-style: none;
+}
+
+.md-typeset .rg-checks li {
+  margin: 0;
+}
+
+.rg-check-mark {
+  display: inline-block;
+  width: 1.1em;
+  font-weight: 700;
+}
+
+.rg-check--passed .rg-check-mark {
+  color: var(--rg-ink);
+}
+
+.rg-check--failed .rg-check-mark {
+  color: var(--rg-failed);
+}
+
+.rg-check--undetermined .rg-check-mark {
+  color: var(--rg-ink-2);
+}
+
+/* Row and column heads in the matrix carry their archive as a left rule. */
+.rg-matrix-row[class*="rg-family-"] {
+  box-shadow: inset 3px 0 0 var(--rg-fam);
+}
+
 .rg-cell-mark:hover,
 .rg-cell-mark:focus-visible {
   outline: 2px solid var(--rg-accent);
@@ -1112,4 +1222,8 @@
 .rg-cell-mark.is-selected {
   outline: 2px solid var(--rg-accent);
   outline-offset: 1px;
+}
+
+.md-typeset .rg-matrix th.rg-matrix-col[class*="rg-family-"] {
+  box-shadow: inset 0 -3px 0 var(--rg-fam);
 }
