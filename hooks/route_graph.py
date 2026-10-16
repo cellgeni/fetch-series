@@ -40,7 +40,9 @@ def on_page_markdown(markdown: str, *, page: Page, config: MkDocsConfig, files: 
         raise PluginError(f"{PAGE} no longer carries the {PLACEHOLDER} marker.")
 
     graph = route_graph()
-    for edge in graph["edges"]:
+    # Only a measured edge is a route with a page. An untested one is a
+    # catalogue link, and its documentation is the mechanism's own citation.
+    for edge in (e for e in graph["edges"] if e["status"] == "measured"):
         edge["kb_url"] = _url(edge["kb_page"], page, files)
         for pathology in edge["pathologies"]:
             pathology["url"] = (
