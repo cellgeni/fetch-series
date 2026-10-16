@@ -20,10 +20,20 @@ from fetch_series.accession import EntityType, UnknownAccessionError, parse
 from fetch_series.assays import AssayCall
 from fetch_series.assays.chemistry import ChemistryCall
 from fetch_series.cache import DEFAULT_CACHE_PATH, SurveyCache
-from fetch_series.catalogue import CATALOGUE, PROBES_PATH, Probe, load_probes, save_probes
+from fetch_series.catalogue import (
+    CATALOGUE,
+    DRAWN,
+    PROBES_PATH,
+    SPLITS_PATH,
+    Probe,
+    load_probes,
+    save_probes,
+    save_splits,
+)
 from fetch_series.catalogue import Status as CatalogueStatus
 from fetch_series.catalogue import status as catalogue_status
 from fetch_series.catalogue.probe import host_limits, probe_links
+from fetch_series.catalogue.splits import compute as compute_splits
 from fetch_series.core import default_api_key
 from fetch_series.entities import MISSING, RELATION_COLUMNS, RunRecord
 from fetch_series.export.graph import route_graph
@@ -174,7 +184,12 @@ def catalogue_list(
     probes = load_probes()
     typer.echo(f"{len(CATALOGUE.nodes)} nodes")
     for node in CATALOGUE.nodes.values():
-        typer.echo(f"  {node.id:14s} {node.level:8s} {node.database:13s} {node.label}")
+        typer.echo(
+            f"  {node.id:20s} {node.level:13s} {node.archive or 'shared':12s} "
+            f"{node.label} ({node.prefix})"
+            if node.prefix
+            else f"  {node.id:20s} {node.label}"
+        )
 
     by_pair: dict[tuple[str, str], list[tuple[CatalogueStatus, str]]] = {}
     for link in CATALOGUE:
@@ -197,14 +212,44 @@ def catalogue_list(
     if only:
         return
     drawn = {
-        (link.source, link.target)
-        for link in CATALOGUE
-        if catalogue_status(link, probes) in (CatalogueStatus.MEASURED, CatalogueStatus.UNTESTED)
+        (link.source, link.target) for link in CATALOGUE if catalogue_status(link, probes) in DRAWN
     }
     typer.echo("\nNo confirmed one-hop link:")
     for source in CATALOGUE.nodes:
         missing = [t for t in CATALOGUE.nodes if t != source and (source, t) not in drawn]
-        typer.echo(f"  {source:14s} -> {', '.join(missing) or '(reaches every node)'}")
+        typer.echo(f"  {source:20s} -> {', '.join(missing) or '(reaches every node)'}")
+
+
+@catalogue_app.command("splits")
+def catalogue_splits(
+    write: Annotated[
+        bool, typer.Option("--write", help="Write route_splits.json beside the catalogue.")
+    ] = False,
+) -> None:
+    """Split each route's recorded verdicts over the node pairs it covers.
+
+    Reads data/surveys/ and the 2026-05 tables in data/query/results/, which are
+    Git LFS objects: fetch them first. Nothing is measured; this only filters what
+    each route's survey already recorded, by archive and by file format.
+    """
+    splits, sources = compute_splits(CATALOGUE, REGISTRY)
+    for split in splits:
+        share = "split unknown" if split.share is None else f"{split.share:.1%} resolved"
+        typer.echo(
+            f"{split.route:42s} {split.source:16s} -> {split.target:16s} "
+            f"{split.reached:>7,} of {split.queried:>7,} reached  ({share})"
+        )
+    for route, source in sources.items():
+        if source["unparsed"]:
+            typer.secho(f"{route}: not accessions, kept: {source['unparsed']}", err=True)
+        if source["excluded"]:
+            typer.secho(
+                f"{route}: queried sources it cannot link, all empty: {source['excluded']}",
+                err=True,
+            )
+    if write:
+        save_splits(splits, sources)
+        typer.echo(f"wrote {len(splits)} splits to {SPLITS_PATH}", err=True)
 
 
 @catalogue_app.command("probe")
@@ -214,6 +259,13 @@ def catalogue_probe(
     ] = None,
     write: Annotated[
         bool, typer.Option("--write", help="Merge the results into probes.json.")
+    ] = False,
+    stale: Annotated[
+        bool,
+        typer.Option(
+            "--stale",
+            help="Only links with no probe, or whose probe used another accession.",
+        ),
     ] = False,
 ) -> None:
     """Make one live request per untested link and report what each found.
@@ -230,6 +282,14 @@ def catalogue_probe(
             raise typer.Exit(2) from None
     else:
         targets = CATALOGUE.untested
+    if stale:
+        recorded = load_probes()
+        targets = [
+            link
+            for link in targets
+            if link.id not in recorded
+            or recorded[link.id].accession != CATALOGUE.probe_accession(link)
+        ]
     api_key = default_api_key()
 
     async def main() -> list[Probe]:
@@ -238,15 +298,19 @@ def catalogue_probe(
             SurveyClient(limits["ncbi"], api_key=api_key) as ncbi,
             SurveyClient(limits["ebi"]) as ebi,
             SurveyClient(limits["ddbj"]) as ddbj,
+            SurveyClient(limits["files"]) as files,
         ):
-            return await probe_links(targets, {"ncbi": ncbi, "ebi": ebi, "ddbj": ddbj})
+            return await probe_links(
+                targets, {"ncbi": ncbi, "ebi": ebi, "ddbj": ddbj, "files": files}
+            )
 
     probes = asyncio.run(main())
     for probe in sorted(probes, key=lambda p: p.link):
         shown = ", ".join(probe.found[:3]) + (" ..." if probe.found_count > 3 else "")
+        failed = f" FAILED CHECKS {probe.failed_checks}" if probe.failed_checks else ""
         typer.echo(
-            f"{probe.outcome:9s} {probe.link:58s} {probe.accession:22s} "
-            f"{probe.found_count:>6} {probe.error or shown}"
+            f"{probe.outcome:9s} {probe.link:64s} {probe.accession:22s} "
+            f"{probe.found_count:>6} {probe.error or shown}{failed}"
         )
     outcomes = Counter(p.outcome for p in probes)
     typer.echo(", ".join(f"{outcomes[o]} {o}" for o in Outcome), err=True)

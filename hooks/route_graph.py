@@ -22,8 +22,17 @@ from mkdocs.structure.files import Files
 from mkdocs.structure.pages import Page
 from mkdocs.utils import get_relative_url
 
-from fetch_series.catalogue import CATALOGUE, Basis, Status, load_probes, status
+from fetch_series.catalogue import (
+    CATALOGUE,
+    DRAWN,
+    Basis,
+    NodeKind,
+    Status,
+    load_probes,
+    status,
+)
 from fetch_series.export.graph import route_graph
+from fetch_series.results import Outcome
 
 PAGE = "routes/graph.md"
 PLACEHOLDER = "<!-- route-graph-data -->"
@@ -54,13 +63,22 @@ def _catalogue_sections() -> dict[str, str]:
     pairs = {(link.source, link.target) for link in CATALOGUE}
     probed = sorted({p.checked_on.isoformat() for p in probes.values()})
     label = {node.id: node.label for node in CATALOGUE.nodes.values()}
+    failed_checks = sum(
+        1
+        for link in CATALOGUE
+        if statuses[link.id] is Status.UNCONFIRMED
+        and (probe := probes.get(link.id)) is not None
+        and probe.outcome is Outcome.RESOLVED
+    )
 
     summary = (
         f"**{len(CATALOGUE.nodes)} nodes, {len(CATALOGUE.mechanisms)} mechanisms, "
         f"{len(CATALOGUE.links)} links** over {len(pairs)} node pairs: "
         f"{counts[Status.MEASURED]} measured by a declared route, "
+        f"{counts[Status.MEASURED_NONE]} measured and never answering, "
         f"{counts[Status.UNTESTED]} untested and confirmed by a probe, and "
-        f"{counts[Status.UNCONFIRMED]} documented whose probe found nothing"
+        f"{counts[Status.UNCONFIRMED]} documented and not confirmed, of which "
+        f"{failed_checks} found a file or document that failed a check"
         + (f"; {counts[Status.UNPROBED]} not yet probed" if counts[Status.UNPROBED] else "")
         + (f". Probed {', '.join(probed)} (UTC)." if probed else ".")
     )
@@ -70,7 +88,12 @@ def _catalogue_sections() -> dict[str, str]:
         mine = [link for link in CATALOGUE if link.mechanism == mechanism.id]
         tally = ", ".join(
             f"{n} {s}"
-            for s in (Status.MEASURED, Status.UNTESTED, Status.UNCONFIRMED)
+            for s in (
+                Status.MEASURED,
+                Status.MEASURED_NONE,
+                Status.UNTESTED,
+                Status.UNCONFIRMED,
+            )
             if (n := sum(statuses[link.id] is s for link in mine))
         )
         basis = (
@@ -83,38 +106,28 @@ def _catalogue_sections() -> dict[str, str]:
             f"`{_cell(mechanism.endpoint)}` | {tally} | {basis} |"
         )
 
-    drawn = {
-        (link.source, link.target)
-        for link in CATALOGUE
-        if statuses[link.id] in (Status.MEASURED, Status.UNTESTED)
-    }
+    drawn = {(link.source, link.target) for link in CATALOGUE if statuses[link.id] in DRAWN}
     gaps = []
     for node in CATALOGUE.nodes.values():
-        if node.entity is not None and str(node.entity) == "file":
-            continue  # a file is where links end
+        if node.kind is not NodeKind.RECORD:
+            continue  # a file or a document is where links end
         missing = []
         for target in CATALOGUE.nodes:
             if target == node.id or (node.id, target) in drawn:
                 continue
-            documented = sorted(
-                {
-                    CATALOGUE.mechanisms[link.mechanism].name
-                    for link in CATALOGUE.between(node.id, target)
-                }
-            )
-            missing.append(
-                label[target]
-                + (
-                    f" ({', '.join(documented)} declared; its probe found nothing)"
-                    if documented
-                    else ""
-                )
-            )
-        gaps.append(
-            f"- **{node.label}** → " + (" · ".join(missing) if missing else "*reaches every node*")
-        )
+            declared = CATALOGUE.between(node.id, target)
+            if not declared:
+                continue
+            names = sorted({CATALOGUE.mechanisms[link.mechanism].name for link in declared})
+            missing.append(f"{label[target]} ({', '.join(names)})")
+        if missing:
+            gaps.append(f"- **{node.label}** → " + " · ".join(missing))
     gaps.append("")
-    gaps.append("Files are left out: a file is where links end, so nothing links onward from one.")
+    gaps.append(
+        "Only declared links are listed: a pair nothing declares is a blank in the "
+        "matrix under [the route graph](../routes/graph.md), and files and documents "
+        "are left out, because nothing links onward from one."
+    )
     return dict(
         zip(CATALOGUE_PLACEHOLDERS, (summary, "\n".join(rows), "\n".join(gaps)), strict=True)
     )

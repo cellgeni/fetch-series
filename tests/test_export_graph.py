@@ -21,22 +21,53 @@ def _of(kind: str) -> list[dict]:
 
 
 class TestMeasuredEdges:
-    def test_every_route_is_one_edge(self):
-        assert Counter(e["id"] for e in _of("measured")) == Counter(r.id for r in REGISTRY)
+    def test_one_edge_per_route_and_measured_pair(self):
+        """A route is drawn once per node pair its survey reached: SRR, ERR and DRR apart."""
+        probes = load_probes()
+        expected = Counter(
+            link.route_id for link in CATALOGUE if status(link, probes) is Status.MEASURED
+        )
+        assert Counter(e["route"] for e in _of("measured")) == expected
+        assert len({e["id"] for e in _of("measured")}) == len(_of("measured"))
+
+    def test_every_route_is_drawn_or_listed_as_never_answering(self):
+        """run->file:ena_sra answered for none of its 3,000 runs: listed, with no line."""
+        drawn = {e["route"] for e in _of("measured")}
+        none = {r["route"] for group in GRAPH["measured_none"] for r in group["routes"]}
+        assert drawn | none == {r.id for r in REGISTRY}
+        assert "run->file:ena_sra" in none - drawn
 
     def test_ranks_are_the_registrys_ranking(self):
         """The page must show the order the resolver uses, not a re-derived one."""
         for edge in _of("measured"):
-            route = REGISTRY[edge["id"]]
+            route = REGISTRY[edge["route"]]
             ranked = [r.id for r in REGISTRY.ranked(route.source, route.target)]
-            assert edge["rank"] == ranked.index(edge["id"]) + 1
+            assert edge["rank"] == ranked.index(edge["route"]) + 1
             assert edge["of"] == len(ranked)
 
-    def test_endpoints_are_the_routes_catalogue_link(self):
+    def test_endpoints_are_one_of_the_routes_catalogue_links(self):
         for edge in _of("measured"):
-            link = CATALOGUE.route_link(edge["id"])
-            assert (edge["source"], edge["target"]) == (link.source, link.target)
-            assert edge["link"]["mechanism"] == link.mechanism
+            pairs = {
+                (link.source, link.target, link.mechanism)
+                for link in CATALOGUE.route_links(edge["route"])
+            }
+            assert (edge["source"], edge["target"], edge["link"]["mechanism"]) in pairs
+
+    def test_a_measured_edge_carries_its_split_and_it_reached_the_target(self):
+        for edge in _of("measured"):
+            split = edge["split"]
+            assert 0 < split["reached"] <= split["queried"]
+            if split["resolved"] is None:
+                assert split["share"] is None
+            else:
+                assert split["share"] == split["resolved"] / split["queried"]
+
+    def test_a_route_that_never_reached_a_target_is_listed_not_drawn(self):
+        drawn = {(e["source"], e["target"], e["route"]) for e in _of("measured")}
+        for group in GRAPH["measured_none"]:
+            for entry in group["routes"]:
+                assert entry["split"]["reached"] == 0 < entry["split"]["queried"]
+                assert (group["source"], group["target"], entry["route"]) not in drawn
 
     def test_outcomes_add_up_where_the_split_is_known(self):
         for edge in _of("measured"):
@@ -71,10 +102,18 @@ class TestUntestedEdges:
     def test_an_untested_edge_carries_its_probes_and_no_evidence(self):
         """A probe proves a link exists; it is not a measurement, so it has no counts."""
         for edge in _of("untested"):
-            assert "evidence" not in edge and "rank" not in edge
+            assert "evidence" not in edge and "rank" not in edge and "split" not in edge
             for entry in edge["links"]:
                 assert entry["probe"]["outcome"] == "resolved"
                 assert entry["probe"]["found_count"] >= len(entry["probe"]["found"]) > 0
+                assert all(check["passed"] is True for check in entry["probe"]["checks"])
+
+    def test_a_line_into_a_read_format_says_who_made_its_files(self):
+        nodes = {n["id"]: n for n in GRAPH["nodes"]}
+        for edge in GRAPH["edges"]:
+            if nodes[edge["target"]]["kind"] == "read-format":
+                for entry in edge.get("links") or [edge["link"]]:
+                    assert entry["origin"], edge["id"]
 
     def test_unconfirmed_links_are_listed_and_never_drawn(self):
         drawn = {
@@ -84,7 +123,11 @@ class TestUntestedEdges:
         }
         for group in GRAPH["unconfirmed"]:
             for entry in group["links"]:
-                assert entry["probe"]["outcome"] != "resolved"
+                probe = entry["probe"]
+                # Found nothing, or found a file or document that failed a check.
+                assert probe["outcome"] != "resolved" or any(
+                    check["passed"] is not True for check in probe["checks"]
+                )
                 assert (group["source"], group["target"], entry["mechanism"]) not in drawn
 
     def test_every_mechanism_referred_to_is_described(self):
@@ -127,9 +170,13 @@ class TestNodesAndPaths:
 
     def test_nodes_carry_their_accession_patterns(self):
         nodes = {n["id"]: n for n in GRAPH["nodes"]}
-        assert any(a["pattern"] == r"[SED]RR\d+" for a in nodes["run"]["accessions"])
-        assert nodes["ena_files"]["accessions"] == []
+        assert any(a["pattern"] == r"[SED]RR\d+" for a in nodes["run_ebi"]["accessions"])
+        assert nodes["fastq"]["accessions"] == []
         assert nodes["ae_sample"]["accessions"] == [] and nodes["ae_sample"]["note"]
+
+    def test_every_node_has_a_column_the_page_draws(self):
+        for node in GRAPH["nodes"]:
+            assert node["column"] in (*GRAPH["columns"], "insdc"), node["id"]
 
 
 def test_cli_prints_the_same_graph():

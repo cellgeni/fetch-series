@@ -6,20 +6,24 @@ cannot disagree with ``graph.py``, with the catalogue, or with each other.
 
 Two kinds of edge, never mixed:
 
-* ``measured`` -- one per declared route, carrying its ``RouteEvidence`` and
-  its rank. Everything that involves a *judgement* -- which route ranks first,
-  which paths exist -- is computed here by the registry's own
-  :meth:`~fetch_series.graph.RouteRegistry.ranked` and by the same path search
-  the registry uses, never re-derived in the browser. A second implementation
-  of the ranking would be a second ranking.
-* ``untested`` -- one per node pair the catalogue links and no route
-  measures, listing the mechanisms that answer it and the probe that confirmed
+* ``measured`` -- one per declared route *and node pair it covers*, carrying
+  the route's ``RouteEvidence``, its rank, and its **split**: the route's own
+  verdicts restricted to that source node and target node
+  (:mod:`fetch_series.catalogue.splits`). ``bioproject->run:ena_filereport`` is
+  three edges, to SRR, ERR and DRR. Everything that involves a *judgement* --
+  which route ranks first, which paths exist -- is computed here by the
+  registry's own :meth:`~fetch_series.graph.RouteRegistry.ranked` and by the
+  same path search the registry uses, never re-derived in the browser. A
+  second implementation of the ranking would be a second ranking.
+* ``untested`` -- one per node pair the catalogue links and no route's survey
+  measured, listing the mechanisms that answer it and the probe that confirmed
   each. A probe proves the link exists; it carries no counts, because it
   measured nothing.
 
-A catalogue link whose probe found nothing is ``unconfirmed``: listed, so the
-page can say it is documented, and never drawn, because a line would claim a
-link nobody has seen answer.
+Two kinds of link are listed and never drawn, because a line would claim a link
+nobody has seen answer: ``unconfirmed`` (the probe found nothing, or found a
+file or document that failed a check) and ``measured_none`` (a route's survey
+queried the source and no accession reached the target).
 """
 
 from __future__ import annotations
@@ -31,13 +35,15 @@ from typing import Any
 from fetch_series.accession import RULES
 from fetch_series.catalogue import (
     CATALOGUE,
+    DRAWN,
     Catalogue,
     Level,
     Link,
+    NodeKind,
     Probe,
+    Split,
     Status,
     load_probes,
-    status,
 )
 from fetch_series.graph import PATHOLOGY_BACKLOG, REGISTRY, Route, RouteRegistry
 from fetch_series.routes import IMPLEMENTATIONS
@@ -47,8 +53,24 @@ LAYER_LABELS: dict[Level, str] = {
     Level.SAMPLE: "Sample",
     Level.LIBRARY: "Library",
     Level.RUN: "Run",
-    Level.FILE: "File",
     Level.OTHER: "Other",
+    Level.FILE: "Read files",
+    Level.SUPPLEMENTARY: "Supplementary",
+    Level.METADATA: "Metadata",
+}
+
+# The graph's columns, left to right: which archive a node belongs to. The
+# records all three INSDC archives share, and the read formats no archive owns,
+# span the three INSDC columns.
+COLUMNS = ("geo", "ncbi", "ebi", "ddbj", "arrayexpress")
+COLUMN_OF_FAMILY = {
+    "geo": "geo",
+    "ncbi": "ncbi",
+    "ebi": "ebi",
+    "ddbj": "ddbj",
+    "arrayexpress": "arrayexpress",
+    "shared": "insdc",
+    "file": "insdc",
 }
 
 # Paths through untested links are many more than through measured ones -- 143
@@ -78,6 +100,18 @@ def _evidence(route: Route) -> dict[str, Any] | None:
     }
 
 
+def _split(split: Split) -> dict[str, Any]:
+    return {
+        "queried": split.queried,
+        "resolved": split.resolved,
+        "empty": split.empty,
+        "failed": split.failed,
+        "reached": split.reached,
+        "distinct": split.distinct,
+        "share": split.share,
+    }
+
+
 def _mechanisms(catalogue: Catalogue) -> dict[str, dict[str, Any]]:
     """Each mechanism once; links refer to it by id rather than repeating it."""
     return {
@@ -94,11 +128,13 @@ def _mechanisms(catalogue: Catalogue) -> dict[str, dict[str, Any]]:
     }
 
 
-def _link(link: Link, probe: Probe | None) -> dict[str, Any]:
-    """One link's mechanism, the field it is read from, and its probe."""
+def _link(catalogue: Catalogue, link: Link, probe: Probe | None) -> dict[str, Any]:
+    """One link's mechanism, the field it is read from, who made its files, and its probe."""
+    origin = catalogue.mechanisms[link.mechanism].origin_of(link.target)
     return {
         "mechanism": link.mechanism,
         "field": link.read_from,
+        "origin": str(origin) if origin else None,
         "probe": None
         if probe is None
         else {
@@ -110,23 +146,34 @@ def _link(link: Link, probe: Probe | None) -> dict[str, Any]:
             "found": list(probe.found[:FOUND_SHOWN]),
             "found_count": probe.found_count,
             "error": probe.error,
+            # What a found file or document was checked for, and on what.
+            "checks": [{"name": name, "passed": passed} for name, passed in probe.checks],
+            "checked": probe.checked,
         },
     }
 
 
-def _measured_edge(registry: RouteRegistry, route: Route, link: Link) -> dict[str, Any]:
+def edge_id(route_id: str, link: Link) -> str:
+    """A measured edge: one route on one node pair."""
+    return f"{route_id}|{link.source}>{link.target}"
+
+
+def _measured_edge(
+    registry: RouteRegistry, catalogue: Catalogue, route: Route, link: Link, split: Split
+) -> dict[str, Any]:
     ranked = [r.id for r in registry.ranked(route.source, route.target)]
     return {
-        "id": route.id,
+        "id": edge_id(route.id, link),
+        "route": route.id,
         "status": str(Status.MEASURED),
         "source": link.source,
         "target": link.target,
         "provider": route.provider,
         "summary": route.summary,
         "kb_page": route.kb_page,
-        # The resolver's order for this *entity-type* direction. Where file
-        # nodes split one type, run -> ENA files shows "2 of 4": the resolver
-        # ranks all four run -> file routes together.
+        # The resolver's order for this *entity-type* direction. Where nodes
+        # split one type, BioProject -> ERR shows "2 of 5": the resolver ranks
+        # every BioProject -> run route together, whichever archive answers.
         "rank": ranked.index(route.id) + 1,
         "of": len(ranked),
         "implemented": route.id in IMPLEMENTATIONS,
@@ -142,11 +189,14 @@ def _measured_edge(registry: RouteRegistry, route: Route, link: Link) -> dict[st
             for slug in route.known_pathologies
         ],
         "evidence": _evidence(route),
-        "link": _link(link, None),
+        "split": _split(split),
+        "link": _link(catalogue, link, None),
     }
 
 
-def _grouped(links: list[Link], probes: Mapping[str, Probe], kind: Status) -> list[dict[str, Any]]:
+def _grouped(
+    catalogue: Catalogue, links: list[Link], probes: Mapping[str, Probe], kind: Status
+) -> list[dict[str, Any]]:
     """One entry per node pair, listing every mechanism that answers it."""
     by_pair: dict[tuple[str, str], list[Link]] = {}
     for link in links:
@@ -158,11 +208,33 @@ def _grouped(links: list[Link], probes: Mapping[str, Probe], kind: Status) -> li
             "source": source,
             "target": target,
             "links": [
-                _link(link, probes.get(link.id))
+                _link(catalogue, link, probes.get(link.id))
                 for link in sorted(pair, key=lambda link: link.mechanism)
             ],
         }
         for (source, target), pair in sorted(by_pair.items())
+    ]
+
+
+def _measured_none(catalogue: Catalogue, links: list[Link]) -> list[dict[str, Any]]:
+    """Pairs a route's survey measured and found nothing on, by pair."""
+    by_pair: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for link in links:
+        split = catalogue.split(link)
+        assert split is not None and link.route_id is not None
+        by_pair.setdefault((link.source, link.target), []).append(
+            {
+                "route": link.route_id,
+                "mechanism": link.mechanism,
+                "corpus": REGISTRY[link.route_id].evidence.corpus  # type: ignore[union-attr]
+                if link.route_id in REGISTRY
+                else None,
+                "split": _split(split),
+            }
+        )
+    return [
+        {"source": source, "target": target, "routes": routes}
+        for (source, target), routes in sorted(by_pair.items())
     ]
 
 
@@ -208,17 +280,20 @@ def route_graph(
 ) -> dict[str, Any]:
     """Nodes, measured and untested edges, paths and gaps, as JSON-serialisable data."""
     probes = load_probes() if probes is None else probes
-    statuses = {link.id: status(link, probes) for link in catalogue}
+    statuses = {link.id: catalogue.status(link, probes) for link in catalogue}
 
-    edges: list[dict[str, Any]] = [
-        _measured_edge(registry, route, catalogue.route_link(route.id))
-        for route in sorted(registry, key=lambda r: r.id)
-    ]
+    edges: list[dict[str, Any]] = []
+    for route in sorted(registry, key=lambda r: r.id):
+        for link in catalogue.route_links(route.id):
+            split = catalogue.split(link)
+            if split is not None and statuses[link.id] is Status.MEASURED:
+                edges.append(_measured_edge(registry, catalogue, route, link, split))
     untested = [link for link in catalogue if statuses[link.id] is Status.UNTESTED]
     unconfirmed = [
         link for link in catalogue if statuses[link.id] in (Status.UNCONFIRMED, Status.UNPROBED)
     ]
-    edges += _grouped(untested, probes, Status.UNTESTED)
+    none = [link for link in catalogue if statuses[link.id] is Status.MEASURED_NONE]
+    edges += _grouped(catalogue, untested, probes, Status.UNTESTED)
 
     nodes = []
     for node in catalogue.nodes.values():
@@ -228,18 +303,25 @@ def route_graph(
             {
                 "id": node.id,
                 "label": node.label,
+                "prefix": node.prefix,
                 "family": node.family,
+                "column": COLUMN_OF_FAMILY[node.family],
                 "layer": str(node.level),
+                "kind": str(node.kind),
                 "database": node.database,
+                "archive": str(node.archive) if node.archive else None,
                 "entity": str(node.entity) if node.entity else None,
                 "note": node.note,
                 # What an identifier of this node looks like, from the one
-                # registry that parses them. A file has none: it is reached,
-                # never parsed; an ArrayExpress sample has none of its own.
+                # registry that parses them -- narrowed to the node's archive
+                # where it is one archive's object. A file has none: it is
+                # reached, never parsed.
                 "accessions": [
                     {"pattern": rule.pattern.pattern, "description": rule.description}
                     for rule in RULES
-                    if node.entity is not None and rule.entity is node.entity
+                    if node.kind is NodeKind.RECORD
+                    and node.entity is not None
+                    and rule.entity is node.entity
                 ],
                 "routes_out": sum(e["status"] == "measured" for e in out),
                 "routes_in": sum(e["status"] == "measured" for e in into),
@@ -248,8 +330,8 @@ def route_graph(
             }
         )
 
-    measured_links = [link for link in catalogue if link.measured]
-    drawn = [link for link in catalogue if statuses[link.id] in (Status.MEASURED, Status.UNTESTED)]
+    measured_links = [link for link in catalogue if statuses[link.id] is Status.MEASURED]
+    drawn = [link for link in catalogue if statuses[link.id] in DRAWN]
     adjacency: dict[str, set[str]] = {}
     for link in drawn:
         if link.source != link.target:
@@ -263,7 +345,7 @@ def route_graph(
             if source == target:
                 continue
             if found := catalogue.find_paths(source, target, measured_links, MAX_HOPS):
-                paths_measured.setdefault(source, {})[target] = found
+                paths_measured.setdefault(source, {})[target] = found[:MAX_PATHS_ALL]
             if found := _paths_all(adjacency, source, target):
                 paths_all.setdefault(source, {})[target] = found
         unreachable[source] = [
@@ -274,9 +356,11 @@ def route_graph(
 
     return {
         "layers": [{"id": str(level), "label": LAYER_LABELS[level]} for level in Level],
+        "columns": list(COLUMNS),
         "nodes": nodes,
         "edges": edges,
-        "unconfirmed": _grouped(unconfirmed, probes, Status.UNCONFIRMED),
+        "unconfirmed": _grouped(catalogue, unconfirmed, probes, Status.UNCONFIRMED),
+        "measured_none": _measured_none(catalogue, none),
         "mechanisms": _mechanisms(catalogue),
         "paths_measured": paths_measured,
         "paths_all": paths_all,
