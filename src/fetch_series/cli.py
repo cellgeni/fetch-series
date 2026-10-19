@@ -27,6 +27,7 @@ from fetch_series.catalogue import (
     SPLITS_PATH,
     Probe,
     load_probes,
+    merge_probes,
     save_probes,
     save_splits,
 )
@@ -280,6 +281,16 @@ def catalogue_probe(
         except KeyError as exc:
             typer.secho(f"Unknown link: {exc.args[0]}", fg=typer.colors.RED, err=True)
             raise typer.Exit(2) from None
+        # A measured link's evidence is its route's survey. A probe beside it
+        # would read as a second measurement, so one is never made.
+        measured = [link.id for link in targets if CATALOGUE.split(link) is not None]
+        if measured:
+            typer.secho(
+                f"Measured by a route's survey, so never probed: {', '.join(measured)}",
+                fg=typer.colors.RED,
+                err=True,
+            )
+            raise typer.Exit(2)
     else:
         targets = CATALOGUE.untested
     if stale:
@@ -315,12 +326,9 @@ def catalogue_probe(
     outcomes = Counter(p.outcome for p in probes)
     typer.echo(", ".join(f"{outcomes[o]} {o}" for o in Outcome), err=True)
     if write:
-        merged = {**load_probes(), **{p.link: p for p in probes}}
-        # A probe of a link the catalogue no longer declares is dropped rather
-        # than kept: it would describe a line that is not drawn.
-        declared = {link.id for link in CATALOGUE}
-        save_probes(p for link_id, p in merged.items() if link_id in declared)
-        typer.echo(f"wrote {len(merged)} probes to {PROBES_PATH}", err=True)
+        kept = merge_probes(load_probes(), probes)
+        save_probes(kept)
+        typer.echo(f"wrote {len(kept)} probes to {PROBES_PATH}", err=True)
 
 
 @survey_app.command("run")

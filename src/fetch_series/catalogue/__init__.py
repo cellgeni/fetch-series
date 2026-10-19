@@ -78,6 +78,7 @@ __all__ = [
     "Status",
     "load_probes",
     "load_splits",
+    "merge_probes",
     "save_probes",
     "save_splits",
     "status",
@@ -420,6 +421,22 @@ def load_probes(path: Path = PROBES_PATH) -> dict[str, Probe]:
             checked=row.get("checked"),
         )
     return probes
+
+
+def merge_probes(
+    recorded: Mapping[str, Probe], new: Iterable[Probe], catalogue: Catalogue = CATALOGUE
+) -> list[Probe]:
+    """The probes to keep: the new over the recorded, for links that need one.
+
+    A probe of a link the catalogue no longer declares is dropped: it would
+    describe a line that is not drawn. So is a probe of a link a route's survey
+    measured, whenever it was made: a measured link's only evidence is its
+    route's, and a probe beside it would read as a second measurement. That
+    covers a probe recorded before a split made its link measured, too.
+    """
+    merged = {**recorded, **{probe.link: probe for probe in new}}
+    needed = {link.id for link in catalogue.untested}
+    return [probe for link_id, probe in merged.items() if link_id in needed]
 
 
 def save_probes(probes: Iterable[Probe], path: Path = PROBES_PATH) -> None:

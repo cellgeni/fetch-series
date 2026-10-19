@@ -13,6 +13,7 @@ from datetime import UTC, datetime
 
 import httpx
 import pytest
+from typer.testing import CliRunner
 
 from fetch_series.accession import Archive, EntityType, parse
 from fetch_series.catalogue import (
@@ -25,8 +26,10 @@ from fetch_series.catalogue import (
     Node,
     NodeKind,
     Origin,
+    Probe,
     Status,
     load_probes,
+    merge_probes,
     status,
 )
 from fetch_series.catalogue import probe as probe_module
@@ -41,6 +44,7 @@ from fetch_series.catalogue.probe import (
     probe_links,
     read_of,
 )
+from fetch_series.cli import app
 from fetch_series.files import FileRecord, classify
 from fetch_series.filesets import Verdict
 from fetch_series.results import Outcome
@@ -142,6 +146,48 @@ class TestRecordedProbes:
             dict(PROBES["run_ncbi->sra_lite:sra_be_runinfo_download"].checks)["verifiable"] is False
         )
         assert PROBES["experiment_ncbi->fastq:ena_filereport_fastq"].confirmed
+
+
+MEASURED_LINK = "bioproject->run_ncbi:ena_filereport"
+
+
+class TestWritingProbes:
+    """`probe --write` keeps a probe only for a link no route's survey measured."""
+
+    def _probe(self, link: str) -> Probe:
+        return Probe(link, "PRJNA258286", datetime.now(UTC).date(), Outcome.EMPTY)
+
+    def test_a_probe_of_a_measured_link_is_never_kept(self):
+        assert CATALOGUE.split(CATALOGUE.link(MEASURED_LINK)) is not None
+        kept = merge_probes(PROBES, [self._probe(MEASURED_LINK)])
+        assert MEASURED_LINK not in {probe.link for probe in kept}
+
+    def test_one_recorded_before_its_link_was_measured_is_dropped_too(self):
+        kept = merge_probes({MEASURED_LINK: self._probe(MEASURED_LINK)}, [])
+        assert kept == []
+
+    def test_an_undeclared_link_is_dropped_and_the_rest_kept(self):
+        kept = merge_probes({"a->b:gone": self._probe("a->b:gone"), **PROBES}, [])
+        assert {probe.link for probe in kept} == set(PROBES)
+
+    def test_a_new_probe_replaces_the_recorded_one(self):
+        link = next(iter(PROBES))
+        fresh = Probe(
+            link, PROBES[link].accession, PROBES[link].checked_on, Outcome.FAILED, error="x"
+        )
+        (kept,) = [probe for probe in merge_probes(PROBES, [fresh]) if probe.link == link]
+        assert kept is fresh
+
+    def test_the_cli_refuses_to_probe_a_measured_link(self, monkeypatch):
+        """Refused before any request is made."""
+
+        async def no_network(*args: object, **kwargs: object) -> list[Probe]:
+            raise AssertionError("a measured link must not be probed")
+
+        monkeypatch.setattr("fetch_series.cli.probe_links", no_network)
+        result = CliRunner().invoke(app, ["catalogue", "probe", "--link", MEASURED_LINK, "--write"])
+        assert result.exit_code == 2
+        assert "never probed" in result.output
 
 
 def _node(entity: EntityType | None, archive: Archive | None = None) -> Node:
