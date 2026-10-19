@@ -943,17 +943,19 @@ ROUTES: list[Route] = [
         kb_page="routes/experiment-to-run/ena-filereport.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         evidence=RouteEvidence(
-            corpus="results-of:gse->experiment:soft_family@reprocessed-gse",
-            surveyed_on=date(2026, 9, 15),
+            corpus="sample:3000@results-of:gse->experiment:soft_family@reprocessed-gse",
+            surveyed_on=date(2026, 10, 19),
             accessions_queried=3_000,
             accessions_failed=0,
             accessions_empty=37,
-            unique_results=6_580,
+            unique_results=4_811,
             notes=(
-                "Tier two over the experiments the GEO census returned. 2,963 resolved, "
-                "37 empty, zero failures. Those 37 are the measurement that matters: "
-                "1.23% of experiments GEO names carry no runs at all (95% CI "
-                "0.84-1.63%), about 3,807 of the 308,639 SOFT names."
+                "A seeded draw of 3,000 of the 308,639 experiments the GEO census "
+                "returned. 2,963 resolved, 37 empty, zero failures. Those 37 are the "
+                "measurement that matters: 1.23% of experiments GEO names carry no runs "
+                "at all (95% CI 0.84-1.63%), about 3,807 of the 308,639 SOFT names. "
+                "Replaces a 2026-09-15 --limit 3000 run recorded under the full corpus "
+                "name; that disjoint draw also found 37 empty."
             ),
         ),
         proves_data_exists=True,

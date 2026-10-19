@@ -21,37 +21,35 @@ The empty answers are not noise; they are the measurement:
 
 ## Measured
 
-**Corpus:** the experiments the
-[GSE to experiment](../gse-to-experiment/index.md) `soft_family` census returned over
-`reprocessed-gse`: 308,639 of them.
+**Corpus:** `sample:3000@results-of:gse->experiment:soft_family@reprocessed-gse`, a seeded
+draw of 3,000 of the 308,639 experiments the
+[GSE to experiment](../gse-to-experiment/index.md) `soft_family` census returned.
+**Surveyed:** 2026-10-19.
 
 | | |
 |---|---|
 | Resolved | 2,963 |
 | Empty | **37 (1.23%)** |
 | Failed | 0 |
-| Unique runs | 6,580 |
+| Unique runs | 4,811 |
 
-### The corpus label on this evidence is wrong, and a re-survey is pending
+### Why this replaced an earlier survey
 
-These numbers come from a `--limit 3000` run. `--limit` records its verdicts under the
-**full** corpus name, so the evidence reads as a census of 308,639 experiments when it
-covered 3,000 of them: the first 3,000 in the survey's seeded visit order. That is a
-fair random sample, but its name does not say so, and a second run with a different
-limit would have recorded itself under the same name and looked comparable.
-`survey run --limit` now writes to a throwaway cache for exactly this reason.
+Until 2026-10-19 this route cited a 2026-09-15 run made with `--limit 3000`. `--limit`
+records its verdicts under the **full** corpus name, so that evidence read as a census of
+308,639 experiments when it covered 3,000 of them: the first 3,000 in the survey's seeded
+visit order. That was a fair random sample, but its name did not say so, and a second run
+with a different limit would have recorded itself under the same name and looked
+comparable. `survey run --limit` now writes to a throwaway cache for exactly this reason.
+The old export stays under `data/surveys/results-of_gse-to-experiment_soft_family@reprocessed-gse/`
+and is cited by nothing.
 
-On 2026-10-19 the route was re-surveyed over the seeded draw
-`sample:3000@results-of:gse->experiment:soft_family@reprocessed-gse`, giving 2,963
-resolved, **37 empty**, 0 failed and 4,811 unique runs. That result is in the survey
-cache but not yet exported, so `RouteEvidence` still cites the run above until it is.
+The two draws share **no** accession, and that is not a coincidence. `sample_of` and the
+runner's shuffle use the same seed, and `random.sample` picks first the elements that
+`shuffle` moves to the end, so a seeded sample and a shuffle prefix are disjoint by
+construction. Each is still a uniform draw. The re-survey is therefore an independent
+replicate, and it found the same empty count, 37 of 3,000.
 
-The two draws share **no** accession. The disjointness is not a coincidence:
-`sample_of` and the runner's shuffle use the same seed, and `random.sample` picks first
-the elements that `shuffle` moves to the end. So a seeded sample and a shuffle prefix
-are disjoint by construction, and each is still a uniform draw. The re-survey is
-therefore an independent replicate, and it found the same empty rate exactly.
-
-Unique runs differ (6,580 against 4,811) because runs per experiment are heavy-tailed:
-a few experiments with dozens of lane runs move the total a lot. Read run yield from
-the [BioProject to run](../bioproject-to-run/index.md) census, not from here.
+Unique runs differ (6,580 against 4,811) because runs per experiment are heavy-tailed: a
+few experiments with dozens of lane runs move the total a lot. Read run yield from the
+[BioProject to run](../bioproject-to-run/index.md) census, not from here.
