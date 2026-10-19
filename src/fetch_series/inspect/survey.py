@@ -21,10 +21,12 @@ from __future__ import annotations
 
 import time
 from collections.abc import Mapping
+from dataclasses import replace
 from typing import Any
 
 from fetch_series.catalogue import CATALOGUE, Catalogue, Link, NodeKind
 from fetch_series.catalogue.probe import answer_links, seeded_runs
+from fetch_series.files import FileKind
 from fetch_series.inspect.checks import check_set
 from fetch_series.inspect.classify import classify
 from fetch_series.inspect.fetch import DEFAULT_READS, sample_file
@@ -46,6 +48,15 @@ INSPECT_GATE: dict[str, str] = {
     "SRR30132199": "28-base reads only: no cDNA read, unfit everywhere",
     "DRR345778": "DDBJ: bzip2 fastqs, and an SRA object of 28 + 91",
     "SRR11181954": "5' v1/v2: R1 26 + R2 100 like 3' v2, the cDNA read antisense",
+}
+
+
+_KIND_OF_NODE = {
+    "fastq": FileKind.FASTQ,
+    "bam": FileKind.BAM,
+    "cram": FileKind.CRAM,
+    "sra_normalized": FileKind.SRA,
+    "sra_lite": FileKind.SRA,
 }
 
 
@@ -105,11 +116,26 @@ def screen_fanout(
                     )
                 )
                 continue
-            records = [r for r in finding.files if r.run in ("", accession) and r.is_data]
+            # The link's target says what format its files are: an SRA object
+            # named `SRR25056225.lite.1` is "other" to a name classifier, and
+            # would never be handed to a reader at all.
+            target = by_unit[unit].target
+            kind = _KIND_OF_NODE.get(target)
+            records = [
+                replace(r, kind=kind) if kind is not None else r
+                for r in finding.files
+                if r.run in ("", accession) and r.is_data
+            ]
             samples = []
             for record in records:
                 samples.extend(await sample_file(record, files_client, reads=reads))
             checks = check_set(samples, records)
+            checks["unreadable"] = [
+                {"source": s.source, "why": s.facts.get("why")}
+                for s in samples
+                if s.facts.get("reader") == "unavailable"
+            ]
+            checks["reads_per_file"] = reads
             call = classify(samples, lists, references)
             detail: dict[str, Any] = {
                 "checks": checks,

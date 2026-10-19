@@ -39,15 +39,17 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from fetch_series.accession import parse
+from fetch_series.assays.chemistry import chemistry_of
+from fetch_series.assays.registry import is_10x
 from fetch_series.core import default_api_key
-from fetch_series.filesets import screen
+from fetch_series.filesets import ASSAY_FIELDS
 from fetch_series.inspect import lists, references
 from fetch_series.inspect.checks import quality_verdict
 from fetch_series.inspect.classify import classify
 from fetch_series.inspect.model import FileSample
 from fetch_series.inspect.readers.sra import read_sra
 from fetch_series.logging_utils import configure_logging, redact, run_logfile
+from fetch_series.providers import ena_portal, geo
 from fetch_series.survey.client import Limits, SurveyClient
 from fetch_series.survey.corpora import SAMPLE_TABLE_COLUMNS, _sample_table_path
 
@@ -84,25 +86,49 @@ CALL_COLUMNS = (
 )
 
 
-def studies() -> dict[str, list[str]]:
-    """Every study of the reprocessed table and its runs: GSE where there is one, else BioProject."""
-    by_study: dict[str, list[str]] = {}
+def studies() -> dict[str, tuple[str, list[str]]]:
+    """Every study of the reprocessed table: its BioProject and runs. GSE where there is one."""
+    by_study: dict[str, tuple[str, list[str]]] = {}
     gse, prj, srr = (SAMPLE_TABLE_COLUMNS.index(c) for c in ("gse", "prj", "srr"))
     with _sample_table_path().open() as handle:
         for line in handle:
             fields = line.rstrip("\n").split("\t")
-            if len(fields) <= srr:
+            if len(fields) <= srr or not fields[prj].startswith("PRJ"):
                 continue
             study = fields[gse] if fields[gse].startswith("GSE") else fields[prj]
-            if not study or study == "-":
-                continue
             runs = [
-                r.strip()
-                for r in fields[srr].split(",")
-                if r.strip().startswith(("SRR", "ERR", "DRR"))
+                r.strip() for r in fields[srr].split(",") if r.strip()[:3] in ("SRR", "ERR", "DRR")
             ]
-            by_study.setdefault(study, []).extend(runs)
+            entry = by_study.setdefault(study, (fields[prj], []))
+            entry[1].extend(runs)
     return by_study
+
+
+async def label_rows(study: str, project: str, client: SurveyClient) -> list[tuple[str, Any, Any]]:
+    """Every run's assay and chemistry call from its metadata, in two requests.
+
+    ``filesets.screen`` joins every archive per run, which is right for a user
+    and far too slow for 240 studies. This asks ENA once for the project's runs
+    and GEO once for the series' SOFT text -- the same two sources ``screen``
+    reads the protocol from, keyed by the GSM ENA records as the sample alias.
+    """
+    rows = await ena_portal.read_run_report(
+        client, project, 120.0, fields=(*ASSAY_FIELDS, "sample_alias")
+    )
+    soft: dict[str, dict[str, str]] = {}
+    if study.startswith("GSE"):
+        try:
+            family = geo.parse_soft_family(study, await geo.fetch_soft_family(client, study, 120.0))
+            soft = family.sample_text
+        except Exception:
+            soft = {}
+    out = []
+    for row in rows:
+        merged = dict(row)
+        if extra := soft.get(str(row.get("sample_alias") or "")):
+            merged.update(extra)
+        out.append((str(row.get("run_accession")), is_10x(merged), chemistry_of(merged)))
+    return out
 
 
 def split_of(study: str) -> str:
@@ -139,14 +165,15 @@ async def label(out: Path, wanted: int, client: SurveyClient) -> list[dict[str, 
         if study in tried or study in EXCLUDED:
             continue
         try:
-            # Twenty runs are enough to find a labelled one: the protocol is a
-            # study's, and asking about all of a 900-run study costs 900 requests.
-            calls = await screen(parse(study), client, limit=20)
+            project, _ = pool[study]
+            calls = await client.with_retry(
+                lambda timeout, s=study, p=project: label_rows(s, p, client), label=f"label {study}"
+            )
         except Exception as exc:
             print(f"{study}: screen failed: {redact(str(exc))[:120]}", file=sys.stderr)
             _append(path, LABEL_COLUMNS, {"study": study})
             continue
-        table = set(pool[study])
+        table = set(pool[study][1])
         named = sorted(
             (run, assay, chemistry)
             for run, assay, chemistry in calls
@@ -224,6 +251,8 @@ def rename10xrun_call(script: str, raw_lists: str, samples: list[FileSample]) ->
                 str(Path(scratch) / "out"),
                 "--json",
                 str(report),
+                "--manifest",
+                str(Path(scratch) / "manifest.tsv"),
                 "--dry-run",
                 "--sample-records",
                 "100000",
