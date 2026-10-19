@@ -62,17 +62,16 @@ two agree within their confidence intervals, but **the direct measurement is the
 quote**: it samples the whole population rather than a subset chosen for being suspicious,
 so it needs no assumption about how the subset relates to the rest.
 
-The figure above came from a `--limit 3000` run, which records under the full corpus name
-and so cannot be reproduced from its label ([why](../routes/experiment-to-run/ena-filereport.md#the-corpus-label-on-this-evidence-is-wrong-and-a-re-survey-is-pending)).
-The seeded equivalent is:
+The figure is from a seeded draw, so the corpus is reproducible from its name:
 
 ```bash
 fetch survey run --route "experiment->run:ena_filereport" \
   --corpus "sample:3000@results-of:gse->experiment:soft_family@reprocessed-gse"
 ```
 
-Run on 2026-10-19, it drew 3,000 experiments disjoint from the first set and found
-**37 empty again**: the same rate, from an independent replicate.
+It replaced an earlier `--limit 3000` run recorded under the full corpus name
+([why](../routes/experiment-to-run/ena-filereport.md#why-this-replaced-an-earlier-survey)).
+The two draws are disjoint, and both found 37 empty experiments out of 3,000.
 
 ### What "no runs" means here
 

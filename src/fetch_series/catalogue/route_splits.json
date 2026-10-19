@@ -472,7 +472,7 @@
    ]
   },
   "experiment->run:ena_filereport": {
-   "export": "data/surveys/results-of_gse-to-experiment_soft_family@reprocessed-gse/experiment-to-run_ena_filereport.csv.gz",
+   "export": "data/surveys/sample_3000@results-of_gse-to-experiment_soft_family@reprocessed-gse/experiment-to-run_ena_filereport.csv.gz",
    "unparsed": [],
    "excluded": {},
    "pairs": [
@@ -484,7 +484,7 @@
      "empty": 37,
      "failed": 0,
      "reached": 2963,
-     "distinct": 6580
+     "distinct": 4811
     }
    ]
   },

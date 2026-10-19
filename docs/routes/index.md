@@ -54,7 +54,7 @@ failed counts, on [the route graph](graph.md).
 | `bioproject` → `study` | `ena_filereport` | `reprocessed-prj` | 12,755 | 12,748 | 0 |
 | `biosample` → `run` | `ena_filereport` | `sample:3000@results-of:bioproject->biosample:ena_filerepo…` | 3,000 | 4,827 | 0 |
 | `experiment` → `biosample` | `ena_filereport` | `sample:3000@reprocessed-srx` | 3,000 | 2,893 | 0 |
-| `experiment` → `run` | `ena_filereport` | `results-of:gse->experiment:soft_family@reprocessed-gse` | 3,000 | 6,580 | 0 |
+| `experiment` → `run` | `ena_filereport` | `sample:3000@results-of:gse->experiment:soft_family@reprocessed-gse` | 3,000 | 4,811 | 0 |
 | `geo_sample` → `biosample` | `acc_cgi` | `sample:1000@reprocessed-sample` | 825 | 822 | **3** |
 | `geo_sample` → `experiment` | `acc_cgi` | `sample:1000@reprocessed-sample` | 825 | 822 | **3** |
 | `geo_sample` → `geo_series` | `acc_cgi` | `sample:1000@reprocessed-sample` | 825 | 849 | **3** |
