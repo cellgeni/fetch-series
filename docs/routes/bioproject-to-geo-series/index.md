@@ -20,11 +20,15 @@ Over the 12,114 `PRJNA` projects in the reprocessed table, 2026-05-12:
 
 | | `gds_direct` | `elink` |
 |---|---|---|
-| Series found | 15,185 | 15,186 |
+| Series found | 15,179 | 15,180 |
 | Failed accessions | 1,079 | 1,078 |
 
 **Zero accessions where the two return different series sets.** They differ by one
 accession in 12,114 — `PRJNA1244410`, found by ELink only — and by one series in 15,000.
+
+The series are counted distinct. The scripts wrote one row per project and series, and five
+series are reached from more than one project — `GSE305915` from three — so the result
+tables hold 15,186 and 15,185 rows. The registry recorded those row counts until 2026-10-19.
 
 ## Recommendation
 

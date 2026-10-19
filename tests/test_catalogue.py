@@ -31,6 +31,7 @@ from fetch_series.catalogue.nodes import (
     node_for,
     read_format,
 )
+from fetch_series.catalogue.splits import Verdict, route_splits
 from fetch_series.graph import REGISTRY
 
 
@@ -320,6 +321,22 @@ class TestSplits:
             assert sum(queried.values()) + sum(excluded.values()) == evidence.accessions_queried, (
                 route.id
             )
+
+    def test_a_split_accounts_for_every_failure_its_route_recorded(self):
+        """The 2026-05 run routes once counted the `-` placeholder's failure; neither does now."""
+        for route in REGISTRY:
+            evidence = route.evidence
+            assert evidence is not None
+            failed = {s.source: s.failed for s in self.SPLITS if s.route == route.id}
+            assert sum(failed.values()) == evidence.accessions_failed, route.id
+
+    def test_a_placeholder_is_named_and_counted_on_no_link(self):
+        """`-` is not a BioProject: sent by the 2026-05 scripts, it failed, and it is not a query."""
+        route = REGISTRY["bioproject->run:sra_be_direct_cgi"]
+        verdicts = [Verdict("-", "failed"), Verdict("PRJNA434002", "answered", ["SRR6750041"])]
+        splits, unparsed, _ = route_splits(CATALOGUE, route, verdicts)
+        assert unparsed == ["-"]
+        assert {(s.source, s.queried, s.failed) for s in splits} == {("bioproject", 1, 0)}
 
     def test_a_route_split_by_source_archive_is_the_runs_of_each(self):
         splits = {

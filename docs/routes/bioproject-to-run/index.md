@@ -29,14 +29,18 @@ about 9%.
 | Route | Unique runs | Failed | Surveyed |
 |---|---|---|---|
 | **`ena_filereport`** | **783,936** | **0** | 2026-09-15, harness census |
-| `sra_be_elink` | 754,332 | 34 | 2026-05-12, script |
-| `sra_be_direct_cgi` | 754,277 | 16 | 2026-05-12, script |
-| `efetch_elink` | 674,186 | 31 | 2026-05-12, script |
-| `efetch_direct` | 673,157 | 15 | 2026-05-12, script |
+| `sra_be_elink` | 754,332 | 33 | 2026-05-12, script |
+| `sra_be_direct_cgi` | 754,277 | 15 | 2026-05-12, script |
+| `efetch_elink` | 674,186 | 30 | 2026-05-12, script |
+| `efetch_direct` | 673,157 | 14 | 2026-05-12, script |
+
+The 2026-05 scripts also sent the reprocessed table's `-` placeholder as a BioProject, and
+every one recorded it as a failure. It is not a BioProject, so it is counted in none of the
+figures above: each script queried 12,755 projects, not the 12,756 it once claimed.
 
 ENA holds **111,665 runs that `efetch` never returns**, against roughly 1,800 runs missing
 from it. The 2026-09 census reproduced the 2026-05 ENA figure of 784,026 to within 0.011%
-while eliminating all 15 of that run's failures — so the harness agrees with the scripts it
+while eliminating all 14 of that run's failures — so the harness agrees with the scripts it
 replaces, and improves on them.
 
 ### Why the NCBI routes were not re-censused

@@ -125,10 +125,10 @@ def route_splits(
     describe what the route returns.
 
     A verdict on something that is not an accession at all is returned
-    alongside, never dropped. The 2026-05 scripts queried the corpus' ``-``
-    placeholder as a BioProject, it failed, and their evidence counts it among
-    the 12,756 queried; where a route has one source node the verdict is kept
-    there, so the split agrees with the evidence and the placeholder is named.
+    alongside, never dropped, and never placed: the 2026-05 scripts queried the
+    corpus' ``-`` placeholder as a BioProject and it failed, but it is not a
+    BioProject, so it is neither queried nor failed on any link -- nor in their
+    evidence, which counts 12,755 queried.
 
     So is a verdict on a source the declarations rule out -- an ERR asked for
     its GSM, which GEO never brokers. Every one so far found nothing, which is
@@ -148,18 +148,16 @@ def route_splits(
     excluded: Counter[str] = Counter()
     for verdict in verdicts:
         parsed = try_parse(verdict.accession)
-        source = node_for(parsed) if parsed else None
-        if parsed is None and len(sources) == 1:
+        if parsed is None:
             unparsed.append(verdict.accession)
-            source = next(iter(sources))
-        ruled_out = source is not None and source not in sources and parsed is not None
+            continue
+        source = node_for(parsed)
         if (
-            ruled_out
-            and parsed is not None
+            source is not None
+            and source not in sources
             and parsed.entity is route.source
             and not any(place_target(r, files) for r in verdict.results)
         ):
-            assert source is not None
             excluded[source] += 1
             continue
         if source is None or source not in sources:

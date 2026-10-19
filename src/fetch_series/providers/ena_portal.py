@@ -1,6 +1,6 @@
 """ENA portal API.
 
-The single most complete route measured so far: over 12,756 BioProjects it
+The single most complete route measured so far: over 12,755 BioProjects it
 returned 784,026 unique runs, including 111,665 that NCBI's ``efetch`` never
 does, while only about 1,800 runs were missing from it.
 

@@ -242,7 +242,7 @@ def catalogue_splits(
         )
     for route, source in sources.items():
         if source["unparsed"]:
-            typer.secho(f"{route}: not accessions, kept: {source['unparsed']}", err=True)
+            typer.secho(f"{route}: not accessions, set aside: {source['unparsed']}", err=True)
         if source["excluded"]:
             typer.secho(
                 f"{route}: queried sources it cannot link, all empty: {source['excluded']}",

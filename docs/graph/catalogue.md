@@ -186,12 +186,12 @@ measurement, not new evidence, and it changes no ranking
 
 CI builds the docs without the LFS objects, so the splits are computed by
 `fetch catalogue splits --write` into `catalogue/route_splits.json`, and a slow
-test recomputes them from the exports. Two kinds of verdict are kept rather
-than dropped, and named there: the 2026-05 scripts queried the corpus's `-`
-placeholder as a BioProject (it failed, and their evidence counts it among
-12,756), and two routes queried sources the rules above rule out (263 EBI and
-DDBJ runs asked for a GSM, 38 DRPs asked for an ArrayExpress experiment), all
-of which came back empty.
+test recomputes them from the exports. Two kinds of verdict are set aside
+rather than dropped, and named there: the 2026-05 scripts queried the corpus's
+`-` placeholder as a BioProject, which is not one, so it is reported as
+unparsed and counted on no link; and two routes queried sources the rules above
+rule out (263 EBI and DDBJ runs asked for a GSM, 38 DRPs asked for an
+ArrayExpress experiment), all of which came back empty.
 
 ## Probes
 
@@ -294,14 +294,16 @@ Measuring an untested link is a survey, and the next step.
 - **`gds` ESummary needs the entry type.** `GSM1480291[ACCN]` alone matches the
   sample, its series and its platform, and the first UID is the series'.
 
-**About the recorded surveys** — reported here, not corrected, because changing
-`RouteEvidence` changes the inputs to the ranking:
+**About the recorded surveys** — found while splitting them, and corrected in
+their `RouteEvidence` on 2026-10-19. Neither correction moves a route in the
+ranking:
 
 - The four 2026-05 BioProject → run scripts queried the `-` placeholder as a
-  BioProject; it failed, and their evidence counts it among 12,756 queried.
-- The two 2026-05 BioProject → GEO series routes record 15,186 and 15,185
-  "unique results", which are rows: the distinct series are 15,180 and 15,179.
-  Both differ by one, so the ranking is unchanged.
+  BioProject and recorded it as a failure, so their evidence counted 12,756
+  queried and one failure too many each. It now reads 12,755.
+- The two 2026-05 BioProject → GEO series routes recorded 15,186 and 15,185
+  "unique results", which were rows: five series are reached from more than
+  one project. The distinct series are 15,180 and 15,179.
 
 ## Gaps
 

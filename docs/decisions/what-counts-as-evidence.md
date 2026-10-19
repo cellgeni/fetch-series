@@ -37,6 +37,12 @@ The 2026-05 predecessor to this project counted rows. **69,923 of its 824,216
 Every `unique_results` figure in `graph.py` is a distinct-accession count, and
 `sra_be.column()` deduplicates for this reason.
 
+That sentence was false for two routes until 2026-10-19. The 2026-05
+BioProject → GEO series routes recorded 15,186 and 15,185 "unique" series, which
+were rows: five series are reached from more than one project, `GSE305915` from
+three, so the distinct counts are 15,180 and 15,179. Splitting the routes by
+archive recounted them from the result tables, which is how it surfaced.
+
 ## The corpus name must identify the accession set exactly
 
 The name is persisted with every verdict as provenance. If it does not pin down
@@ -54,6 +60,10 @@ This is why:
 - **A sampled draw records its parent.** `sample:3000@reprocessed-srr` says both
   the size and where it came from; `results-of:<route>@<corpus>` says which
   survey produced the population.
+- **A placeholder is not a query.** The 2026-05 scripts sent the table's `-` as
+  a BioProject, recorded its failure, and counted 12,756 projects queried where
+  there are 12,755. The harness parses its corpora and never sends one;
+  `catalogue/route_splits.json` names the old scripts' as unparsed.
 
 ## `hard-cases` is a gate, not evidence
 

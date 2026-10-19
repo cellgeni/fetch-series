@@ -69,7 +69,7 @@ class TestRouteEvidence:
         Inserted beside accessions_failed, it silently took the place of
         unique_results for any caller passing arguments by position.
         """
-        evidence = RouteEvidence("test", date(2026, 5, 12), 12_756, 16, 754_277, "notes")
+        evidence = RouteEvidence("test", date(2026, 5, 12), 12_755, 15, 754_277, "notes")
         assert evidence.unique_results == 754_277
         assert evidence.notes == "notes"
         assert evidence.accessions_empty is None
@@ -146,14 +146,14 @@ class TestRegistry:
                     "noisy-edge",
                     EntityType.BIOPROJECT,
                     EntityType.RUN,
-                    evidence=_evidence(failed=34, results=754_332, queried=12_756),
+                    evidence=_evidence(failed=33, results=754_332, queried=12_755),
                     cost=RouteCost(requests=3, rate_limit_rps=10.0),
                 ),
                 _route(
                     "reliable",
                     EntityType.BIOPROJECT,
                     EntityType.RUN,
-                    evidence=_evidence(failed=16, results=754_277, queried=12_756),
+                    evidence=_evidence(failed=15, results=754_277, queried=12_755),
                     cost=RouteCost(requests=2, rate_limit_rps=10.0),
                 ),
             ]
@@ -169,14 +169,14 @@ class TestRegistry:
                     "expensive",
                     EntityType.BIOPROJECT,
                     EntityType.GEO_SERIES,
-                    evidence=_evidence(failed=1_078, results=15_186, queried=12_114),
+                    evidence=_evidence(failed=1_078, results=15_180, queried=12_114),
                     cost=RouteCost(requests=3, rate_limit_rps=10.0),
                 ),
                 _route(
                     "cheap",
                     EntityType.BIOPROJECT,
                     EntityType.GEO_SERIES,
-                    evidence=_evidence(failed=1_079, results=15_185, queried=12_114),
+                    evidence=_evidence(failed=1_079, results=15_179, queried=12_114),
                     cost=RouteCost(requests=2, rate_limit_rps=10.0),
                 ),
             ]
@@ -192,14 +192,14 @@ class TestRegistry:
                     "complete",
                     EntityType.BIOPROJECT,
                     EntityType.RUN,
-                    evidence=_evidence(failed=15, results=784_026, queried=12_756),
+                    evidence=_evidence(failed=14, results=784_026, queried=12_755),
                     cost=RouteCost(requests=1, rate_limit_rps=10.0),
                 ),
                 _route(
                     "incomplete-but-reliable",
                     EntityType.BIOPROJECT,
                     EntityType.RUN,
-                    evidence=_evidence(failed=0, results=673_157, queried=12_756),
+                    evidence=_evidence(failed=0, results=673_157, queried=12_755),
                     cost=RouteCost(requests=1, rate_limit_rps=10.0),
                 ),
             ]

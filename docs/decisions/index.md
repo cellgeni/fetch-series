@@ -15,7 +15,7 @@ and is hardest to reconstruct from code.
 
 | Decision | Basis | Status |
 |---|---|---|
-| [How routes are ranked](route-ranking.md) | census over 12,756 BioProjects and 13,045 GEO series | in force |
+| [How routes are ranked](route-ranking.md) | census over 12,755 BioProjects and 13,045 GEO series | in force |
 | [What counts as evidence](what-counts-as-evidence.md) | each rule exists because breaking it produced a wrong number | in force |
 | [What counts as a metadata gold set](what-counts-as-a-metadata-gold-set.md) | 120 ArrayExpress studies: 119 carry curated labels, 0 carry an independent sample | in force |
 | [How values are grounded](ontology-grounding.md) | three measured wrong answers, each from an obvious implementation | in force |

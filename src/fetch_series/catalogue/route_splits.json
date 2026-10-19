@@ -177,30 +177,30 @@
     {
      "source": "bioproject",
      "target": "run_ddbj",
-     "queried": 12756,
+     "queried": 12755,
      "resolved": null,
      "empty": null,
-     "failed": 15,
+     "failed": 14,
      "reached": 137,
      "distinct": 2306
     },
     {
      "source": "bioproject",
      "target": "run_ebi",
-     "queried": 12756,
+     "queried": 12755,
      "resolved": null,
      "empty": null,
-     "failed": 15,
+     "failed": 14,
      "reached": 501,
      "distinct": 106778
     },
     {
      "source": "bioproject",
      "target": "run_ncbi",
-     "queried": 12756,
+     "queried": 12755,
      "resolved": null,
      "empty": null,
-     "failed": 15,
+     "failed": 14,
      "reached": 12103,
      "distinct": 564073
     }
@@ -216,30 +216,30 @@
     {
      "source": "bioproject",
      "target": "run_ddbj",
-     "queried": 12756,
+     "queried": 12755,
      "resolved": null,
      "empty": null,
-     "failed": 31,
+     "failed": 30,
      "reached": 137,
      "distinct": 2306
     },
     {
      "source": "bioproject",
      "target": "run_ebi",
-     "queried": 12756,
+     "queried": 12755,
      "resolved": null,
      "empty": null,
-     "failed": 31,
+     "failed": 30,
      "reached": 500,
      "distinct": 106818
     },
     {
      "source": "bioproject",
      "target": "run_ncbi",
-     "queried": 12756,
+     "queried": 12755,
      "resolved": null,
      "empty": null,
-     "failed": 31,
+     "failed": 30,
      "reached": 12088,
      "distinct": 565062
     }
@@ -292,30 +292,30 @@
     {
      "source": "bioproject",
      "target": "run_ddbj",
-     "queried": 12756,
+     "queried": 12755,
      "resolved": null,
      "empty": null,
-     "failed": 16,
+     "failed": 15,
      "reached": 137,
      "distinct": 2306
     },
     {
      "source": "bioproject",
      "target": "run_ebi",
-     "queried": 12756,
+     "queried": 12755,
      "resolved": null,
      "empty": null,
-     "failed": 16,
+     "failed": 15,
      "reached": 500,
      "distinct": 194089
     },
     {
      "source": "bioproject",
      "target": "run_ncbi",
-     "queried": 12756,
+     "queried": 12755,
      "resolved": null,
      "empty": null,
-     "failed": 16,
+     "failed": 15,
      "reached": 12103,
      "distinct": 557882
     }
@@ -331,30 +331,30 @@
     {
      "source": "bioproject",
      "target": "run_ddbj",
-     "queried": 12756,
+     "queried": 12755,
      "resolved": null,
      "empty": null,
-     "failed": 34,
+     "failed": 33,
      "reached": 137,
      "distinct": 2306
     },
     {
      "source": "bioproject",
      "target": "run_ebi",
-     "queried": 12756,
+     "queried": 12755,
      "resolved": null,
      "empty": null,
-     "failed": 34,
+     "failed": 33,
      "reached": 500,
      "distinct": 194085
     },
     {
      "source": "bioproject",
      "target": "run_ncbi",
-     "queried": 12756,
+     "queried": 12755,
      "resolved": null,
      "empty": null,
-     "failed": 34,
+     "failed": 33,
      "reached": 12085,
      "distinct": 557941
     }

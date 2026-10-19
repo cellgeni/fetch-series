@@ -1,7 +1,7 @@
 """The SRA backend CGI at trace.ncbi.nlm.nih.gov.
 
 Not a documented API, but measurably more complete than ``efetch`` for the same
-question: over 12,756 BioProjects it returned 754,277 unique runs against
+question: over 12,755 BioProjects it returned 754,277 unique runs against
 efetch's 673,157, a gap of about 12%.
 
 It is driven from an E-utilities history rather than an accession list, so it
