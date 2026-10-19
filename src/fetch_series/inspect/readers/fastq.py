@@ -47,13 +47,22 @@ def read_fastq(
     lines = lines[:-1]
     whole = len(lines) - len(lines) % 4
     sample = FileSample(source=source, format="fastq", role_hint=role_hint(source))
+    instruments: list[str] = []
+    sample.facts["instrument_ids"] = instruments
     for i in range(0, whole, 4):
         header, seq, plus, qual = lines[i : i + 4]
         if not header.startswith("@") or not plus.startswith("+") or len(seq) != len(qual):
             if i + 4 == whole and not reached_end:
                 break  # the prefix cut the last record inside its quality line
             raise ValueError(f"{source}: not a FASTQ record at line {i + 1}")
-        name = header[1:].split()[0] if header[1:].strip() else ""
+        words = header[1:].split()
+        name = words[0] if words else ""
+        if len(instruments) < 20:
+            # The sequencer's own name, where the archive kept it: SRA writes
+            # `@SRR25056225.1 A01044:65:HVVJ5DMXX:2:1101:1217:1000 length=28`.
+            original = next((w for w in words if w.count(":") >= 6), None)
+            if original:
+                instruments.append(original)
         # The mate suffix ends the *header*, which may be after a description:
         # `@SRR29534765.1 K00337:202:HWNYLBBXX:6:1101:2747:1297/3`.
         if match := _SUFFIX.search(header.rstrip()):

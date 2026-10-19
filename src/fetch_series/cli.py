@@ -123,6 +123,10 @@ catalogue_app = typer.Typer(
 app.add_typer(survey_app, name="survey")
 app.add_typer(routes_app, name="routes")
 app.add_typer(catalogue_app, name="catalogue")
+inspect_app = typer.Typer(
+    help="Read the start of a run's files and say what they are.", no_args_is_help=True
+)
+app.add_typer(inspect_app, name="inspect")
 
 
 def _client_for_one_query(concurrency: int) -> SurveyClient:
@@ -278,6 +282,35 @@ def catalogue_splits(
     if write:
         save_splits(splits, sources)
         typer.echo(f"wrote {len(splits)} splits to {SPLITS_PATH}", err=True)
+
+
+@inspect_app.command("lists")
+def inspect_lists(
+    fetch_them: Annotated[
+        bool, typer.Option("--fetch", help="Download every registered list and reference.")
+    ] = False,
+) -> None:
+    """The barcode lists and references the classifier reads, and whether each is fetched.
+
+    None is shipped: 10x's lists are under 10x's terms. Each is registered with
+    its source at a pinned commit and its sha256, and a download that does not
+    match is refused.
+    """
+    from fetch_series.inspect import lists as barcode_lists
+    from fetch_series.inspect import references
+
+    if fetch_them:
+        for entry, path in barcode_lists.fetch_all():
+            typer.echo(f"fetched {entry.id:16s} {entry.count:>10,}  {path}", err=True)
+        for reference in references.REGISTER.values():
+            path = references.fetch(reference)
+            typer.echo(f"fetched {reference.id:24s} {path}", err=True)
+    held = barcode_lists.cache_dir()
+    for entry in barcode_lists.REGISTER.values():
+        state = "fetched" if (held / f"{entry.id}.u32").exists() else "missing"
+        typer.echo(f"{entry.id:16s} {entry.length:>3} {entry.count:>10,}  {state:8s} {entry.terms}")
+    for reference in references.REGISTER.values():
+        typer.echo(f"{reference.id:24s} {reference.terms}")
 
 
 @catalogue_app.command("link-splits")

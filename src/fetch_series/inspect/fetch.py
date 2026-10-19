@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable
+from dataclasses import replace
 from typing import Any
 
-from fetch_series.files import FileKind, FileRecord
+from fetch_series.files import FileKind, FileRecord, classify
 from fetch_series.inspect.checks import check_set
 from fetch_series.inspect.model import FileSample
 from fetch_series.inspect.readers.bam import read_bam
@@ -43,6 +45,11 @@ async def sample_file(
     and not an outcome.
     """
     source = record.url or record.name
+    if record.kind is FileKind.OTHER:
+        # NCBI versions the objects it stores -- SRR10377488's submitted BAM is
+        # `possorted_genome_bam1.bam.1` -- and the version hides the format.
+        bare = re.sub(r"\.\d+$", "", (record.name or record.url).rsplit("/", 1)[-1])
+        record = replace(record, kind=classify(bare))
     if record.kind not in PREFIX_BYTES:
         return [unavailable(record, f"no reader for {record.kind} yet")]
     if not record.url:
