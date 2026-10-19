@@ -10,6 +10,7 @@ from typing import Any
 from fetch_series.files import FileKind, FileRecord, classify
 from fetch_series.inspect.checks import check_set
 from fetch_series.inspect.model import FileSample
+from fetch_series.inspect.readers import cram, sra
 from fetch_series.inspect.readers.bam import read_bam
 from fetch_series.inspect.readers.fastq import read_fastq
 from fetch_series.logging_utils import redact, redact_exception
@@ -50,11 +51,21 @@ async def sample_file(
         # `possorted_genome_bam1.bam.1` -- and the version hides the format.
         bare = re.sub(r"\.\d+$", "", (record.name or record.url).rsplit("/", 1)[-1])
         record = replace(record, kind=classify(bare))
-    if record.kind not in PREFIX_BYTES:
-        return [unavailable(record, f"no reader for {record.kind} yet")]
     if not record.url:
         return [unavailable(record, "no download link")]
-    if record.kind is FileKind.CRAM:
+    if record.kind is FileKind.SRA:
+        # An SRA object is read by sra-tools, by its own URL, so a result is
+        # attributed to the object it came from -- Normalized or Lite.
+        if not sra.available():
+            return [unavailable(record, "SRA objects need sra-tools: use the inspect image")]
+        try:
+            return await sra.read_sra(record.url, max_reads=reads)
+        except Exception as exc:
+            error = redact_exception(exc)
+            return [unavailable(record, redact(f"{type(error).__name__}: {error}")[:300])]
+    if record.kind not in PREFIX_BYTES:
+        return [unavailable(record, f"no reader for {record.kind}")]
+    if record.kind is FileKind.CRAM and not cram.available():
         return [unavailable(record, "CRAM needs the inspect extra (pysam)")]
     try:
         # Retried like any request: ERR4265292's BAM failed once and read cleanly
@@ -66,6 +77,8 @@ async def sample_file(
         )
         if record.kind is FileKind.FASTQ:
             return [read_fastq(prefix.data, source, max_reads=reads, complete=prefix.complete)]
+        if record.kind is FileKind.CRAM:
+            return cram.read_cram(prefix.data, source, max_reads=reads, complete=prefix.complete)
         return read_bam(prefix.data, source, max_reads=reads, complete=prefix.complete)
     except Exception as exc:
         error = redact_exception(exc)

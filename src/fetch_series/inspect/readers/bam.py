@@ -223,6 +223,11 @@ def read_bam(
     ``0x40``/``0x80`` where the BAM is paired.
     """
     bam = parse_bam(data, max_records=max_reads * 2, complete=complete)
+    return samples_from(bam, source, "bam", max_reads=max_reads)
+
+
+def samples_from(bam: BamPrefix, source: str, fmt: str, *, max_reads: int) -> list[FileSample]:
+    """A BAM or CRAM's records as the reads they hold: rebuilt where the header or tags say how."""
     facts: dict[str, object] = {
         "sort_order": bam.sort_order,
         "references": bam.references,
@@ -252,7 +257,7 @@ def read_bam(
             samples.append(
                 FileSample(
                     source=source,
-                    format="bam",
+                    format=fmt,
                     role_hint=read,
                     records=rebuilt[:max_reads],
                     reached_end=bam.reached_end,
@@ -270,7 +275,7 @@ def read_bam(
         samples.append(
             FileSample(
                 source=source,
-                format="bam",
+                format=fmt,
                 role_hint=mate,
                 records=records[:max_reads],
                 reached_end=bam.reached_end,

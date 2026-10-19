@@ -115,7 +115,7 @@ def check_set(samples: list[FileSample], records: Iterable[FileRecord] = ()) -> 
     plain = [s for s in samples if s.records and not s.derived]
     if len(plain) >= 2 and len({s.source for s in plain}) >= 2:
         checks["spot_names_agree"] = concordance(plain[0], plain[1])
-    bam = next((s.facts for s in samples if s.format == "bam" and s.facts), None)
+    bam = next((s.facts for s in samples if s.format in ("bam", "cram") and s.facts), None)
     if bam is not None:
         checks["bam"] = bam
     return checks

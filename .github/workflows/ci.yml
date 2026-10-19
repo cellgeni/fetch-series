@@ -101,3 +101,23 @@ jobs:
         run: |
           test "$(docker run --rm fetch-series:ci --version)" = "$(grep -m1 '^version' pyproject.toml | cut -d'"' -f2)"
           docker run --rm fetch-series:ci routes list --implemented --ids-only | grep -q 'run->file:sdl'
+
+      # The inspect image adds pysam and a pinned, sha256-checked sra-tools.
+      # Building it is half the test; the other half is that both readers run.
+      - name: Build the inspect image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/Dockerfile.inspect
+          push: false
+          load: true
+          tags: fetch-series-inspect:ci
+          cache-from: type=gha,scope=inspect
+          cache-to: type=gha,mode=max,scope=inspect
+
+      - name: Its readers run
+        run: |
+          docker run --rm fetch-series-inspect:ci --version
+          docker run --rm --entrypoint fastq-dump fetch-series-inspect:ci --version | grep -q 3.4.1
+          docker run --rm --entrypoint python fetch-series-inspect:ci -c "import pysam; from fetch_series.inspect.readers import cram, sra; assert cram.available() and sra.available()"
+          docker run --rm --user 1000:1000 --entrypoint fastq-dump fetch-series-inspect:ci --version

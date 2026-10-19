@@ -48,6 +48,7 @@ from fetch_series.inspect.references import KmerIndex
 # The classifier is a versioned instrument: a call records the version that
 # made it, and a threshold change is a new version.
 VERSION = "0.1.0"
+NO_LISTS = "no barcode list fetched; run `fetch inspect lists --fetch`"
 THRESHOLDS_SET_ON = None  # the benchmark's design half fills this in
 
 # Provisional thresholds. HIGH needs most reads to be listed barcodes; LOW only
@@ -472,6 +473,7 @@ def classify(
 
 __all__ = [
     "BY_ID",
+    "NO_LISTS",
     "VERSION",
     "Call",
     "ListHit",
