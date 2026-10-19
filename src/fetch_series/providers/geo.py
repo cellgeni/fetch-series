@@ -37,6 +37,13 @@ class SoftFamily:
     subseries: list[str] = field(default_factory=list)
     superseries: list[str] = field(default_factory=list)
     samples: list[str] = field(default_factory=list)
+    # !Series_relation = SRA: the series' SRA study, as GEO states it.
+    sra_studies: list[str] = field(default_factory=list)
+    # ^PLATFORM records and every platform id a sample names.
+    platforms: list[str] = field(default_factory=list)
+    # !Series_supplementary_file and !Sample_supplementary_file: processed data
+    # on GEO's FTP server, not reads.
+    supplementary_files: list[str] = field(default_factory=list)
     # GSM -> the SRX and BioSample it declares, where it declares them at all.
     sample_relations: dict[str, dict[str, str]] = field(default_factory=dict)
     # GSM -> the free-text fields that say what the library actually is. GEO
@@ -87,6 +94,8 @@ def parse_soft_family(series: str, text: str) -> SoftFamily:
         if scope == "Series":
             if value.startswith("BioProject") and found:
                 family.bioprojects.append(found.group(1))
+            elif value.startswith("SRA") and found:
+                family.sra_studies.append(found.group(1))
             elif "SuperSeries of" in value and found:
                 family.subseries.append(found.group(1))
             elif "SubSeries of" in value and found:
@@ -117,7 +126,22 @@ def parse_soft_family(series: str, text: str) -> SoftFamily:
         family.sample_characteristics[gsm] = _characteristics(block)
 
     family.series_text = _series_text(text)
+    family.platforms = sorted(set(_PLATFORM.findall(text)))
+    family.supplementary_files = sorted(
+        {value for value in _SUPPLEMENTARY.findall(text) if value.strip().upper() != "NONE"}
+    )
     return family
+
+
+# A platform appears as its own ^PLATFORM record in a family file, and as an
+# id on every series and sample line that names it.
+_PLATFORM = re.compile(
+    r"^(?:\^PLATFORM\s*=|!(?:Series|Sample)_platform_id\s*=)\s*(GPL\d+)", re.MULTILINE
+)
+# !Sample_supplementary_file_1, _2, ...: one numbered line per file.
+_SUPPLEMENTARY = re.compile(
+    r"^!(?:Series|Sample)_supplementary_file(?:_\d+)?\s*=\s*(\S+)", re.MULTILINE
+)
 
 
 # !Sample_characteristics_ch1 = tissue: prefrontal cortex
@@ -203,6 +227,27 @@ def _sample_text(block: str) -> dict[str, str]:
     return {name: " ".join(values) for name, values in collected.items()}
 
 
+async def gds_record(
+    client: SurveyClient, accession: str, entry_type: str, timeout: float
+) -> dict[str, object]:
+    """ESummary record for one GEO accession of ``entry_type`` (GSE, GSM, GPL).
+
+    The entry type is not optional. ``GSM1480291[ACCN]`` alone matches three
+    records -- the sample, its series and its platform -- and the first UID is
+    the series'.
+    """
+    result = await esearch(
+        client, db="gds", term=f"{accession}[ACCN] AND {entry_type}[ETYP]", timeout=timeout
+    )
+    uids = result.get("idlist") or []
+    if not uids:
+        return {}
+    uid = str(uids[0])
+    summaries = await esummary_by_ids(client, db="gds", uids=[uid], timeout=timeout)
+    record = summaries.get(uid, {})
+    return record if isinstance(record, dict) else {}
+
+
 async def gds_uid(client: SurveyClient, series: str, timeout: float) -> str | None:
     """Resolve a GEO accession to its ``gds`` UID.
 
@@ -250,17 +295,68 @@ async def fetch_sample_record(client: SurveyClient, sample: str, timeout: float)
     sample. It is the only place the per-sample SRA relation can be had without
     downloading the whole series family file, which is far larger again.
     """
+    return await fetch_record(client, sample, timeout, kind="SAMPLE")
+
+
+async def fetch_record(client: SurveyClient, accession: str, timeout: float, *, kind: str) -> str:
+    """GEO's own text record for one series, sample or platform.
+
+    ``kind`` is checked against the record that comes back: acc.cgi answers an
+    unknown accession with an HTML page and status 200, and parsing that as an
+    empty record would report a withdrawn series as one with no links.
+    """
     response = await client.get(
         ACC_CGI,
-        params={"acc": sample, "targ": "self", "form": "text", "view": "brief"},
+        params={"acc": accession, "targ": "self", "form": "text", "view": "brief"},
         timeout=timeout,
     )
     text = response.text
-    if not text.lstrip().startswith("^SAMPLE"):
+    if not text.lstrip().startswith(f"^{kind}"):
         raise MalformedResponseError(
-            f"acc.cgi returned no SAMPLE record for {sample}: {text[:120]!r}"
+            f"acc.cgi returned no {kind} record for {accession}: {text[:120]!r}"
         )
     return text
+
+
+@dataclass(slots=True)
+class RecordLinks:
+    """Every linked accession one acc.cgi record names, by the line that names it."""
+
+    accession: str
+    #: ``(type, value)`` per relation line: ``("SubSeries of", "GSE236087")``,
+    #: ``("BioProject", "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA988806")``.
+    relations: list[tuple[str, str]] = field(default_factory=list)
+    samples: list[str] = field(default_factory=list)
+    series: list[str] = field(default_factory=list)
+    platforms: list[str] = field(default_factory=list)
+    supplementary_files: list[str] = field(default_factory=list)
+
+
+_RECORD_LINE = re.compile(r"^!(Series|Sample|Platform)_(\w+?)\s*=\s*(.*\S)\s*$", re.MULTILINE)
+
+
+def parse_record_links(accession: str, text: str) -> RecordLinks:
+    """The linked accessions in a single ``acc.cgi`` record.
+
+    The relation lines are not part of GEO's documented SOFT format -- GEO adds
+    them -- and their value is ``<type>: <accession or URL>``, split on the
+    first colon only, because the URL has colons of its own.
+    """
+    record = RecordLinks(accession=accession)
+    for match in _RECORD_LINE.finditer(text):
+        label, value = match.group(2), match.group(3)
+        if label == "relation":
+            kind, _, target = value.partition(":")
+            record.relations.append((kind.strip(), target.strip()))
+        elif label == "sample_id":
+            record.samples.append(value)
+        elif label == "series_id":
+            record.series.append(value)
+        elif label == "platform_id":
+            record.platforms.append(value)
+        elif label.startswith("supplementary_file") and value.upper() != "NONE":
+            record.supplementary_files.append(value)
+    return record
 
 
 def parse_sample_record(sample: str, text: str) -> SampleRecord:

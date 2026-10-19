@@ -272,16 +272,23 @@ class RouteRegistry:
 # --------------------------------------------------------------------------
 # Seeded registry.
 #
-# Every evidence block below is a real measurement over the 12,756 BioProjects
-# in `data/All_10x.sample_table.tsv`, surveyed 2026-05-12 by the scripts in
-# `scripts/`. Unique-run counts are computed at the run level, not the row
-# level: the `sra-db-be` result files contain 69,923 within-BioProject duplicate
-# rows, which is why the raw row counts (824k) overstate that route's advantage.
+# The evidence blocks dated 2026-05-12 are real measurements over the 12,755
+# BioProjects in `data/All_10x.sample_table.tsv`, by the scripts in `scripts/`.
+# Unique-run counts are computed at the run level, not the row level: the
+# `sra-db-be` result files contain 69,923 within-BioProject duplicate rows,
+# which is why the raw row counts (824k) overstate that route's advantage. The
+# GEO series counts are distinct for the same reason: five series are reached
+# from more than one project (GSE305915 from three), so 15,186 rows name 15,180.
+#
+# The scripts also sent the table's `-` placeholder as a BioProject, and every
+# BioProject -> run script recorded it as a failure. It is not a BioProject, so
+# it is in neither `accessions_queried` nor `accessions_failed` below, and the
+# route splits report it as unparsed (`catalogue/route_splits.json`).
 # --------------------------------------------------------------------------
 
 REPROCESSED = "reprocessed"
 SURVEY_DATE = date(2026, 5, 12)
-_BIOPROJECTS = 12_756
+_BIOPROJECTS = 12_755
 _BIOPROJECTS_PRJNA = 12_114
 
 NCBI_EUTILS_RPS = 10.0  # with an API key; 3/s without
@@ -339,7 +346,7 @@ ROUTES: list[Route] = [
             notes=(
                 "Census through the harness. 12,732 resolved, 23 empty, zero failures. "
                 "Reproduces the 2026-05 script figure of 784,026 unique runs to within "
-                "0.011% while eliminating all 15 of its failures -- the difference is "
+                "0.011% while eliminating all 14 of its failures -- the difference is "
                 "four months of archive drift, not disagreement. Still a near-superset "
                 "of every NCBI route: holds 111,665 runs efetch never returns, against "
                 "~1,800 missing from it. The 23 empties are withdrawn, private or "
@@ -361,7 +368,7 @@ ROUTES: list[Route] = [
             corpus=REPROCESSED,
             surveyed_on=SURVEY_DATE,
             accessions_queried=_BIOPROJECTS,
-            accessions_failed=16,
+            accessions_failed=15,
             unique_results=754_277,
             notes="Returns ~80k more runs than efetch. Times out on very large projects.",
         ),
@@ -379,7 +386,7 @@ ROUTES: list[Route] = [
             corpus=REPROCESSED,
             surveyed_on=SURVEY_DATE,
             accessions_queried=_BIOPROJECTS,
-            accessions_failed=34,
+            accessions_failed=33,
             unique_results=754_332,
             notes="Marginally more runs than the direct variant, at twice the failure rate.",
         ),
@@ -397,7 +404,7 @@ ROUTES: list[Route] = [
             corpus=REPROCESSED,
             surveyed_on=SURVEY_DATE,
             accessions_queried=_BIOPROJECTS,
-            accessions_failed=31,
+            accessions_failed=30,
             unique_results=674_186,
             notes="efetch returns fewer runs than esearch counted; cause not yet established.",
         ),
@@ -418,7 +425,7 @@ ROUTES: list[Route] = [
             corpus=REPROCESSED,
             surveyed_on=SURVEY_DATE,
             accessions_queried=_BIOPROJECTS,
-            accessions_failed=15,
+            accessions_failed=14,
             unique_results=673_157,
             notes="Lowest yield of the five. Low failure count, but it finds the least.",
         ),
@@ -437,7 +444,7 @@ ROUTES: list[Route] = [
             surveyed_on=SURVEY_DATE,
             accessions_queried=_BIOPROJECTS_PRJNA,
             accessions_failed=1_078,
-            unique_results=15_186,
+            unique_results=15_180,
             notes=(
                 "Agrees with the direct route on every accession. Most failures are "
                 "provenance, not API: re-created, withdrawn or private projects."
@@ -458,7 +465,7 @@ ROUTES: list[Route] = [
             surveyed_on=SURVEY_DATE,
             accessions_queried=_BIOPROJECTS_PRJNA,
             accessions_failed=1_079,
-            unique_results=15_185,
+            unique_results=15_179,
             notes=(
                 "Functionally identical to the ELink route -- zero accessions where the "
                 "two return different series -- for one fewer request."

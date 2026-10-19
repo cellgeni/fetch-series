@@ -195,6 +195,27 @@ async def elink_uids(
     return sorted(found)
 
 
+_EXPXML_ACC = re.compile(r'<(Experiment|Study|Sample|Submitter|Run)\b[^>]*\bacc="([^"]+)"')
+_EXPXML_TEXT = re.compile(r"<(Bioproject|Biosample)>\s*([^<\s]+)\s*</")
+
+
+def expxml_accessions(record: dict[str, Any]) -> dict[str, list[str]]:
+    """The INSDC accessions an ``esummary db=sra`` record carries, by element.
+
+    They are not fields of the JSON document summary: they are attributes
+    inside ``expxml`` and ``runs``, two XML fragments stored as strings in it.
+    Read by pattern rather than by parsing the fragments, which are not
+    well-formed documents on their own (``runs`` has no single root).
+    """
+    found: dict[str, set[str]] = {}
+    text = f"{record.get('expxml') or ''}{record.get('runs') or ''}"
+    for element, value in _EXPXML_ACC.findall(text):
+        found.setdefault(element, set()).add(value)
+    for element, value in _EXPXML_TEXT.findall(text):
+        found.setdefault(element, set()).add(value)
+    return {element: sorted(values) for element, values in found.items()}
+
+
 async def efetch_text(
     client: SurveyClient,
     db: str,
@@ -376,6 +397,9 @@ class BioSampleRecord:
     #: aliases, deliberately *not* declared as a route -- a route needs a
     #: survey, and nobody has measured this one.
     cross_links: tuple[tuple[str, str], ...] = ()
+    #: BioProjects the record links to, from ``<Link target="bioproject">``.
+    #: The element's text is the project's UID; its label is the accession.
+    bioprojects: tuple[str, ...] = ()
 
 
 def _text(element: ElementTree.Element | None) -> str | None:
@@ -404,6 +428,14 @@ def _parse_biosample(node: ElementTree.Element) -> BioSampleRecord | None:
         elif (db := (identifier.get("db") or "").strip()) and db != "BioSample":
             links.append((db, value))
 
+    bioprojects = sorted(
+        {
+            label
+            for link in node.iter("Link")
+            if link.get("target") == "bioproject" and (label := (link.get("label") or "").strip())
+        }
+    )
+
     attributes: list[BioSampleAttribute] = []
     for attribute in node.iter("Attribute"):
         raw_name = (attribute.get("attribute_name") or "").strip()
@@ -430,6 +462,7 @@ def _parse_biosample(node: ElementTree.Element) -> BioSampleRecord | None:
         submitter_name=submitter_name,
         attributes=tuple(attributes),
         cross_links=tuple(links),
+        bioprojects=tuple(bioprojects),
     )
 
 

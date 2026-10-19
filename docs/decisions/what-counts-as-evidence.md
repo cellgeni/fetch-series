@@ -5,7 +5,7 @@ title: What counts as evidence
 # What counts as evidence
 
 **Status:** in force · **Enforced by:** `tests/test_routes.py`,
-`tests/test_graph.py`
+`tests/test_graph.py`, `tests/test_catalogue_probes.py`, `tests/test_catalogue.py`
 
 [The ranking](route-ranking.md) is computed from evidence, so what qualifies as
 evidence is not a methodological footnote — it is the input to every routing
@@ -37,6 +37,12 @@ The 2026-05 predecessor to this project counted rows. **69,923 of its 824,216
 Every `unique_results` figure in `graph.py` is a distinct-accession count, and
 `sra_be.column()` deduplicates for this reason.
 
+That sentence was false for two routes until 2026-10-19. The 2026-05
+BioProject → GEO series routes recorded 15,186 and 15,185 "unique" series, which
+were rows: five series are reached from more than one project, `GSE305915` from
+three, so the distinct counts are 15,180 and 15,179. Splitting the routes by
+archive recounted them from the result tables, which is how it surfaced.
+
 ## The corpus name must identify the accession set exactly
 
 The name is persisted with every verdict as provenance. If it does not pin down
@@ -54,6 +60,10 @@ This is why:
 - **A sampled draw records its parent.** `sample:3000@reprocessed-srr` says both
   the size and where it came from; `results-of:<route>@<corpus>` says which
   survey produced the population.
+- **A placeholder is not a query.** The 2026-05 scripts sent the table's `-` as
+  a BioProject, recorded its failure, and counted 12,756 projects queried where
+  there are 12,755. The harness parses its corpora and never sends one;
+  `catalogue/route_splits.json` names the old scripts' as unparsed.
 
 ## `hard-cases` is a gate, not evidence
 
@@ -66,6 +76,60 @@ the ranking would order routes by how often they were deliberately pointed at
 withdrawn projects and private series.
 
 Tier one proves a route *runs*. Only a representative corpus measures how well.
+
+## A probe is not evidence
+
+[The link catalogue](../graph/catalogue.md) confirms each link no route
+measures with one live request: `GSE60450`'s gds record names `GPL13112`, so
+GEO series → GEO platform exists. That is all it shows.
+
+A probe is **one accession out of one**. It cannot say how often a link
+answers, how often it fails, or whether it agrees with another, so it has none
+of the properties `ranked()` sorts on, and recording it as `RouteEvidence`
+would put a 100% yield into the ranking on the strength of a single request.
+The rule is the same as for `hard-cases`, for a related reason: both are
+chosen, not sampled.
+
+So a probe:
+
+- never becomes `RouteEvidence`, and a catalogue link never enters `REGISTRY`
+  without a survey behind it;
+- is drawn on [the route graph](../routes/graph.md) as a dotted line with no
+  counts, no rank and no ink;
+- is kept, with its date and accession, in `catalogue/probes.json`, and a test
+  fails if a probe is recorded beside a measured link, or used an accession
+  other than its link's fixed one.
+
+A probe that found nothing leaves its link *documented, not confirmed*, which
+is not the same as absent: the mechanism exists, and the record chosen did not
+carry the field. Promoting an untested link means surveying it, over a named
+corpus, like any other route.
+
+A probe into a file or a document confirms its link only when what it found is
+**usable**: a read file that downloads at the size the archive published, has a
+published md5 and size, and holds both reads a 10x run needs; a supplementary
+file that downloads and whose size can be checked; a metadata document that
+downloads and parses. A link that names a file nobody can fetch is not a route
+to that file. Each check is recorded with the probe, so an unconfirmed link says
+which check it failed.
+
+## A route's split is not new evidence
+
+INSDC objects are split by archive on the graph, so one route covers several
+links: `bioproject->run:ena_filereport` reaches SRRs, ERRs and DRRs. How it did
+on each is read out of its own recorded verdicts (`catalogue/splits.py`), by
+the archive each accession's prefix names and the format each file's name
+names. That is **filtered measurement**: the same survey, the same corpus, the
+same date, cut by source and target. It adds no evidence and is never ranked;
+`RouteRegistry.ranked()` still sees one route with one `RouteEvidence`.
+
+Two things follow. A split is drawn only where the survey actually queried that
+source: `experiment->run:ena_filereport` was surveyed on GEO series'
+experiments, which are all SRXs, so it measured nothing about an ERX and that
+link is probed like any untested one. And a split whose source was queried and
+never reached the target is a *measured absence*, listed and not drawn:
+`run->file:ena_submitted` found submitted files for all 246 ERRs it was asked
+about and for none of 2,737 SRRs.
 
 ## An undated number is not evidence
 

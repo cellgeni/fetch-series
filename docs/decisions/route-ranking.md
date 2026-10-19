@@ -34,13 +34,13 @@ that is backwards by **110,779 runs**:
 | Route | Unique runs | Failed | Requests |
 |---|---:|---:|---:|
 | `ena_filereport` | **783,936** | **0** | 1 |
-| `sra_be_direct_cgi` | 754,277 | 16 | 2 |
-| `sra_be_elink` | 754,332 | 34 | 3 |
-| `efetch_direct` | 673,157 | 15 | 2 |
-| `efetch_elink` | 674,186 | 31 | 3 |
+| `sra_be_direct_cgi` | 754,277 | 15 | 2 |
+| `sra_be_elink` | 754,332 | 33 | 3 |
+| `efetch_direct` | 673,157 | 14 | 2 |
+| `efetch_elink` | 674,186 | 30 | 3 |
 
 Nobody wrote that order down wrongly out of carelessness. It was a reasonable
-guess, held for years, and only a census over all 12,756 BioProjects settled it.
+guess, held for years, and only a census over all 12,755 BioProjects settled it.
 
 ## The precedence, in order
 
@@ -61,9 +61,9 @@ through to reliability.
 **This matters because ranking on raw yield put noise above substance twice.**
 
 `sra_be_elink` returns **55 more runs** than `sra_be_direct_cgi` — out of
-754,000, which is **0.007%** — while failing **34 times against 16** and costing
+754,000, which is **0.007%** — while failing **33 times against 15** and costing
 an extra request. On raw counts it wins. It should not: those 55 runs are noise,
-and doubling the failure rate to get them is a bad trade the ranking would have
+and more than doubling the failure rate to get them is a bad trade the ranking would have
 made silently.
 
 The second instance was `bioproject->geo_series`, where `elink` beat
@@ -75,7 +75,7 @@ that reflects the evidence and one that reflects its error bars.
 ### 3. Failure rate, banded
 
 `FAILURE_BAND = 0.001` — a tenth of a percent — for exactly the same reason. A
-route failing on 15 accessions and one failing on 16 are not meaningfully
+route failing on 14 accessions and one failing on 15 are not meaningfully
 different, and separating them on that basis would let sampling noise decide.
 
 ### 4. Cost in requests

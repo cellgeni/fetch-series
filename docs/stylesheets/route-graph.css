@@ -1,12 +1,32 @@
 /* The route graph page (routes/graph.md), drawn by javascripts/route-graph.js.
  *
- * Colours are roles, defined once per Material scheme. The outcome palette
- * (resolved / empty / failed) and the five-step resolved-share ramp were run
- * through a CVD and contrast validator against both of Material's surfaces:
- * worst adjacent colour-blind separation is dE 9.1, and every step clears 3:1
- * (ramp ends 2:1, the ordinal floor). Empty is deliberately grey -- it is "the
- * archive holds no such link", a neutral answer, not a category or a fault.
- * Failed uses the reserved critical red and always carries a text label.
+ * Three palettes, each run through a validator against both of Material's
+ * surfaces (white, and slate at hsl(232 15% 14%) = #1e2129):
+ *
+ * - Archives, on nodes: five categorical hues in column order -- GEO orange,
+ *   NCBI blue, EBI green, DDBJ violet, ArrayExpress amber -- so every pair of
+ *   neighbouring columns passes the validator in both modes (worst adjacent
+ *   colour-blind dE 24.7 light, 26.8 dark; worst normal-vision dE 27.5). They
+ *   do NOT pass on every pair: NCBI blue and DDBJ violet are dE 1.9 apart to a
+ *   protan reader, GEO orange and EBI green 3.2. Colour is therefore never the
+ *   only channel: each archive is a column, and every label names its archive
+ *   ("SRA run", "ENA run", "DRA run"). Amber is 2.17:1 on white, so its nodes
+ *   carry their name inside them -- the relief the validator requires.
+ *   Records all three INSDC archives hold, and read formats no archive owns,
+ *   are neutral.
+ * - Resolved share, on measured route lines and matrix cells: a five-step
+ *   neutral ink ramp, so it cannot be read as the blue of an INSDC node.
+ *   Ordinal checks pass in both modes: lightness monotone, every step gap at
+ *   least 0.06, one hue, and the faintest step at 2.25:1 on white and 2.40:1
+ *   on slate. In dark mode the ramp runs the other way -- a higher share is
+ *   always the higher contrast.
+ * - Outcomes, on the bars in panels: resolved is ink, empty is pale, failed is
+ *   red (worst colour-blind dE 13.3 light, 20.3 dark). Empty is meant to be
+ *   faint -- the archive answered and holds nothing -- and every value it
+ *   carries is also in the panel and the table.
+ *
+ * An untested link is not on the ramp at all: it is a thin dotted line with a
+ * hollow arrowhead, because it carries no quantity to encode.
  */
 
 .rg-root {
@@ -15,56 +35,57 @@
   --rg-hairline: rgba(11, 11, 11, 0.12);
   --rg-ink: var(--md-default-fg-color);
   --rg-ink-2: var(--md-default-fg-color--light);
-  --rg-muted: #898781;
-  --rg-node-border: #52514e;
   --rg-accent: var(--md-accent-fg-color);
 
-  --rg-resolved: #2a78d6;
-  --rg-empty: #898781;
+  --rg-geo: #eb6834;
+  --rg-ncbi: #2a78d6;
+  --rg-ebi: #008300;
+  --rg-ddbj: #6250d6;
+  --rg-arrayexpress: #eda100;
+  --rg-shared: #6f6e69;
+  --rg-file: #898781;
+  --rg-neutral: #6f6e69;
+
+  --rg-resolved: #3d3c39;
+  --rg-empty: #c4c3bb;
   --rg-failed: #d03b3b;
-  --rg-quiet: #c3c2b7;
 
-  /* Share of queried accessions resolved: <25%, 25-50, 50-75, 75-95, >=95%. */
-  --rg-ramp-0: #86b6ef;
-  --rg-ramp-1: #5598e7;
-  --rg-ramp-2: #2a78d6;
-  --rg-ramp-3: #1c5cab;
-  --rg-ramp-4: #104281;
+  --rg-ramp-0: #aeada5;
+  --rg-ramp-1: #8c8b84;
+  --rg-ramp-2: #6c6b65;
+  --rg-ramp-3: #4b4a46;
+  --rg-ramp-4: #262523;
+  --rg-untested: #7a7973;
 
-  /* The canvas is drawn by Cytoscape, which drops the alpha of rgba() and does
-   * not read every CSS colour syntax, so it gets plain hex: Material's surfaces
-   * and inks, flattened. */
-  --rg-cy-surface: #ffffff;
-  --rg-cy-region: #f3f3f1;
-  --rg-cy-hairline: #dcdbd4;
-  --rg-cy-ink: #1f1f1e;
-  --rg-cy-ink-2: #52514e;
-  --rg-cy-accent: #526cfe;
+  --rg-row: rgba(11, 11, 11, 0.07);
 
-  margin: 1.2rem 0 2rem;
+  margin: 1rem 0 2rem;
 }
 
 [data-md-color-scheme="slate"] .rg-root {
   --rg-region: rgba(255, 255, 255, 0.04);
   --rg-hairline: rgba(255, 255, 255, 0.12);
-  --rg-node-border: #c3c2b7;
-  --rg-resolved: #3987e5;
-  --rg-quiet: #52514e;
 
-  /* Selected for the dark surface, not flipped: low shares recede toward it. */
-  --rg-ramp-0: #184f95;
-  --rg-ramp-1: #256abf;
-  --rg-ramp-2: #3987e5;
-  --rg-ramp-3: #6da7ec;
-  --rg-ramp-4: #9ec5f4;
+  --rg-geo: #d95926;
+  --rg-ncbi: #3987e5;
+  --rg-ebi: #008300;
+  --rg-ddbj: #9085e9;
+  --rg-arrayexpress: #c98500;
+  --rg-shared: #a9a89f;
+  --rg-neutral: #a9a89f;
 
-  /* Material's slate surface, hsl(232 15% 14%). */
-  --rg-cy-surface: #1e2029;
-  --rg-cy-region: #262935;
-  --rg-cy-hairline: #3b3e4c;
-  --rg-cy-ink: #e3e4e8;
-  --rg-cy-ink-2: #a9acb6;
-  --rg-cy-accent: #7c8fff;
+  --rg-resolved: #d9d8d2;
+  --rg-empty: #46464c;
+  --rg-failed: #e66767;
+
+  --rg-ramp-0: #5d5c57;
+  --rg-ramp-1: #7d7c76;
+  --rg-ramp-2: #9e9d96;
+  --rg-ramp-3: #c1c0b9;
+  --rg-ramp-4: #e6e5de;
+  --rg-untested: #8f8e88;
+
+  --rg-row: rgba(255, 255, 255, 0.07);
 }
 
 /* This page is the graph, so it takes the width the navigation would have. */
@@ -72,7 +93,8 @@
   max-width: 120rem;
 }
 
-/* Controls: one row above everything they scope. */
+/* --------------------------------------------------------------- controls */
+
 .rg-controls {
   display: flex;
   flex-wrap: wrap;
@@ -82,37 +104,37 @@
   font-size: 0.7rem;
 }
 
-.rg-controls fieldset {
+.rg-path-finder {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.2rem 0.7rem;
-  margin: 0;
-  padding: 0;
-  border: 0;
+  gap: 0.4rem;
 }
 
-.rg-controls legend,
+.rg-path-finder label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+}
+
 .rg-control-label {
-  float: left;
-  margin-right: 0.4rem;
   color: var(--rg-ink-2);
   font-weight: 700;
 }
 
-.rg-controls label {
+.rg-controls > label {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  white-space: nowrap;
+  gap: 0.3rem;
   cursor: pointer;
 }
 
 .rg-controls select,
 .rg-button {
-  padding: 0.15rem 0.4rem;
+  padding: 0.2rem 0.5rem;
   border: 1px solid var(--rg-hairline);
-  border-radius: 0.2rem;
+  border-radius: 0.25rem;
   background: var(--rg-surface);
   color: var(--rg-ink);
   font: inherit;
@@ -120,72 +142,439 @@
 }
 
 .rg-button:hover,
-.rg-button:focus-visible {
+.rg-button:focus-visible,
+.rg-controls select:hover {
   border-color: var(--rg-accent);
 }
 
-/* Canvas and side panel. */
-.rg-main {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 22rem;
-  gap: 1rem;
+/* A plain dropdown. Material styles every <details> in content as a
+ * collapsible admonition -- border, icon, chevron -- so all of that is undone. */
+.md-typeset details.rg-dropdown {
+  position: relative;
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  font-size: inherit;
 }
 
-.rg-canvas,
-.rg-panel {
-  height: clamp(32rem, 74vh, 56rem);
+.md-typeset details.rg-dropdown > summary {
+  min-height: 0;
+  margin: 0;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--rg-hairline);
+  border-radius: 0.25rem;
+  background: var(--rg-surface);
+  color: var(--rg-ink);
+  font-weight: 400;
+  list-style: none;
+  cursor: pointer;
+}
+
+.md-typeset details.rg-dropdown > summary::-webkit-details-marker {
+  display: none;
+}
+
+.md-typeset details.rg-dropdown > summary::before {
+  display: none;
+}
+
+.md-typeset details.rg-dropdown > summary::after {
+  position: static;
+  display: inline;
+  width: auto;
+  height: auto;
+  margin: 0;
+  background: none;
+  content: " \25BE";
+  transform: none;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.rg-dropdown-body {
+  position: absolute;
+  z-index: 5;
+  display: grid;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+  padding: 0.6rem 0.8rem;
   border: 1px solid var(--rg-hairline);
   border-radius: 0.3rem;
   background: var(--rg-surface);
+  box-shadow: var(--md-shadow-z2);
+  white-space: nowrap;
 }
 
-.rg-canvas {
+.rg-dropdown-body label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------------ stage */
+
+.rg-stage {
   position: relative;
+  height: clamp(34rem, 86vh, 64rem);
+  min-height: 30rem;
+  max-height: 86vh;
+  overflow: hidden;
+  border: 1px solid var(--rg-hairline);
+  border-radius: 0.4rem;
+  background: var(--rg-surface);
 }
 
-.rg-cy {
-  position: absolute;
-  inset: 0;
+/* Scoped under .md-typeset to outrank Material's `.md-typeset svg { height:
+ * auto }`, which otherwise collapses the canvas to the 150px SVG default. */
+.md-typeset .rg-svg {
+  display: block;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  /* Panning and pinching are the script's (bindViewport), so a drag over the
+   * graph moves the graph, not the page. */
+  touch-action: none;
+  user-select: none;
 }
 
-.rg-canvas-actions {
+.md-typeset .rg-svg.is-panning {
+  cursor: grabbing;
+}
+
+.rg-zoom {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  z-index: 2;
+  right: 0.7rem;
+  bottom: 0.7rem;
   display: flex;
   gap: 0.3rem;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
 }
 
+.rg-zoom .rg-button {
+  min-width: 2rem;
+  box-shadow: var(--md-shadow-z1);
+}
+
+.rg-hint {
+  position: absolute;
+  bottom: 0.7rem;
+  left: 0.9rem;
+  margin: 0;
+  color: var(--rg-ink-2);
+  font-size: 0.6rem;
+  pointer-events: none;
+}
+
+/* Layer rows. */
+.rg-row-rule {
+  stroke: var(--rg-row);
+  stroke-width: 1;
+}
+
+.rg-row-label {
+  fill: var(--rg-ink-2);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+/* -------------------------------------------------------------- the nodes */
+
+.rg-family-geo { --rg-fam: var(--rg-geo); }
+.rg-family-ncbi { --rg-fam: var(--rg-ncbi); }
+.rg-family-ebi { --rg-fam: var(--rg-ebi); }
+.rg-family-ddbj { --rg-fam: var(--rg-ddbj); }
+.rg-family-arrayexpress { --rg-fam: var(--rg-arrayexpress); }
+.rg-family-shared { --rg-fam: var(--rg-shared); }
+.rg-family-file { --rg-fam: var(--rg-file); }
+.rg-family-neutral { --rg-fam: var(--rg-neutral); }
+
+.rg-node {
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.rg-node-body {
+  fill: color-mix(in srgb, var(--rg-fam) 16%, var(--rg-surface));
+  stroke: var(--rg-fam);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+/* The sheets behind a dataset: the same colour, quieter. */
+.rg-node-back {
+  fill: color-mix(in srgb, var(--rg-fam) 8%, var(--rg-surface));
+  stroke: color-mix(in srgb, var(--rg-fam) 60%, var(--rg-surface));
+  stroke-width: 1.5;
+}
+
+.rg-node-fold {
+  fill: none;
+  stroke: var(--rg-fam);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.rg-node-label {
+  fill: var(--rg-ink);
+  font-size: 15px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* How an identifier of the node is spelt: SRR, PRJ*, E-XXXX-n. */
+.rg-node-prefix {
+  fill: var(--rg-ink-2);
+  font-family: var(--md-code-font-family, monospace);
+  font-size: 11.5px;
+  pointer-events: none;
+}
+
+/* The archive columns: a name over each, a hairline between them. The name
+ * is in ink, with the archive's colour as an underline-weight rule, so the
+ * text stays legible whatever the hue. */
+.rg-column-label {
+  fill: var(--rg-ink);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-decoration: underline;
+  text-decoration-color: var(--rg-fam);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 6px;
+}
+
+.rg-column-rule {
+  stroke: var(--rg-row);
+  stroke-width: 1;
+  stroke-dasharray: 2 6;
+}
+
+.rg-node:focus-visible {
+  outline: none;
+}
+
+.rg-node:focus-visible .rg-node-body,
+.rg-node.is-focus .rg-node-body {
+  stroke-width: 3.5;
+}
+
+/* -------------------------------------------------------------- the lines */
+
+.rg-lane,
+.rg-lane-label {
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.rg-line {
+  fill: none;
+  stroke-linecap: butt;
+}
+
+/* A measured route: the ramp step for its resolved share. */
+.rg-share-0 { --rg-step: var(--rg-ramp-0); }
+.rg-share-1 { --rg-step: var(--rg-ramp-1); }
+.rg-share-2 { --rg-step: var(--rg-ramp-2); }
+.rg-share-3 { --rg-step: var(--rg-ramp-3); }
+.rg-share-4 { --rg-step: var(--rg-ramp-4); }
+
+.rg-line--share { stroke: var(--rg-step); }
+
+/* Resolved or empty, never separated: dark ink, hatched -- the same texture as
+ * the bars, so it cannot be read as a step of the ramp. */
+.rg-line--unknown { stroke: url(#rg-hatch); }
+.rg-hatch-ink { fill: var(--rg-ramp-3); }
+
+/* An untested link: dots, thin, neutral. Round caps on near-zero dashes make
+ * them dots at any width. */
+.rg-line--untested {
+  stroke: var(--rg-untested);
+  stroke-dasharray: 0.1 4.6;
+  stroke-linecap: round;
+}
+
+.rg-arrow { fill: var(--rg-ink-2); }
+.rg-arrow.rg-line--share { fill: var(--rg-step); stroke: none; }
+.rg-arrow.rg-line--unknown { fill: var(--rg-ramp-3); stroke: none; }
+
+.rg-arrow--hollow {
+  fill: var(--rg-surface);
+  stroke: var(--rg-untested);
+  stroke-width: 1.3;
+  stroke-linejoin: round;
+}
+
+.rg-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 16;
+}
+
+.rg-lane-label {
+  fill: var(--rg-ink-2);
+  font-family: var(--md-code-font-family);
+  font-size: 12px;
+  paint-order: stroke;
+  stroke: var(--rg-surface);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+/* Dots running source to target along a focused route. */
+.rg-flow {
+  display: none;
+  fill: none;
+  stroke: var(--rg-surface);
+  stroke-dasharray: 1.5 12;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.rg-lane.is-focus .rg-flow {
+  display: inline;
+  animation: rg-flow 0.9s linear infinite;
+}
+
+@keyframes rg-flow {
+  from { stroke-dashoffset: 13.5; }
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rg-lane.is-focus .rg-flow {
+    animation: none;
+  }
+}
+
+.rg-lane.is-hidden,
+.rg-lane-label.is-hidden {
+  display: none;
+}
+
+/* Hover lifts one route (or a node's routes) out of the rest; a selection or
+ * a path does the same, harder, until it is cleared. */
+.rg-svg.has-hover .rg-lane:not(.is-hover),
+.rg-svg.has-hover .rg-lane-label:not(.is-hover),
+.rg-svg.has-hover .rg-node:not(.is-hover) {
+  opacity: 0.25;
+}
+
+.rg-svg.has-focus .rg-lane:not(.is-focus):not(.is-hover),
+.rg-svg.has-focus .rg-lane-label:not(.is-focus):not(.is-hover),
+.rg-svg.has-focus .rg-node:not(.is-focus):not(.is-hover) {
+  opacity: 0.1;
+}
+
+.rg-lane-label.is-focus,
+.rg-lane-label.is-hover {
+  fill: var(--rg-ink);
+  font-weight: 700;
+}
+
+/* An untested lane's mechanisms: smaller and quieter than a route's name, and
+ * shown only when zoomed in far enough to read, or for the lane in hand. */
+.rg-lane-label--untested {
+  display: none;
+  font-size: 10.5px;
+  fill: var(--rg-untested);
+}
+
+.rg-svg.is-detailed .rg-lane-label--untested,
+.rg-svg .rg-lane-label--untested.is-focus,
+.rg-svg .rg-lane-label--untested.is-hover {
+  display: inline;
+}
+
+.rg-svg .rg-lane-label--untested.is-hidden {
+  display: none;
+}
+
+/* A focused untested lane is dotted still, and darker. */
+.rg-lane--untested.is-focus .rg-line--untested,
+.rg-lane--untested.is-hover .rg-line--untested {
+  stroke: var(--rg-ink);
+}
+
+.rg-lane--untested .rg-flow {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------------ panel */
+
 .rg-panel {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 4;
+  width: min(24rem, calc(100% - 1.4rem));
+  max-height: calc(100% - 4.2rem);
   overflow-y: auto;
   padding: 0.9rem 1rem;
+  border: 1px solid var(--rg-hairline);
+  border-radius: 0.4rem;
+  background: var(--rg-surface);
+  box-shadow: var(--md-shadow-z3);
   font-size: 0.7rem;
+}
+
+.rg-panel[hidden] {
+  display: none;
+}
+
+.rg-panel-close {
+  float: right;
+  margin: -0.4rem -0.5rem 0 0.5rem;
+  padding: 0 0.4rem;
+  border: 0;
+  background: none;
+  color: var(--rg-ink-2);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.rg-panel-close:hover {
+  color: var(--rg-ink);
+}
+
+.md-typeset .rg-panel-kicker {
+  margin: 0 0 0.2rem;
+  color: var(--rg-ink-2);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .md-typeset .rg-panel h3 {
   margin: 0 0 0.4rem;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
 }
 
 .md-typeset .rg-panel h4 {
   margin: 1rem 0 0.3rem;
   color: var(--rg-ink-2);
-  font-size: 0.7rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
 }
 
 .md-typeset .rg-panel p {
-  margin: 0.3rem 0;
+  margin: 0.35rem 0;
 }
 
 .rg-panel dl {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 0.15rem 0.8rem;
-  margin: 0.4rem 0;
+  gap: 0.2rem 0.8rem;
+  margin: 0.6rem 0;
 }
 
 .rg-panel dt {
@@ -204,13 +593,17 @@
 }
 
 .md-typeset .rg-panel ul li {
-  margin: 0;
+  margin: 0.3rem 0 0;
+}
+
+.rg-muted {
+  color: var(--rg-ink-2);
 }
 
 .rg-badge {
   display: inline-block;
-  margin: 0.15rem 0.3rem 0 0;
-  padding: 0 0.35rem;
+  margin: 0.2rem 0.3rem 0 0;
+  padding: 0 0.4rem;
   border: 1px solid var(--rg-hairline);
   border-radius: 0.6rem;
   color: var(--rg-ink-2);
@@ -221,7 +614,7 @@
 .rg-item {
   display: block;
   width: 100%;
-  margin: 0.25rem 0;
+  margin: 0.2rem 0;
   padding: 0.35rem 0.45rem;
   border: 1px solid transparent;
   border-radius: 0.25rem;
@@ -247,8 +640,11 @@
 }
 
 .rg-item-meta {
-  display: block;
-  margin-top: 0.15rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.4rem;
+  margin-top: 0.2rem;
   color: var(--rg-ink-2);
 }
 
@@ -257,13 +653,13 @@
   display: grid;
   grid-template-columns: repeat(3, auto);
   justify-content: start;
-  gap: 0.1rem 1rem;
-  margin: 0.4rem 0;
+  gap: 0.1rem 1.2rem;
+  margin: 0.6rem 0 0.3rem;
 }
 
 .rg-count strong {
   display: block;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -274,8 +670,10 @@
   color: var(--rg-ink-2);
 }
 
-/* Stacked outcome bar. Segments are separated by a 2px surface gap rather than
- * a stroke; the data end is rounded and the baseline square. */
+/* ------------------------------------------------------------------- bars */
+
+/* Segments are separated by a 2px surface gap rather than a stroke; the data
+ * end is rounded and the baseline square. */
 .rg-bar {
   display: flex;
   gap: 2px;
@@ -285,7 +683,8 @@
 }
 
 .rg-bar--mini {
-  width: 7rem;
+  flex: none;
+  width: 6rem;
   height: 0.45rem;
   margin: 0;
 }
@@ -313,16 +712,10 @@
   background: var(--rg-failed);
 }
 
-/* Resolved and empty together, unseparated: texture, not a colour, so it can
- * never be read as a fourth outcome. */
 .rg-seg--unknown,
 .rg-swatch--unknown {
-  background: repeating-linear-gradient(
-    45deg,
-    var(--rg-empty) 0 2px,
-    transparent 2px 5px
-  );
-  box-shadow: inset 0 0 0 1px var(--rg-empty);
+  background: repeating-linear-gradient(45deg, var(--rg-resolved) 0 2px, transparent 2px 5px);
+  box-shadow: inset 0 0 0 1px var(--rg-resolved);
 }
 
 .rg-swatch {
@@ -332,12 +725,27 @@
   border-radius: 2px;
 }
 
-/* Legend, under the canvas. Line keys for edges, rectangles for bar segments. */
+.rg-swatch.rg-family-geo,
+.rg-swatch.rg-family-ncbi,
+.rg-swatch.rg-family-ebi,
+.rg-swatch.rg-family-ddbj,
+.rg-swatch.rg-family-arrayexpress,
+.rg-swatch.rg-family-shared,
+.rg-swatch.rg-family-file {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid var(--rg-fam);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--rg-fam) 16%, var(--rg-surface));
+}
+
+/* ----------------------------------------------------------------- legend */
+
 .rg-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem 1.6rem;
-  margin: 0.6rem 0 0;
+  gap: 0.6rem 2rem;
+  margin: 0.8rem 0 0;
   color: var(--rg-ink-2);
   font-size: 0.65rem;
 }
@@ -346,7 +754,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.3rem 0.8rem;
+  gap: 0.3rem 0.9rem;
 }
 
 .rg-legend-title {
@@ -360,25 +768,36 @@
   gap: 0.3rem;
 }
 
-.rg-key {
-  display: inline-block;
-  width: 1.2rem;
-  border-top: 3px solid var(--rg-muted);
+.md-typeset .rg-legend-shape {
+  width: 2rem;
+  height: 1.4rem;
+  overflow: visible;
 }
 
-.rg-key--dashed {
-  border-top-style: dashed;
+.rg-legend-shape .rg-node {
+  cursor: default;
 }
 
-/* Tooltip: one, following the pointer, never the only place a value lives. */
+.rg-legend-shape .rg-node-body {
+  stroke-width: 1.5;
+}
+
+.md-typeset .rg-legend-line {
+  width: 1.6rem;
+  height: 0.5rem;
+}
+
+/* ---------------------------------------------------------------- tooltip */
+
+/* One, following the pointer, never the only place a value lives. */
 .rg-tooltip {
   position: fixed;
   z-index: 10;
+  max-width: 21rem;
   margin: 0;
-  max-width: 20rem;
-  padding: 0.45rem 0.6rem;
+  padding: 0.5rem 0.65rem;
   border: 1px solid var(--rg-hairline);
-  border-radius: 0.25rem;
+  border-radius: 0.3rem;
   background: var(--rg-surface);
   box-shadow: var(--md-shadow-z2);
   color: var(--rg-ink);
@@ -401,13 +820,15 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* The table: the same data, readable without the picture. */
+/* ------------------------------------------------------------------ table */
+
+/* The same data, readable without the picture. Material styles only
+ * class-less tables, so this one carries its own. */
 .rg-table-wrap {
   overflow-x: auto;
   margin-top: 1.6rem;
 }
 
-/* Material styles only class-less tables, so this one carries its own. */
 .md-typeset .rg-table {
   display: table;
   width: 100%;
@@ -429,10 +850,6 @@
   white-space: nowrap;
 }
 
-.md-typeset .rg-table tbody tr:hover td {
-  background: var(--rg-region);
-}
-
 .md-typeset .rg-table th button {
   padding: 0;
   border: 0;
@@ -450,10 +867,18 @@
   content: " \2193";
 }
 
+.md-typeset .rg-table tbody tr:hover td {
+  background: var(--rg-region);
+}
+
 .md-typeset .rg-table td.rg-num,
 .md-typeset .rg-table th.rg-num {
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+.md-typeset .rg-table td.rg-nowrap {
+  white-space: nowrap;
 }
 
 .md-typeset .rg-table td.rg-corpus {
@@ -486,27 +911,308 @@
   white-space: nowrap;
 }
 
-.md-typeset .rg-table td.rg-nowrap {
-  white-space: nowrap;
-}
-
-.rg-unrecorded {
-  color: var(--rg-ink-2);
-  font-style: italic;
-}
-
+.rg-loading,
 .rg-error {
   padding: 1rem;
   color: var(--rg-ink-2);
 }
 
 @media screen and (max-width: 60em) {
-  .rg-main {
-    grid-template-columns: minmax(0, 1fr);
+  .rg-stage {
+    height: 70vh;
   }
 
-  .rg-panel {
-    height: auto;
-    max-height: 32rem;
+  .rg-hint {
+    display: none;
   }
+}
+
+/* ------------------------------------------------------------ view toggle */
+
+.rg-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.rg-segmented {
+  display: inline-flex;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--rg-hairline);
+  border-radius: 0.3rem;
+  overflow: hidden;
+}
+
+.rg-segmented label {
+  position: relative;
+  cursor: pointer;
+}
+
+.rg-segmented input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rg-segmented span {
+  display: inline-block;
+  padding: 0.25rem 0.7rem;
+  color: var(--rg-ink-2);
+}
+
+.rg-segmented label + label span {
+  border-left: 1px solid var(--rg-hairline);
+}
+
+.rg-segmented input:checked + span {
+  background: var(--rg-region);
+  color: var(--rg-ink);
+  font-weight: 700;
+  box-shadow: inset 0 -2px 0 var(--rg-accent);
+}
+
+.rg-segmented input:focus-visible + span {
+  outline: 2px solid var(--rg-accent);
+  outline-offset: -2px;
+}
+
+/* ---------------------------------------------------------- panel pieces */
+
+.rg-chip {
+  display: inline-block;
+  padding: 0 0.35rem;
+  border-radius: 0.5rem;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.rg-chip--measured {
+  background: var(--rg-ramp-3);
+  color: var(--rg-surface);
+}
+
+.rg-chip--untested {
+  border: 1px dotted var(--rg-untested);
+  color: var(--rg-ink-2);
+}
+
+.rg-panel ul.rg-mechanisms {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.md-typeset .rg-panel ul.rg-mechanisms li.rg-mechanism {
+  margin: 0;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--rg-hairline);
+  border-radius: 0.3rem;
+}
+
+.rg-mechanism > div + div {
+  margin-top: 0.15rem;
+}
+
+.rg-endpoint code {
+  font-size: 0.6rem;
+  overflow-wrap: anywhere;
+}
+
+.md-typeset .rg-panel p.rg-probe {
+  margin: 0.3rem 0 0;
+}
+
+.rg-probe code {
+  font-size: 0.6rem;
+}
+
+.rg-tooltip-list {
+  margin: 0.3rem 0 0;
+  padding-left: 1rem;
+}
+
+/* ----------------------------------------------------------------- matrix */
+
+.rg-matrix-section {
+  margin-top: 1.8rem;
+}
+
+.md-typeset .rg-matrix-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.85rem;
+}
+
+.rg-matrix-legend {
+  margin: 0 0 0.6rem;
+}
+
+.rg-matrix-wrap {
+  overflow-x: auto;
+}
+
+.md-typeset .rg-matrix {
+  display: table;
+  border-collapse: separate;
+  border-spacing: 2px;
+  font-size: 0.6rem;
+}
+
+.md-typeset .rg-matrix th,
+.md-typeset .rg-matrix td {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.md-typeset .rg-matrix th {
+  color: var(--rg-ink-2);
+  font-weight: 600;
+}
+
+.md-typeset .rg-matrix th.rg-matrix-row {
+  padding-right: 0.5rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.md-typeset .rg-matrix th.rg-matrix-col {
+  height: 9.5rem;
+  vertical-align: bottom;
+}
+
+.rg-matrix-col span {
+  display: inline-block;
+  padding-bottom: 0.3rem;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.rg-matrix-corner span {
+  color: var(--rg-ink-2);
+  font-weight: 400;
+}
+
+.md-typeset .rg-matrix td.rg-cell {
+  width: 1.15rem;
+  height: 1.15rem;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.md-typeset .rg-matrix td.rg-cell--self {
+  background: var(--rg-region);
+}
+
+.rg-cell-mark {
+  display: block;
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  cursor: pointer;
+}
+
+.rg-cell-key {
+  display: inline-block;
+  cursor: default;
+}
+
+.rg-cell-key--blank {
+  width: 1.05rem;
+  height: 1.05rem;
+  border: 1px solid var(--rg-row);
+  border-radius: 3px;
+}
+
+.rg-cell--share-0 { background: var(--rg-ramp-0); }
+.rg-cell--share-1 { background: var(--rg-ramp-1); }
+.rg-cell--share-2 { background: var(--rg-ramp-2); }
+.rg-cell--share-3 { background: var(--rg-ramp-3); }
+.rg-cell--share-4 { background: var(--rg-ramp-4); }
+
+.rg-cell--unknown {
+  background: repeating-linear-gradient(45deg, var(--rg-ramp-3) 0 2px, transparent 2px 5px);
+  box-shadow: inset 0 0 0 1px var(--rg-ramp-3);
+}
+
+.rg-cell--untested {
+  box-shadow: inset 0 0 0 1.5px var(--rg-untested);
+}
+
+.rg-cell--unconfirmed {
+  border: 1.5px dashed var(--rg-untested);
+  opacity: 0.55;
+}
+
+/* Measured, and nothing ever reached the target: a struck-through outline. */
+.rg-cell--none-measured {
+  border: 1.5px solid var(--rg-untested);
+  background: linear-gradient(
+    to top right,
+    transparent calc(50% - 0.75px),
+    var(--rg-untested) calc(50% - 0.75px),
+    var(--rg-untested) calc(50% + 0.75px),
+    transparent calc(50% + 0.75px)
+  );
+  opacity: 0.7;
+}
+
+/* What a probe checked a found file or document for. Pass, fail and
+ * undetermined each carry a glyph as well as a colour. */
+.rg-checks {
+  margin: 0.2rem 0 0.3rem;
+  padding: 0;
+  list-style: none;
+}
+
+.md-typeset .rg-checks li {
+  margin: 0;
+}
+
+.rg-check-mark {
+  display: inline-block;
+  width: 1.1em;
+  font-weight: 700;
+}
+
+.rg-check--passed .rg-check-mark {
+  color: var(--rg-ink);
+}
+
+.rg-check--failed .rg-check-mark {
+  color: var(--rg-failed);
+}
+
+.rg-check--undetermined .rg-check-mark {
+  color: var(--rg-ink-2);
+}
+
+/* Row and column heads in the matrix carry their archive as a left rule. */
+.rg-matrix-row[class*="rg-family-"] {
+  box-shadow: inset 3px 0 0 var(--rg-fam);
+}
+
+.rg-cell-mark:hover,
+.rg-cell-mark:focus-visible {
+  outline: 2px solid var(--rg-accent);
+  outline-offset: 1px;
+}
+
+.rg-cell-mark.is-selected {
+  outline: 2px solid var(--rg-accent);
+  outline-offset: 1px;
+}
+
+.md-typeset .rg-matrix th.rg-matrix-col[class*="rg-family-"] {
+  box-shadow: inset 0 -3px 0 var(--rg-fam);
 }
