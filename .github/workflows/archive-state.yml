@@ -20,29 +20,36 @@ jobs:
   pathologies:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           lfs: false
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v10
         with:
           enable-cache: true
 
+      # The suite needs only the runtime and the test runner. `--all-groups`
+      # pulled in Jupyter and the iRODS client for a job that runs neither.
       - name: Install
-        run: uv sync --all-groups
+        run: uv sync --group dev
 
-      # Lifts NCBI's limit from 3 req/s to 10. Absent on a fork, where the
-      # suite still runs, just slower.
+      # Lifts NCBI's limit from 3 req/s to 10. Where the secret is not set -- a
+      # fork, or this repository before it was added -- the expression yields an
+      # empty string, not nothing. The client treats an empty key as no key;
+      # until it did, every NCBI request sent `api_key=` and NCBI answered 400,
+      # which is how this job raised a false alarm on 2026-10-19.
       - name: Pathology suite
         env:
           NCBI_API_KEY: ${{ secrets.NCBI_API_KEY }}
         run: uv run pytest -m pathology -v
 
+      # One annotation, not one per line: each `::notice::` is its own entry on
+      # the run summary, which turned one message into five.
       - name: What a failure means
         if: failure()
-        run: |
-          echo "::notice::A pathology test failed. That usually means an archive"
-          echo "::notice::fixed a documented defect. Update the knowledge-base page,"
-          echo "::notice::re-rank the affected route, and delete the test."
-          echo "::notice::Transient failures skip rather than fail, so this is"
-          echo "::notice::unlikely to be a rate limit."
+        run: >-
+          echo "::notice title=A pathology test failed::That usually means an
+          archive fixed a documented defect. Update the knowledge-base page,
+          re-rank the affected route, and delete the test. Only transport errors,
+          timeouts, 408, 429 and 5xx skip, so a failure is an archive's answer --
+          but check it is not a 400 from a malformed request first."

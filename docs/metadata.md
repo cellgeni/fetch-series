@@ -178,7 +178,7 @@ test, per the [pathology page contract](pathologies/index.md).
   It strips the letters and reads the remainder as a UID. `id=SAMEA11294529`
   returns `SAMN11294529` -- a rumen bacterium where a human liver sample was
   asked for -- with HTTP 200 and 14 attributes. This affects **every EBI- and
-  DDBJ-registered BioSample**, and ENA finds 125,376 BioSamples NCBI's own link
+  DDBJ-registered BioSample**, and ENA finds 125,271 BioSamples NCBI's own link
   table does not.
 - [**ZOOMA's ontology filter forces a term**](pathologies/zooma-filter-forces-a-term.md).
   It does not prevent a wrong answer; it selects which one you get.

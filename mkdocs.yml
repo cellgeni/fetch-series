@@ -114,6 +114,7 @@ nav:
           - Study → run: routes/study-to-run/ena-filereport.md
           - Sample → run: routes/sample-to-run/ena-filereport.md
           - BioSample → run: routes/biosample-to-run/ena-filereport.md
+          - Experiment → run: routes/experiment-to-run/ena-filereport.md
           - Experiment → BioSample: routes/experiment-to-biosample/ena-filereport.md
           - Run → experiment: routes/run-to-experiment/ena-filereport.md
           - Run → BioSample: routes/run-to-biosample/ena-filereport.md

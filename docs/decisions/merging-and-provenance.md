@@ -16,8 +16,8 @@ with the answers — and the answer is almost always *keep both and say so*.
 
 A fallback chain stops at the first route that answers, which means it can only
 ever be as complete as its best single route. The evidence says no single route
-is complete: ENA holds 110,779 runs `efetch` never returns, and about 1,800 runs
-are missing from ENA. Taking the union of the two is strictly better than
+is complete: ENA holds 111,665 runs `efetch` never returns, and about 1,800 runs
+are missing from ENA — both set differences over the same 12,755 projects in one survey. Taking the union of the two is strictly better than
 picking either, and the cost is one extra request against a rate limit that is
 not the bottleneck.
 

@@ -10,27 +10,22 @@ from dotenv import load_dotenv
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 from tqdm.asyncio import tqdm_asyncio
 
+from fetch_series.logging_utils import configure_logging as _configure_logging
+from fetch_series.logging_utils import redact_exception, run_logfile
+
 load_dotenv()
 
-NCBI_API_KEY = os.getenv("NCBI_API_KEY") or os.getenv("NCBI_KEY")
+NCBI_API_KEY = os.getenv("NCBI_API_KEY") or os.getenv("NCBI_KEY") or None
 OUTPUT_DIR = "data/query/results"
-LOG_PATH = "data/query/logs/bioproject2geo_direct.log"
 
 ThrottledGet = Callable[..., Coroutine[Any, Any, httpx.Response]]
 
 
 def configure_logging() -> None:
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
-    logging.basicConfig(
-        level=logging.WARNING,
-        format="%(asctime)s %(levelname)s %(message)s",
-        handlers=[
-            logging.FileHandler(LOG_PATH, mode="w"),
-            logging.StreamHandler(),
-        ],
-        force=True,
-    )
+    # Redacting, and appending to a per-run file. This used basicConfig with
+    # mode="w", so every re-run destroyed the log documenting the results
+    # beside it, and nothing stripped the API key from a retry warning.
+    _configure_logging(level=logging.WARNING, logfile=run_logfile("bioproject2geo_direct"))
 
 
 def _is_retryable(e: Exception) -> bool:
@@ -73,7 +68,7 @@ async def eutils_search(
         wait=wait_exponential(multiplier=1, min=2, max=30),
         retry=retry_if_exception(_is_retryable),
         before_sleep=lambda rs: logging.warning(
-            "Retry %d/5 for %r: %s", rs.attempt_number, query, rs.outcome.exception()
+            "Retry %d/5 for %r: %s", rs.attempt_number, query, redact_exception(rs.outcome.exception())
         ),
     )
     async def _fetch():
@@ -147,7 +142,7 @@ async def bioproject2geo_direct(
             "Retry %d/5 for %r: %s",
             rs.attempt_number,
             accession,
-            rs.outcome.exception(),
+            redact_exception(rs.outcome.exception()),
         ),
     )
     async def _run():
@@ -237,7 +232,7 @@ async def main():
             httpx.TransportError,
             httpx.TimeoutException,
         ) as e:
-            logging.error("Failed to fetch %r: %s", acc, e)
+            logging.error("Failed to fetch %r: %s", acc, redact_exception(e))
             return None
 
     async with httpx.AsyncClient() as client:
@@ -251,6 +246,7 @@ async def main():
 
     df = pd.DataFrame(rows)
     output_path = os.path.join(OUTPUT_DIR, "bioproject2geo_direct_summary.csv")
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df.to_csv(output_path, index=False)
     logging.info("Wrote %d rows to %s", len(df), output_path)
     print(f"Wrote {len(df)} rows to {output_path}")

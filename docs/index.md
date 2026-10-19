@@ -52,7 +52,7 @@ BioProject → runs, over 12,755 BioProjects (2026-05-12), counted at the unique
 | NCBI `efetch` runinfo (direct `[GPRJ]`) | 673,157 | 14 |
 
 ENA holds 111,665 runs that `efetch` never returns; about 1,800 runs are missing
-from ENA. GEO series → experiment is covered under [Routes](routes/gse-to-experiment/index.md).
+from ENA. Both are set differences over the same 12,755 projects, not differences of totals. GEO series → experiment is covered under [Routes](routes/gse-to-experiment/index.md).
 
 ### The five findings that changed what this tool does
 
@@ -60,7 +60,7 @@ from ENA. GEO series → experiment is covered under [Routes](routes/gse-to-expe
 |---|---|---|
 | **39.2%** | of runs have an ENA fastq missing the read that carries the cell barcode — downloads cleanly, checksums correctly, and no read can be assigned to a cell | [pathology](pathologies/ena-paired-library-single-fastq.md) |
 | **17.6%** | of GEO series with SRA data report none through NCBI's `elink gds→sra`, with zero errors | [pathology](pathologies/elink-gds-sra-missing-links.md) |
-| **125,376** | BioSamples ENA finds that NCBI's link table does not, 93.5% of them in EBI-registered projects | [route](routes/bioproject-to-biosample/index.md) |
+| **125,271** | BioSamples ENA finds that NCBI's link table does not, 93.6% of them in EBI-registered projects | [route](routes/bioproject-to-biosample/index.md) |
 | **every `SAMEA`/`SAMD`** | BioSample that `efetch` is asked for by accession comes back as a *different sample* — prefix stripped, remainder read as a UID, HTTP 200 | [pathology](pathologies/biosample-efetch-ignores-accession-prefix.md) |
 | **41%** | of the BioProjects `esummary db=gds` recovers for series GEO leaves empty are species-level umbrellas | [route](routes/gse-to-bioproject/gds-summary.md) |
 | **0.77%** | of runs that were reprocessed successfully no longer exist in either archive | [route](routes/run-to-experiment/ena-filereport.md) |

@@ -14,7 +14,7 @@ Tiered, and the tiers answer different questions.
 
 | Corpus | Size | What it is | What it can measure |
 |---|---|---|---|
-| `hard-cases` | 34 | Curated, one accession per known failure mode | *Can* this happen; does a route handle it |
+| `hard-cases` | 46 | Curated, one accession per known failure mode | *Can* this happen; does a route handle it |
 | `reprocessed-gse` | 13,045 | Every GEO series that has been through reprocessing | Prevalence, for GEO entry points |
 | `reprocessed-prj` | 12,755 | Every BioProject in the same table | Prevalence, for project entry points |
 | `geo-sample-<n>` | n | Seeded stratified draw from all 275,238 GEO series | Prevalence across GEO as a whole |
@@ -33,7 +33,7 @@ verdict as provenance, which means it has to identify the accession set exactly.
 The same rule is why `geo-sample-15` holding 10 accessions was a bug worth
 fixing rather than a rounding detail.
 
-A new route runs `hard-cases` first — 34 accessions, seconds, and a design error surfaces
+A new route runs `hard-cases` first — 46 accessions, seconds, and a design error surfaces
 immediately. Only then does it earn a full corpus.
 
 ## Three lessons that cost real time
@@ -93,9 +93,10 @@ comparison against an independent count. It cannot be read off a coverage rate.
 
 ## Tier one is a coverage check, and is not recorded as evidence
 
-Every implemented route is exercised on `hard-cases` before anything larger. As of
-2026-09-15 all 33 implemented routes have been, and the results are below. Two things to
-read from it, and one thing not to.
+Every implemented route is exercised on `hard-cases` before anything larger. By
+2026-09-16, 37 of the 40 routes now implemented had been run over `hard-cases`;
+19 of them are below. Two things to read from it, and one thing
+not to.
 
 | Route | Queried | Resolved | Empty | Failed |
 |---|---|---|---|---|
@@ -129,8 +130,8 @@ resolver depends on is doing the right thing at the level of a single route.
 
 **These results are deliberately not recorded as `RouteEvidence`.** `hard-cases` is curated
 for pathology, so its resolve rate is not a prevalence estimate, and `unique_results` over
-43 hand-picked accessions is not comparable with a census over 13,045. Recording it would
-let a route "measured" on 43 accessions outrank one measured on thousands, for no better
+46 hand-picked accessions is not comparable with a census over 13,045. Recording it would
+let a route "measured" on 46 accessions outrank one measured on thousands, for no better
 reason than that both had *some* number attached. A route stays unmeasured until something
 with a real denominator has been run against it.
 

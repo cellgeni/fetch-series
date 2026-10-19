@@ -97,9 +97,21 @@ Five independent routes, the same five runs. That is the uninteresting case, and
 common one — which is exactly why the interesting cases need a resolver that can describe
 them rather than a chain that picks one silently.
 
-## Not yet done
+## Multi-hop paths: a fallback, not a union
 
-`Mode.UNION` currently asks only **direct** routes. Multi-hop paths are discoverable
-(`RouteRegistry.find_paths`) and the CLI suggests them when no direct route resolves, but
-the resolver does not yet walk them. That matters for entry points with no direct edge to
-the target — a `GSM` reaching runs, for instance.
+`resolve()` asks only **direct** routes. `resolve_path()` — what `fetch resolve` and the file
+layer call — asks the direct routes first and walks a multi-hop path only if none of them
+answers. It takes the paths `RouteRegistry.find_paths` returns, shortest first, and stops at
+the first one whose every hop answers; each final value records the intermediate it came
+through as `via`. That is what lets a `GSM` reach runs, which has no direct edge to them.
+
+Two limits, both deliberate:
+
+- **One path, not the union of paths.** The walk is a fallback for a missing direct edge, so
+  a direct answer always wins and a second path is never asked to corroborate the first.
+- **Fan-out is capped at 50 intermediates per hop.** A 2,396-sample series walked hop by hop
+  would otherwise issue 2,396 requests for the second hop alone. When the cap bites,
+  `--explain` says the answer is partial rather than letting it look complete.
+
+The walk is a union only: `fetch resolve --mode first` resolves direct routes and stops, and
+`--no-multi-hop` turns the walk off.

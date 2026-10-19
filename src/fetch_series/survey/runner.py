@@ -107,14 +107,18 @@ async def run_route(
     # interim empty rate reads as 91% when the true figure is nothing like it.
     # A fixed seed keeps the order reproducible; resume is keyed on the
     # accession set, so shuffling cannot disturb it.
-    todo = shuffled(accessions)
+    order = shuffled(accessions)
+    todo = order
     skipped = 0
     if resume:
         done = cache.answered(corpus, route.id)
         if retry_failed:
             done -= cache.failed(corpus, route.id)
-        todo = [a for a in accessions if a not in done]
-        skipped = len(accessions) - len(todo)
+        # Filter the *shuffled* list. This line once read `accessions`, so every
+        # resumed run silently went back to sorted order and spent its remaining
+        # budget on the oldest submissions -- the bias the shuffle exists to stop.
+        todo = [a for a in order if a not in done]
+        skipped = len(order) - len(todo)
         if skipped:
             logger.info("%s: skipping %d already-answered accessions", route.id, skipped)
 

@@ -56,8 +56,8 @@ fetch survey compare --route A --route B --corpus reprocessed-gse
 fetch cache diff data/snapshots/<earlier>.sqlite
 ```
 
-`fetch links` reproduces **14 of 14** of `fetch10xmeta`'s own nf-test cases — 447 runs, no
-differences. See [the parity record](docs/fetch10xmeta-parity.md).
+`fetch links` reproduces **14 of 14** of `fetch10xmeta`'s own nf-test cases — 422 snapshot rows (400 distinct
+runs), no differences. See [the parity record](docs/fetch10xmeta-parity.md).
 
 The knowledge base publishes to
 [cellgeni.github.io/fetch-series](https://cellgeni.github.io/fetch-series/) on
@@ -120,7 +120,8 @@ order from the `RouteEvidence` blocks in `graph.py` — corpus, date, measured c
 nobody has surveyed sorts behind every route that has been.
 
 That matters because the incumbent tries NCBI's `efetch` before ENA, and the evidence says that is
-backwards by **110,779 runs**. Nobody wrote it down wrongly out of carelessness; it was a
+backwards by **111,665 runs** — the runs ENA returns that `efetch` never does, counted as a set
+difference over the same 12,755 BioProjects. Nobody wrote it down wrongly out of carelessness; it was a
 reasonable guess, held for years, and only a census settled it.
 
 **[`docs/decisions/`](docs/decisions/index.md) records every such choice** — the argument, the

@@ -96,7 +96,7 @@ class TestExceptionRedaction:
     def test_http_status_error_message_is_redacted(self):
         import httpx
 
-        from fetch_series.survey.client import redact_exception
+        from fetch_series.logging_utils import redact_exception
 
         request = httpx.Request("GET", f"https://x/e.fcgi?db=sra&api_key={KEY}")
         response = httpx.Response(429, request=request)
@@ -114,14 +114,30 @@ class TestExceptionRedaction:
     def test_transport_error_message_is_redacted(self):
         import httpx
 
-        from fetch_series.survey.client import redact_exception
+        from fetch_series.logging_utils import redact_exception
 
         redacted = redact_exception(httpx.ConnectError(f"failed for ?api_key={KEY}"))
         assert KEY not in str(redacted)
         assert isinstance(redacted, httpx.ConnectError)
 
+    def test_the_sync_helpers_redact_a_transport_error(self, monkeypatch):
+        """core.py redacted status errors but let a timeout carry the URL out."""
+        import httpx
+        import pytest
+
+        from fetch_series import core
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            raise httpx.ConnectError(f"cannot reach {request.url}", request=request)
+
+        monkeypatch.setattr(core, "transport", httpx.MockTransport(handler))
+        with pytest.raises(httpx.ConnectError) as caught:
+            core.eutils_search("GSE1[ACCN]", db="gds", api_key=KEY)
+        assert KEY not in str(caught.value)
+        assert caught.value.__cause__ is None
+
     def test_innocuous_exceptions_are_returned_unchanged(self):
-        from fetch_series.survey.client import redact_exception
+        from fetch_series.logging_utils import redact_exception
 
         exc = ValueError("no credentials here")
         assert redact_exception(exc) is exc
@@ -129,7 +145,8 @@ class TestExceptionRedaction:
     def test_redacted_exception_is_still_classified_as_retryable(self):
         import httpx
 
-        from fetch_series.survey.client import is_retryable, redact_exception
+        from fetch_series.logging_utils import redact_exception
+        from fetch_series.survey.client import is_retryable
 
         request = httpx.Request("GET", f"https://x/e?api_key={KEY}")
         response = httpx.Response(503, request=request)

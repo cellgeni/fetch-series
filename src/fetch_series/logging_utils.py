@@ -18,6 +18,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import IO
 
+import httpx
+
 REDACTED = "***REDACTED***"
 
 # Credential-bearing query parameters, matched up to the next delimiter so the
@@ -42,6 +44,29 @@ class RedactingFormatter(logging.Formatter):
 
 
 DEFAULT_FORMAT = "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+
+
+def redact_exception(exc: BaseException) -> BaseException:
+    """Return ``exc`` with credentials stripped from its message.
+
+    httpx puts the full request URL into the message of every
+    :class:`httpx.HTTPStatusError` and most transport errors, and the NCBI API
+    key is a query parameter. The redacting log formatter only helps if the
+    exception is *logged*; an uncaught traceback printed by the interpreter
+    bypasses it completely, which is how a key reached a session transcript.
+
+    The exception type is preserved, because :func:`is_retryable` dispatches on
+    it and on ``response.status_code``.
+    """
+    message = redact(str(exc))
+    if message == str(exc):
+        return exc
+    if isinstance(exc, httpx.HTTPStatusError):
+        return httpx.HTTPStatusError(message, request=exc.request, response=exc.response)
+    try:
+        return type(exc)(message)
+    except Exception:
+        return exc
 
 
 def configure_logging(

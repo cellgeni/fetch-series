@@ -16,6 +16,14 @@ parameter, so a command line carries it into the process table and into
 Nextflow's `.command.sh`, which is written into the work directory and stays
 there. A key reached this repository once already by a shorter route than that.
 
+**The image declares no `NCBI_API_KEY` default.** It used to carry
+`ENV NCBI_API_KEY=""`: a variable that is set but empty, which any code reading it
+directly sends as `api_key=` — and NCBI answers that with a 400, which is not
+retryable, so every NCBI request of the run fails permanently. In 0.1.0 that was
+avoided only by accident (`default_api_key()` happened to fall through `""` to
+`None`). The default is gone, and the client now treats an empty key as no key, so
+a keyless run omits the parameter and runs at the lower rate limit.
+
 ## In Nextflow
 
 Pin by digest, not by tag. A tag that moves under a running pipeline makes two
@@ -34,6 +42,11 @@ process {
         errorStrategy = 'retry'
     }
 }
+
+// Nextflow does not pass the host environment into a container; without this
+// the key never reaches the task and every run is keyless, at 3 requests/s.
+docker.envWhitelist      = 'NCBI_API_KEY'
+singularity.envWhitelist = 'NCBI_API_KEY'
 ```
 
 Note the `errorStrategy`. The incumbent config uses

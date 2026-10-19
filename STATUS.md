@@ -1,7 +1,7 @@
 # Where fetch-series stands
 
-**2026-10-15** · M1–M6 on `main` ([PR #2](https://github.com/cellgeni/fetch-series/pull/2),
-[PR #3](https://github.com/cellgeni/fetch-series/pull/3)) · knowledge base published at
+**2026-10-19** · [v0.1.0 released](https://github.com/cellgeni/fetch-series/releases/tag/v0.1.0)
+(PRs #1–#7 on `main`) · knowledge base published at
 [cellgeni.github.io/fetch-series](https://cellgeni.github.io/fetch-series/)
 
 A point-in-time overview. The evidence behind every number here lives in
@@ -31,9 +31,10 @@ Behind it:
 |---|---|
 | Routes declared, implemented and **measured** | **40 / 40 / 40** |
 | Archives covered | GEO, SRA, ENA, ArrayExpress/BioStudies, DDBJ |
-| Survey verdicts recorded and committed | **245,117** across 76 files |
-| Offline tests | **493** (plus integration, pathology and slow suites) |
-| Knowledge-base pages | every measured route, 9 pathologies, 5 upstream drafts |
+| Link catalogue | **1,127** one-hop links between 39 nodes: 96 reached by a route's survey (78 answered, 18 measured none), 753 confirmed by one live probe, 278 probed and unconfirmed; none ranked ([the catalogue](docs/graph/catalogue.md)) |
+| Survey verdicts recorded and committed | **251,230** across 78 files in `data/surveys/` |
+| Offline tests | **649** collected by `uv run pytest` (plus integration, pathology and slow suites) |
+| Knowledge-base pages | every measured route, 9 pathologies, 6 upstream drafts |
 
 The governing rule held throughout: **no fallback order, ranking or heuristic
 ships without a survey behind it and a KB page citing that survey.**
@@ -48,7 +49,7 @@ hand-written preference anywhere in the project.
 |---|---|---|
 | **39.2%** | of runs have an ENA fastq missing the read carrying the cell barcode — downloads cleanly, checksums correctly, and every read is unassignable to a cell | [pathology](docs/pathologies/ena-paired-library-single-fastq.md) |
 | **17.6%** | of GEO series with SRA data report none through NCBI's `elink gds→sra`, with zero errors | [pathology](docs/pathologies/elink-gds-sra-missing-links.md) |
-| **125,376** | BioSamples ENA finds that NCBI's link table does not; 93.5% of them in EBI-registered projects | [route](docs/routes/bioproject-to-biosample/index.md) |
+| **125,271** | BioSamples ENA finds that NCBI's link table does not; 93.6% of them in EBI-registered projects | [route](docs/routes/bioproject-to-biosample/index.md) |
 | **every `SAMEA`/`SAMD`** | BioSample asked of `efetch` by accession returns a *different sample* — prefix stripped, remainder read as a UID, HTTP 200, full attribute block | [pathology](docs/pathologies/biosample-efetch-ignores-accession-prefix.md) |
 | **41%** | of the BioProjects `esummary db=gds` recovers for series GEO leaves empty are species-level umbrellas — `PRJNA30709` holds 7,591 runs | [route](docs/routes/gse-to-bioproject/gds-summary.md) |
 | **0.77%** | of runs already reprocessed successfully no longer exist in *either* archive, and nothing announces it | [route](docs/routes/run-to-experiment/ena-filereport.md) |
@@ -62,11 +63,14 @@ number against `soft_family` and is the more dangerous route to trust blindly.
 ### Two claims that must not be confused
 
 **1,566 of 1,566** recommended file links resolve and serve exactly the byte
-count the archive published. **And the data behind 39% of the fastq ones is
-incomplete anyway.** Nothing in a link check could catch that: the files
-resolve, the published md5 is correct, the served size matches — because the
-file really is that size. It is half the run. A verification layer that only
-checked links would have called the corpus perfectly healthy.
+count the archive published. **And ENA's fastq is incomplete for 39.2% of runs
+anyway.** Nothing in a link check could catch that: the files resolve, the
+published md5 is correct, the served size matches — because the file really is
+that size. It is half the run. What keeps those files out of the recommended
+set is the file layer's completeness rule, which reads `library_layout`: in the
+verified 1,000-run draw, 442 runs were sent to the complete `.sra` object and
+only 6 recommended sets are a lone ENA fastq
+([the file layer](docs/files.md#the-two-claims-that-must-not-be-confused)).
 
 ---
 
@@ -81,7 +85,7 @@ checked links would have called the corpus perfectly healthy.
 | **M5** | upstream reports, archive monitor, docs site, contribution guide | **drafted** |
 | **M6** | metadata layer: harvest, rule normalisation, ontology grounding | **tiers 0–2 complete** |
 
-**M3 parity:** 14 of 14 of the incumbent's own nf-test cases, 447 runs, no
+**M3 parity:** 14 of 14 of the incumbent's own nf-test cases, 422 snapshot rows (400 distinct runs), no
 differences ([the record](docs/fetch10xmeta-parity.md)). Getting there required
 fixing three cases where this project resolved *fewer* runs than the bash module
 it replaces.
@@ -120,19 +124,20 @@ ship.
 
 ### Needs your decision or your credentials
 
-0. **A fifth upstream report is drafted**, on
-   [BioSample `efetch` ignoring the accession prefix](docs/upstream/ncbi-biosample-efetch-accession-prefix.md).
-   Arguably the most consequential of the five: it silently attributes one
-   organism's metadata to another, with HTTP 200 and no warning. Like the rest
-   it is **not filed** — sending it is outward-facing and yours.
-
-1. **File the five upstream reports.** Written and ready to paste, each carrying
-   the command that regenerates its evidence first — three to EBI, two to NCBI.
-   [`docs/upstream/`](docs/upstream/index.md). Left drafted deliberately:
-   sending them is outward-facing.
-2. **Publish the container** to `quay.io/cellgeni/fetch-series`. Verified
-   working locally and in CI at 253 MB; cannot be pushed to your registry from
-   here. [`docker/README.md`](docker/README.md).
+1. **File the six upstream reports.** Written and ready to paste, each carrying
+   the command that regenerates its evidence first — three to EBI, two to NCBI,
+   one to DDBJ. [`docs/upstream/`](docs/upstream/index.md). Left drafted
+   deliberately: sending them is outward-facing and yours. The most
+   consequential is
+   [BioSample `efetch` ignoring the accession prefix](docs/upstream/ncbi-biosample-efetch-accession-prefix.md):
+   it silently attributes one organism's metadata to another, with HTTP 200 and
+   no warning. The newest, checked 2026-10-19, is
+   [DDBJ Search linking mirrored runs' SRA objects that do not exist](docs/upstream/ddbj-search-mirrored-sra-links.md):
+   30 of 59 answered 404.
+2. **Publish the container** to `quay.io/cellgeni/fetch-series`. v0.1.0 shipped
+   without one: the image is built and smoke-tested by CI on every pull request and push to `main`, and measured
+   253 MB when built by hand on 2026-09-15, but it cannot be pushed to your
+   registry from here. [`docker/README.md`](docker/README.md).
 
 ### Blocked on the above
 

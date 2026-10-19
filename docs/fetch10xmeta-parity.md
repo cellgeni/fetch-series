@@ -4,7 +4,8 @@ title: Parity with fetch10xmeta
 
 # Parity with `fetch10xmeta`
 
-**Measured:** 2026-09-15 · **Result: 14 of 14 test cases reproduced.**
+**Measured:** 2026-09-15 · **Result: 14 of 14 test cases reproduced** — 422 snapshot
+rows (400 distinct runs) with no differences, and one case with no snapshot.
 
 The incumbent is `modules/cellgeni/fetch10xmeta` in
 [nf-reprocessing-public-10x](https://github.com/cellgeni/nf-reprocessing-public-10x):
@@ -52,8 +53,15 @@ nothing to diff against. Every assertion the test does make passes: 15 rows, all
 `BAM`, all URLs ending `.bam`, none under `/pub/databases/microarray/`, no
 `UNKNOWN` species, every sample matching `^ERS\d+$`.
 
-Total: **447 runs** compared, zero differences. The three subset cases exercise the
-module's `sample_ids` argument, which `fetch links --samples` honours.
+Total: **422 rows diffed against the 13 snapshots, zero differences**, plus the 15
+E-MTAB-8060 rows checked by assertion alone — 437 rows across all 14 cases. Those 422
+rows cover **400 distinct runs**: the three subset cases re-select 22 runs their parent
+cases already contain, which is the point of them. They exercise the module's
+`sample_ids` argument, which `fetch links --samples` honours.
+
+Counted from the incumbent's `tests/main.nf.test.snap` (13 cases with content, one
+`(run, species, type, sample)` row per run, no run repeated within a case); the table's
+**Runs** column is that row count per case.
 
 ## Three defects had to be fixed to get there
 

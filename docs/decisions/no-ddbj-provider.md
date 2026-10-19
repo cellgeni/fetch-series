@@ -23,7 +23,7 @@ All 137 `PRJDB` projects in the reprocessed corpus, by route:
 ENA returns **2,307 `DRR` runs** for those projects. It also resolves the
 `PRJDB` BioSamples that
 [NCBI's link table under-reports](../routes/bioproject-to-biosample/index.md) —
-1,074 of the 125,376 samples ENA finds and ELink does not are in
+1,074 of the 125,271 samples ENA finds and ELink does not are in
 DDBJ-registered projects.
 
 ## The argument

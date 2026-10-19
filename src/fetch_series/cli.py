@@ -7,6 +7,7 @@ import csv
 import gzip
 import json
 import logging
+import tempfile
 from collections import Counter
 from datetime import UTC, datetime
 from importlib.metadata import version
@@ -102,6 +103,18 @@ catalogue_app = typer.Typer(
 app.add_typer(survey_app, name="survey")
 app.add_typer(routes_app, name="routes")
 app.add_typer(catalogue_app, name="catalogue")
+
+
+def _client_for_one_query(concurrency: int) -> SurveyClient:
+    """A client for one interactive resolution, paced by whether a key is set.
+
+    NCBI allows 10 requests a second with a key and 3 without. A single rate for
+    both either wastes the key or earns 429s without one -- and every NCBI 429
+    costs a retry budget the user is waiting on.
+    """
+    api_key = default_api_key()
+    rps = 8.0 if api_key else 2.5
+    return SurveyClient(limits=Limits(rps=rps, concurrency=concurrency), api_key=api_key)
 
 
 def _slug(route_id: str) -> str:
@@ -363,11 +376,24 @@ def survey_run(
             fg=typer.colors.YELLOW,
         )
         raise typer.Exit(1)
+    scratch: tempfile.TemporaryDirectory[str] | None = None
     if limit:
         # Sample in the survey's own visit order, never from the sorted corpus.
         # Slicing a sorted corpus takes the lowest accession numbers -- the
         # oldest submissions -- which is a biased sample dressed as a limit.
         accessions = shuffled(accessions)[:limit]
+        # And never into the cache. Verdicts are keyed on the corpus name, so a
+        # limited run is recorded as if it covered the whole corpus and exports
+        # as evidence it is not: experiment->run:ena_filereport was a --limit
+        # 3000 run cited under the full corpus name for exactly this reason.
+        scratch = tempfile.TemporaryDirectory(prefix="fetch-limit-")
+        cache_path = Path(scratch.name) / "scratch.sqlite"
+        typer.secho(
+            f"--limit is a smoke test: verdicts go to a throwaway cache, not the survey "
+            f"cache. For evidence, use --corpus sample:{limit}@{corpus_name}.",
+            fg=typer.colors.YELLOW,
+            err=True,
+        )
 
     logfile = run_logfile(_slug(route_id))
     configure_logging(level=logging.INFO, logfile=logfile)
@@ -391,7 +417,11 @@ def survey_run(
                 )
                 typer.echo(json.dumps(run.as_dict(), indent=2))
 
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    finally:
+        if scratch is not None:
+            scratch.cleanup()
 
 
 @survey_app.command("show")
@@ -623,9 +653,7 @@ def resolve(
         raise typer.Exit(2) from None
 
     async def run_resolution() -> Resolution:
-        async with SurveyClient(
-            limits=Limits(rps=5.0, concurrency=4), api_key=default_api_key()
-        ) as client:
+        async with _client_for_one_query(4) as client:
             if multi_hop and resolve_mode is Mode.UNION:
                 return await resolve_path(parsed, target, client)
             return await resolver_resolve(parsed, target, client, mode=resolve_mode)
@@ -685,9 +713,7 @@ def relations(
     parsed = resolve_input(accession)
 
     async def run_it() -> list[RunRecord]:
-        async with SurveyClient(
-            limits=Limits(rps=5.0, concurrency=4), api_key=default_api_key()
-        ) as client:
+        async with _client_for_one_query(4) as client:
             return await build_relations(parsed, client)
 
     records = asyncio.run(run_it())
@@ -770,9 +796,7 @@ def files(
     parsed = resolve_input(accession)
 
     async def run_it() -> tuple[list[Recommendation], list[Verdict]]:
-        async with SurveyClient(
-            limits=Limits(rps=5.0, concurrency=6), api_key=default_api_key()
-        ) as client:
+        async with _client_for_one_query(6) as client:
             recommended = await recommendations_for(
                 parsed, client, limit=limit, include_sdl=not no_sdl
             )
@@ -873,9 +897,7 @@ def links(
     parsed = resolve_input(accession)
 
     async def run_it() -> list[LinkRow]:
-        async with SurveyClient(
-            limits=Limits(rps=5.0, concurrency=6), api_key=default_api_key()
-        ) as client:
+        async with _client_for_one_query(6) as client:
             return await links_table(parsed, client, limit=limit)
 
     rows = asyncio.run(run_it())
@@ -942,9 +964,7 @@ def screen_command(
     parsed = resolve_input(accession)
 
     async def run_it() -> list[tuple[str, AssayCall, ChemistryCall]]:
-        async with SurveyClient(
-            limits=Limits(rps=5.0, concurrency=6), api_key=default_api_key()
-        ) as client:
+        async with _client_for_one_query(6) as client:
             return await screen(parsed, client, limit=limit)
 
     calls = asyncio.run(run_it())
@@ -1051,9 +1071,7 @@ def metadata_command(
     parsed = resolve_input(accession)
 
     async def run_it() -> Collection:
-        async with SurveyClient(
-            limits=Limits(rps=5.0, concurrency=6), api_key=default_api_key()
-        ) as client:
+        async with _client_for_one_query(6) as client:
             return await collect(parsed, client, limit=limit, ground=not no_ground)
 
     collection = asyncio.run(run_it())

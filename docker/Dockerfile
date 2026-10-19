@@ -57,8 +57,11 @@ WORKDIR /work
 # NCBI's rate limit is 3 requests/second without a key and 10 with one. The key
 # is a query parameter, so it must arrive as an environment variable and never
 # on a command line, where it would be visible in the process table and in
-# Nextflow's own .command.sh.
-ENV NCBI_API_KEY=""
+# Nextflow's own .command.sh. It is deliberately *not* declared here: an
+# `ENV NCBI_API_KEY=""` default puts an empty key in front of every reader of
+# the variable, and NCBI answers `api_key=` with a 400 no retry can fix. The
+# CLI happened to turn "" into no key; the pathology tests did not, which is
+# how an unset CI secret raised a false alarm on 2026-10-19.
 
 # Fails the build if the entry point is broken, and records the version the way
 # Nextflow's versions.yml wants it. The `set -e` and the emptiness check are not

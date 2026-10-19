@@ -3,7 +3,7 @@ title: BioSample records
 ---
 
 !!! note "Earlier exploration note"
-    Exploration notes on BioSample records. The measured comparison of the two routes to them — including the [125,376 BioSamples ENA finds that NCBI's link table does not](routes/bioproject-to-biosample/index.md) — supersedes anything about coverage here.
+    Exploration notes on BioSample records. The measured comparison of the two routes to them — including the [125,271 BioSamples ENA finds that NCBI's link table does not](routes/bioproject-to-biosample/index.md) — supersedes anything about coverage here.
 
 # BioSamples Series
 

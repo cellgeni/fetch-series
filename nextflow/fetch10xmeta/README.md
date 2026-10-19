@@ -17,16 +17,24 @@ process {
         errorStrategy = 'retry'
     }
 }
+
+// Nextflow does not pass the host environment into a container; without this
+// the key never reaches the task and every run is keyless, at 3 requests/s.
+docker.envWhitelist      = 'NCBI_API_KEY'
+singularity.envWhitelist = 'NCBI_API_KEY'
 ```
 
 Set `NCBI_API_KEY` in the environment, not on the command line — see
-[the container notes](../../docker/README.md).
+[the container notes](../../docker/README.md). The two `envWhitelist` lines are what
+carry it from that environment into the container; they pass the variable by name, so
+the value is never written into the task's `.command.sh`. Leaving the key unset is
+fine: the module runs keyless at NCBI's lower rate limit.
 
 ## What changes for the pipeline
 
 **`links.tsv` is unchanged.** Same five columns, same `ORIFQ`/`ENAFQ`/`BAM`/`SRA`
 vocabulary, same priority order, verified against the incumbent's own nf-test
-snapshots — 14 cases, 425 runs, no differences
+snapshots — 14 of 14 cases, 422 snapshot rows (400 distinct runs), no differences
 ([the record](../../docs/fetch10xmeta-parity.md)).
 
 **The intermediate files are gone.** The incumbent emitted `*.list`, `*.tsv`,

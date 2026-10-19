@@ -940,7 +940,7 @@ ROUTES: list[Route] = [
         target=EntityType.RUN,
         provider="ena_portal",
         summary="ENA portal filereport keyed on an experiment accession.",
-        kb_page="routes/bioproject-to-run/index.md",
+        kb_page="routes/experiment-to-run/ena-filereport.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         evidence=RouteEvidence(
             corpus="results-of:gse->experiment:soft_family@reprocessed-gse",
@@ -983,7 +983,7 @@ ROUTES: list[Route] = [
         target=EntityType.RUN,
         provider="ena_portal",
         summary="ENA portal filereport keyed on an INSDC sample accession.",
-        kb_page="routes/bioproject-to-run/index.md",
+        kb_page="routes/sample-to-run/ena-filereport.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         proves_data_exists=True,
         evidence=RouteEvidence(

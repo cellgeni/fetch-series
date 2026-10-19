@@ -74,6 +74,11 @@ absent from **every** `E-GEOD` SDRF, fastq URIs survive the import into
 ArrayExpress a little over half the time. That is the difference between a
 column GEO has no equivalent of and one it does.
 
-**The 11 failures are the five studies that register no files at all** plus six
-transient errors; see
-[the IDF route's census](../ae-experiment-to-study/index.md#five-studies-exist-without-existing).
+**All 11 failures are a 404 on the SDRF itself, and none is transient.** Two
+are `E-MTAB-14460` and `E-MTAB-15118`, the two of the
+[five studies that register no files at all](../ae-experiment-to-study/index.md#five-studies-exist-without-existing)
+that this draw happened to include. The other nine are `E-GEOD` imports
+(`E-GEOD-15593` and eight more) whose IDF resolves — the IDF route finds their
+SRA study — but whose SDRF is not served. The same 11 fail, for the same reason,
+on [the SDRF's BioSample route](../ae-experiment-to-biosample/sdrf.md); both are
+read from `data/surveys/sample_3000@arrayexpress-ena/`.
