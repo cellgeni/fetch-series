@@ -923,6 +923,7 @@
   white-space: nowrap;
 }
 
+.rg-loading,
 .rg-error {
   padding: 1rem;
   color: var(--rg-ink-2);

@@ -1,10 +1,17 @@
-"""MkDocs build hook: embed the route graph, and generate the catalogue's tables.
+"""MkDocs build hook: write the route graph's data, and generate the catalogue's tables.
 
 ``routes/graph.md`` draws whatever :func:`fetch_series.export.graph.route_graph`
 returns at build time, so it cannot drift from ``graph.py`` -- the hand-pasted
 route matrix already has, which is the failure this avoids. ``graph/catalogue.md``
 gets its counts, its mechanism table and its list of gaps the same way, from
 the catalogue and its recorded probes.
+
+The data is a file beside the page, ``graph.json``, that the page fetches -- not
+a ``<script type="application/json">`` inside it. Material's instant navigation
+swaps a page in without reloading and re-creates every ``<script>`` in it to run
+it, so an embedded JSON block was run as JavaScript, failed on its first ``:``,
+and never reached the page: the graph drew when its URL was opened directly and
+never when it was reached through the menu.
 
 Links to route and pathology pages are resolved here against the site being
 built, and a missing page fails the build: the knowledge base runs ``--strict``
@@ -15,6 +22,7 @@ invisible to MkDocs' own validation.
 from __future__ import annotations
 
 import json
+from pathlib import Path, PurePosixPath
 
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.exceptions import PluginError
@@ -36,6 +44,11 @@ from fetch_series.results import Outcome
 
 PAGE = "routes/graph.md"
 PLACEHOLDER = "<!-- route-graph-data -->"
+DATA_FILE = "graph.json"
+
+# The graph serialised by on_page_markdown, and where in the built site it goes;
+# on_post_build writes it once the site directory exists.
+_pending: dict[str, str] = {}
 CATALOGUE_PAGE = "graph/catalogue.md"
 CATALOGUE_PLACEHOLDERS = (
     "<!-- catalogue-counts -->",
@@ -157,8 +170,18 @@ def on_page_markdown(markdown: str, *, page: Page, config: MkDocsConfig, files: 
                 else None
             )
 
-    # "</" would end the script element early if any note ever contained it.
-    data = json.dumps(graph, separators=(",", ":")).replace("</", "<\\/")
+    # Beside the page, so the page names it relatively and the route and
+    # pathology URLs above, relative to the page, hold in it too.
+    _pending["dest"] = str(PurePosixPath(page.file.dest_uri).parent / DATA_FILE)
+    _pending["data"] = json.dumps(graph, separators=(",", ":"))
     return markdown.replace(
-        PLACEHOLDER, f'<script type="application/json" id="route-graph-data">{data}</script>'
+        PLACEHOLDER, f'<div id="route-graph-data" data-src="{DATA_FILE}" hidden></div>'
     )
+
+
+def on_post_build(*, config: MkDocsConfig) -> None:
+    if not _pending:
+        raise PluginError(f"{PAGE} was not built, so the route graph has no data.")
+    target = Path(config.site_dir) / _pending["dest"]
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(_pending["data"], encoding="utf-8")

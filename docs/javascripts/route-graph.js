@@ -1,7 +1,8 @@
 /* The route graph page (routes/graph.md).
  *
- * The data is embedded at build time by hooks/route_graph.py from
- * fetch_series.export.graph.route_graph(): the catalogue's nodes, one
+ * The data is written beside the page at build time, as graph.json, by
+ * hooks/route_graph.py from fetch_series.export.graph.route_graph(), and
+ * fetched here: the catalogue's nodes, one
  * *measured* edge per declared route with its RouteEvidence and rank, one
  * *untested* edge per node pair the catalogue links and no route measures,
  * the unconfirmed links that are listed but never drawn, and the paths over
@@ -24,7 +25,9 @@
  *
  * Loaded on every page (extra_javascript) but does nothing unless the page
  * carries #route-graph. Material's instant navigation swaps pages without a
- * reload, so mounting hangs off document$.
+ * reload, so mounting hangs off document$. It also re-creates every <script>
+ * in the new page to run it, which is why the data is not embedded in one: a
+ * JSON block was run as JavaScript and never arrived.
  */
 (() => {
   "use strict";
@@ -1767,8 +1770,9 @@
   /* ------------------------------------------------------------- mounting */
 
   let current = null;
+  let mounting = 0;
 
-  function mount() {
+  async function mount() {
     if (current) {
       current.destroy();
       current = null;
@@ -1776,9 +1780,18 @@
     const root = document.getElementById("route-graph");
     const source = document.getElementById("route-graph-data");
     if (!root || !source) return;
+    // A newer mount -- the reader navigated on before this one's data arrived
+    // -- wins; this one draws nothing.
+    const mine = ++mounting;
+    root.replaceChildren(el("p", { class: "rg-loading", text: "Loading the graph…" }));
     try {
-      current = new RouteGraph(root, JSON.parse(source.textContent));
+      const response = await fetch(new URL(source.dataset.src, document.baseURI));
+      if (!response.ok) throw new Error(`its data answered HTTP ${response.status}`);
+      const data = await response.json();
+      if (mine !== mounting || !root.isConnected) return;
+      current = new RouteGraph(root, data);
     } catch (error) {
+      if (mine !== mounting || !root.isConnected) return;
       root.replaceChildren(
         el("p", { class: "rg-error" }, `The graph could not be drawn (${error.message}). The same numbers are in `, el("a", { href: "../", text: "the route matrix" }), "."),
       );
