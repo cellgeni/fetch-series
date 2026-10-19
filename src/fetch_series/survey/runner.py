@@ -193,3 +193,163 @@ async def run_route(
         unique_results=len(distinct),
         elapsed_s=time.monotonic() - started,
     )
+
+
+# Given an accession and the unit ids it still owes, make the one request those
+# units share and return one verdict per owed id. A FAILED verdict is a verdict;
+# raising fails every owed id with the error recorded.
+FanoutFn = Callable[[str, frozenset[str]], Awaitable[list[RouteResult]]]
+
+
+@dataclass(frozen=True, slots=True)
+class FanoutRun:
+    """What one fan-out run produced: accessions visited, verdicts by unit."""
+
+    corpus: str
+    queried: int
+    skipped: int
+    units: dict[str, dict[str, int]]
+    elapsed_s: float
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "corpus": self.corpus,
+            "queried": self.queried,
+            "skipped": self.skipped,
+            "units": self.units,
+            "elapsed_s": round(self.elapsed_s, 1),
+        }
+
+
+async def run_fanout(
+    unit_ids: Sequence[str],
+    accessions: Sequence[str],
+    fn: FanoutFn,
+    cache: SurveyCache,
+    corpus: str,
+    *,
+    workers: int,
+    resume: bool = True,
+    retry_failed: bool = False,
+    on_result: Callable[[RouteResult], None] | None = None,
+) -> FanoutRun:
+    """Ask every accession for every unit, one request per accession.
+
+    One request answers several links: an ENA ``filereport`` on a run names its
+    experiment, sample, study and BioProject at once. A unit-at-a-time runner
+    would make that request once per link, which is what made the plan's
+    260,000 requests a million.
+
+    An accession is done only when every owed unit has a verdict. One that is
+    partly answered -- a run interrupted between two writes, a unit added to the
+    survey later -- is asked again for only what it is missing, and its verdicts
+    are written in one transaction, so a half-written accession cannot occur.
+
+    Args:
+        workers: accessions in flight at once. The client's own limits pace the
+            requests; this bounds the coroutines.
+        retry_failed: re-ask units whose stored verdict is a failure. Off by
+            default for the reason ``run_route`` gives.
+    """
+    started = time.monotonic()
+    units = list(dict.fromkeys(unit_ids))
+    wanted = frozenset(units)
+    if not wanted:
+        raise ValueError("A fan-out survey needs at least one unit id")
+
+    # Seeded order, as run_route: a sorted corpus puts every PRJDB before the
+    # first PRJNA, and resume filters this list, never the sorted one.
+    order = shuffled(accessions)
+    have: dict[str, set[str]] = {}
+    if resume:
+        have = cache.answered_by(corpus, wanted)
+        if retry_failed:
+            for accession, failed in cache.answered_by(corpus, wanted, failed_only=True).items():
+                have[accession] -= failed
+    todo = [(a, wanted - have.get(a, set())) for a in order]
+    todo = [(a, owed) for a, owed in todo if owed]
+    skipped = len(order) - len(todo)
+    if skipped:
+        logger.info("fan-out over %s: skipping %d fully answered accessions", corpus, skipped)
+
+    counts: dict[str, dict[str, int]] = {
+        unit: {o.value: 0 for o in Outcome} | {"distinct": 0} for unit in units
+    }
+    distinct: dict[str, set[str]] = {unit: set() for unit in units}
+    lock = asyncio.Lock()
+
+    async def query(accession: str, owed: frozenset[str]) -> None:
+        call_started = time.monotonic()
+        try:
+            found = await fn(accession, owed)
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            latency = int((time.monotonic() - call_started) * 1000)
+            found = [RouteResult.from_error(accession, unit, corpus, exc, latency) for unit in owed]
+            logger.warning("fan-out failed for %s: %s", accession, found[0].error_message)
+        by_unit = {result.route_id: result for result in found}
+        unexpected = set(by_unit) - owed
+        if unexpected or len(by_unit) != len(found):
+            # A verdict for a unit nobody asked about, or two for one unit, is a
+            # bug in the fan-out function, and recording it would attribute an
+            # answer to the wrong link. Fail loudly.
+            raise ValueError(
+                f"fan-out for {accession} returned unowed or duplicate units: {sorted(unexpected)}"
+            )
+        latency = int((time.monotonic() - call_started) * 1000)
+        for unit in owed - set(by_unit):
+            # Owed and not answered is recorded as a failure, never left absent:
+            # absence means "never queried", which this accession was.
+            by_unit[unit] = RouteResult.from_error(
+                accession, unit, corpus, LookupError("the fan-out returned no verdict"), latency
+            )
+        results = [
+            RouteResult(
+                accession=accession,
+                route_id=r.route_id,
+                corpus=corpus,
+                outcome=r.outcome,
+                results=r.results,
+                error_class=r.error_class,
+                error_message=r.error_message,
+                latency_ms=r.latency_ms,
+                fetched_at=r.fetched_at,
+                detail=r.detail,
+            )
+            for r in sorted(by_unit.values(), key=lambda r: r.route_id)
+        ]
+        async with lock:
+            cache.record_all(results)
+            for result in results:
+                counts[result.route_id][result.outcome.value] += 1
+                distinct[result.route_id].update(result.results)
+        if on_result is not None:
+            for result in results:
+                on_result(result)
+
+    queue: asyncio.Queue[tuple[str, frozenset[str]]] = asyncio.Queue()
+    for accession, owed in todo:
+        queue.put_nowait((accession, frozenset(owed)))
+
+    async def worker() -> None:
+        while True:
+            try:
+                accession, owed = queue.get_nowait()
+            except asyncio.QueueEmpty:
+                return
+            try:
+                await query(accession, owed)
+            finally:
+                queue.task_done()
+
+    await asyncio.gather(*(worker() for _ in range(min(workers, len(todo)) or 1)))
+    for unit in units:
+        counts[unit]["distinct"] = len(distinct[unit])
+    return FanoutRun(
+        corpus=corpus,
+        queried=len(todo),
+        skipped=skipped,
+        units=counts,
+        elapsed_s=time.monotonic() - started,
+    )

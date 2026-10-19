@@ -95,7 +95,9 @@ src/fetch_series/
   export/graph.py  the route graph as data: what the KB's route-graph page draws
   catalogue/       every one-hop link the archives offer, by mechanism, with its live probe
   providers/       one module per API surface; typed calls and parsing, no route logic
-  survey/          the benchmark harness: corpora, runner, rate limiting
+  survey/          the benchmark harness: corpora, runner (per route, and fan-out per
+                   accession), rate limiting, the committed export format
+  units.py         unit ids: a route id, `link:<link id>`, `screen:<reads>:<link id>`
   cache.py         SQLite store of verdicts and raw responses
   core.py          legacy sync helpers (E-utilities, ENA portal, BioStudies)
   logging_utils.py credential redaction; use configure_logging(), not basicConfig()

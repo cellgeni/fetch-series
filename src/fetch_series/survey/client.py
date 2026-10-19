@@ -231,20 +231,26 @@ class SurveyClient:
         operation: Callable[[float], Awaitable[T]],
         *,
         label: str = "",
+        retryable: Callable[[BaseException], bool] | None = None,
     ) -> T:
         """Run ``operation`` with retries, widening its deadline each attempt.
 
         ``operation`` receives the timeout for the current attempt. Retry wraps
         the whole operation rather than any single request inside it, because
         an E-utilities history cannot be resumed part-way.
+
+        ``retryable`` replaces :func:`is_retryable` for this call, for a request
+        whose failure is known to be permanent although its status says
+        otherwise: SDL answers a project with a 504 on every attempt.
         """
+        should_retry = retryable or is_retryable
         last: BaseException | None = None
         for attempt in range(1, self.limits.attempts + 1):
             try:
                 return await operation(self.limits.timeout_for(attempt))
             except Exception as exc:
                 last = exc
-                if not is_retryable(exc) or attempt == self.limits.attempts:
+                if not should_retry(exc) or attempt == self.limits.attempts:
                     raise
                 backoff = min(2.0 ** (attempt - 1), 30.0)
                 logger.warning(

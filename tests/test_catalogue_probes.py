@@ -41,6 +41,7 @@ from fetch_series.catalogue.probe import (
     check_reads,
     https,
     normalise,
+    prefer_runs,
     probe_links,
     read_of,
 )
@@ -270,8 +271,8 @@ class TestTenXChecks:
         checks, _ = await check_reads(
             CATALOGUE.nodes[node],
             records,
-            {"ebi": object()},
-            ["SRR1"],  # type: ignore[dict-item]
+            {"ebi": object()},  # type: ignore[dict-item]
+            prefer_runs("SRR1"),
         )
         return dict(checks)
 

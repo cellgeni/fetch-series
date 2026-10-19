@@ -39,7 +39,6 @@ from fetch_series.catalogue.model import (
     INSDC,
     PROBE_KEEP,
     Basis,
-    Check,
     Level,
     Link,
     Mechanism,
@@ -55,7 +54,7 @@ from fetch_series.catalogue.nodes import (
     PROBE_ACCESSIONS,
     TEN_X_PROBES,
 )
-from fetch_series.results import Outcome
+from fetch_series.results import Check, Outcome
 
 __all__ = [
     "CATALOGUE",
