@@ -414,7 +414,8 @@ class TestExport:
                     original = fh.read()
                 if not original.startswith(",".join(SURVEY_COLUMNS) + "\r\n"):
                     continue
-                unit = "r"  # any unprefixed id: the unit id is not in the file
+                # Any unprefixed id round-trips: the unit id is not in the file.
+                unit = path.name.removesuffix(".csv.gz")
                 rewritten, _ = write_export(
                     tmp_path / manifest.parent.name, corpus, unit, read_export(path, corpus, unit)
                 )
@@ -642,3 +643,31 @@ class TestPerCallRetryRule:
         with pytest.raises(httpx.HTTPStatusError):
             await client.with_retry(operation, retryable=lambda exc: False)
         assert attempts == 1
+
+
+class TestExportNeverSilentlyChangesEvidence:
+    RESULT = RouteResult.from_results("PRJNA1", "r", "c", ["SRR1"], 1)
+
+    def test_rewriting_the_same_verdicts_is_a_no_op(self, tmp_path):
+        from fetch_series.survey.export import write_export
+
+        path, _ = write_export(tmp_path, "c", "r", [self.RESULT])
+        before = path.read_bytes()
+        write_export(tmp_path, "c", "r", [self.RESULT])
+        assert path.read_bytes() == before  # not even the gzip timestamp moved
+
+    def test_changed_verdicts_are_refused_without_replace(self, tmp_path):
+        from fetch_series.survey.export import ExportConflict, write_export
+
+        write_export(tmp_path, "c", "r", [self.RESULT])
+        moved = RouteResult.from_results("PRJNA1", "r", "c", ["SRR2"], 1)
+        with pytest.raises(ExportConflict):
+            write_export(tmp_path, "c", "r", [moved])
+        write_export(tmp_path, "c", "r", [moved], replace=True)
+
+    def test_a_directory_belongs_to_one_corpus(self, tmp_path):
+        from fetch_series.survey.export import ExportConflict, write_export
+
+        write_export(tmp_path, "c", "r", [self.RESULT])
+        with pytest.raises(ExportConflict):
+            write_export(tmp_path, "another", "r2", [])

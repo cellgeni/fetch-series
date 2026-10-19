@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import csv
 import gzip
+import io
 import json
 import sys
 from collections.abc import Iterable, Iterator
@@ -98,24 +99,53 @@ def row_for(result: RouteResult) -> list[object]:
     return row
 
 
+class ExportConflict(FileExistsError):
+    """Writing an export would change a committed one."""
+
+
 def write_export(
-    directory: Path, corpus: str, unit_id: str, results: Iterable[RouteResult]
+    directory: Path,
+    corpus: str,
+    unit_id: str,
+    results: Iterable[RouteResult],
+    *,
+    replace: bool = False,
 ) -> tuple[Path, int]:
-    """Write one unit's verdicts over one corpus, and the manifest naming the corpus."""
+    """Write one unit's verdicts over one corpus, and the manifest naming the corpus.
+
+    Never silently changes a committed export. These files are dated evidence
+    that route rankings cite, so writing one whose content would differ from
+    what is there -- a re-survey, a cache that has moved on -- raises unless
+    ``replace`` says that is the intent. Rewriting identical content is a no-op,
+    so exporting everything twice changes nothing on disk.
+    """
+    rows: list[list[object]] = [list(columns_for(unit_id))]
+    rows += [row_for(result) for result in results]
+    buffer = io.StringIO(newline="")
+    csv.writer(buffer).writerows(rows)
+    body = buffer.getvalue()
+
+    manifest = directory / "manifest.txt"
+    if manifest.exists() and manifest.read_text() != f"corpus: {corpus}\n":
+        raise ExportConflict(f"{manifest} names another corpus than {corpus!r}")
+    path = directory / f"{slug(unit_id)}.csv.gz"
+    if path.exists() and not is_lfs_pointer(path):
+        with gzip.open(path, "rt", newline="") as handle:
+            if handle.read() == body:
+                return path, len(rows) - 1
+        if not replace:
+            raise ExportConflict(
+                f"{path} exists with different verdicts; pass replace to overwrite"
+            )
     directory.mkdir(parents=True, exist_ok=True)
     # Gzipped: the results column holds joined accession lists, which compress
     # 18x. 92 MB of CSV becomes 15 MB, and the user pays for LFS. `zgrep`,
     # `zcat` and `pandas.read_csv` all read it directly.
-    path = directory / f"{slug(unit_id)}.csv.gz"
-    rows = 0
     with gzip.open(path, "wt", newline="") as handle:
-        writer = csv.writer(handle)
-        writer.writerow(columns_for(unit_id))
-        for result in results:
-            writer.writerow(row_for(result))
-            rows += 1
-    (directory / "manifest.txt").write_text(f"corpus: {corpus}\n")
-    return path, rows
+        handle.write(body)
+    if not manifest.exists():
+        manifest.write_text(f"corpus: {corpus}\n")
+    return path, len(rows) - 1
 
 
 def is_lfs_pointer(path: Path) -> bool:
@@ -176,6 +206,7 @@ __all__ = [
     "SCREEN_COLUMNS",
     "SURVEYS_DIR",
     "SURVEY_COLUMNS",
+    "ExportConflict",
     "columns_for",
     "export_path",
     "format_checks",

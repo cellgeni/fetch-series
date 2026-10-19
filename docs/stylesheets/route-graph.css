@@ -25,6 +25,12 @@
  *   faint -- the archive answered and holds nothing -- and every value it
  *   carries is also in the panel and the table.
  *
+ * A surveyed link is not on the ramp either: a hollow solid line -- a stroke
+ * with a surface-coloured core -- of one width, in a cool grey (--rg-surveyed,
+ * 5.5:1 on white, 6.8:1 on slate) that sits apart from the ramp's warm greys
+ * and is far too desaturated to read as NCBI blue. It carries counts and no
+ * rank, so it takes neither the ramp's ink nor a route's width.
+ *
  * An untested link is not on the ramp at all: it is a thin dotted line with a
  * hollow arrowhead, because it carries no quantity to encode.
  */
@@ -56,6 +62,7 @@
   --rg-ramp-3: #4b4a46;
   --rg-ramp-4: #262523;
   --rg-untested: #7a7973;
+  --rg-surveyed: #5f6b75;
 
   --rg-row: rgba(11, 11, 11, 0.07);
 
@@ -84,6 +91,7 @@
   --rg-ramp-3: #c1c0b9;
   --rg-ramp-4: #e6e5de;
   --rg-untested: #8f8e88;
+  --rg-surveyed: #9eaab4;
 
   --rg-row: rgba(255, 255, 255, 0.07);
 }
@@ -400,6 +408,21 @@
   stroke-linecap: round;
 }
 
+/* A surveyed link: a solid stroke with a surface-coloured core down it, one
+ * width throughout -- solid because a survey counted it, hollow because what
+ * it counted is not drawn to the routes' scale. */
+.rg-line--surveyed {
+  stroke: var(--rg-surveyed);
+  stroke-linecap: round;
+}
+
+.rg-line-core {
+  fill: none;
+  stroke: var(--rg-surface);
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
 .rg-arrow { fill: var(--rg-ink-2); }
 .rg-arrow.rg-line--share { fill: var(--rg-step); stroke: none; }
 .rg-arrow.rg-line--unknown { fill: var(--rg-ramp-3); stroke: none; }
@@ -409,6 +432,11 @@
   stroke: var(--rg-untested);
   stroke-width: 1.3;
   stroke-linejoin: round;
+}
+
+.rg-arrow--hollow.rg-arrow--surveyed {
+  stroke: var(--rg-surveyed);
+  stroke-width: 1.6;
 }
 
 .rg-hit {
@@ -494,6 +522,37 @@
 
 .rg-svg .rg-lane-label--untested.is-hidden {
   display: none;
+}
+
+/* A surveyed lane's mechanisms: named on the same terms as an untested
+ * lane's, in the surveyed grey. */
+.rg-lane-label--surveyed {
+  display: none;
+  font-size: 11px;
+  fill: var(--rg-surveyed);
+}
+
+.rg-svg.is-detailed .rg-lane-label--surveyed,
+.rg-svg .rg-lane-label--surveyed.is-focus,
+.rg-svg .rg-lane-label--surveyed.is-hover {
+  display: inline;
+}
+
+.rg-svg .rg-lane-label--surveyed.is-hidden {
+  display: none;
+}
+
+.rg-lane--surveyed.is-focus .rg-line--surveyed,
+.rg-lane--surveyed.is-hover .rg-line--surveyed,
+.rg-lane--surveyed.is-focus .rg-arrow--surveyed,
+.rg-lane--surveyed.is-hover .rg-arrow--surveyed {
+  stroke: var(--rg-ink);
+}
+
+/* Nothing flows along a surveyed lane: its core is already the surface, and
+ * it is a link that answers, not a quantity drawn to scale. */
+.rg-lane--surveyed .rg-flow {
+  display: none !important;
 }
 
 /* A focused untested lane is dotted still, and darker. */
@@ -980,6 +1039,26 @@
   outline-offset: -2px;
 }
 
+/* Three views do not fit a phone's width on one line: the control takes the
+ * row and shares it, and a long name wraps inside its own segment. */
+@media screen and (max-width: 30em) {
+  .rg-segmented {
+    display: flex;
+    width: 100%;
+  }
+
+  .rg-segmented label {
+    display: flex;
+    flex: 1 1 0;
+  }
+
+  .rg-segmented span {
+    flex: 1 1 auto;
+    padding: 0.25rem 0.4rem;
+    text-align: center;
+  }
+}
+
 /* ---------------------------------------------------------- panel pieces */
 
 .rg-chip {
@@ -1001,6 +1080,41 @@
 .rg-chip--untested {
   border: 1px dotted var(--rg-untested);
   color: var(--rg-ink-2);
+}
+
+.rg-chip--surveyed {
+  border: 1px solid var(--rg-surveyed);
+  background: color-mix(in srgb, var(--rg-surveyed) 14%, var(--rg-surface));
+  color: var(--rg-ink);
+}
+
+/* A surveyed link's splits in a panel: one block per corpus. */
+.rg-survey {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.3rem 0;
+  padding-left: 0.5rem;
+  border-left: 2px solid var(--rg-surveyed);
+}
+
+.md-typeset .rg-survey p {
+  margin: 0.1rem 0;
+}
+
+.rg-survey .rg-bar {
+  margin: 0.15rem 0;
+}
+
+/* A surveyed row's outcome bars in the table, one per split, each with its
+ * usable count beside it. */
+.rg-survey-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.md-typeset dl.rg-node-counts {
+  margin: 0.3rem 0;
 }
 
 .rg-panel ul.rg-mechanisms {
@@ -1147,6 +1261,29 @@
 
 .rg-cell--untested {
   box-shadow: inset 0 0 0 1.5px var(--rg-untested);
+}
+
+/* Surveyed, no route: a ring with a tinted centre, the matrix's own form of
+ * the hollow solid line. */
+.rg-cell--surveyed {
+  box-shadow:
+    inset 0 0 0 2px var(--rg-surveyed),
+    inset 0 0 0 3.5px var(--rg-surface);
+  background: color-mix(in srgb, var(--rg-surveyed) 45%, var(--rg-surface));
+}
+
+/* A link survey answered and found nothing usable: struck through, like a
+ * route's measured absence, in the surveyed grey. */
+.rg-cell--none-surveyed {
+  border: 1.5px solid var(--rg-surveyed);
+  background: linear-gradient(
+    to top right,
+    transparent calc(50% - 0.75px),
+    var(--rg-surveyed) calc(50% - 0.75px),
+    var(--rg-surveyed) calc(50% + 0.75px),
+    transparent calc(50% + 0.75px)
+  );
+  opacity: 0.7;
 }
 
 .rg-cell--unconfirmed {

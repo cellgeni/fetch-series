@@ -1,0 +1,14 @@
+{
+ "note": "Written by `fetch catalogue link-splits --write` from the committed link-survey exports. Measurement of whether a link answers over a seeded draw: never a ranking, never RouteEvidence.",
+ "no_population": {
+  "analysis_ddbj": {
+   "reason": "Every link into a DDBJ analysis is DDBJ's dblink, and every one is unconfirmed: no record this project resolves reaches one, so there is nothing to draw.",
+   "recorded_on": "2026-10-19"
+  },
+  "analysis_ncbi": {
+   "reason": "Every link into an NCBI analysis is DDBJ's dblink, and every one is unconfirmed: no record this project resolves reaches one, so there is nothing to draw.",
+   "recorded_on": "2026-10-19"
+  }
+ },
+ "links": {}
+}

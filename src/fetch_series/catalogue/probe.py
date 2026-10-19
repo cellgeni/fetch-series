@@ -115,6 +115,18 @@ class Answer:
 
 Fetcher = Callable[[SurveyClient, str, float], Awaitable["Found | Answer"]]
 
+
+class RecordAbsent(LookupError):
+    """The archive's own search holds no record of the input accession.
+
+    That is an answer, not a failure: nothing links from a record the archive
+    does not have, so every link the request would have answered is EMPTY.
+    ``PRJNA1136968`` is absent from BioProject; ``PRJNA857927`` was withdrawn.
+    Recorded with the reason, so an empty from absence can be told from an
+    empty from a record that links nowhere.
+    """
+
+
 # Any accession the registry knows, found anywhere in a value: a relation
 # line's URL, an alias with a suffix (`GSM1480291_r1`), a run range
 # (`ERR1630013-ERR1633526`). The registry's patterns are mutually exclusive, so
@@ -423,7 +435,7 @@ def _elink(linkname: str) -> Fetcher:
             "idlist"
         ) or []
         if not uids:
-            raise ValueError(f"esearch db={dbfrom} found no UID for {accession}")
+            raise RecordAbsent(f"esearch db={dbfrom} found no UID for {accession}")
         linked = await eutils.elink_uids(
             client, dbfrom, db, [str(u) for u in uids], timeout, linkname=linkname
         )
@@ -541,7 +553,7 @@ def _sdl(**params: str) -> Fetcher:
 async def _sra_xml(client: SurveyClient, accession: str, timeout: float) -> str:
     uids = await eutils.esearch_all_uids(client, "sra", accession, timeout)
     if not uids:
-        raise ValueError(f"esearch db=sra found no UID for {accession}")
+        raise RecordAbsent(f"esearch db=sra found no UID for {accession}")
     return await eutils.efetch_text(
         client, "sra", timeout, uids=uids[:20], rettype="full", retmode="xml"
     )
@@ -674,12 +686,31 @@ async def _miniml(client: SurveyClient, accession: str, timeout: float) -> Answe
     return Answer({"metadata_geo": [url]}, documents={"metadata_geo": Document(url, parses)})
 
 
+_MATRIX_FILE = re.compile(r'href="([^"/]+_series_matrix\.txt\.gz)"')
+
+
 async def _series_matrix(client: SurveyClient, accession: str, timeout: float) -> Answer:
-    url = _geo_file(accession, "matrix", f"{accession}_series_matrix.txt.gz")
+    """The series matrix, found by listing its directory.
+
+    A series on more than one platform has one matrix per platform, named
+    ``GSE120926-GPL11154_series_matrix.txt.gz``; the single-platform name
+    ``GSE120926_series_matrix.txt.gz`` does not exist for it, and asking for it
+    reported a matrix that is there as a 404. The first file, sorted, is the
+    one checked.
+    """
+    directory = _geo_file(accession, "matrix", "")
+    listing = await client.get(directory, timeout=timeout)
+    names = sorted(set(_MATRIX_FILE.findall(listing.text)))
+    if not names:
+        return Answer({"metadata_geo": []})
+    url = directory + names[0]
     response = await client.get(url, timeout=timeout)
     text = gzip.decompress(response.content).decode("utf-8", errors="replace")
     parses = f'!Series_geo_accession\t"{accession}"' in text
-    return Answer({"metadata_geo": [url]}, documents={"metadata_geo": Document(url, parses)})
+    return Answer(
+        {"metadata_geo": [directory + name for name in names]},
+        documents={"metadata_geo": Document(url, parses)},
+    )
 
 
 def _relations(record: geo.RecordLinks, *kinds: str) -> list[str]:
@@ -1301,6 +1332,8 @@ class Finding:
     error: str | None = None
     checks: tuple[Check, ...] = ()
     checked: str | None = None
+    # Why an EMPTY is empty, where the reason is known: the record is absent.
+    note: str | None = None
 
     def probe(self, checked_on: date) -> Probe:
         return Probe(
@@ -1357,6 +1390,9 @@ async def answer_links(
             label=f"{mechanism} {accession}",
             **({"retryable": retry} if retry is not None else {}),
         )
+    except RecordAbsent as exc:
+        note = redact(str(exc))[:300]
+        return [Finding(link.id, accession, Outcome.EMPTY, note=note) for link in links]
     except Exception as exc:
         error = redact_exception(exc)
         message = redact(f"{type(error).__name__}: {error}")[:300]
@@ -1459,6 +1495,7 @@ __all__ = [
     "Document",
     "Finding",
     "Prober",
+    "RecordAbsent",
     "RunPicker",
     "answer_links",
     "host_limits",

@@ -113,6 +113,34 @@ downloads and parses. A link that names a file nobody can fetch is not a route
 to that file. Each check is recorded with the probe, so an unconfirmed link says
 which check it failed.
 
+## A link survey is measurement, not a ranking
+
+A probe is one accession out of one; a link survey is the same request over a seeded draw
+of 300 of the link's source node (or all of them, where there are fewer). That *is*
+measurement. It says how often a link answers, how often what it finds is usable, and how
+often it fails, over a named and reproducible population. So it has a status of its own,
+**surveyed**, that outranks a probe.
+
+It is still not `RouteEvidence`, for a reason of scale rather than of kind. At 300, a
+yield's 95% interval is up to ±5.7 points wide. The ranking separates routes on a 1% band
+because [noise once ranked above substance](route-ranking.md) at far smaller margins. A
+draw that cannot resolve differences ten times larger than the band would, if ranked,
+put a coin flip in charge of the resolver's order.
+
+So a link survey:
+
+- records under `link:<link id>`, never under a route's id, even where the two are the
+  same string;
+- is drawn on the route graph with counts and **no rank**;
+- is never read by `graph.py` or `resolver.py`, and a test checks the imports;
+- excludes the gates, `hard-cases` and `probe-families`, which are chosen, not sampled:
+  every probe accession is there *because* its link answered;
+- is read from the committed exports, so `link_splits.json` regenerates on any checkout.
+
+Promoting a surveyed link to a route is a per-link human decision. It needs a
+ranking-scale draw (`sample:3000`), a `RouteFn`, and a `RouteEvidence` block like any
+other route. The link survey is what shows which links are worth that.
+
 ## A route's split is not new evidence
 
 INSDC objects are split by archive on the graph, so one route covers several

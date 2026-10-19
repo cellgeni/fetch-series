@@ -89,6 +89,8 @@ def _catalogue_sections() -> dict[str, str]:
         f"{len(CATALOGUE.links)} links** over {len(pairs)} node pairs: "
         f"{counts[Status.MEASURED]} measured by a declared route, "
         f"{counts[Status.MEASURED_NONE]} measured and never answering, "
+        f"{counts[Status.SURVEYED]} surveyed by a link survey and answering usably, "
+        f"{counts[Status.SURVEYED_NONE]} surveyed and never answering usably, "
         f"{counts[Status.UNTESTED]} untested and confirmed by a probe, and "
         f"{counts[Status.UNCONFIRMED]} documented and not confirmed, of which "
         f"{failed_checks} found a file or document that failed a check"
@@ -104,6 +106,8 @@ def _catalogue_sections() -> dict[str, str]:
             for s in (
                 Status.MEASURED,
                 Status.MEASURED_NONE,
+                Status.SURVEYED,
+                Status.SURVEYED_NONE,
                 Status.UNTESTED,
                 Status.UNCONFIRMED,
             )

@@ -109,11 +109,11 @@ def as_result(finding: Finding, corpus: str, latency_ms: int) -> RouteResult:
             error_message=message or finding.error,
             latency_ms=latency_ms,
         )
-    detail = (
-        {"checks": [list(check) for check in finding.checks], "checked": finding.checked}
-        if finding.checks
-        else None
-    )
+    detail: dict[str, object] | None = None
+    if finding.checks:
+        detail = {"checks": [list(check) for check in finding.checks], "checked": finding.checked}
+    elif finding.note:
+        detail = {"absent": finding.note}
     return RouteResult.from_results(
         accession=finding.accession,
         route_id=unit,
@@ -409,18 +409,25 @@ def gate_report(
 
 
 def gate_passed(unit: SurveyUnit, cache: SurveyCache) -> bool | None:
-    """Whether a unit may proceed to a draw: gated, and not one FAILED verdict.
+    """Whether a unit may proceed to a draw.
 
-    ``None`` when it has not been gated at all. ``hard-cases`` holds few
-    accessions of most nodes, so a unit is gated if *either* gate gave it any
-    verdict.
+    ``None`` when it has not been gated. Otherwise: no FAILED verdict on
+    ``probe-families``. Every probe accession was chosen because its link
+    answered for it, so a failure there is a broken fetch or a request that
+    cannot succeed -- SDL on a project -- and a draw would repeat it 300 times.
+
+    ``hard-cases`` failures do not block. That corpus is adversarial by
+    construction: withdrawn projects, private series, studies with no SDRF. A
+    failure there is the case doing its job; it is reported for review by
+    :func:`gate_report`, and what the gate requires of it is a verdict for every
+    accession, which the fan-out guarantees.
     """
     answered = failed = 0
     for gate in GATES:
         for unit_id in unit.unit_ids:
             for result in cache.results(gate, unit_id):
                 answered += 1
-                failed += result.outcome is Outcome.FAILED
+                failed += gate == "probe-families" and result.outcome is Outcome.FAILED
     if not answered:
         return None
     return failed == 0

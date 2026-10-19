@@ -4,9 +4,9 @@
  * hooks/route_graph.py from fetch_series.export.graph.route_graph(), and
  * fetched here: the catalogue's nodes, one
  * *measured* edge per declared route with its RouteEvidence and rank, one
- * *untested* edge per node pair the catalogue links and no route measures,
- * the unconfirmed links that are listed but never drawn, and the paths over
- * each. Nothing that involves a judgement -- ranking, path finding, gaps -- is
+ * *surveyed* edge per node pair a link survey found usable, one *untested*
+ * edge per node pair the catalogue links and nothing has measured, the links
+ * that are listed but never drawn, and the paths over each. Nothing that involves a judgement -- ranking, path finding, gaps -- is
  * recomputed here; this file only draws.
  *
  * Two channels say what a node is: its colour is the archive that issues it,
@@ -18,8 +18,11 @@
  * A measured route is drawn once per node pair it covers, from its split: the
  * route's own verdicts restricted to that source and target. Its ink is the
  * share of the source's queried accessions that resolved, its width how many
- * of them reached this target. An untested link is a thin dotted line with a
- * hollow arrowhead: a probe found it answering once -- and, into a file or a
+ * of them reached this target. A surveyed link is a hollow solid line, one
+ * width, off the ink ramp: a link survey's seeded draw found it usable, which
+ * gives it counts and never a rank -- a draw of 300 is far too coarse for the
+ * ranking's 1% band. An untested link is a thin dotted line with a hollow
+ * arrowhead: a probe found it answering once -- and, into a file or a
  * document, found something usable -- which proves it exists and measures
  * nothing.
  *
@@ -219,7 +222,25 @@
 
   const code = (text) => el("code", { text });
   const variant = (route) => route.route.split(":").slice(1).join(":") || route.route;
+  // Three drawn kinds. Only a measured edge is a route: it alone has a rank,
+  // a provider and a split. A surveyed edge has counts per link and corpus and
+  // no rank; an untested edge has a probe per link and no counts.
   const measured = (edge) => edge.status === "measured";
+  const isSurveyed = (edge) => edge.status === "surveyed";
+  const isUntested = (edge) => edge.status === "untested";
+  const kindOf = (edge) => (measured(edge) ? "measured" : isSurveyed(edge) ? "surveyed" : "untested");
+  // Back to front: an untested lane is never drawn over a surveyed one, nor a
+  // surveyed one over a route.
+  const DEPTH = { untested: 0, surveyed: 1, measured: 2 };
+
+  /* A surveyed link's splits, flattened: one per mechanism and corpus, in
+   * mechanism name order then corpus order -- the order the export gives,
+   * which is never yield order. */
+  const surveySplits = (edge) => edge.links.flatMap((link) => (link.splits ?? []).map((split) => ({ ...split, mechanism: link.mechanism })));
+
+  /* The 95% interval half-width on a yield over n draws, at its widest (p =
+   * 0.5), in percentage points: ±5.7 at 300. */
+  const halfWidth = (n) => (n ? 98 / Math.sqrt(n) : null);
 
   /* Resolved among queried, for a route's evidence or for one of its splits:
    * the same fields, the second restricted to one source node. */
@@ -403,11 +424,12 @@
       this.mechanisms = data.mechanisms;
       this.unconfirmed = new Map(data.unconfirmed.map((u) => [`${u.source}>${u.target}`, u]));
       this.measuredNone = new Map(data.measured_none.map((u) => [`${u.source}>${u.target}`, u]));
+      this.surveyedNone = new Map((data.surveyed_none ?? []).map((u) => [`${u.source}>${u.target}`, u]));
       this.providers = [...new Set(data.edges.filter(measured).map((e) => e.provider))].sort();
       const measuredEdges = data.edges.filter(measured);
       this.maxReached = Math.max(1, ...measuredEdges.map((e) => reachedCount(e.split)));
       this.state = {
-        view: "all", // "all" | "measured"
+        view: "all", // "all" | "surveyed" (measured + surveyed) | "measured"
         showOther: false,
         providers: new Set(this.providers),
         topOnly: false,
@@ -451,14 +473,23 @@
       return this.state.showOther || this.nodes.get(id).layer !== "other";
     }
 
+    /* Whether the current view draws this kind of edge: "measured" routes
+     * alone, "surveyed" adds the link surveys, "all" adds the untested links. */
+    kindShown(edge, view = this.state.view) {
+      if (view === "measured") return measured(edge);
+      if (view === "surveyed") return !isUntested(edge);
+      return true;
+    }
+
     /* On the canvas at all, under the two view toggles. */
     inView(edge) {
-      if (!measured(edge) && this.state.view === "measured") return false;
+      if (!this.kindShown(edge)) return false;
       return this.nodeShown(edge.source) && this.nodeShown(edge.target);
     }
 
     /* On the canvas and not filtered out. Providers and rank apply to routes,
-     * which are the only edges that have either. */
+     * which are the only edges that have either: a surveyed link has neither a
+     * provider nor a rank, so "only the top-ranked route" leaves it drawn. */
     visible(edge) {
       if (!this.edges.has(edge.id)) return false;
       if (!measured(edge)) return true;
@@ -521,6 +552,7 @@
         { class: "rg-segmented" },
         el("legend", { class: "rg-visually-hidden", text: "Show" }),
         viewChoice("measured", "Measured routes"),
+        viewChoice("surveyed", "Measured + surveyed"),
         viewChoice("all", "All known links"),
       );
       this.otherToggle = el("input", {
@@ -615,15 +647,19 @@
     }
 
     /* A selection the new view cannot show is cleared rather than left
-     * highlighting nothing. */
+     * highlighting nothing. A path is kept, and starts again from its first:
+     * which paths exist depends on the view (measured, or measured and
+     * surveyed), so the one that was picked may not be offered any more. */
     dropHiddenSelection() {
+      const path = this.state.path;
+      if (path) path.index = this.paths(path.from, path.to).length ? 0 : null;
       const s = this.state.selected;
       if (!s) return;
       const nodes = s.kind === "node" ? [s.id] : s.kind === "pair" ? [s.source, s.target] : [];
       const edge = s.kind === "edge" ? this.allEdges.get(s.id) : null;
       const hidden =
         nodes.some((id) => !this.nodeShown(id)) || (edge && !(this.nodeShown(edge.source) && this.nodeShown(edge.target)));
-      if (hidden || (edge && !measured(edge) && this.state.view === "measured")) this.state.selected = null;
+      if (hidden || (edge && !this.kindShown(edge))) this.state.selected = null;
     }
 
     /* ------------------------------------------------------------- layout */
@@ -655,14 +691,15 @@
       }
 
       // Lanes: every edge is one, grouped by direction. Routes go first, in
-      // the order the resolver tries them; the untested lane goes last.
+      // the order the resolver tries them; then the surveyed lane, which has
+      // no rank and so no place among them; the untested lane goes last.
       const directions = new Map();
       for (const edge of this.edges.values()) {
         const key = `${edge.source}>${edge.target}`;
         if (!directions.has(key)) directions.set(key, { key, source: edge.source, target: edge.target, routes: [] });
         directions.get(key).routes.push(edge);
       }
-      const order = (e) => (measured(e) ? e.rank : 999);
+      const order = (e) => (measured(e) ? e.rank : isSurveyed(e) ? 998 : 999);
       this.lanes = new Map();
       const spans = [];
       for (const bundle of directions.values()) {
@@ -791,12 +828,17 @@
 
     /* --------------------------------------------------------------- draw */
 
+    /* A route's width is how many reached the target. A surveyed link is one
+     * width whatever it found: drawing its draw of 300 to the routes' scale
+     * would put it among them, and its counts are in the panel. */
     widthOf(edge) {
+      if (isSurveyed(edge)) return 4.2;
       if (!measured(edge)) return 1.6;
       return 2 + (4.5 * Math.log10(1 + reachedCount(edge.split))) / Math.log10(1 + this.maxReached);
     }
 
     inkClass(edge) {
+      if (isSurveyed(edge)) return "rg-line--surveyed";
       if (!measured(edge)) return "rg-line--untested";
       const value = share(edge.split);
       return value === null ? "rg-line--unknown" : `rg-line--share rg-share-${shareBin(value)}`;
@@ -842,28 +884,35 @@
         if (i) rows.append(svg("line", { class: "rg-column-rule", x1: left, x2: left, y1: top + 14, y2: bottom }));
       });
 
-      // Untested lanes first, so a measured route is never drawn under one.
+      // Untested lanes first, then surveyed, so a measured route is never
+      // drawn under either.
       const lanes = svg("g", { class: "rg-lanes" });
       const labels = svg("g", { class: "rg-lane-labels" });
       this.laneEls = new Map();
       this.labelEls = new Map();
       for (const old of this.defs.querySelectorAll("path[id^='rg-label-']")) old.remove();
-      const ordered = [...this.edges.values()].sort((a, b) => Number(measured(a)) - Number(measured(b)));
+      const ordered = [...this.edges.values()].sort((a, b) => DEPTH[kindOf(a)] - DEPTH[kindOf(b)]);
       ordered.forEach((edge, index) => {
         const lane = this.lanes.get(edge.id);
         const width = this.widthOf(edge);
-        const group = svg("g", { class: `rg-lane ${measured(edge) ? "rg-lane--measured" : "rg-lane--untested"}`, "data-edge": edge.id });
+        const kind = kindOf(edge);
+        const group = svg("g", { class: `rg-lane rg-lane--${kind}`, "data-edge": edge.id });
         group.append(svg("path", { class: `rg-line ${this.inkClass(edge)}`, d: lane.d, "stroke-width": width.toFixed(2) }));
+        // A surveyed line is hollow: a surface-coloured core down a solid
+        // stroke, so at any width it cannot be read as a pale route.
+        if (kind === "surveyed") group.append(svg("path", { class: "rg-line-core", d: lane.d, "stroke-width": (width - 2.6).toFixed(2) }));
 
-        // Arrowhead: filled in the line's ink for a route, hollow for an
-        // untested link -- a link that exists, not a quantity that flows.
+        // Arrowhead: filled in the line's ink for a route, hollow for a
+        // surveyed or untested link -- a link that answers, not a quantity
+        // drawn to the routes' scale.
         const dir = scale(sub(lane.tip, lane.base), 1 / ARROW);
         const across = { x: dir.y, y: -dir.x };
-        const half = measured(edge) ? 4 + width * 0.6 : 4;
+        const half = measured(edge) ? 4 + width * 0.6 : kind === "surveyed" ? 5 : 4;
         const a = add(lane.base, scale(across, half));
         const b = add(lane.base, scale(across, -half));
+        const arrow = measured(edge) ? this.inkClass(edge) : `rg-arrow--hollow rg-arrow--${kind}`;
         group.append(
-          svg("path", { class: `rg-arrow ${measured(edge) ? this.inkClass(edge) : "rg-arrow--hollow"}`, d: `M${fmt(lane.tip)} L${fmt(a)} L${fmt(b)} Z` }),
+          svg("path", { class: `rg-arrow ${arrow}`, d: `M${fmt(lane.tip)} L${fmt(a)} L${fmt(b)} Z` }),
           svg("path", { class: "rg-flow", d: lane.d, "stroke-width": Math.max(1.5, width - 1.5).toFixed(2) }),
           // A generous invisible stroke to hover and click.
           svg("path", { class: "rg-hit", d: lane.d }),
@@ -876,7 +925,7 @@
         const label = svg(
           "text",
           {
-            class: `rg-lane-label ${measured(edge) ? "" : "rg-lane-label--untested"}`,
+            class: `rg-lane-label ${measured(edge) ? "" : `rg-lane-label--${kind}`}`,
             dy: (-(width / 2 + 5)).toFixed(1),
             "data-edge": edge.id,
           },
@@ -910,7 +959,7 @@
             transform: `translate(${p.x},${p.y})`,
             tabindex: 0,
             role: "button",
-            "aria-label": `${node.label}: ${node.routes_out} routes out, ${node.untested_out} untested links out`,
+            "aria-label": `${node.label}: ${node.routes_out} routes out, ${node.surveyed_out ?? 0} surveyed links out, ${node.untested_out} untested links out`,
           },
           outline.back.map((d) => svg("path", { class: "rg-node-back", d })),
           svg("path", { class: "rg-node-body", d: outline.body }),
@@ -943,9 +992,10 @@
     applyView() {
       const { x, y, k } = this.view;
       this.viewport.setAttribute("transform", `translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${k.toFixed(4)})`);
-      // An untested lane's mechanisms are named only once there is room to
-      // read them: at the zoom that fits a hundred dotted lanes on screen,
-      // their names are noise over the routes'. Hover or focus names one.
+      // An untested or surveyed lane's mechanisms are named only once there is
+      // room to read them: at the zoom that fits a hundred such lanes on
+      // screen, their names are noise over the routes'. Hover or focus names
+      // one.
       this.svg.classList.toggle("is-detailed", k >= DETAIL_ZOOM);
     }
 
@@ -1143,6 +1193,16 @@
       return `${name}: ${probe.accession} → ${number.format(probe.found_count)} (${probe.found[0]}${probe.found_count > 1 ? ", …" : ""})${checks}`;
     }
 
+    /* One surveyed link over one corpus, in a line: how many of the draw gave
+     * something usable, and the three outcomes. */
+    surveyLine(split, named = true) {
+      const name = named ? `${this.mechanisms[split.mechanism].name}: ` : "";
+      return (
+        `${name}${number.format(split.usable)}/${number.format(split.queried)} usable · ` +
+        `${number.format(split.resolved)} resolved · ${number.format(split.empty)} empty · ${number.format(split.failed)} failed · ${split.corpus}`
+      );
+    }
+
     /* A measured edge's split, in words: of the source's queried accessions,
      * how many resolved, and how many reached this target. */
     splitText(edge) {
@@ -1167,6 +1227,13 @@
             edge.link.origin ? el("div", {}, `Files: ${edge.link.origin}`) : null,
             edge.of > 1 ? el("div", {}, `Rank ${edge.rank} of ${edge.of} for this direction`) : null,
           );
+        } else if (isSurveyed(edge)) {
+          this.tooltip.replaceChildren(
+            el("div", { class: "rg-tooltip-title", text: `${this.label(edge.source)} → ${this.label(edge.target)}` }),
+            el("div", { class: "rg-tooltip-values", text: `Surveyed · ${edge.links.length} mechanism${edge.links.length === 1 ? "" : "s"}` }),
+            el("div", { class: "rg-muted", text: "A link survey over a seeded draw: counts, never a rank." }),
+            el("ul", { class: "rg-tooltip-list" }, surveySplits(edge).map((split) => el("li", { text: this.surveyLine(split) }))),
+          );
         } else {
           this.tooltip.replaceChildren(
             el("div", { class: "rg-tooltip-title", text: `${this.label(edge.source)} → ${this.label(edge.target)}` }),
@@ -1181,6 +1248,7 @@
         this.tooltip.replaceChildren(
           el("div", { class: "rg-tooltip-values", text: node.label }),
           el("div", {}, `${node.routes_out} routes out · ${node.routes_in} in`),
+          el("div", {}, `${node.surveyed_out ?? 0} surveyed links out · ${node.surveyed_in ?? 0} in`),
           el("div", {}, `${node.untested_out} untested links out · ${node.untested_in} in`),
         );
         for (const edge of this.edges.values()) {
@@ -1229,20 +1297,35 @@
       this.renderTable();
     }
 
+    /* Which links the path finder walks: measured routes; measured and
+     * surveyed links, in the "measured + surveyed" view; or, with untested
+     * links included, every drawn link. */
+    pathMode() {
+      if (this.state.includeUntested) return "all";
+      return this.state.view === "surveyed" ? "surveyed" : "measured";
+    }
+
     /* The edge one hop of a path is drawn along: the best visible route,
-     * which is what the resolver would try first; else, where untested hops
-     * are allowed, the untested link. */
+     * which is what the resolver would try first; else, where the path mode
+     * allows them, the surveyed link, and then the untested one. A surveyed
+     * link goes before an untested one because it has been measured, not
+     * because it ranks: it carries no rank to compare. */
     hopEdge(source, target) {
       const candidates = [...this.edges.values()].filter((e) => e.source === source && e.target === target && this.visible(e));
       const routes = candidates.filter(measured).sort((a, b) => a.rank - b.rank);
       if (routes.length) return routes[0];
-      return this.state.includeUntested ? candidates.find((e) => !measured(e)) ?? null : null;
+      const mode = this.pathMode();
+      if (mode === "measured") return null;
+      const linked = candidates.find(isSurveyed);
+      if (linked) return linked;
+      return mode === "all" ? candidates.find(isUntested) ?? null : null;
     }
 
     emphasis() {
       const { selected, path } = this.state;
       if (path && path.index !== null) {
         const steps = this.paths(path.from, path.to)[path.index];
+        if (!steps) return null;
         const edges = [];
         for (let i = 0; i < steps.length - 1; i++) {
           const edge = this.hopEdge(steps[i], steps[i + 1]);
@@ -1285,7 +1368,8 @@
       for (const [id, group] of this.nodeEls) group.classList.toggle("is-focus", Boolean(focus?.nodes.has(id)));
     }
 
-    /* A route opens its own panel; an untested lane is its node pair. */
+    /* A route opens its own panel; a surveyed or untested lane is its node
+     * pair. */
     selectEdge(id) {
       const edge = this.allEdges.get(id);
       if (measured(edge)) this.select("edge", id);
@@ -1299,13 +1383,17 @@
     }
 
     /* Select a node pair, switching the view so it can be seen: a pair that
-     * only untested links reach needs "All known links", and one touching a
-     * submission, analysis or platform needs those shown. */
+     * only surveyed links reach needs at least "Measured + surveyed", one that
+     * only untested links reach "All known links", and one touching a
+     * submission, analysis or platform needs those shown. A pair with no
+     * line at all -- only documented or absent links -- leaves the view be. */
     selectPair(source, target) {
       const needsOther = !this.nodeShown(source) || !this.nodeShown(target);
-      const hasMeasured = [...this.allEdges.values()].some((e) => measured(e) && e.source === source && e.target === target);
+      const drawn = [...this.allEdges.values()].filter((e) => e.source === source && e.target === target);
       if (needsOther) this.setShowOther(true);
-      if (!hasMeasured && this.state.view === "measured") this.setView("all");
+      if (drawn.length && !drawn.some((e) => this.kindShown(e))) {
+        this.setView(this.state.view === "measured" && drawn.some(isSurveyed) ? "surveyed" : "all");
+      }
       this.state.selected = { kind: "pair", source, target };
       this.resetPath();
       this.refresh();
@@ -1330,18 +1418,20 @@
       this.highlightCell();
     }
 
-    /* Measured paths come from the registry's own search; with untested
-     * links included, the catalogue's shortest paths and those one hop longer.
-     * A path through a hidden node is not offered. */
+    /* Measured paths come from the registry's own search, and measured plus
+     * surveyed ones from the catalogue's, over those links alone; with
+     * untested links included, the catalogue's shortest paths and those one
+     * hop longer. A path through a hidden node is not offered. */
     paths(from, to) {
-      const source = this.state.includeUntested ? this.data.paths_all : this.data.paths_measured;
+      const mode = this.pathMode();
+      const source = (mode === "all" ? this.data.paths_all : mode === "surveyed" ? this.data.paths_surveyed : this.data.paths_measured) ?? {};
       return (source[from]?.[to] ?? []).filter((steps) => steps.every((id) => this.nodeShown(id)));
     }
 
     choosePath() {
       const from = this.fromSelect.value;
       const to = this.toSelect.value;
-      if (this.state.includeUntested && this.state.view === "measured") this.setView("all");
+      if (this.state.includeUntested && this.state.view !== "all") this.setView("all");
       this.state.selected = null;
       this.state.path = from && to ? { from, to, index: this.paths(from, to).length ? 0 : null } : null;
       this.refresh();
@@ -1380,8 +1470,60 @@
       );
     }
 
+    /* A surveyed link's splits, one per corpus: of the seeded draw, how many
+     * gave something usable, the three outcomes, how many distinct values,
+     * and how each check went. Counts only -- nothing here orders one link
+     * against another. */
+    surveyBlock(entry) {
+      if (!entry.splits?.length) return null;
+      return el(
+        "div",
+        { class: "rg-survey" },
+        entry.splits.map((split) => {
+          const checks = Object.entries(split.checks ?? {});
+          const half = halfWidth(split.queried);
+          return el(
+            "div",
+            { class: "rg-survey-split" },
+            el(
+              "p",
+              { class: "rg-survey-head" },
+              el("strong", { text: `${number.format(split.usable)}/${number.format(split.queried)} usable` }),
+              " over ",
+              code(split.corpus),
+              el("span", { class: "rg-muted", text: ` · surveyed ${split.surveyed_on}` }),
+            ),
+            outcomeBar(split, true),
+            el(
+              "p",
+              { class: "rg-muted" },
+              `${number.format(split.resolved)} resolved · ${number.format(split.empty)} empty · ${number.format(split.failed)} failed · ` +
+                `${number.format(split.distinct)} distinct` +
+                (half === null ? "" : ` · ±${half.toFixed(1)} points at ${number.format(split.queried)}`),
+            ),
+            checks.length
+              ? el(
+                  "ul",
+                  { class: "rg-checks" },
+                  checks.map(([name, c]) => {
+                    const worst = c.failed ? "failed" : c.undetermined ? "undetermined" : "passed";
+                    return el(
+                      "li",
+                      { class: `rg-check rg-check--${worst}` },
+                      el("span", { class: "rg-check-mark", "aria-hidden": "true", text: worst === "passed" ? "✓" : worst === "failed" ? "✗" : "?" }),
+                      `${name}: ${number.format(c.passed)} passed · ${number.format(c.failed)} failed · ${number.format(c.undetermined)} undetermined`,
+                    );
+                  }),
+                )
+              : null,
+          );
+        }),
+      );
+    }
+
     /* One mechanism of a link: the request, the field, what the docs say, and
-     * the probe -- the whole case for the link existing. */
+     * the probe -- the whole case for the link existing -- and, for a surveyed
+     * link, what its survey counted. */
     mechanismBlock(entry) {
       const m = this.mechanisms[entry.mechanism];
       const probe = entry.probe;
@@ -1408,6 +1550,7 @@
             : el("span", { class: "rg-badge", text: "live-only" }),
           m.basis === "documented" ? "" : el("span", { class: "rg-muted", text: " no documentation names this field; the probe is the evidence" }),
         ),
+        this.surveyBlock(entry),
         probeLine,
         this.checkList(probe),
         m.note ? el("p", { class: "rg-muted", text: m.note }) : null,
@@ -1532,18 +1675,36 @@
 
     pairPanel(source, target) {
       const routes = [...this.allEdges.values()].filter((e) => measured(e) && e.source === source && e.target === target).sort((a, b) => a.rank - b.rank);
-      const untested = [...this.allEdges.values()].find((e) => !measured(e) && e.source === source && e.target === target);
+      const linked = [...this.allEdges.values()].find((e) => isSurveyed(e) && e.source === source && e.target === target);
+      const untested = [...this.allEdges.values()].find((e) => isUntested(e) && e.source === source && e.target === target);
       const unconfirmed = this.unconfirmed.get(`${source}>${target}`);
       const none = this.measuredNone.get(`${source}>${target}`);
+      const surveyedNone = this.surveyedNone.get(`${source}>${target}`);
       const parts = [
         el("p", { class: "rg-panel-kicker", text: source === target ? "Self link" : "Node pair" }),
         el("h3", { text: source === target ? `${this.label(source)} → another ${this.label(source)}` : `${this.label(source)} → ${this.label(target)}` }),
       ];
-      if (!routes.length && !untested && !unconfirmed && !none) {
+      if (!routes.length && !linked && !untested && !unconfirmed && !none && !surveyedNone) {
         parts.push(el("p", { text: "No archive API this catalogue knows links these in one request." }));
         return parts;
       }
       if (routes.length) parts.push(el("h4", { text: `Measured routes (${routes.length})` }), el("ul", {}, routes.map((r) => el("li", {}, this.routeItem(r)))));
+      // The interval at the smallest draw on the pair: the widest it can be.
+      const surveyNote = (group) => {
+        const n = Math.min(...surveySplits(group).map((split) => split.queried));
+        const interval = Number.isFinite(n) && n > 0 ? ` — ±${halfWidth(n).toFixed(1)} points at ${number.format(n)}` : "";
+        return (
+          `Each count is a link survey over a seeded draw of the source's accessions${interval} — ` +
+          "so it says whether a link answers, not which answers best. Listed by name, never ranked, and never route evidence."
+        );
+      };
+      if (linked) {
+        parts.push(
+          el("h4", { text: `Surveyed (${linked.links.length})` }),
+          el("p", { class: "rg-muted", text: surveyNote(linked) }),
+          el("ul", { class: "rg-mechanisms" }, linked.links.map((entry) => this.mechanismBlock(entry))),
+        );
+      }
       if (untested) {
         parts.push(
           el("h4", { text: `Untested (${untested.links.length})` }),
@@ -1564,6 +1725,13 @@
           ),
         );
       }
+      if (surveyedNone) {
+        parts.push(
+          el("h4", { text: `Surveyed, never usable (${surveyedNone.links.length})` }),
+          el("p", { class: "rg-muted", text: "A link survey answered for this source and found nothing usable here: a measured absence over a seeded draw, so it is not drawn. Where a probe confirmed the link, it exists and did not answer for this project's records." }),
+          el("ul", { class: "rg-mechanisms" }, surveyedNone.links.map((entry) => this.mechanismBlock(entry))),
+        );
+      }
       if (unconfirmed) {
         parts.push(
           el("h4", { text: `Documented, not confirmed (${unconfirmed.links.length})` }),
@@ -1579,17 +1747,20 @@
       const reach = new Map();
       for (const edge of this.allEdges.values()) {
         if (edge.source !== node.id) continue;
-        if (!reach.has(edge.target)) reach.set(edge.target, { routes: [], untested: null });
+        if (!reach.has(edge.target)) reach.set(edge.target, { routes: [], linked: null, untested: null });
         if (measured(edge)) reach.get(edge.target).routes.push(edge);
+        else if (isSurveyed(edge)) reach.get(edge.target).linked = edge;
         else reach.get(edge.target).untested = edge;
       }
-      const reachItem = (target, { routes, untested }) => {
+      const reachItem = (target, { routes, linked, untested }) => {
         const best = routes.sort((a, b) => a.rank - b.rank)[0];
         const value = best ? share(best.split) : null;
         const status = routes.length
           ? `${routes.length} route${routes.length === 1 ? "" : "s"}` + (best ? `, best ${value === null ? "split not recorded" : `${percent.format(value)} resolved`}` : "")
           : "";
         const names = untested ? [...new Set(untested.links.map((l) => this.mechanisms[l.mechanism].name))] : [];
+        // Usable over queried, per mechanism and corpus, in name order.
+        const counts = linked ? surveySplits(linked).map((split) => `${this.mechanisms[split.mechanism].name} ${number.format(split.usable)}/${number.format(split.queried)}`) : [];
         return el(
           "li",
           {},
@@ -1598,6 +1769,7 @@
             { class: "rg-item", type: "button", onclick: () => this.selectPair(node.id, target) },
             el("strong", { text: target === node.id ? `another ${this.label(target)}` : this.label(target) }),
             routes.length ? el("span", { class: "rg-item-meta" }, el("span", { class: "rg-chip rg-chip--measured", text: "measured" }), status) : null,
+            linked ? el("span", { class: "rg-item-meta" }, el("span", { class: "rg-chip rg-chip--surveyed", text: "surveyed" }), counts.join(" · ")) : null,
             untested ? el("span", { class: "rg-item-meta" }, el("span", { class: "rg-chip rg-chip--untested", text: "untested" }), names.join(" · ")) : null,
           ),
         );
@@ -1606,7 +1778,8 @@
       const reached = [...reach.entries()].sort(([a], [b]) => order(a) - order(b));
       const documented = [...this.unconfirmed.values()].filter((u) => u.source === node.id && !reach.has(u.target));
       const none = [...this.measuredNone.values()].filter((u) => u.source === node.id && !reach.has(u.target));
-      const listed = new Set([...documented, ...none].map((u) => u.target));
+      const surveyedNone = [...this.surveyedNone.values()].filter((u) => u.source === node.id && !reach.has(u.target));
+      const listed = new Set([...documented, ...none, ...surveyedNone].map((u) => u.target));
       const gaps = (this.data.unreachable[node.id] ?? []).filter((t) => !listed.has(t));
       const parts = [
         el("p", { class: "rg-panel-kicker", text: `${layer} · ${node.database} · ${FAMILY_LABELS[node.family] ?? node.family}` }),
@@ -1615,6 +1788,16 @@
         node.accessions.length
           ? el("dl", {}, node.accessions.flatMap((a) => [el("dt", {}, code(a.pattern)), el("dd", { text: a.description })]))
           : el("p", { class: "rg-muted", text: node.kind === "record" ? "Has no accession of its own." : "Reached through links, never parsed from an identifier." }),
+        el(
+          "dl",
+          { class: "rg-node-counts" },
+          el("dt", { text: "Measured routes" }),
+          el("dd", { text: `${node.routes_out} out · ${node.routes_in} in` }),
+          el("dt", { text: "Surveyed links" }),
+          el("dd", { text: `${node.surveyed_out ?? 0} out · ${node.surveyed_in ?? 0} in` }),
+          el("dt", { text: "Untested links" }),
+          el("dd", { text: `${node.untested_out} out · ${node.untested_in} in` }),
+        ),
       ];
       if (node.kind === "read-format") {
         parts.push(
@@ -1630,6 +1813,10 @@
           none.length ? el("h4", { text: "Measured, never answering" }) : null,
           none.length
             ? el("ul", {}, none.map((u) => el("li", {}, el("button", { class: "rg-item", type: "button", onclick: () => this.selectPair(node.id, u.target) }, this.label(u.target)))))
+            : null,
+          surveyedNone.length ? el("h4", { text: "Surveyed, never usable" }) : null,
+          surveyedNone.length
+            ? el("ul", {}, surveyedNone.map((u) => el("li", {}, el("button", { class: "rg-item", type: "button", onclick: () => this.selectPair(node.id, u.target) }, this.label(u.target)))))
             : null,
           documented.length ? el("h4", { text: "Documented, not confirmed" }) : null,
           documented.length
@@ -1648,16 +1835,25 @@
 
     pathPanel(path) {
       const found = this.paths(path.from, path.to);
-      const parts = [el("p", { class: "rg-panel-kicker", text: this.state.includeUntested ? "Paths, untested links included" : "Paths over measured routes" }), el("h3", { text: `${this.label(path.from)} → ${this.label(path.to)}` })];
+      const mode = this.pathMode();
+      const kicker = { all: "Paths, untested links included", surveyed: "Paths over measured routes and surveyed links", measured: "Paths over measured routes" }[mode];
+      const nothing = {
+        all: "No known link connects these within four hops.",
+        surveyed: "No measured route or surveyed link connects these within four hops. Try including untested links.",
+        measured: "No measured route connects these within four hops. Try “Measured + surveyed”, or including untested links.",
+      }[mode];
+      const parts = [el("p", { class: "rg-panel-kicker", text: kicker }), el("h3", { text: `${this.label(path.from)} → ${this.label(path.to)}` })];
       if (!found.length) {
-        parts.push(el("p", { text: this.state.includeUntested ? "No known link connects these within four hops." : "No measured route connects these within four hops. Try including untested links." }));
+        parts.push(el("p", { text: nothing }));
         return parts;
       }
       parts.push(
         el(
           "p",
           { class: "rg-muted" },
-          `${found.length} path${found.length === 1 ? "" : "s"}, shortest first. ` + "Each hop uses the best-ranked route the filters leave visible" + (this.state.includeUntested ? ", else an untested link." : "."),
+          `${found.length} path${found.length === 1 ? "" : "s"}, shortest first. ` +
+            "Each hop uses the best-ranked route the filters leave visible" +
+            { all: ", else a surveyed link, else an untested one. A surveyed link carries no rank.", surveyed: ", else a surveyed link, which carries no rank.", measured: "." }[mode],
         ),
       );
       found.forEach((steps, index) => {
@@ -1680,7 +1876,7 @@
             el(
               "span",
               { class: "rg-item-meta" },
-              hops.every(Boolean) ? hops.map((h) => (measured(h) ? variant(h) : `untested: ${this.laneName(h)}`)).join("  ·  ") : "a hop has no line under the current filters",
+              hops.every(Boolean) ? hops.map((h) => (measured(h) ? variant(h) : `${kindOf(h)}: ${this.laneName(h)}`)).join("  ·  ") : "a hop has no line under the current filters",
             ),
           ),
         );
@@ -1706,7 +1902,12 @@
         );
       };
       const line = (cls, width = 3) =>
-        svg("svg", { class: "rg-legend-line", viewBox: "0 0 30 8", "aria-hidden": "true" }, svg("path", { class: `rg-line ${cls}`, d: "M1,4 H29", "stroke-width": width }));
+        svg(
+          "svg",
+          { class: "rg-legend-line", viewBox: "0 0 30 8", "aria-hidden": "true" },
+          svg("path", { class: `rg-line ${cls}`, d: "M1,4 H29", "stroke-width": width }),
+          cls === "rg-line--surveyed" ? svg("path", { class: "rg-line-core", d: "M1,4 H29", "stroke-width": width - 2.6 }) : null,
+        );
       const item = (key, label) => el("span", { class: "rg-legend-item" }, key, label);
       const order = Object.keys(FAMILY_LABELS);
       const families = [...new Set(this.data.nodes.map((n) => n.family))].sort((x, y) => (order.indexOf(x) + 1 || 99) - (order.indexOf(y) + 1 || 99));
@@ -1725,6 +1926,13 @@
         el(
           "div",
           { class: "rg-legend-group" },
+          el("span", { class: "rg-legend-title", text: "A surveyed link" }),
+          item(line("rg-line--surveyed", 4.2), "one per node pair, a link survey found it usable over a seeded draw; counts, never a rank"),
+          el("span", { class: "rg-legend-note", text: "One width whatever it found: a draw of 300 is ±5.7 points, too coarse to set beside a route. Its counts are in the panel." }),
+        ),
+        el(
+          "div",
+          { class: "rg-legend-group" },
           el("span", { class: "rg-legend-title", text: "An untested link" }),
           item(line("rg-line--untested", 1.6), "one per node pair, confirmed by a probe; measures nothing"),
           el("span", { class: "rg-legend-note", text: "Into a file or document: drawn only if what was found passed every check. Names in brackets say who made the files." }),
@@ -1735,25 +1943,34 @@
     /* ------------------------------------------------------------- matrix */
 
     /* Every node against every node: filled by the best route's resolved
-     * share where a route measures the pair, outlined where only untested
-     * links do, dashed where a link is documented and its probe found
-     * nothing, blank where no link exists. The gaps are the point. */
+     * share where a route measures the pair, ringed where a link survey found
+     * it usable and no route measures it, outlined where only untested links
+     * do, struck through where a route or a link survey measured an absence,
+     * dashed where a link is documented and its probe found nothing, blank
+     * where no link exists. The gaps are the point. */
     renderMatrix() {
       const nodes = this.data.nodes.filter((n) => this.nodeShown(n.id));
       const cellFor = (source, target) => {
         const routes = [...this.allEdges.values()].filter((e) => measured(e) && e.source === source && e.target === target).sort((a, b) => a.rank - b.rank);
-        const untested = [...this.allEdges.values()].some((e) => !measured(e) && e.source === source && e.target === target);
+        const linked = [...this.allEdges.values()].some((e) => isSurveyed(e) && e.source === source && e.target === target);
+        const untested = [...this.allEdges.values()].some((e) => isUntested(e) && e.source === source && e.target === target);
         const unconfirmed = this.unconfirmed.has(`${source}>${target}`);
         const none = this.measuredNone.has(`${source}>${target}`);
+        const surveyedNone = this.surveyedNone.has(`${source}>${target}`);
         if (routes.length) {
           const value = share(routes[0].split);
           return {
             kind: value === null ? "unknown" : `share-${shareBin(value)}`,
-            text: `${routes.length} measured route${routes.length === 1 ? "" : "s"}; best ${value === null ? "split not recorded" : `resolves ${percent.format(value)}`}` + (untested ? "; untested links too" : ""),
+            text:
+              `${routes.length} measured route${routes.length === 1 ? "" : "s"}; best ${value === null ? "split not recorded" : `resolves ${percent.format(value)}`}` +
+              (linked ? "; surveyed links too" : "") +
+              (untested ? "; untested links too" : ""),
           };
         }
+        if (linked) return { kind: "surveyed", text: "surveyed links, no route" + (untested ? "; untested links too" : "") };
         if (untested) return { kind: "untested", text: "untested links only" };
         if (none) return { kind: "none-measured", text: "measured, never answering" };
+        if (surveyedNone) return { kind: "none-surveyed", text: "surveyed, never usable" };
         if (unconfirmed) return { kind: "unconfirmed", text: "documented, not confirmed" };
         return { kind: "none", text: "no one-hop link" };
       };
@@ -1798,8 +2015,10 @@
           "div",
           { class: "rg-legend rg-matrix-legend" },
           key("share-4", "measured, filled by the best route's resolved share"),
+          key("surveyed", "surveyed, no route"),
           key("untested", "untested only"),
           key("none-measured", "measured, never answering"),
+          key("none-surveyed", "surveyed, never usable"),
           key("unconfirmed", "documented, not confirmed"),
           el("span", { class: "rg-legend-item" }, el("span", { class: "rg-cell-key rg-cell-key--blank", "aria-hidden": "true" }), "no link"),
         ),
@@ -1817,24 +2036,29 @@
     /* -------------------------------------------------------------- table */
 
     /* A measured row's counts are its split: the route's verdicts on this
-     * source node, and how many of them reached this target. */
+     * source node, and how many of them reached this target. A surveyed row
+     * has one split per mechanism and corpus, listed one per line, and its
+     * "reached" is what was usable; it sorts on its first, which is name
+     * order, not yield order. */
     columns() {
       const ev = (r) => r.evidence ?? {};
-      const sp = (r) => r.split ?? {};
+      const first = (r) => surveySplits(r)[0] ?? {};
+      const sp = (r) => (measured(r) ? r.split ?? {} : isSurveyed(r) ? { ...first(r), reached: first(r).usable } : {});
+      const surveyedShare = (r) => (first(r).queried ? first(r).usable / first(r).queried : null);
       return [
         { key: "direction", title: "Direction", value: (r) => `${this.label(r.source)} → ${this.label(r.target)}` },
         { key: "status", title: "Status", value: (r) => r.status },
         { key: "route", title: "Route or mechanisms", value: (r) => (measured(r) ? r.route : this.laneName(r)) },
-        { key: "rank", title: "Rank", numeric: true, value: (r) => (measured(r) ? r.rank : 999) },
-        { key: "corpus", title: "Corpus or probe", value: (r) => (measured(r) ? ev(r).corpus ?? "" : r.links[0].probe?.accession ?? "") },
-        { key: "surveyed", title: "Date", value: (r) => (measured(r) ? ev(r).surveyed_on ?? "" : r.links[0].probe?.checked_on ?? "") },
+        { key: "rank", title: "Rank", numeric: true, value: (r) => (measured(r) ? r.rank : isSurveyed(r) ? 998 : 999) },
+        { key: "corpus", title: "Corpus or probe", value: (r) => (measured(r) ? ev(r).corpus ?? "" : isSurveyed(r) ? first(r).corpus ?? "" : r.links[0].probe?.accession ?? "") },
+        { key: "surveyed", title: "Date", value: (r) => (measured(r) ? ev(r).surveyed_on ?? "" : isSurveyed(r) ? first(r).surveyed_on ?? "" : r.links[0].probe?.checked_on ?? "") },
         { key: "queried", title: "Queried", numeric: true, value: (r) => sp(r).queried ?? -1 },
         { key: "resolved", title: "Resolved", numeric: true, value: (r) => sp(r).resolved ?? -1 },
         { key: "empty", title: "Empty", numeric: true, value: (r) => sp(r).empty ?? -1 },
         { key: "failed", title: "Failed", numeric: true, value: (r) => sp(r).failed ?? -1 },
         { key: "reached", title: "Reached target", numeric: true, value: (r) => sp(r).reached ?? -1 },
         { key: "results", title: "Distinct results", numeric: true, value: (r) => sp(r).distinct ?? -1 },
-        { key: "share", title: "Outcomes", value: (r) => share(r.split) ?? -1 },
+        { key: "share", title: "Outcomes", value: (r) => (isSurveyed(r) ? surveyedShare(r) : share(r.split)) ?? -1 },
       ];
     }
 
@@ -1847,7 +2071,8 @@
         const x = column.value(a);
         const y = column.value(b);
         const order = typeof x === "number" ? x - y : String(x).localeCompare(String(y));
-        // Ties fall back to direction, routes before untested, then rank.
+        // Ties fall back to direction, routes before surveyed before
+        // untested, then rank.
         const tie = columns[0].value(a).localeCompare(columns[0].value(b)) || columns[3].value(a) - columns[3].value(b);
         return (ascending ? order : -order) || tie;
       });
@@ -1878,11 +2103,59 @@
             ? el("td", { class: "rg-num rg-muted", text: "not recorded" })
             : el("td", { class: "rg-num", text: number.format(value) });
 
+      // A surveyed row: one line per mechanism and corpus in every column
+      // that has a count, so the lines read across.
+      const lines = (values, cls = "rg-num") => el("td", { class: cls }, values.map((v, i) => [i ? el("br") : null, v]));
+      const surveyedRow = (edge) => {
+        const splits = surveySplits(edge);
+        const named = edge.links.length > 1;
+        const count = (key) => lines(splits.map((sp) => number.format(sp[key])));
+        return [
+          el("td", { class: "rg-num rg-muted rg-nowrap", title: "A surveyed link is never ranked", text: "—" }),
+          lines(
+            splits.map((sp) => (named ? `${this.mechanisms[sp.mechanism].name}: ${sp.corpus}` : sp.corpus)),
+            "rg-corpus",
+          ),
+          lines(splits.map((sp) => sp.surveyed_on), "rg-nowrap"),
+          count("queried"),
+          count("resolved"),
+          count("empty"),
+          count("failed"),
+          lines(splits.map((sp) => `${number.format(sp.usable)} usable`), "rg-num rg-nowrap"),
+          count("distinct"),
+          el(
+            "td",
+            {},
+            splits.map((sp) =>
+              el("div", { class: "rg-survey-cell" }, outcomeBar(sp, true), el("span", { class: "rg-nowrap", text: `${number.format(sp.usable)}/${number.format(sp.queried)} usable` })),
+            ),
+          ),
+        ];
+      };
+
       const body = rows.map((edge) => {
         const evidence = edge.evidence ?? {};
         const split = edge.split ?? {};
-        const untested = !measured(edge);
+        const untested = isUntested(edge);
         const probes = untested ? edge.links.map((l) => l.probe).filter(Boolean) : [];
+        // Rank to outcomes: a route's evidence, a surveyed link's splits, or
+        // an untested link's probe and nothing counted.
+        const tail = isSurveyed(edge)
+          ? surveyedRow(edge)
+          : [
+              el("td", { class: "rg-num rg-nowrap", text: untested ? "—" : `${edge.rank} of ${edge.of}` }),
+              untested
+                ? el("td", { class: "rg-corpus", title: [...new Set(probes.map((p) => p.accession))].join(", "), text: `probe ${[...new Set(probes.map((p) => p.accession))].join(", ")}` })
+                : el("td", { class: "rg-corpus", title: evidence.corpus ?? "", text: evidence.corpus ?? "unmeasured" }),
+              el("td", { class: "rg-nowrap", text: untested ? probes[0]?.checked_on ?? "" : evidence.surveyed_on ?? "" }),
+              cell(split.queried, untested),
+              cell(split.resolved, untested),
+              cell(split.empty, untested),
+              cell(split.failed, untested),
+              cell(split.reached, untested),
+              cell(split.distinct, untested),
+              el("td", {}, untested ? el("span", { class: "rg-muted", text: "not measured" }) : outcomeBar(edge.split, true)),
+            ];
         return el(
           "tr",
           { "data-edge": edge.id },
@@ -1901,21 +2174,10 @@
                   this.stage.scrollIntoView({ behavior: "smooth", block: "nearest" });
                 },
               },
-              untested ? edge.links.map((l, i) => [i ? " · " : "", code(this.mechanisms[l.mechanism].name)]) : code(edge.route),
+              measured(edge) ? code(edge.route) : edge.links.map((l, i) => [i ? " · " : "", code(this.mechanisms[l.mechanism].name)]),
             ),
           ),
-          el("td", { class: "rg-num rg-nowrap", text: untested ? "—" : `${edge.rank} of ${edge.of}` }),
-          untested
-            ? el("td", { class: "rg-corpus", title: [...new Set(probes.map((p) => p.accession))].join(", "), text: `probe ${[...new Set(probes.map((p) => p.accession))].join(", ")}` })
-            : el("td", { class: "rg-corpus", title: evidence.corpus ?? "", text: evidence.corpus ?? "unmeasured" }),
-          el("td", { class: "rg-nowrap", text: untested ? probes[0]?.checked_on ?? "" : evidence.surveyed_on ?? "" }),
-          cell(split.queried, untested),
-          cell(split.resolved, untested),
-          cell(split.empty, untested),
-          cell(split.failed, untested),
-          cell(split.reached, untested),
-          cell(split.distinct, untested),
-          el("td", {}, untested ? el("span", { class: "rg-muted", text: "not measured" }) : outcomeBar(edge.split, true)),
+          tail,
         );
       });
 
