@@ -41,10 +41,12 @@ from collections.abc import Awaitable, Callable, Iterable, Mapping
 from dataclasses import dataclass, field, replace
 from datetime import UTC, date, datetime
 from typing import Any
-from urllib.parse import urlencode, urlsplit
+from urllib.parse import urlencode
 from xml.etree import ElementTree
 
-from fetch_series.accession import RULES, parse, try_parse
+import httpx
+
+from fetch_series.accession import RULES, EntityType, parse, try_parse
 from fetch_series.catalogue import (
     CATALOGUE,
     PROBE_KEEP,
@@ -83,6 +85,7 @@ from fetch_series.survey.client import (
     Limits,
     MalformedResponseError,
     SurveyClient,
+    is_retryable,
 )
 
 Found = dict[str, list[str]]
@@ -976,10 +979,34 @@ async def _ddbj_dra_xml(client: SurveyClient, accession: str, timeout: float) ->
 
 @dataclass(frozen=True, slots=True)
 class Prober:
-    """How to probe one mechanism: which host's limits apply, and the fetch."""
+    """How to probe one mechanism: which host bucket's limits apply, and the fetch.
+
+    ``retry`` narrows the client's retry rule for this mechanism, given the
+    input accession: a request known never to succeed should fail at once
+    rather than spend five attempts and two minutes proving it again.
+    """
 
     host: str
     fetch: Fetcher
+    retry: Callable[[str, BaseException], bool] | None = None
+
+
+def _sdl_retry(accession: str, exc: BaseException) -> bool:
+    """SDL answers a project or a study with a gateway 504, every time.
+
+    ``sdl/2/retrieve acc=PRJNA495040`` (and ``ERP110462``) times out at the
+    gateway after ~10 s on every attempt, and 504 is retryable everywhere else.
+    Only a run, or an experiment, is worth a second attempt after a 504.
+    """
+    parsed = try_parse(accession)
+    asks_for_runs = parsed is not None and parsed.entity in (EntityType.RUN, EntityType.EXPERIMENT)
+    if (
+        not asks_for_runs
+        and isinstance(exc, httpx.HTTPStatusError)
+        and exc.response.status_code == 504
+    ):
+        return False
+    return is_retryable(exc)
 
 
 _ELINKS = (
@@ -1000,58 +1027,60 @@ _ELINKS = (
 )
 
 PROBERS: dict[str, Prober] = {
-    "ena_filereport": Prober("ebi", _filereport),
-    "ena_filereport_aliases": Prober("ebi", _aliases),
-    "ena_filereport_fastq": Prober("ebi", _file_column("fastq", "ena_filereport_fastq")),
+    "ena_filereport": Prober("ena_portal", _filereport),
+    "ena_filereport_aliases": Prober("ena_portal", _aliases),
+    "ena_filereport_fastq": Prober("ena_portal", _file_column("fastq", "ena_filereport_fastq")),
     "ena_filereport_submitted": Prober(
-        "ebi", _file_column("submitted", "ena_filereport_submitted")
+        "ena_portal", _file_column("submitted", "ena_filereport_submitted")
     ),
-    "ena_filereport_bam": Prober("ebi", _file_column("bam", "ena_filereport_bam")),
-    "ena_filereport_sra": Prober("ebi", _file_column("sra", "ena_filereport_sra")),
-    "ena_filereport_analysis": Prober("ebi", _analysis),
+    "ena_filereport_bam": Prober("ena_portal", _file_column("bam", "ena_filereport_bam")),
+    "ena_filereport_sra": Prober("ena_portal", _file_column("sra", "ena_filereport_sra")),
+    "ena_filereport_analysis": Prober("ena_portal", _analysis),
     "ena_filereport_analysis_files": Prober(
-        "ebi", _file_column("submitted", "ena_filereport_analysis_files", result="analysis")
+        "ena_portal", _file_column("submitted", "ena_filereport_analysis_files", result="analysis")
     ),
-    "ena_search_study": Prober("ebi", _search_study),
-    "ena_search_study_parent": Prober("ebi", _search_parent),
-    "ena_search_sample": Prober("ebi", _search_sample),
-    "ena_links": Prober("ebi", _links),
-    "ena_xref_source": Prober("ebi", _xref_source),
-    "ena_xref_target": Prober("ebi", _xref_target),
-    "ena_browser_xml": Prober("ebi", _browser_xml),
-    "ena_filereport_document": Prober("ebi", _filereport_document),
-    "ena_browser_xml_document": Prober("ebi", _browser_xml_document),
-    **{f"elink_{name}": Prober("ncbi", _elink(name)) for name in _ELINKS},
-    "sra_be_runinfo": Prober("ncbi", _runinfo),
-    "sra_be_runinfo_download": Prober("ncbi", _runinfo_download),
-    "sra_be_runinfo_document": Prober("ncbi", _runinfo_document),
-    "esummary_sra": Prober("ncbi", _esummary_sra),
-    "sdl": Prober("ncbi", _sdl()),
-    "sdl_lite": Prober("ncbi", _sdl(filetype="sralite")),
-    "sdl_original": Prober("ncbi", _sdl(**{"accept-alternate-locations": "yes"})),
-    "efetch_sra_xml": Prober("ncbi", _sra_xml_document),
-    "efetch_sra_files": Prober("ncbi", _sra_xml_files),
-    "biosample_record": Prober("ncbi", _biosample_record),
-    "geo_soft_family": Prober("ncbi", _soft),
-    "geo_soft_family_relations": Prober("ncbi", _soft_relations),
-    "geo_miniml": Prober("ncbi", _miniml),
-    "geo_series_matrix": Prober("ncbi", _series_matrix),
-    "geo_acc_series": Prober("ncbi", _acc_series),
-    "geo_acc_sample": Prober("ncbi", _acc_sample),
-    "geo_acc_platform": Prober("ncbi", _acc_platform),
-    "gds_esummary_series": Prober("ncbi", _gds_series),
-    "gds_esummary_sample": Prober("ncbi", _gds_sample),
-    "gds_esummary_platform": Prober("ncbi", _gds_platform),
-    "biostudies_idf": Prober("ebi", _idf),
-    "biostudies_sdrf": Prober("ebi", _sdrf),
-    "biostudies_sdrf_comments": Prober("ebi", _sdrf_comments),
-    "biostudies_sdrf_fastq": Prober("ebi", _sdrf_fastq),
-    "biostudies_files": Prober("ebi", _files),
-    "biostudies_study": Prober("ebi", _study_json),
-    "biostudies_search": Prober("ebi", _biostudies_search("arrayexpress", "ae_experiment")),
-    "biostudies_search_all": Prober("ebi", _biostudies_search(None, "biostudy")),
-    "biosamples_record": Prober("ebi", _biosamples_record),
-    "biosamples_filter": Prober("ebi", _biosamples_filter),
+    "ena_search_study": Prober("ena_search", _search_study),
+    "ena_search_study_parent": Prober("ena_search", _search_parent),
+    "ena_search_sample": Prober("ena_search", _search_sample),
+    "ena_links": Prober("ena_portal", _links),
+    "ena_xref_source": Prober("ena_search", _xref_source),
+    "ena_xref_target": Prober("ena_search", _xref_target),
+    "ena_browser_xml": Prober("ena_search", _browser_xml),
+    "ena_filereport_document": Prober("ena_portal", _filereport_document),
+    "ena_browser_xml_document": Prober("ena_search", _browser_xml_document),
+    **{f"elink_{name}": Prober("ncbi_eutils", _elink(name)) for name in _ELINKS},
+    "sra_be_runinfo": Prober("ncbi_web", _runinfo),
+    "sra_be_runinfo_download": Prober("ncbi_web", _runinfo_download),
+    "sra_be_runinfo_document": Prober("ncbi_web", _runinfo_document),
+    "esummary_sra": Prober("ncbi_eutils", _esummary_sra),
+    "sdl": Prober("ncbi_web", _sdl(), retry=_sdl_retry),
+    "sdl_lite": Prober("ncbi_web", _sdl(filetype="sralite"), retry=_sdl_retry),
+    "sdl_original": Prober(
+        "ncbi_web", _sdl(**{"accept-alternate-locations": "yes"}), retry=_sdl_retry
+    ),
+    "efetch_sra_xml": Prober("ncbi_eutils", _sra_xml_document),
+    "efetch_sra_files": Prober("ncbi_eutils", _sra_xml_files),
+    "biosample_record": Prober("ncbi_eutils", _biosample_record),
+    "geo_soft_family": Prober("ncbi_web", _soft),
+    "geo_soft_family_relations": Prober("ncbi_web", _soft_relations),
+    "geo_miniml": Prober("ncbi_web", _miniml),
+    "geo_series_matrix": Prober("ncbi_web", _series_matrix),
+    "geo_acc_series": Prober("ncbi_web", _acc_series),
+    "geo_acc_sample": Prober("ncbi_web", _acc_sample),
+    "geo_acc_platform": Prober("ncbi_web", _acc_platform),
+    "gds_esummary_series": Prober("ncbi_eutils", _gds_series),
+    "gds_esummary_sample": Prober("ncbi_eutils", _gds_sample),
+    "gds_esummary_platform": Prober("ncbi_eutils", _gds_platform),
+    "biostudies_idf": Prober("biostudies", _idf),
+    "biostudies_sdrf": Prober("biostudies", _sdrf),
+    "biostudies_sdrf_comments": Prober("biostudies", _sdrf_comments),
+    "biostudies_sdrf_fastq": Prober("biostudies", _sdrf_fastq),
+    "biostudies_files": Prober("biostudies", _files),
+    "biostudies_study": Prober("biostudies", _study_json),
+    "biostudies_search": Prober("biostudies", _biostudies_search("arrayexpress", "ae_experiment")),
+    "biostudies_search_all": Prober("biostudies", _biostudies_search(None, "biostudy")),
+    "biosamples_record": Prober("biosamples", _biosamples_record),
+    "biosamples_filter": Prober("biosamples", _biosamples_filter),
     "ddbj_dblink": Prober("ddbj", _dblink),
     "ddbj_entry_sra": Prober("ddbj", _ddbj_entry_sra),
     "ddbj_entry_fastq": Prober("ddbj", _ddbj_entry_fastq),
@@ -1060,31 +1089,57 @@ PROBERS: dict[str, Prober] = {
 }
 
 
-def host_limits(has_api_key: bool) -> dict[str, Limits]:
-    """Per-host limits, well under each archive's ceiling.
+# One rate-limited client per bucket: a host, or a service of one whose limits
+# are its own. ENA's portal answers filereport at 8 rps and answers a burst of
+# `search` with an HTML 500, so the two are separate buckets of one host.
+#
+# The ceilings: EBI's APIs at 15 rps in total (ena_portal + ena_search +
+# biostudies + biosamples), and E-utilities at 10 with a key, which leaves
+# headroom for retries. NCBI's other services -- GEO, sra-db-be, SDL -- are not
+# E-utilities and are paced on their own.
+BUCKETS = (
+    "ncbi_eutils",
+    "ncbi_web",
+    "ena_portal",
+    "ena_search",
+    "biostudies",
+    "biosamples",
+    "ddbj",
+    "files",
+)
 
-    ENA is the one that matters: it answers a burst of portal searches with an
-    HTML 500, so EBI runs at two requests a second with retries that back off.
+
+def host_limits(has_api_key: bool) -> dict[str, Limits]:
+    """Per-bucket limits, well under each archive's ceiling.
+
     ``files`` is every host a download link points at that is not an archive's
-    API -- S3 and Google buckets -- asked with a HEAD and nothing more.
+    API -- ENA's and NCBI's file servers, S3 and Google buckets -- asked with a
+    HEAD and nothing more.
     """
+
+    def at(rps: float, concurrency: int) -> Limits:
+        return Limits(rps=rps, concurrency=concurrency, base_timeout=60.0)
+
     return {
-        "ncbi": Limits(rps=7.0 if has_api_key else 2.5, concurrency=3, base_timeout=60.0),
-        "ebi": Limits(rps=2.0, concurrency=2, base_timeout=60.0),
-        "ddbj": Limits(rps=1.0, concurrency=1, base_timeout=60.0),
-        "files": Limits(rps=2.0, concurrency=2, base_timeout=60.0),
+        "ncbi_eutils": at(8.0 if has_api_key else 2.5, 4),
+        "ncbi_web": at(4.0, 4),
+        "ena_portal": at(8.0, 6),
+        "ena_search": at(2.0, 2),
+        "biostudies": at(3.0, 3),
+        "biosamples": at(2.0, 2),
+        "ddbj": at(1.5, 2),
+        "files": at(4.0, 4),
     }
 
 
 def host_of(url: str) -> str:
-    """Which client's limits a download link's HEAD is made under."""
-    host = urlsplit(url).hostname or ""
-    if host.endswith("ebi.ac.uk"):
-        return "ebi"
-    if host.endswith("nih.gov"):
-        return "ncbi"
-    if host.endswith("ddbj.nig.ac.jp"):
-        return "ddbj"
+    """Which bucket a download link's HEAD is made under: always ``files``.
+
+    A HEAD on a file server is not an API request, and pacing it under the API
+    it was listed by would let a run of fastq checks starve the survey of the
+    API it is measuring.
+    """
+    del url
     return "files"
 
 
@@ -1207,9 +1262,9 @@ async def check_reads(
         complete = len(data) == 1
     else:
         complete = None
-        if "ncbi" in clients and run:
+        if "ncbi_eutils" in clients and run:
             try:
-                lengths = await read_lengths(clients["ncbi"], run, 60.0)
+                lengths = await read_lengths(clients["ncbi_eutils"], run, 60.0)
             except Exception:
                 lengths = None
             if lengths is not None:
@@ -1290,6 +1345,12 @@ async def answer_links(
     prober = PROBERS[mechanism]
     client = clients[prober.host]
     picker = pick_run or prefer_runs(accession, *TEN_X_RUNS)
+    if retry is None and prober.retry is not None:
+        rule = prober.retry
+
+        def retry(exc: BaseException) -> bool:
+            return rule(accession, exc)
+
     try:
         raw = await client.with_retry(
             lambda timeout: prober.fetch(client, accession, timeout),
@@ -1392,6 +1453,7 @@ async def _check(
 
 
 __all__ = [
+    "BUCKETS",
     "PROBERS",
     "Answer",
     "Document",

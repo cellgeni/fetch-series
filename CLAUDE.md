@@ -123,6 +123,8 @@ uv run pytest -m integration     # hits live archive APIs
 uv run pytest -m slow            # needs Git LFS objects fetched
 uv run pytest -m pathology       # known archive bugs
 uv run fetch catalogue probe --write   # re-probe every untested link (live, ~1 min)
+uv run fetch catalogue survey --all --gate         # every unmeasured link over the gates (live)
+uv run fetch catalogue survey --all --standard --plan   # the seeded draws: units, sizes, requests
 ```
 
 `pytest -m pathology` is inverted from a normal suite: each test asserts that a **known archive bug

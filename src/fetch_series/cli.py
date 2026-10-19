@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import logging
 import tempfile
@@ -32,8 +33,22 @@ from fetch_series.catalogue import (
 )
 from fetch_series.catalogue import Status as CatalogueStatus
 from fetch_series.catalogue import status as catalogue_status
+from fetch_series.catalogue.populations import standard_corpora
 from fetch_series.catalogue.probe import host_limits, probe_links
 from fetch_series.catalogue.splits import compute as compute_splits
+from fetch_series.catalogue.survey import (
+    GATES,
+    Job,
+    SelectionError,
+    estimate,
+    gate_passed,
+    gate_report,
+    memoizable,
+    plan,
+    run_jobs,
+    select_links,
+    units_of,
+)
 from fetch_series.core import default_api_key
 from fetch_series.entities import MISSING, RELATION_COLUMNS, RunRecord
 from fetch_series.export.graph import route_graph
@@ -61,9 +76,10 @@ from fetch_series.resolver import resolve as resolver_resolve
 from fetch_series.results import Outcome
 from fetch_series.routes import IMPLEMENTATIONS
 from fetch_series.survey import Limits, SurveyClient, corpora, run_route
+from fetch_series.survey.client import MemoClient
 from fetch_series.survey.export import slug as export_slug
 from fetch_series.survey.export import write_export
-from fetch_series.survey.runner import shuffled
+from fetch_series.survey.runner import FanoutRun, shuffled
 
 app = typer.Typer(
     help="Resolve public sequencing accessions over documented, benchmarked routes.",
@@ -260,6 +276,150 @@ def catalogue_splits(
         typer.echo(f"wrote {len(splits)} splits to {SPLITS_PATH}", err=True)
 
 
+@catalogue_app.command("survey")
+def catalogue_survey(
+    link_ids: Annotated[
+        list[str] | None, typer.Option("--link", help="Survey this link; repeatable.")
+    ] = None,
+    mechanism: Annotated[
+        str | None, typer.Option("--mechanism", help="Every unmeasured link of a mechanism.")
+    ] = None,
+    source: Annotated[
+        str | None, typer.Option("--source", help="With --mechanism: only from this node.")
+    ] = None,
+    every: Annotated[bool, typer.Option("--all", help="Every unmeasured link.")] = False,
+    corpus_name: Annotated[
+        str | None, typer.Option("--corpus", help="Survey over this corpus.")
+    ] = None,
+    standard: Annotated[
+        bool,
+        typer.Option("--standard", help="Over each unit's seeded draw of 300 (or census)."),
+    ] = False,
+    gate: Annotated[
+        bool,
+        typer.Option("--gate", help="Over probe-families and hard-cases, checked against probes."),
+    ] = False,
+    dry_run: Annotated[
+        bool, typer.Option("--plan", help="Print units, sizes and requests; query nothing.")
+    ] = False,
+    retry_failed: Annotated[bool, typer.Option(help="Also re-ask stored failures.")] = False,
+    memo: Annotated[
+        bool, typer.Option(help="Answer repeated document fetches from memory.")
+    ] = True,
+    cache_path: Annotated[Path, typer.Option("--cache", help="SQLite store.")] = DEFAULT_CACHE_PATH,
+) -> None:
+    """Survey unmeasured catalogue links: one request per accession, a verdict per link.
+
+    This is measurement of whether a link answers, never a ranking: nothing
+    here reaches REGISTRY, and there is deliberately no --limit. A link is
+    promoted to a route only by surveying it as one.
+    """
+    load_dotenv()
+    if sum((corpus_name is not None, standard, gate)) != 1:
+        typer.secho("Choose exactly one of --corpus, --standard or --gate", fg="red", err=True)
+        raise typer.Exit(2)
+    try:
+        links = select_links(
+            link_ids=link_ids or (), mechanism=mechanism, source=source, every=every
+        )
+    except SelectionError as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(2) from None
+    units = units_of(links)
+
+    with SurveyCache(cache_path) as cache:
+        if gate:
+            survey_plan = plan(units, lambda unit: list(GATES))
+        elif corpus_name is not None:
+            survey_plan = plan(units, lambda unit: [corpus_name])
+        else:
+            # A draw is earned at the gate: a unit with any FAILED gate verdict,
+            # or none at all, does not proceed (the SDL-on-project units stop here).
+            gated = []
+            for unit in units:
+                verdict = gate_passed(unit, cache)
+                if dry_run:
+                    # A plan shows the whole draw; only running it needs the gate.
+                    gated.append(unit)
+                elif verdict is None:
+                    typer.secho(f"{unit.id}: not gated yet; run --gate first", err=True)
+                elif not verdict:
+                    typer.secho(f"{unit.id}: failed its gate; not drawn", err=True)
+                else:
+                    gated.append(unit)
+            survey_plan = plan(gated, lambda unit: standard_corpora(unit.source))
+        for unit, reason in survey_plan.skipped:
+            typer.secho(f"{unit.id}: skipped -- {reason}", fg=typer.colors.YELLOW, err=True)
+
+        if dry_run:
+            totals: Counter[str] = Counter()
+            for job in survey_plan.jobs:
+                cost = estimate(job)
+                totals.update(cost)
+                typer.echo(
+                    f"{job.unit.id:52s} {len(job.unit.links):>3} links "
+                    f"{len(job.accessions):>6} acc  {job.corpus}"
+                )
+            typer.echo(
+                f"{len(survey_plan.jobs)} unit-corpora, ~{sum(totals.values()):,} requests: "
+                + ", ".join(f"{bucket} {n:,}" for bucket, n in sorted(totals.items()))
+            )
+            return
+
+        logfile = run_logfile("catalogue-survey")
+        configure_logging(level=logging.INFO, logfile=logfile)
+        typer.echo(f"{len(survey_plan.jobs)} unit-corpora -> {logfile}", err=True)
+
+        def report(job: Job, run: FanoutRun) -> None:
+            for unit_id, counts in run.units.items():
+                typer.echo(
+                    f"{unit_id:64s} {job.corpus:50s} "
+                    f"r={counts['resolved']} e={counts['empty']} f={counts['failed']} "
+                    f"d={counts['distinct']}"
+                )
+
+        api_key = default_api_key()
+
+        async def main() -> None:
+            limits = host_limits(has_api_key=bool(api_key))
+            async with contextlib.AsyncExitStack() as stack:
+                clients: dict[str, SurveyClient] = {}
+                for bucket, bucket_limits in limits.items():
+                    key = api_key if bucket == "ncbi_eutils" else None
+                    client: SurveyClient = (
+                        MemoClient(bucket_limits, api_key=key, memoize=memoizable)
+                        if memo
+                        else SurveyClient(bucket_limits, api_key=key)
+                    )
+                    clients[bucket] = await stack.enter_async_context(client)
+                await run_jobs(
+                    survey_plan.jobs, clients, cache, retry_failed=retry_failed, on_done=report
+                )
+                hits = sum(getattr(c, "hits", 0) for c in clients.values())
+                if hits:
+                    typer.echo(f"{hits:,} requests answered from memory", err=True)
+
+        asyncio.run(main())
+
+        if gate:
+            rows = gate_report(units, cache, load_probes())
+            failing = [row for row in rows if row.failed]
+            disagree = [row for row in rows if row.agrees is False]
+            for row in disagree:
+                typer.echo(
+                    f"DISAGREES {row.link}: probe {row.probe_outcome}, gate {row.gate_outcome}"
+                )
+            for row in failing:
+                typer.echo(f"FAILED    {row.link}: {row.failed} of {row.answered} gate verdicts")
+            typer.echo(
+                f"{len(rows)} links gated: {len(failing)} with failures, "
+                f"{len(disagree)} disagreeing with their probe",
+                err=True,
+            )
+            if failing:
+                raise typer.Exit(1)
+
+
 @catalogue_app.command("probe")
 def catalogue_probe(
     link_ids: Annotated[
@@ -312,15 +472,16 @@ def catalogue_probe(
 
     async def main() -> list[Probe]:
         limits = host_limits(has_api_key=bool(api_key))
-        async with (
-            SurveyClient(limits["ncbi"], api_key=api_key) as ncbi,
-            SurveyClient(limits["ebi"]) as ebi,
-            SurveyClient(limits["ddbj"]) as ddbj,
-            SurveyClient(limits["files"]) as files,
-        ):
-            return await probe_links(
-                targets, {"ncbi": ncbi, "ebi": ebi, "ddbj": ddbj, "files": files}
-            )
+        async with contextlib.AsyncExitStack() as stack:
+            clients = {
+                bucket: await stack.enter_async_context(
+                    SurveyClient(
+                        bucket_limits, api_key=api_key if bucket == "ncbi_eutils" else None
+                    )
+                )
+                for bucket, bucket_limits in limits.items()
+            }
+            return await probe_links(targets, clients)
 
     probes = asyncio.run(main())
     for probe in sorted(probes, key=lambda p: p.link):
