@@ -978,15 +978,23 @@
         x: (box.width - b.width * k) / 2 - b.x * k,
         y: (room - b.height * k) / 2 - b.y * k,
       };
+      this.fitK = k;
       this.viewMoved = false;
       this.applyView();
+    }
+
+    /* Zoom stays between 4x and 0.15x -- or the scale that fits the whole
+     * graph, where that is smaller, as on a phone: otherwise zooming out from
+     * the fitted view would jump in. */
+    clampZoom(k) {
+      return Math.min(4, Math.max(Math.min(0.15, this.fitK ?? 0.15), k));
     }
 
     zoomBy(factor, cx, cy) {
       const box = this.svg.getBoundingClientRect();
       const px = cx ?? box.width / 2;
       const py = cy ?? box.height / 2;
-      const k = Math.min(4, Math.max(0.15, this.view.k * factor));
+      const k = this.clampZoom(this.view.k * factor);
       const ratio = k / this.view.k;
       this.view = { k, x: px - (px - this.view.x) * ratio, y: py - (py - this.view.y) * ratio };
       this.viewMoved = true;
@@ -994,20 +1002,87 @@
     }
 
     bindViewport() {
-      // Drag anywhere to pan. A drag that moved does not also count as a
-      // click, which would clear the selection or select what it ended on.
-      let drag = null;
+      // One pointer drags to pan; two pinch to zoom. The canvas turns the
+      // browser's own touch gestures off (touch-action: none) so a drag pans
+      // the graph rather than the page, which means pinching is done here too.
+      const pointers = new Map(); // pointerId -> where it is, in client pixels
+      let drag = null; // one pointer: where it started, and the view then
+      let pinch = null; // two pointers: their spread and midpoint, and the view then
+      const spread = () => {
+        const [a, b] = [...pointers.values()];
+        return { d: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      };
+      const capture = (id) => {
+        if (!this.svg.hasPointerCapture(id)) this.svg.setPointerCapture(id);
+      };
+
+      // A gesture does not also count as a click, which would clear the
+      // selection or select what it ended on. The guard is a flag, not a
+      // one-shot listener: a touch drag fires no click at all, and a listener
+      // left waiting swallowed the next real tap. The click that follows a
+      // pointerup is dispatched before any timer runs, so the flag is down
+      // again by the next one. It stops the click *immediately* because the
+      // click can land on the canvas itself, where clear() listens too: a
+      // plain stopPropagation keeps clear() out only in browsers that run a
+      // target's capture and bubble listeners as separate passes.
+      let swallow = false;
+      const swallowNextClick = () => {
+        swallow = true;
+        setTimeout(() => {
+          swallow = false;
+        }, 0);
+      };
+      this.svg.addEventListener(
+        "click",
+        (event) => {
+          if (!swallow) return;
+          swallow = false;
+          event.stopImmediatePropagation();
+        },
+        { capture: true },
+      );
+
       this.svg.addEventListener("pointerdown", (event) => {
-        if (event.button !== 0) return;
-        drag = { x: event.clientX, y: event.clientY, view: { ...this.view }, moved: false };
+        if (event.pointerType === "mouse" && event.button !== 0) return;
+        // A first finger, or the mouse, starts afresh: a pointer whose up was
+        // missed must not turn the next single touch into a pinch.
+        if (event.isPrimary) pointers.clear();
+        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (pointers.size === 2) {
+          // A second finger turns a pan into a pinch.
+          const start = spread();
+          pinch = { ...start, view: { ...this.view } };
+          drag = null;
+          for (const id of pointers.keys()) capture(id);
+          this.unhover();
+        } else if (pointers.size === 1) {
+          drag = { x: event.clientX, y: event.clientY, view: { ...this.view }, moved: false };
+        }
       });
       this.svg.addEventListener("pointermove", (event) => {
+        if (!pointers.has(event.pointerId)) return;
+        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (pinch && pointers.size >= 2) {
+          // Scale by how far the fingers have spread, about the point they
+          // started over, and carry that point along with their midpoint.
+          const now = spread();
+          if (!pinch.d) return;
+          const box = this.svg.getBoundingClientRect();
+          const k = this.clampZoom((pinch.view.k * now.d) / pinch.d);
+          const ratio = k / pinch.view.k;
+          const from = { x: pinch.x - box.left, y: pinch.y - box.top };
+          const to = { x: now.x - box.left, y: now.y - box.top };
+          this.view = { k, x: to.x - (from.x - pinch.view.x) * ratio, y: to.y - (from.y - pinch.view.y) * ratio };
+          this.viewMoved = true;
+          this.applyView();
+          return;
+        }
         if (!drag) return;
         const dx = event.clientX - drag.x;
         const dy = event.clientY - drag.y;
         if (!drag.moved && Math.hypot(dx, dy) < 4) return;
         if (!drag.moved) {
-          this.svg.setPointerCapture(event.pointerId);
+          capture(event.pointerId);
           this.unhover();
         }
         drag.moved = true;
@@ -1017,10 +1092,20 @@
         this.applyView();
       });
       const end = (event) => {
-        if (drag?.moved) {
-          if (this.svg.hasPointerCapture(event.pointerId)) this.svg.releasePointerCapture(event.pointerId);
-          this.svg.addEventListener("click", (e) => e.stopPropagation(), { capture: true, once: true });
+        if (!pointers.delete(event.pointerId)) return;
+        if (this.svg.hasPointerCapture(event.pointerId)) this.svg.releasePointerCapture(event.pointerId);
+        if (pinch) {
+          swallowNextClick();
+          if (pointers.size < 2) {
+            // The finger left behind pans on from where it is, not from
+            // where it first touched down, so the view does not jump.
+            pinch = null;
+            const [rest] = pointers.values();
+            drag = rest ? { x: rest.x, y: rest.y, view: { ...this.view }, moved: false } : null;
+          }
+          return;
         }
+        if (drag?.moved) swallowNextClick();
         drag = null;
         this.svg.classList.remove("is-panning");
       };

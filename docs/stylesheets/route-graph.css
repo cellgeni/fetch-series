@@ -237,6 +237,8 @@
   width: 100%;
   height: 100%;
   cursor: grab;
+  /* Panning and pinching are the script's (bindViewport), so a drag over the
+   * graph moves the graph, not the page. */
   touch-action: none;
   user-select: none;
 }
