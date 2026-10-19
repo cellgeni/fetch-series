@@ -286,7 +286,11 @@ class TestGatePassed:
             unit_id = unit.unit_ids[0]
             cache.record(RouteResult.from_results("ERR1", unit_id, "probe-families", ["x"], 1))
             assert gate_passed(unit, cache) is True
+            # A hard case failing is the case doing its job: reported, not blocking.
             cache.record(RouteResult.from_error("ERR2", unit_id, "hard-cases", ValueError(), 1))
+            assert gate_passed(unit, cache) is True
+            # A probe accession failing is a broken fetch, or SDL on a project.
+            cache.record(RouteResult.from_error("ERR3", unit_id, "probe-families", ValueError(), 1))
             assert gate_passed(unit, cache) is False
 
 
@@ -359,3 +363,51 @@ class TestAnswerLinksUsesTheProbersRule:
         (finding,) = await answer_links("sdl", "PRJNA495040", [link], {"ncbi_web": Client()})
         assert finding.outcome.value == "failed"
         assert seen == [("PRJNA495040", 504)]
+
+
+class TestAbsence:
+    async def test_a_record_the_archive_does_not_hold_is_empty_with_its_reason(self, monkeypatch):
+        """PRJNA1136968 is absent from BioProject: nothing links from it."""
+        from fetch_series.catalogue.probe import Prober, RecordAbsent, answer_links
+        from fetch_series.catalogue.survey import as_result
+
+        async def fetch(client, accession, timeout):
+            raise RecordAbsent(f"esearch db=bioproject found no UID for {accession}")
+
+        class Client:
+            async def with_retry(self, operation, *, label="", retryable=None):  # type: ignore[no-untyped-def]
+                return await operation(1.0)
+
+        link = CATALOGUE.link("bioproject->bioproject:elink_bioproject_bioproject_u2d")
+        monkeypatch.setitem(PROBERS, link.mechanism, Prober("ncbi_eutils", fetch))
+        (finding,) = await answer_links(
+            link.mechanism, "PRJNA1136968", [link], {"ncbi_eutils": Client()}
+        )
+        result = as_result(finding, "c", 1)
+        assert result.outcome.value == "empty"
+        assert result.detail == {"absent": "esearch db=bioproject found no UID for PRJNA1136968"}
+
+
+class TestSeriesMatrix:
+    async def test_a_multi_platform_series_is_found_by_listing(self):
+        """GSE120926 has one matrix per platform and no single-platform file."""
+        import gzip
+
+        from fetch_series.catalogue.probe import _series_matrix
+
+        listing = (
+            '<a href="GSE120926-GPL20795_series_matrix.txt.gz">'
+            '<a href="GSE120926-GPL11154_series_matrix.txt.gz">'
+        )
+        body = gzip.compress(b'!Series_geo_accession\t"GSE120926"\n')
+
+        class Client:
+            async def get(self, url, params=None, timeout=None):  # type: ignore[no-untyped-def]
+                if url.endswith("/"):
+                    return httpx.Response(200, text=listing)
+                assert url.endswith("GSE120926-GPL11154_series_matrix.txt.gz")
+                return httpx.Response(200, content=body)
+
+        answer = await _series_matrix(Client(), "GSE120926", 1.0)  # type: ignore[arg-type]
+        assert len(answer.values["metadata_geo"]) == 2
+        assert answer.documents["metadata_geo"].parses is True

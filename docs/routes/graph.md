@@ -12,9 +12,11 @@ is known about each. Columns are archives — GEO, NCBI, EBI, DDBJ, ArrayExpress
 and rows are levels, from datasets down to read files, supplementary files and
 metadata documents. A **measured** route is a solid line: its ink is the share
 of its source's queried accessions its survey resolved, its width how many of
-them reached this target. An **untested** link is a thin dotted line with a
-hollow arrowhead: no survey has measured it, and one live request found it
-answering — and, into a file or document, found something usable.
+them reached this target. A **surveyed** link is a hollow slate line of one
+width: a link survey's seeded draw found it usable, and it carries counts and
+never a rank. An **untested** link is a thin dotted line with a hollow
+arrowhead: no survey has measured it, and one live request found it answering —
+and, into a file or document, found something usable.
 
 <div id="route-graph" class="rg-root" aria-label="Interactive route graph"></div>
 
@@ -28,9 +30,10 @@ The interactive graph needs JavaScript. The same numbers are in
 
 ## How to read it
 
-**Measured routes / All known links** switches between the declared routes
-alone and every link [the catalogue](../graph/catalogue.md) has confirmed. All
-is the default, because the gaps between the routes are the point of drawing
+**Measured routes / Measured + surveyed / All known links** switches between
+the declared routes alone, the routes and every link a link survey measured,
+and every link [the catalogue](../graph/catalogue.md) has confirmed. All is the
+default, because the gaps between the routes are the point of drawing
 it. Submissions, analyses and GEO platforms are hidden until asked for: they
 are records *about* the data, not levels of it, and they cross every row.
 
@@ -77,6 +80,23 @@ other link. A pair the survey queried and never reached is a *measured
 absence*: listed in the panels and the matrix, with no line. Hover or click a
 route for its split and the whole route's evidence.
 
+### A surveyed link
+
+One hollow line per node pair where a link survey found something usable: the
+probe's request made over a seeded draw of 300 of the source node's accessions,
+or all of them where there are fewer
+([link surveys](../graph/catalogue.md#link-surveys)). Clicking it lists each
+mechanism with, per corpus, how many accessions it found something **usable**
+for out of how many were queried, the resolved, empty and failed counts, the
+distinct values, each check's tally, and the date.
+
+It has one width whatever it found, and no rank, on purpose. A draw of 300 puts
+up to ±5.7 points on a yield, which says whether a link answers always,
+sometimes or never and cannot say which of two answers better
+([a link survey is not a ranking](../decisions/what-counts-as-evidence.md#a-link-survey-is-measurement-not-a-ranking)).
+A link whose survey found nothing usable is not drawn; it is listed in the
+panels as *surveyed, never usable*.
+
 ### An untested link
 
 One dotted line per node pair, however many mechanisms answer it. Their names
@@ -103,13 +123,15 @@ check, is not drawn; it is listed in the panels and on
 Clicking a node lists everything it **reaches in one hop**, with what is known
 about each, and every node it has **no one-hop link to**. The matrix under the
 graph is the same information for every pair at once: filled where a route
-measures the pair, outlined where only untested links do, struck through where
-a route measured an absence, dashed where a link is documented and not
+measures the pair, ringed where a link survey does and no route, outlined where
+only untested links do, struck through where a route measured an absence or a
+survey found nothing usable, dashed where a link is documented and not
 confirmed, blank where nothing links them. Clicking a cell selects that pair.
 
-Paths are node paths of up to four hops. By default the path finder uses
-measured routes only, and for each hop the best-ranked route the filters leave
-visible, which is what the resolver would try first. With **include untested**
+Paths are node paths of up to four hops. Over **measured routes** the path
+finder takes, for each hop, the best-ranked route the filters leave visible,
+which is what the resolver would try first. In **measured + surveyed** it also
+uses surveyed links, where no route answers the hop. With **include untested**
 it also offers paths through untested links: each pair's shortest paths and
 those one hop longer.
 

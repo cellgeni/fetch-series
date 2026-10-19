@@ -33,7 +33,9 @@ from fetch_series.catalogue import (
 )
 from fetch_series.catalogue import Status as CatalogueStatus
 from fetch_series.catalogue import status as catalogue_status
-from fetch_series.catalogue.populations import standard_corpora
+from fetch_series.catalogue.link_splits import LINK_SPLITS_PATH, LinkSplitError, save_link_splits
+from fetch_series.catalogue.link_splits import compute as compute_link_splits
+from fetch_series.catalogue.populations import NO_POPULATION, standard_corpora
 from fetch_series.catalogue.probe import host_limits, probe_links
 from fetch_series.catalogue.splits import compute as compute_splits
 from fetch_series.catalogue.survey import (
@@ -77,9 +79,10 @@ from fetch_series.results import Outcome
 from fetch_series.routes import IMPLEMENTATIONS
 from fetch_series.survey import Limits, SurveyClient, corpora, run_route
 from fetch_series.survey.client import MemoClient
+from fetch_series.survey.export import ExportConflict, write_export
 from fetch_series.survey.export import slug as export_slug
-from fetch_series.survey.export import write_export
 from fetch_series.survey.runner import FanoutRun, shuffled
+from fetch_series.units import parse_unit
 
 app = typer.Typer(
     help="Resolve public sequencing accessions over documented, benchmarked routes.",
@@ -274,6 +277,33 @@ def catalogue_splits(
     if write:
         save_splits(splits, sources)
         typer.echo(f"wrote {len(splits)} splits to {SPLITS_PATH}", err=True)
+
+
+@catalogue_app.command("link-splits")
+def catalogue_link_splits(
+    write: Annotated[
+        bool, typer.Option("--write", help="Write link_splits.json beside the catalogue.")
+    ] = False,
+) -> None:
+    """Each surveyed link's verdicts per corpus, read from the committed exports.
+
+    Measurement of whether a link answers, never a ranking: nothing in the
+    resolver or the route ranking reads it. Gate corpora are set aside.
+    """
+    try:
+        splits = compute_link_splits(CATALOGUE)
+    except LinkSplitError as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(2) from None
+    for split in splits:
+        typer.echo(
+            f"{split.link:64s} {split.corpus:56s} q={split.queried} r={split.resolved} "
+            f"e={split.empty} f={split.failed} usable={split.usable} d={split.distinct}"
+        )
+    typer.echo(f"{len(splits)} link splits", err=True)
+    if write:
+        save_link_splits(splits, NO_POPULATION)
+        typer.echo(f"wrote {len(splits)} link splits to {LINK_SPLITS_PATH}", err=True)
 
 
 @catalogue_app.command("survey")
@@ -1392,9 +1422,18 @@ def survey_export(
     ),
     corpus_name: Annotated[str | None, typer.Option("--corpus", help="Only this corpus.")] = None,
     route_id: Annotated[str | None, typer.Option("--route", help="Only this route.")] = None,
+    kind: Annotated[
+        str | None, typer.Option("--kind", help="Only this kind of unit: route, link or screen.")
+    ] = None,
+    replace: Annotated[
+        bool, typer.Option("--replace", help="Overwrite an export whose verdicts changed.")
+    ] = False,
     cache_path: Annotated[Path, typer.Option("--cache", help="SQLite store.")] = DEFAULT_CACHE_PATH,
 ) -> None:
     """Write every recorded verdict out as CSV, one file per route and corpus.
+
+    A committed export whose verdicts would change is refused unless --replace:
+    these are dated evidence, and route rankings cite them.
 
     The SQLite cache is the working store and is not committed: it carries raw
     response bodies and runs to hundreds of megabytes. These CSVs are the part
@@ -1412,15 +1451,21 @@ def survey_export(
         pairs = [
             (recorded_corpus, recorded_route)
             for recorded_corpus, recorded_route in cache.routes_surveyed(corpus_name)
-            if route_id is None or recorded_route == route_id
+            if (route_id is None or recorded_route == route_id)
+            and (kind is None or parse_unit(recorded_route).kind == kind)
         ]
         for recorded_corpus, recorded_route in pairs:
-            path, rows = write_export(
-                out / _slug(recorded_corpus),
-                recorded_corpus,
-                recorded_route,
-                cache.results(recorded_corpus, recorded_route),
-            )
+            try:
+                path, rows = write_export(
+                    out / _slug(recorded_corpus),
+                    recorded_corpus,
+                    recorded_route,
+                    cache.results(recorded_corpus, recorded_route),
+                    replace=replace,
+                )
+            except ExportConflict as exc:
+                typer.secho(f"refused: {exc}", fg=typer.colors.RED, err=True)
+                raise typer.Exit(1) from None
             written.append((str(path), rows))
 
     for written_path, rows in written:

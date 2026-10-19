@@ -34,6 +34,7 @@ from enum import StrEnum
 from pathlib import Path
 
 from fetch_series.accession import Archive
+from fetch_series.catalogue.link_splits import LinkSplit, load_link_splits
 from fetch_series.catalogue.mechanisms import MECHANISMS
 from fetch_series.catalogue.model import (
     INSDC,
@@ -68,6 +69,7 @@ __all__ = [
     "Check",
     "Level",
     "Link",
+    "LinkSplit",
     "Mechanism",
     "Node",
     "NodeKind",
@@ -88,26 +90,38 @@ SPLITS_PATH = Path(__file__).with_name("route_splits.json")
 
 
 class Status(StrEnum):
-    """What is known about one link.
+    """What is known about one link, from the strongest evidence it has.
 
-    ``MEASURED``: a declared route's survey queried accessions of its source,
-    and some reached its target. ``MEASURED_NONE``: the survey queried them and
-    none reached it -- a measured absence, listed and never drawn, because a
-    line would claim a link that never answered. ``UNTESTED``: no survey has
-    measured it, and one probe found it answering. ``UNCONFIRMED``: declared,
-    and the probe found nothing, found something that failed a check, or did not
-    complete -- listed, never drawn. ``UNPROBED``: not probed yet; a test keeps
-    this from shipping.
+    In order of precedence:
+
+    1. a **route split** -- ``MEASURED``: a declared route's survey queried
+       accessions of its source, and some reached its target.
+       ``MEASURED_NONE``: queried, and none reached it.
+    2. a **link split** -- ``SURVEYED``: a link survey's seeded draw found
+       something usable (reached, and every check passed) for at least one
+       accession. ``SURVEYED_NONE``: the draw answered, and nothing usable was
+       found -- listed, never drawn. A split that only ever *failed* measured
+       nothing, so it does not count here and the link falls through.
+    3. a **probe** -- ``UNTESTED``: one probe found it answering.
+       ``UNCONFIRMED``: the probe found nothing, found something that failed a
+       check, or did not complete -- listed, never drawn.
+    4. nothing -- ``UNPROBED``; a test keeps this from shipping.
+
+    ``SURVEYED_NONE`` beside a probe that confirmed the link is a real finding,
+    not a contradiction: the link exists, and over this project's records it
+    never answered.
     """
 
     MEASURED = "measured"
     MEASURED_NONE = "measured-none"
+    SURVEYED = "surveyed"
+    SURVEYED_NONE = "surveyed-none"
     UNTESTED = "untested"
     UNCONFIRMED = "unconfirmed"
     UNPROBED = "unprobed"
 
 
-DRAWN = (Status.MEASURED, Status.UNTESTED)
+DRAWN = (Status.MEASURED, Status.SURVEYED, Status.UNTESTED)
 
 
 @dataclass(frozen=True, slots=True)
@@ -165,6 +179,7 @@ class Catalogue:
         families: Mapping[Archive, Mapping[str, str]] | None = None,
         ten_x: Mapping[str, str] | None = None,
         splits: Iterable[Split] = (),
+        link_splits: Iterable[LinkSplit] = (),
     ) -> None:
         self.nodes: dict[str, Node] = {}
         for node in nodes:
@@ -231,6 +246,9 @@ class Catalogue:
         self.splits: dict[tuple[str, str, str], Split] = {}
         for split in splits:
             self.splits[(split.route, split.source, split.target)] = split
+        self._link_splits: dict[str, list[LinkSplit]] = {}
+        for found in link_splits:
+            self._link_splits.setdefault(found.link, []).append(found)
 
     def _in_group(self, node_id: str, group: str) -> bool:
         """Whether a node is ``group``: its own id, its entity type, or ``file``."""
@@ -272,9 +290,19 @@ class Catalogue:
         found = self.splits.get((link.route_id, link.source, link.target))
         return found if found is not None and found.queried > 0 else None
 
+    def link_splits(self, link: Link) -> list[LinkSplit]:
+        """A link survey's splits for this link that measured something.
+
+        One per corpus -- a BioProject link has one per issuing archive. A
+        split that only ever failed is left out: it answered nothing.
+        """
+        return [s for s in self._link_splits.get(link.id, []) if s.answered > 0]
+
     def status(self, link: Link, probes: Mapping[str, Probe]) -> Status:
         if (split := self.split(link)) is not None:
             return Status.MEASURED if split.reached else Status.MEASURED_NONE
+        if surveyed := self.link_splits(link):
+            return Status.SURVEYED if any(s.usable for s in surveyed) else Status.SURVEYED_NONE
         probe = probes.get(link.id)
         if probe is None:
             return Status.UNPROBED
@@ -392,6 +420,7 @@ CATALOGUE = Catalogue(
     families=FAMILIES,
     ten_x=TEN_X_PROBES,
     splits=load_splits(),
+    link_splits=load_link_splits(),
 )
 
 

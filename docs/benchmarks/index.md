@@ -23,6 +23,8 @@ Tiered, and the tiers answer different questions.
 | `arrayexpress-no-secondary` | 551 | The studies whose IDF declares no secondary accession, from the census above | What a fallback recovers, over exactly the population it exists for |
 | `sample:<n>@<corpus>` | n | A seeded draw from any corpus | Prevalence where a full census costs more than the answer is worth |
 | `results-of:<route>@<corpus>` | varies | Everything a recorded survey returned | The next question, over the population the last answer produced |
+| `node:<node>[/<archive>]@<corpus>` | varies | One catalogue node's accessions within a corpus, optionally one issuing archive's | A link survey's population; filtered *before* any draw |
+| `probe-families` | 81 | Every catalogue link's probe accession | Nothing: a gate, like `hard-cases` |
 
 ### Naming a draw is not decoration
 
@@ -69,8 +71,18 @@ Corpora arrive sorted, so taking the first N of one returns the N lowest accessi
 the oldest fifth of GEO. Every ELink failure in it was therefore an old accession, which
 produced an age hypothesis that the full census disproved.
 
-`fetch survey run --limit` now samples in the survey's own seeded visit order, and
-`shuffled()` is exported so anything else that slices a corpus does the same. The lesson
+`fetch survey run --limit` now samples in the survey's own seeded visit order and writes
+only to a throwaway cache, since its verdicts would be recorded under the full corpus name.
+`shuffled()` is exported so anything else that slices a corpus does the same. A resumed
+survey once rebuilt its to-do list from the *sorted* corpus, so every interrupted run
+finished on the oldest submissions. It now filters the seeded order.
+
+One consequence of seeding is worth knowing. `sample:<n>@<corpus>` and the runner's shuffle
+use the same seed, and `random.sample` picks first the elements `shuffle` moves to the end.
+So a seeded draw and a shuffle prefix of the same corpus are **disjoint**. Each is still a
+uniform draw. When `experiment->run:ena_filereport` was re-surveyed on 2026-10-19 over
+`sample:3000@…` rather than the earlier `--limit 3000` prefix, the two shared no accession
+and both found 37 empty experiments out of 3,000: an independent replicate. The lesson
 generalises: **any prefix of an ordered corpus is a stratum, not a sample.**
 
 ### A route returning "resolved" does not mean it resolved everything

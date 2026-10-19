@@ -247,7 +247,104 @@ nothing: one accession out of one is not a yield. So a probe never becomes
 `RouteEvidence`, never changes a ranking, and carries no counts on the graph.
 The argument is in
 [what counts as evidence](../decisions/what-counts-as-evidence.md#a-probe-is-not-evidence).
-Measuring an untested link is a survey, and the next step.
+Measuring an untested link is a survey, and the next section.
+
+## Link surveys
+
+A link survey makes a probe's request over a **seeded draw** instead of one fixed
+accession. Links are grouped into *units*, one per mechanism and source node, because
+one request answers all of a unit's links: ENA's `filereport` on an SRR names that run's
+experiment, sample, study, BioProject and submission at once. The 1,031 links no route
+measures make 321 units.
+
+Each unit is surveyed over its source node's population (`catalogue/populations.py`):
+
+| Source | Population |
+|---|---|
+| BioProject | `reprocessed-prj`, **stratified by issuing archive**: 300 PRJNAs, 300 PRJEBs, all 137 PRJDBs |
+| BioSample | the ENA BioProject → BioSample census's results, stratified the same way |
+| INSDC study, sample, experiment, run | the ENA study census and `reprocessed-srs/srx/srr`, filtered to the node |
+| GEO series, GEO sample, ArrayExpress | `reprocessed-gse`, `reprocessed-sample`, `arrayexpress-ena` |
+| submission, EBI analysis, GEO platform, BioStudy, ArrayExpress sample | the results of the first link survey that reaches them |
+| NCBI and DDBJ analyses | **none.** Every link into one is an unconfirmed DDBJ dblink, so nothing this project resolves is one. Their links stay untested |
+
+The draw is 300, or the whole population where it holds no more than that, which is a
+census and named as one. Stratifying shared nodes is not optional: an unstratified draw of
+300 BioProjects would hold about four DDBJ projects.
+
+Verdicts are recorded under `link:<link id>`, never the bare link id:
+`bioproject->biosample:ena_filereport` is a route id *and* a link id, and the cache is keyed
+on the id. A unit runs over the two gates first, `probe-families` (every probe accession)
+and `hard-cases`. It earns its draw only with no failed verdict on `probe-families`.
+Every probe accession was chosen because its link answered for it, so a failure there is
+a broken fetch or a request that cannot succeed. SDL asked about a project times out at
+its gateway every time, which is why the SDL-on-project and SDL-on-study units stop at the
+gate. A `hard-cases` failure is reported and does not block: that corpus exists to break
+things. A record the archive's own search does not hold is an answer, recorded as empty
+with the reason (`PRJNA1136968` is absent from BioProject), not as a failure. Each found file set
+is checked on a run chosen by seed, never on the run that sorts first, which would be every
+BioProject's oldest.
+
+```bash
+uv run fetch catalogue survey --all --gate               # every unit over the gates
+uv run fetch catalogue survey --all --standard --plan    # the draws: units, sizes, requests
+uv run fetch catalogue survey --all --standard           # the draws
+uv run fetch survey export && uv run fetch catalogue link-splits --write
+```
+
+### The gate, 2026-10-19
+
+Every one of the 321 units was run over `probe-families` and `hard-cases`; the failures
+were then asked again once, after the fixes below. **315 units passed** and earn a draw.
+The 6 that did not are exactly the ones expected: SDL asked about a BioProject or an EBI
+study (`sdl`, `sdl_lite`, `sdl_original`), which times out at SDL's gateway on every attempt.
+
+What the gate found on the way:
+
+- **A series matrix was looked for under the wrong name.** A series on more than one
+  platform has one matrix per platform, `GSE120926-GPL11154_series_matrix.txt.gz`, and
+  no `GSE120926_series_matrix.txt.gz`. The fetcher now lists the directory.
+- **Absence was recorded as failure.** An ELink or SRA XML request for a project the
+  archive's own ESearch cannot find (`PRJNA1136968`, `PRJNA1190403`, `PRJNA857927`) is an
+  answer: nothing links from it. It is now empty, with the reason kept beside the verdict.
+- **NCBI answered 500 for a while.** ESummary on the five large EBI projects in
+  `hard-cases`, and BioProject ELinks, failed through every retry during the run and
+  answered on the second pass. A transient backend failure, like the 1,712
+  `callMLink: Query failed` lines in the 2026-05 logs.
+- **ENA's `links` endpoint stopped answering for a sample.** On 2026-10-16
+  `links/sample?accession=SAMEA4437023&result=read_run` returned `ERR1630015`. On
+  2026-10-19 it returns a header and no rows, as do `read_experiment` and `analysis`.
+  `filereport` still finds `ERR1630015` for the same sample, and `links/study` still
+  answers for projects. That is 8 links whose gate verdict disagrees with their probe.
+  The surveys will measure how widespread it is.
+- `hard-cases` failures that remain are the cases doing their job: `GSE207991` is private
+  (its SOFT, MiniML and matrix files 404, and `acc.cgi` returns no record); `E-MTAB-9216`
+  serves no IDF or SDRF; DDBJ holds no entry for `SRX7571191`.
+
+### What a link survey records, and what it does not
+
+Per link and corpus (`catalogue/link_splits.json`, read from the committed exports):
+queried, resolved, empty and failed; **usable**, which is reached *and* every check
+passed; distinct values; each check's pass, fail and undetermined counts; and the UTC date.
+
+| Status | From | Drawn |
+|---|---|---|
+| measured / measured-none | a route's split | measured only |
+| **surveyed** / **surveyed-none** | a link split: something usable in a draw / nothing usable | surveyed only |
+| untested / unconfirmed | a probe | untested only |
+| unprobed | nothing | never ships |
+
+Each row takes precedence over the ones below it. A split that only ever *failed* measured
+nothing, so its link falls through to its probe. A surveyed-none link beside a probe that
+confirmed it is a finding, not a contradiction: the link exists, and over this project's
+records it never answered usably.
+
+**A link survey is never a ranking.** A draw of 300 puts up to ±5.7 points on a yield (95%,
+worst case). That is enough to say whether a link answers always, sometimes or never, and
+far too coarse for the 1% band routes are ranked on. Surveyed links are drawn with their
+counts and no rank. Nothing in `graph.py` or `resolver.py` reads a link split, and tests
+keep it that way. Promoting a link to a route means surveying it as one, at `sample:3000`,
+with a `RouteFn`: a decision made per link, by a person.
 
 ## What the probes found on the way
 

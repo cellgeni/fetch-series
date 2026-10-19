@@ -20,10 +20,17 @@ Two kinds of edge, never mixed:
   each. A probe proves the link exists; it carries no counts, because it
   measured nothing.
 
-Two kinds of link are listed and never drawn, because a line would claim a link
-nobody has seen answer: ``unconfirmed`` (the probe found nothing, or found a
-file or document that failed a check) and ``measured_none`` (a route's survey
-queried the source and no accession reached the target).
+* ``surveyed`` -- one per node pair where a *link survey's* seeded draw found
+  something usable, listing each surveyed mechanism with its split per corpus.
+  Counts, and **no rank**: a draw of 300 cannot separate two links whose
+  yields differ by less than the ranking's 1% band, so ordering them would be
+  noise presented as a measurement. Nothing here touches the route ranking.
+
+Three kinds of link are listed and never drawn, because a line would claim a
+link nobody has seen answer: ``unconfirmed`` (the probe found nothing, or found
+a file or document that failed a check), ``measured_none`` (a route's survey
+queried the source and no accession reached the target) and ``surveyed_none``
+(a link survey answered and found nothing usable).
 """
 
 from __future__ import annotations
@@ -39,6 +46,7 @@ from fetch_series.catalogue import (
     Catalogue,
     Level,
     Link,
+    LinkSplit,
     NodeKind,
     Probe,
     Split,
@@ -194,10 +202,41 @@ def _measured_edge(
     }
 
 
+def _link_split(split: LinkSplit) -> dict[str, Any]:
+    return {
+        "corpus": split.corpus,
+        "queried": split.queried,
+        "resolved": split.resolved,
+        "empty": split.empty,
+        "failed": split.failed,
+        "usable": split.usable,
+        "distinct": split.distinct,
+        "surveyed_on": split.surveyed_on.isoformat(),
+        "checks": {
+            name: {"passed": c.passed, "failed": c.failed, "undetermined": c.undetermined}
+            for name, c in split.checks.items()
+        },
+    }
+
+
 def _grouped(
     catalogue: Catalogue, links: list[Link], probes: Mapping[str, Probe], kind: Status
 ) -> list[dict[str, Any]]:
-    """One entry per node pair, listing every mechanism that answers it."""
+    """One entry per node pair, listing every mechanism that answers it.
+
+    A surveyed link carries its splits, one per corpus, in corpus order -- and
+    the mechanisms stay in name order, never in yield order: there is no rank.
+    """
+
+    def entry(link: Link) -> dict[str, Any]:
+        found = _link(catalogue, link, probes.get(link.id))
+        if kind in (Status.SURVEYED, Status.SURVEYED_NONE):
+            found["splits"] = [
+                _link_split(split)
+                for split in sorted(catalogue.link_splits(link), key=lambda s: s.corpus)
+            ]
+        return found
+
     by_pair: dict[tuple[str, str], list[Link]] = {}
     for link in links:
         by_pair.setdefault((link.source, link.target), []).append(link)
@@ -207,10 +246,7 @@ def _grouped(
             "status": str(kind),
             "source": source,
             "target": target,
-            "links": [
-                _link(catalogue, link, probes.get(link.id))
-                for link in sorted(pair, key=lambda link: link.mechanism)
-            ],
+            "links": [entry(link) for link in sorted(pair, key=lambda link: link.mechanism)],
         }
         for (source, target), pair in sorted(by_pair.items())
     ]
@@ -293,6 +329,9 @@ def route_graph(
         link for link in catalogue if statuses[link.id] in (Status.UNCONFIRMED, Status.UNPROBED)
     ]
     none = [link for link in catalogue if statuses[link.id] is Status.MEASURED_NONE]
+    surveyed = [link for link in catalogue if statuses[link.id] is Status.SURVEYED]
+    surveyed_none = [link for link in catalogue if statuses[link.id] is Status.SURVEYED_NONE]
+    edges += _grouped(catalogue, surveyed, probes, Status.SURVEYED)
     edges += _grouped(catalogue, untested, probes, Status.UNTESTED)
 
     nodes = []
@@ -325,12 +364,17 @@ def route_graph(
                 ],
                 "routes_out": sum(e["status"] == "measured" for e in out),
                 "routes_in": sum(e["status"] == "measured" for e in into),
+                "surveyed_out": sum(e["status"] == "surveyed" for e in out),
+                "surveyed_in": sum(e["status"] == "surveyed" for e in into),
                 "untested_out": sum(e["status"] == "untested" for e in out),
                 "untested_in": sum(e["status"] == "untested" for e in into),
             }
         )
 
     measured_links = [link for link in catalogue if statuses[link.id] is Status.MEASURED]
+    known_links = [
+        link for link in catalogue if statuses[link.id] in (Status.MEASURED, Status.SURVEYED)
+    ]
     drawn = [link for link in catalogue if statuses[link.id] in DRAWN]
     adjacency: dict[str, set[str]] = {}
     for link in drawn:
@@ -338,6 +382,7 @@ def route_graph(
             adjacency.setdefault(link.source, set()).add(link.target)
 
     paths_measured: dict[str, dict[str, list[list[str]]]] = {}
+    paths_surveyed: dict[str, dict[str, list[list[str]]]] = {}
     paths_all: dict[str, dict[str, list[list[str]]]] = {}
     unreachable: dict[str, list[str]] = {}
     for source in catalogue.nodes:
@@ -346,6 +391,8 @@ def route_graph(
                 continue
             if found := catalogue.find_paths(source, target, measured_links, MAX_HOPS):
                 paths_measured.setdefault(source, {})[target] = found[:MAX_PATHS_ALL]
+            if found := catalogue.find_paths(source, target, known_links, MAX_HOPS):
+                paths_surveyed.setdefault(source, {})[target] = found[:MAX_PATHS_ALL]
             if found := _paths_all(adjacency, source, target):
                 paths_all.setdefault(source, {})[target] = found
         unreachable[source] = [
@@ -361,8 +408,10 @@ def route_graph(
         "edges": edges,
         "unconfirmed": _grouped(catalogue, unconfirmed, probes, Status.UNCONFIRMED),
         "measured_none": _measured_none(catalogue, none),
+        "surveyed_none": _grouped(catalogue, surveyed_none, probes, Status.SURVEYED_NONE),
         "mechanisms": _mechanisms(catalogue),
         "paths_measured": paths_measured,
+        "paths_surveyed": paths_surveyed,
         "paths_all": paths_all,
         "unreachable": unreachable,
     }
