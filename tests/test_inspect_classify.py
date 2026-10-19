@@ -39,8 +39,11 @@ def _list(list_id: str, length: int = 16, count: int = 500) -> tuple[BarcodeList
 
 
 TRANSCRIPTS = [_random(2_000) for _ in range(20)]
+CHRM_SEQ = _random(16_000)
 HOUSEKEEPING = build_index("housekeeping_human", TRANSCRIPTS)
-CHRM = build_index("human_chrM", [_random(16_000)])
+CHRM = build_index("human_chrM", [CHRM_SEQ])
+# A library's reads: mostly transcripts, a fifth mitochondrial, as real ones are.
+EXPRESSED = TRANSCRIPTS + [CHRM_SEQ] * 5
 CONSTANT = build_index("tcr_bcr_constant_human", [_random(1_500) for _ in range(5)])
 REFERENCES = {
     "housekeeping_human": HOUSEKEEPING,
@@ -49,7 +52,7 @@ REFERENCES = {
 }
 
 
-def _cdna(antisense: bool, *, source: list[str] = TRANSCRIPTS, length: int = 91) -> str:
+def _cdna(antisense: bool, *, source: list[str] = EXPRESSED, length: int = 91) -> str:
     transcript = RNG.choice(source)
     at = RNG.randrange(0, len(transcript) - length)
     read = transcript[at : at + length]
@@ -121,6 +124,12 @@ class TestClassify:
         three = classify(library(V2_CODES, umi=10), LISTS, REFERENCES)
         five = classify(library(V2_CODES, umi=10, antisense=True), LISTS, REFERENCES)
         assert three.layout == "10x_3p_v2" and five.layout == "10x_5p_v1_v2"
+
+    def test_one_strand_vote_does_not_settle_a_shared_list(self):
+        """SRR19242687: poly-A alone said 3' v2 against a 5' label; tchem said ambiguous."""
+        call = classify(library(V2_CODES, umi=10, cdna=lambda: _random(70) + "A" * 21), LISTS, {})
+        assert call.level == "ambiguous"
+        assert call.evidence["strand"]["votes"] == {"poly_a": "sense"}
 
     def test_without_strand_the_v2_list_is_ambiguous(self):
         # Random cDNA: no reference to orient it, and no poly-A run to vote.

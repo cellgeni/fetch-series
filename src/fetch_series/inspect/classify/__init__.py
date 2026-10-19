@@ -58,6 +58,7 @@ HIGH_NEAR = 0.70
 MEDIUM_NEAR = 0.50
 LOW_NEAR = 0.20
 MIN_MARGIN = 0.20
+MIN_STRAND_VOTES = 2
 MIN_UMI_ENTROPY = 1.5
 NEAR_SAMPLE = 2_000
 STRAND_SAMPLE = 20_000
@@ -425,10 +426,19 @@ def classify(
             seen = [x for x in remaining if x.tail in by_tail and tail[by_tail[x.tail]] >= 0.5]
             if len(seen) == 1:
                 remaining = seen
+        # Strand settles it only on two agreeing signals. Poly-A alone -- the
+        # only vote a library of an unreferenced species gets -- called
+        # SRR19242687 3' v2 against a 5' label, where tchem called it ambiguous.
+        directional = [
+            v
+            for v in (strand or {}).get("votes", {}).values()
+            if v in (Strand.SENSE, Strand.ANTISENSE)
+        ]
         if (
             len(remaining) > 1
             and strand
             and strand.get("strand") in (Strand.SENSE, Strand.ANTISENSE)
+            and len(directional) >= MIN_STRAND_VOTES
         ):
             seen = [x for x in remaining if str(x.strand) == strand["strand"]]
             if len(seen) == 1:
@@ -454,7 +464,11 @@ def classify(
         and not contradictions
     ):
         level = "HIGH"
-    elif best.near >= MEDIUM_NEAR:
+    elif best.near >= MEDIUM_NEAR and (
+        evidence["margin"] is None or evidence["margin"] >= MIN_MARGIN
+    ):
+        # A rival list close behind is not a MEDIUM call: SRR31168852's 26-base
+        # barcode read matched v3 at 0.66 with the v4 list near it.
         level = "MEDIUM"
     else:
         level = "LOW"
