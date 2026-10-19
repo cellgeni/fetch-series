@@ -348,20 +348,6 @@
   text-underline-offset: 6px;
 }
 
-/* The band the shared records sit on: across the INSDC columns, behind the lines. */
-.rg-shared-band {
-  fill: var(--rg-region);
-  stroke: var(--rg-hairline);
-  stroke-dasharray: 3 5;
-}
-
-.rg-shared-label {
-  fill: var(--rg-ink-2);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-}
-
 .rg-column-rule {
   stroke: var(--rg-row);
   stroke-width: 1;

@@ -45,8 +45,8 @@ into one node hid exactly the split the routing depends on.
 A parsed accession lands on its node by its prefix letter, which
 `fetch_series.accession.parse` already reads into `Accession.archive`.
 BioProject and BioSample stay **one node each**: all three archives hold the
-same record under the same accession, and they are drawn on a band across the
-three INSDC columns.
+same record under the same accession, and each sits on a row of its own
+within the three INSDC columns.
 
 ### Which archives a record can link to
 

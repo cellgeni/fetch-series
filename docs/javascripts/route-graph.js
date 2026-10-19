@@ -13,7 +13,7 @@
  * its shape is the level it sits at, and its position repeats both -- levels
  * run top to bottom, archives left to right in columns: GEO, NCBI, EBI, DDBJ,
  * ArrayExpress. A record all three INSDC archives hold (a BioProject, a
- * BioSample) is a band across their three columns.
+ * BioSample) sits on a row of its own above its level, in their columns.
  *
  * A measured route is drawn once per node pair it covers, from its split: the
  * route's own verdicts restricted to that source and target. Its ink is the
@@ -830,18 +830,6 @@
         rows.append(
           svg("line", { class: "rg-row-rule", x1: 130, x2: right, y1: y, y2: y }),
           svg("text", { class: "rg-row-label", x: 20, y, dy: "0.35em", text: layer.label.toUpperCase() }),
-        );
-      }
-      // The records all three INSDC archives hold sit on rows of their own,
-      // over a band across the three INSDC columns. The band is drawn behind
-      // everything: a line passing over it is not a line ending at it.
-      for (const [row, y] of Object.entries(ROW)) {
-        if (!row.endsWith("_shared") || !shownNodes.some((n) => this.place.get(n.id).y === this.yOf(y))) continue;
-        const [left] = COLUMNS.ncbi;
-        const [, rightEdge] = COLUMNS.ddbj;
-        rows.append(
-          svg("rect", { class: "rg-shared-band", x: left + 6, y: this.yOf(y) - 44, width: rightEdge - left - 12, height: 88, rx: 10 }),
-          svg("text", { class: "rg-shared-label", x: left + 22, y: this.yOf(y) - 28, text: "HELD BY NCBI, EBI AND DDBJ" }),
         );
       }
       // Archive columns: a name over each, and a rule between them.

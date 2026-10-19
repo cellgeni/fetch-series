@@ -10,10 +10,10 @@ what is left is searched:
   the records about the data, then read files, supplementary files and metadata
   documents. A record all three INSDC archives share -- a BioProject, a
   BioSample -- and BioSample metadata sit on a row of their own beside their
-  level, over a band the page draws across the three INSDC columns. They are
-  nodes of ordinary width, not the band itself: a node as wide as the span
-  would sit across every line from the BioProject down, and a line passing
-  under a node reads as though it started there.
+  level, anywhere across the three INSDC columns. They are nodes of ordinary
+  width: a node as wide as the span would sit across every line from the
+  BioProject down, and a line passing under a node reads as though it started
+  there.
 * **Columns**, one per archive, left to right: GEO, NCBI, EBI, DDBJ,
   ArrayExpress and BioStudies. Every node stays inside its archive's column;
   a read format belongs to no archive, so the five share the INSDC span.

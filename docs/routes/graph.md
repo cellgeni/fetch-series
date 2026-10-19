@@ -42,8 +42,8 @@ Neighbouring columns are told apart by every reader, colour-blind ones
 included; columns two apart are not always (NCBI blue and DDBJ violet), which
 is why every label also names its archive — *SRA run*, *ENA run*, *DRA run* —
 and carries the accession prefix under it. A BioProject or BioSample is one
-record held by all three INSDC archives, and sits on a grey band across their
-columns. Read files belong to no archive: they are grouped by format, and grey.
+record held by all three INSDC archives, and sits on a row of its own above
+its level, within their columns. Read files belong to no archive: they are grouped by format, and grey.
 
 Shape says what a node is: a stack of sheets for a dataset, a capsule for a
 sample, a hexagon for a library, a slanted bar for a run, a plain card for a
