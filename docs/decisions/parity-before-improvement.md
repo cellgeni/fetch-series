@@ -19,7 +19,9 @@ A swap that changes behaviour is not a swap. The pipeline downstream —
 replacement stops being a replacement and becomes a rewrite with an unmeasured
 blast radius.
 
-**Result: 14 of 14 test cases, 447 runs, no differences.**
+**Result: 14 of 14 test cases, no differences** — 422 snapshot rows covering 400
+distinct runs, plus one case (E-MTAB-8060, 15 rows) that has no snapshot and passes
+on assertions alone ([the count](../fetch10xmeta-parity.md#results)).
 
 ## The contract is the incumbent's own test suite
 

@@ -10,9 +10,12 @@ from dotenv import load_dotenv
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 from tqdm.asyncio import tqdm_asyncio
 
+from fetch_series.logging_utils import configure_logging as _configure_logging
+from fetch_series.logging_utils import redact_exception, run_logfile
+
 load_dotenv()
 
-NCBI_API_KEY = os.getenv("NCBI_API_KEY")
+NCBI_API_KEY = os.getenv("NCBI_API_KEY") or os.getenv("NCBI_KEY") or None
 
 ThrottledGet = Callable[..., Coroutine[Any, Any, httpx.Response]]
 
@@ -58,7 +61,7 @@ async def eutils_search(
         wait=wait_exponential(multiplier=1, min=2, max=30),
         retry=retry_if_exception(_is_retryable),
         before_sleep=lambda rs: logging.warning(
-            "Retry %d/5 for %r: %s", rs.attempt_number, query, rs.outcome.exception()
+            "Retry %d/5 for %r: %s", rs.attempt_number, query, redact_exception(rs.outcome.exception())
         ),
     )
     async def _fetch():
@@ -98,7 +101,7 @@ async def eutils_summary(
             "Retry %d/5 for summary %r: %s",
             rs.attempt_number,
             ids or webenv,
-            rs.outcome.exception(),
+            redact_exception(rs.outcome.exception()),
         ),
     )
     async def _fetch():
@@ -160,7 +163,15 @@ def parse_summary(accession: str, summary: dict[str, Any] | None) -> list[dict]:
     return rows
 
 
+def configure_logging() -> None:
+    # Redacting, and appending to a per-run file. This used basicConfig with
+    # mode="w", so every re-run destroyed the log documenting the results
+    # beside it, and nothing stripped the API key from a retry warning.
+    _configure_logging(level=logging.WARNING, logfile=run_logfile("bioproject"))
+
+
 async def main():
+    configure_logging()
     columns = ["sample", "gse", "prj", "srs", "srx", "srr", "species"]
     samples10x = pd.read_csv("data/All_10x.sample_table.tsv", sep="\t", names=columns)
     bioproject_list = samples10x.prj.unique().tolist()
@@ -174,7 +185,7 @@ async def main():
             httpx.TransportError,
             httpx.TimeoutException,
         ) as e:
-            logging.error("Failed to fetch %r: %s", acc, e)
+            logging.error("Failed to fetch %r: %s", acc, redact_exception(e))
             return None
 
     async with httpx.AsyncClient() as client:
@@ -188,7 +199,8 @@ async def main():
         rows.extend(parse_summary(accession, summary))
 
     df = pd.DataFrame(rows)
-    df.to_csv("data/query_results/bioproject_summary.csv", index=False)
+    os.makedirs(os.path.dirname("data/query/results/bioproject_summary.csv"), exist_ok=True)
+    df.to_csv("data/query/results/bioproject_summary.csv", index=False)
 
 
 if __name__ == "__main__":

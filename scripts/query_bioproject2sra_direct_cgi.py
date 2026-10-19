@@ -25,25 +25,21 @@ from tenacity import (
 )
 from tqdm.asyncio import tqdm_asyncio
 
+from fetch_series.logging_utils import configure_logging as _configure_logging
+from fetch_series.logging_utils import redact_exception, run_logfile
+
 load_dotenv()
 
 SRA_COLUMNS = [*SRA_COLUMNS, "ScientificName"]
 
 OUTPUT_DIR = "data/query"
-LOG_PATH = os.path.join(OUTPUT_DIR, "logs", "bioproject2sra_direct_cgi.log")
 
 
 def configure_logging() -> None:
-    os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
-    logging.basicConfig(
-        level=logging.WARNING,
-        format="%(asctime)s %(levelname)s %(message)s",
-        handlers=[
-            logging.FileHandler(LOG_PATH, mode="w"),
-            logging.StreamHandler(),
-        ],
-        force=True,
-    )
+    # Redacting, and appending to a per-run file. This used basicConfig with
+    # mode="w", so every re-run destroyed the log documenting the results
+    # beside it, and nothing stripped the API key from a retry warning.
+    _configure_logging(level=logging.WARNING, logfile=run_logfile("bioproject2sra_direct_cgi"))
 
 
 def parse_sra_runinfo(accession: str, runinfo_text: str | None) -> list[dict]:
@@ -101,7 +97,7 @@ async def bioproject2sra(
             "Retry %d/5 for %r: %s",
             rs.attempt_number,
             accession,
-            rs.outcome.exception(),
+            redact_exception(rs.outcome.exception()),
         ),
     )
     async def _run():
@@ -159,7 +155,7 @@ async def main():
             MalformedResponseError,
             RetryError,
         ) as e:
-            logging.error("Failed to fetch %r: %s", acc, e)
+            logging.error("Failed to fetch %r: %s", acc, redact_exception(e))
             return None
 
     async with httpx.AsyncClient() as client:
@@ -177,6 +173,7 @@ async def main():
     output_path = os.path.join(
         OUTPUT_DIR, "results", "bioproject2sra_direct_cgi_summary.csv"
     )
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df.to_csv(output_path, index=False)
     logging.info("Wrote %d rows to %s", len(df), output_path)
     print(f"Wrote {len(df)} rows to {output_path}")

@@ -50,9 +50,13 @@ class TestGeoSampleSize:
 
     @pytest.mark.slow
     @pytest.mark.parametrize("n", [1, 7, 15, 23, 100, 999])
-    def test_returns_exactly_the_requested_size(self, n: int):
-        from fetch_series.survey.corpora import geo_sample
+    def test_returns_exactly_the_requested_size(self, n: int, require_lfs):
+        from fetch_series.survey.corpora import _gse_list_path, geo_sample
 
+        try:
+            require_lfs(_gse_list_path())
+        except FileNotFoundError:
+            pytest.skip("GSE list not present")
         try:
             corpus = geo_sample(n)
         except FileNotFoundError:
@@ -61,10 +65,14 @@ class TestGeoSampleSize:
         assert corpus.name == f"geo-sample-{n}"
 
     @pytest.mark.slow
-    def test_the_existing_survey_draw_is_unchanged(self):
+    def test_the_existing_survey_draw_is_unchanged(self, require_lfs):
         """Fixing the size must not silently redraw a corpus already surveyed."""
-        from fetch_series.survey.corpora import geo_sample
+        from fetch_series.survey.corpora import _gse_list_path, geo_sample
 
+        try:
+            require_lfs(_gse_list_path())
+        except FileNotFoundError:
+            pytest.skip("GSE list not present")
         try:
             drawn = set(geo_sample(1000).values)
         except FileNotFoundError:

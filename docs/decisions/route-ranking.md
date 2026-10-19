@@ -29,7 +29,9 @@ Because every plausible-sounding preference this project started with turned
 out to be wrong at least once, and the wrong ones were not obviously wrong.
 
 The incumbent bash module tries NCBI's `efetch` before ENA. The evidence says
-that is backwards by **110,779 runs**:
+that is backwards by **111,665 runs** — the set difference, over the same 12,755
+projects in the 2026-05 survey, of the runs ENA returns minus those `efetch` (via
+ELink) returns ([the comparison](../routes/bioproject-to-run/index.md)):
 
 | Route | Unique runs | Failed | Requests |
 |---|---:|---:|---:|

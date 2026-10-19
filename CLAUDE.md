@@ -258,7 +258,7 @@ knowledge-base page, promote the route, and remove the test.
   `ERP110462`) times out at the gateway after ~10 s on every attempt, and 504 is in
   `RETRYABLE_STATUS`, so a retrying client spends its whole retry budget on a request that cannot
   succeed. Ask SDL per run; a run answers in under a second.
-- **Run `hard-cases` before any full corpus.** 34 accessions and seconds. Skipping it cost a partial
+- **Run `hard-cases` before any full corpus.** 46 accessions and seconds. Skipping it cost a partial
   12,755-accession run on a route whose empty rate should have looked wrong immediately.
 
 ## Design decisions you will be tempted to undo
@@ -267,7 +267,7 @@ Each of these looks like an over-complication until you read why it is there.
 Full arguments in `docs/decisions/`.
 
 - **Union is the default resolver mode, not a fallback chain.** A chain can only be as complete
-  as its best single route, and no route here is complete: ENA holds 110,779 runs `efetch` never
+  as its best single route, and no route here is complete: ENA holds 111,665 runs `efetch` never
   returns, and ~1,800 runs are missing from ENA.
 - **`RunRecord.set()` is first-wins *and* records the loser.** Routes are offered in measured
   order, so the first answer is the best-evidenced one — but a second, different answer goes into
@@ -304,8 +304,8 @@ Full arguments in `docs/decisions/`.
   rule that generalises, which inflates tier 1 at the model's expense — and the whole point of
   building the deterministic tiers first is being able to say what the model adds.
 - **`links.tsv` reproduces the incumbent's ordering, including where ours is better.** That is
-  the M3 parity contract, measured against `fetch10xmeta`'s own nf-test snapshots (14/14, 447
-  runs). The improvements ship underneath, through `fetch files`.
+  the M3 parity contract, measured against `fetch10xmeta`'s own nf-test snapshots (14/14; 422
+  snapshot rows, 400 distinct runs). The improvements ship underneath, through `fetch files`.
 
 ## Things to leave alone
 

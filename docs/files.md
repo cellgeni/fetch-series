@@ -11,9 +11,10 @@ of them.
 
 ## Why every route is asked, not just the first
 
-The resolver stops at the first route that answers, because identity routes
-answer the same question and a good answer ends it. File routes do not answer
-the same question:
+Identity routes answer the same question, so the resolver's union is a
+corroboration: two routes returning the same run are agreeing. File routes do
+not answer the same question, so their union is a set of *competing offers* that
+the file layer has to choose between:
 
 | Route | What it holds |
 |---|---|
@@ -83,8 +84,11 @@ fastq, and SRA holds a median of **1.40x** the bases ENA serves — the missing
 
 A pipeline taking the convenient format downloads cleanly, checksums correctly,
 and produces a matrix in which every read is unassignable to a cell. The file
-layer refuses that set, recommends the complete source, and says which fact
-drove the choice.
+layer ranks that set below every other format, so a complete source wins
+whenever any route offers one — in practice the `.sra` object through SDL — and
+says which fact drove the choice. It does not drop the set: when nothing better
+is offered it is still returned, labelled `every offer is incomplete`, because
+an empty answer would read as "this run has no files".
 
 See [ENA publishes an unpaired fastq for a paired library](pathologies/ena-paired-library-single-fastq.md).
 
@@ -119,18 +123,34 @@ uv run python scripts/verify_file_links.py 1000
 
 ### The two claims that must not be confused
 
-The links are reliable. **The data behind 39% of the fastq ones is not.**
+The links are reliable. **That says nothing about whether the data behind them
+is complete** — and for 39.2% of runs, ENA's fastq is not.
 
-Nothing in this verification could have caught the
+Nothing in a link check could catch the
 [missing barcode read](pathologies/ena-paired-library-single-fastq.md): those
 files resolve, their published md5 is correct, and their published size matches
 what is served — because the file ENA published really is that size. It is
-simply half the run.
+simply half the run. A verification layer that only checked links would have
+called ENA's fastq perfectly healthy.
 
-1,566 links across 999 runs is **1.57 per run**, which is the same signal from
-the other side: for a corpus in which every run is paired, most recommended sets
-are a single file. A verification layer that only checks links would have
-reported this corpus as perfectly healthy.
+What keeps those files out of the recommended set is not this verification but
+the completeness rule above, which reads `library_layout`. The export shows it
+working (`data/surveys/file-links/sample_1000@reprocessed-srr.csv.gz`, rows per
+run):
+
+| Recommended set | Runs |
+|---|---:|
+| ENA fastq, both mates | 538 |
+| SDL `.sra` object, one file | 442 |
+| SDL, three files | 2 |
+| ENA submitted fastq, three or four files | 11 |
+| ENA fastq, a single file | **6** |
+
+442 runs went to SDL, and only 6 of the 999 recommended sets are a lone ENA
+fastq (the export does not record their declared layout, so whether those 6 are
+single-end libraries or offers with no alternative is not established). That is why the links come to
+**1.57 per run**: a mix of fastq pairs and single `.sra` objects, not a corpus
+of half pairs.
 
 ## Using it
 

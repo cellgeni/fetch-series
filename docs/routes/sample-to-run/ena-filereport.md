@@ -44,4 +44,4 @@ them as separate entity types (`sample` and `biosample`) with separate routes,
 because the archives do not treat them as interchangeable: GEO records the
 BioSample and not the SRS, and
 [ENA under-reports NCBI-registered BioSamples relative to ELink](../bioproject-to-biosample/index.md)
-in one direction while finding 125,376 more in the other.
+in one direction while finding 125,271 more in the other.

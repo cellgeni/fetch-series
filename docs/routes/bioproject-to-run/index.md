@@ -39,7 +39,11 @@ every one recorded it as a failure. It is not a BioProject, so it is counted in 
 figures above: each script queried 12,755 projects, not the 12,756 it once claimed.
 
 ENA holds **111,665 runs that `efetch` never returns**, against roughly 1,800 runs missing
-from it. The 2026-09 census reproduced the 2026-05 ENA figure of 784,026 to within 0.011%
+from it. Both are set differences over distinct run accessions from the same 2026-05-12
+survey of the same 12,755 projects: ENA's 784,026 runs minus `efetch_elink`'s 674,186 leaves
+111,665, and 1,825 go the other way. (Subtracting totals instead — 783,936 − 673,157 =
+110,779 — mixes two surveys and two `efetch` routes, and counts no set of runs at all.) Against `efetch_direct` the same set
+difference is 112,314. The 2026-09 census reproduced the 2026-05 ENA figure of 784,026 to within 0.011%
 while eliminating all 14 of that run's failures — so the harness agrees with the scripts it
 replaces, and improves on them.
 
@@ -57,7 +61,10 @@ with their date and their provenance.
 12,755 projects, and it answers for every issuing archive — unlike the NCBI routes, which
 [only reliably resolve NCBI-issued accessions](../../graph/routing-by-archive.md).
 
-The 23 projects it reports as empty are withdrawn, private or unreleased. Five of them are
+The 23 projects it reports as empty are withdrawn, private or unreleased.
+[BioProject → BioSample](../bioproject-to-biosample/index.md#why-this-route-has-25-empties-and-bioproject-run-has-23)
+reports 25 through the same endpoint: two projects have runs in ENA but no BioSample on
+any of them, so they resolve here and are empty there. Five of them are
 the BioProjects of the same GEO series that resolved to nothing in the
 [GEO census](../gse-to-experiment/index.md), so two independent routes over two different
 corpora agree about which data is not released.

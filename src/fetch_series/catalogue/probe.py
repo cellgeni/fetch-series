@@ -65,7 +65,7 @@ from fetch_series.files import (
     request_url,
 )
 from fetch_series.filesets import verify
-from fetch_series.logging_utils import redact
+from fetch_series.logging_utils import redact, redact_exception
 from fetch_series.providers import (
     biosamples,
     biostudies,
@@ -82,7 +82,6 @@ from fetch_series.survey.client import (
     Limits,
     MalformedResponseError,
     SurveyClient,
-    redact_exception,
 )
 
 Found = dict[str, list[str]]

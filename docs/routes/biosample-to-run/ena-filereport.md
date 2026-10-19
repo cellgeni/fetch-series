@@ -42,5 +42,5 @@ coverage.
 
 The honest coverage claim is the one on the
 [BioProject → BioSample](../bioproject-to-biosample/index.md) page, where the
-two routes disagree by 125,376 samples and the disagreement is explained by
+two routes disagree by 125,271 samples and the disagreement is explained by
 which archive registered the project.

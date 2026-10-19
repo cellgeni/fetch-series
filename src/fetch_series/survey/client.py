@@ -31,7 +31,7 @@ from typing import Any, TypeVar
 
 import httpx
 
-from fetch_series.logging_utils import redact
+from fetch_series.logging_utils import redact_exception
 
 logger = logging.getLogger(__name__)
 
@@ -70,29 +70,6 @@ def is_retryable(exc: BaseException) -> bool:
     ):
         return True
     return isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code in RETRYABLE_STATUS
-
-
-def redact_exception(exc: BaseException) -> BaseException:
-    """Return ``exc`` with credentials stripped from its message.
-
-    httpx puts the full request URL into the message of every
-    :class:`httpx.HTTPStatusError` and most transport errors, and the NCBI API
-    key is a query parameter. The redacting log formatter only helps if the
-    exception is *logged*; an uncaught traceback printed by the interpreter
-    bypasses it completely, which is how a key reached a session transcript.
-
-    The exception type is preserved, because :func:`is_retryable` dispatches on
-    it and on ``response.status_code``.
-    """
-    message = redact(str(exc))
-    if message == str(exc):
-        return exc
-    if isinstance(exc, httpx.HTTPStatusError):
-        return httpx.HTTPStatusError(message, request=exc.request, response=exc.response)
-    try:
-        return type(exc)(message)
-    except Exception:
-        return exc
 
 
 @dataclass(frozen=True, slots=True)
@@ -157,7 +134,10 @@ class SurveyClient:
         client: httpx.AsyncClient | None = None,
     ) -> None:
         self.limits = limits or Limits()
-        self.api_key = api_key
+        # An empty key is no key. A CI secret that is not set arrives as "" rather
+        # than as nothing, and NCBI answers ``api_key=`` with a 400 that no retry
+        # can fix -- the Archive state monitor's false alarm of 2026-10-19.
+        self.api_key = api_key or None
         self._limiter = RateLimiter(self.limits.rps)
         self._semaphore = asyncio.Semaphore(self.limits.concurrency)
         self._client = client

@@ -62,12 +62,17 @@ two agree within their confidence intervals, but **the direct measurement is the
 quote**: it samples the whole population rather than a subset chosen for being suspicious,
 so it needs no assumption about how the subset relates to the rest.
 
-The corpus is reproducible:
+The figure above came from a `--limit 3000` run, which records under the full corpus name
+and so cannot be reproduced from its label ([why](../routes/experiment-to-run/ena-filereport.md#the-corpus-label-on-this-evidence-is-wrong-and-a-re-survey-is-pending)).
+The seeded equivalent is:
 
 ```bash
 fetch survey run --route "experiment->run:ena_filereport" \
-  --corpus "results-of:gse->experiment:soft_family@reprocessed-gse" --limit 3000
+  --corpus "sample:3000@results-of:gse->experiment:soft_family@reprocessed-gse"
 ```
+
+Run on 2026-10-19, it drew 3,000 experiments disjoint from the first set and found
+**37 empty again**: the same rate, from an independent replicate.
 
 ### What "no runs" means here
 
@@ -75,7 +80,7 @@ It means ENA's `read_run` report returns nothing for the accession. A separate 4
 check found none of the run-less accessions had runs at NCBI either, so these are dead
 rather than un-mirrored — though that sub-question rests on the smaller sample.
 
-## Diagnosis## Diagnosis
+## Diagnosis
 
 The submission was replaced. The original experiment records persist in SRA as metadata
 shells with no runs attached, the replacements were registered under new accessions, and

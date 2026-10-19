@@ -9,11 +9,10 @@ Knowledge base: docs/pathologies/geo-omits-sample-sra-relation.md
 
 from __future__ import annotations
 
-import os
-
 import pytest
 from dotenv import load_dotenv
 
+from fetch_series.core import default_api_key
 from fetch_series.providers import geo
 from fetch_series.routes import gse_to_experiment_elink, gse_to_experiment_soft
 from fetch_series.survey import Limits, SurveyClient
@@ -33,7 +32,7 @@ OMITS_SRA_RELATION = {
 def _client() -> SurveyClient:
     return SurveyClient(
         limits=Limits(rps=3.0, concurrency=2, attempts=3),
-        api_key=os.getenv("NCBI_API_KEY") or os.getenv("NCBI_KEY"),
+        api_key=default_api_key(),
     )
 
 

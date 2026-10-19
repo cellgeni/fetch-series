@@ -16,11 +16,10 @@ Knowledge base: docs/pathologies/biosample-efetch-ignores-accession-prefix.md
 
 from __future__ import annotations
 
-import os
-
 import pytest
 from dotenv import load_dotenv
 
+from fetch_series.core import default_api_key
 from fetch_series.providers import eutils
 from fetch_series.providers.eutils import BASE, parse_biosample_set
 from fetch_series.survey import Limits, SurveyClient
@@ -40,7 +39,7 @@ EXPECTED_ORGANISM = "Homo sapiens"
 def _client() -> SurveyClient:
     return SurveyClient(
         limits=Limits(rps=3.0, concurrency=2, attempts=2),
-        api_key=os.getenv("NCBI_API_KEY"),
+        api_key=default_api_key(),
     )
 
 

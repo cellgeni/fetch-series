@@ -14,7 +14,7 @@ is welcome in either, and the bar for both is the same one rule:
 2. **Implement it** in `src/fetch_series/routes/__init__.py`. A route takes an
    accession and returns a list of strings; the survey harness does the rest.
 3. **Run tier one**: `uv run fetch survey run --route <id> --corpus hard-cases`.
-   34 accessions, seconds, and every one must produce a *verdict* — a result or
+   46 accessions, seconds, and every one must produce a *verdict* — a result or
    a named pathology, never an unhandled exception. Skipping this step has
    already cost a partial 12,755-accession run.
 4. **Run a representative corpus.** `reprocessed-gse`, `reprocessed-prj`,

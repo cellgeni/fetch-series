@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from datetime import UTC, datetime, timedelta
 
 import httpx
@@ -173,6 +174,27 @@ class TestRunner:
         assert run.skipped == 1
         assert run.queried == 1
 
+    async def test_a_resumed_run_keeps_the_seeded_order(self, cache):
+        """Resume once rebuilt its to-do list from the sorted corpus, so every
+        interrupted survey finished on the oldest submissions first."""
+        from fetch_series.survey.runner import shuffled
+
+        client = SurveyClient(limits=Limits(rps=0, concurrency=1, attempts=1))
+        corpus = sorted(f"PRJNA{i:04d}" for i in range(200))
+        first = shuffled(corpus)[:50]
+        calls: list[str] = []
+
+        async def fn(accession, _client, _timeout):
+            calls.append(accession)
+            return ["SRR1"]
+
+        await run_route(ROUTE, first, fn, cache, "c", client)
+        calls.clear()
+        run = await run_route(ROUTE, corpus, fn, cache, "c", client)
+        assert run.skipped == 50
+        assert calls == [a for a in shuffled(corpus) if a not in set(first)]
+        assert calls != sorted(calls)
+
     async def test_failures_are_not_retried_by_default(self, cache, client):
         """A survey that quietly retried its failures would report a coverage
         figure no single run ever achieved."""
@@ -315,6 +337,84 @@ class TestCorpora:
         from fetch_series.survey.corpora import HARD_CASES
 
         assert all(len(reason) > 20 for reason in HARD_CASES.values())
+
+
+class TestEmptyKeyIsNoKey:
+    """An unset CI secret arrives as "", and NCBI answers ``api_key=`` with a
+    400 that no retry fixes. That raised the monitor's false alarm of 2026-10-19."""
+
+    def test_the_client_drops_an_empty_key(self):
+        assert SurveyClient(api_key="").api_key is None
+
+    def test_the_environment_lookup_drops_an_empty_key(self, monkeypatch):
+        from fetch_series.core import default_api_key
+
+        monkeypatch.setenv("NCBI_API_KEY", "")
+        monkeypatch.setenv("NCBI_KEY", "")
+        assert default_api_key() is None
+
+    async def test_no_empty_api_key_parameter_is_sent(self):
+        sent: list[httpx.URL] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            sent.append(request.url)
+            return httpx.Response(200, json={})
+
+        transport = httpx.MockTransport(handler)
+        async with (
+            httpx.AsyncClient(transport=transport) as http,
+            SurveyClient(limits=Limits(rps=0), api_key="", client=http) as client,
+        ):
+            from fetch_series.providers.eutils import esearch
+
+            # The empty body is not the point; the request is.
+            with contextlib.suppress(Exception):
+                await esearch(client, "gds", "GSE1[ACCN]", timeout=1.0)
+        assert sent
+        assert all("api_key" not in url.params for url in sent)
+
+
+class TestLimitIsNotEvidence:
+    """``--limit`` records verdicts under the full corpus name, so a limited run
+    would export as if it covered the corpus. It must never reach the cache."""
+
+    def test_a_limited_run_leaves_the_cache_untouched(self, tmp_path, monkeypatch):
+        from typer.testing import CliRunner
+
+        from fetch_series import cli
+        from fetch_series.survey.corpora import _build
+
+        async def fn(accession, _client, _timeout):
+            return ["SRR1"]
+
+        corpus = _build("fake", "three projects", "test", ["PRJNA1", "PRJNA2", "PRJNA3"])
+        monkeypatch.setattr(cli, "_route_or_exit", lambda _id: ROUTE)
+        monkeypatch.setitem(cli.IMPLEMENTATIONS, ROUTE.id, fn)
+        monkeypatch.setattr(cli.corpora, "load", lambda _name: corpus)
+        monkeypatch.setattr(cli, "run_logfile", lambda _slug: tmp_path / "run.log")
+        path = tmp_path / "survey.sqlite"
+
+        result = CliRunner().invoke(
+            cli.app,
+            [
+                "survey",
+                "run",
+                "--route",
+                ROUTE.id,
+                "--corpus",
+                "fake",
+                "--limit",
+                "2",
+                "--cache",
+                str(path),
+                "--rps",
+                "0",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+        assert '"queried": 2' in result.output
+        with SurveyCache(path) as cache:
+            assert cache.answered("fake", ROUTE.id) == set()
 
 
 class TestVisitOrder:

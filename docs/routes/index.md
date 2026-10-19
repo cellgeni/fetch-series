@@ -81,15 +81,30 @@ failed counts, on [the route graph](graph.md).
 
 ## What the failures are
 
-Almost every non-zero **Failed** figure in the table is an archive refusing an
-accession that no longer exists, not a route defect:
+Every non-zero **Failed** figure in the table falls into one of two groups, and
+only the first is an archive refusing an accession or a file that no longer
+exists:
 
-- the 7 GEO series whose SOFT family file 404s, GSE207991 among them, which is
-  private;
-- the 5 ArrayExpress studies whose IDF is a genuine 404 while the study record
-  and the search index still carry them;
-- the 3 GEO samples whose `acc.cgi` record cannot be fetched.
+- **Accessions or files that are gone.** The 7 GEO series whose SOFT family file 404s,
+  GSE207991 among them, which is private; the 5 ArrayExpress studies whose IDF
+  is a genuine 404 while the study record and the search index still carry them;
+  the 3 GEO samples whose `acc.cgi` record cannot be fetched; the 11 studies whose
+  SDRF 404s on both SDRF routes, two of which register no files at all and nine
+  `E-GEOD` imports whose IDF exists without one
+  ([the SDRF census](ae-experiment-to-file/index.md)); and, by manual
+  triage of a sample rather than of all of them, most of the 1,078–1,079
+  BioProject → GEO series failures, which are re-created, withdrawn or private
+  projects ([the triage](bioproject-to-geo-series/index.md#about-those-1078-failures)).
+- **NCBI routes failing on the request.** The 14–33 failures of the four NCBI
+  BioProject → run routes, whose declared pathologies include `sra-db-be` timing
+  out on very large projects and ELink's backend flakiness. These are 2026-05
+  script figures that were never re-censused through the harness
+  ([why](bioproject-to-run/index.md#why-the-ncbi-routes-were-not-re-censused)), so
+  they have not been separated into transient and permanent.
 
-The one genuine client-side loss —
-[39 series lost to a UID list too long for a URL](gse-to-experiment/index.md#the-39-failures-were-ours-not-ncbis) —
-was found by this census and fixed; that route now fails on nothing.
+Client-side losses do not appear in the table, because each one found was fixed
+and its route re-run:
+[39 series lost to a UID list too long for a URL](gse-to-experiment/index.md#the-39-failures-were-ours-not-ncbis)
+(that route now fails on nothing), and the
+[330 BioProjects an unpaged ESummary call failed](bioproject-to-biosample/index.md#the-paging-fix-recovered-94895-biosamples)
+in the 2026-05 script, which fail on nothing through the harness.

@@ -106,12 +106,14 @@ sample identity may be a GEO sample, an INSDC sample or a BioSample; any one wil
 `--no-incomplete` drops those rows; the default keeps them, because for counting what a
 series contains they are still information.
 
-## Not yet included
+## Where file links live instead
 
-**File links.** That is milestone 2, and it is where "reliable files to use" gets decided:
-ENA `fastq_ftp` versus `submitted_ftp` versus NCBI SDL, md5 and size verification, mate
-completeness, and paywalled or rehydration-required objects. Until then this table stops at
-the run.
+**This table stops at the run, by design.** File links are a separate layer (milestone 2,
+complete): which of ENA `fastq_ftp`, `submitted_ftp` and NCBI SDL to use, md5 and size
+verification, mate completeness, and paywalled or rehydration-required objects are decided
+by [the file layer](files.md), reached through `fetch files` and `fetch links`. Keeping them
+out of this table keeps one row per run: a run routinely has several competing file offers,
+and collapsing them here would hide the alternatives the file layer exists to report.
 
 ## Two routes now attribute the GEO sample
 

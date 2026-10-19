@@ -63,8 +63,8 @@ the request — which is only obvious once you already know about this behaviour
 
 The scope is every BioSample not registered by NCBI: `SAMEA` (EBI) and `SAMD`
 (DDBJ). These are not a marginal population. In a census of 12,755 BioProjects we
-found 125,376 BioSamples that ENA returns and NCBI's own ELink table does not,
-93.5% of them in EBI-registered projects.
+found 125,271 BioSamples that ENA returns and NCBI's own ELink table does not,
+93.6% of them in EBI-registered projects.
 
 ### The requested sample is present and findable
 

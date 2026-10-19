@@ -68,7 +68,7 @@ honoured, but because stripping the prefix happens to yield the right UID. Every
 
 The bug bites only where the registration authority is not NCBI: **`SAMEA`
 (EBI) and `SAMD` (DDBJ)**. This project's corpus is full of those -- ENA finds
-**125,376 BioSamples NCBI's own link table does not**, 93.5% of them in
+**125,271 BioSamples NCBI's own link table does not**, 93.6% of them in
 EBI-registered projects.
 
 ## What it is not

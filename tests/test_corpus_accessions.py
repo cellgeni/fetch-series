@@ -24,7 +24,9 @@ PLACEHOLDER = "-"
 
 @pytest.fixture(scope="module")
 def corpus_tokens() -> list[str]:
-    if not CORPUS.exists():
+    # Absent, or only a Git LFS pointer: exists() is true for a pointer, which
+    # then parses as three unrecognised tokens and fails instead of skipping.
+    if not CORPUS.exists() or CORPUS.read_bytes()[:23] == b"version https://git-lfs":
         pytest.skip(f"{CORPUS} not present (Git LFS object not fetched)")
     tokens: list[str] = []
     with CORPUS.open() as fh:

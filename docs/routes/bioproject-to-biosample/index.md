@@ -78,27 +78,45 @@ Both routes have now been run over all 12,755 projects of `reprocessed-prj`
 
 | | `elink` | `ena_filereport` |
 |---|---:|---:|
-| Projects resolved | 12,730 | 12,730 |
-| Projects empty | 25 | 25 |
+| Projects resolved | 12,080 | 12,730 |
+| Projects empty | 675 | 25 |
 | Failed | 0 | 0 |
 | **Unique BioSamples** | 244,324 | **363,885** |
 
-Identical at the project level and 49% apart at the sample level. Comparing the
-per-project sets:
+The `elink` column is the same census as the per-archive table above. 20 projects
+are empty on both routes; 655 are empty only on `elink` — 495 `PRJEB`, 92 `PRJDB` and 68
+`PRJNA`; 5 are empty only on
+`ena_filereport`. Comparing the per-project sets:
 
 | | |
 |---|---:|
 | Projects where the two agree exactly | 11,876 |
 | Projects where they disagree | 879 |
-| BioSamples ENA has and ELink does not | **125,376** |
+| … of which one route is empty | 660 |
+| … of which both answer, differently | 219 |
+| BioSamples ENA has and ELink does not | **125,271** distinct |
 | BioSamples ELink has and ENA does not | 5,710 |
 
-**93.5% of the ENA-only samples — 117,224 of 125,376 — are in EBI-registered
+The ENA-only figure is a set difference over distinct BioSamples. Summed project
+by project it is 125,376, because some BioSamples belong to more than one project.
+
+**93.6% of the ENA-only samples — 117,224 of 125,271 — are in EBI-registered
 projects.** 1,074 more are in DDBJ-registered ones. This is the archive
 asymmetry measured at the sample level rather than the project level: NCBI's
-link table does not merely *fail* on `PRJEB` accessions, it under-reports them
-while appearing to succeed, because 219 projects returned a smaller set rather
-than an empty one.
+link table does not merely *fail* on `PRJEB` accessions, it answers nothing for
+almost all of them while reporting no error.
+
+### Why this route has 25 empties and BioProject → run has 23
+
+Both are `ena_filereport` with `result=read_run` over the same 12,755 projects on
+the same day, so the two extra empties need explaining. They are `PRJNA1098739`
+and `PRJNA1135917`: ENA lists their runs, so
+[BioProject → run](../bioproject-to-run/index.md) resolves them, but `elink` finds no
+BioSample for either, and a re-check of ENA on 2026-10-19 (one request per project,
+which explains the two rows and measures nothing) shows every run row with a blank
+`sample_accession` and only an `SRS` secondary accession. There is no BioSample to
+return. The counts differ
+because the routes ask for different columns, not because either is wrong.
 
 The 5,710 going the other way are why this is a union and not a replacement.
 They are exactly the case the section above describes: BioSamples that carry no

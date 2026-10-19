@@ -8,7 +8,7 @@ from typing import Any, Literal
 import httpx
 from httpx_retries import Retry, RetryTransport
 
-from fetch_series.logging_utils import redact
+from fetch_series.logging_utils import redact, redact_exception
 
 # Enable retry logic for HTTP requests to handle transient errors and rate limiting when accessing the NCBI E-utilities API
 retry = Retry(
@@ -43,13 +43,29 @@ def _raise_for_status(response: httpx.Response) -> None:
         ) from None
 
 
+def _get(url: str, **kwargs: Any) -> httpx.Response:
+    """GET ``url`` with retries, raising only redacted errors.
+
+    Transport errors carry the request URL in their message exactly as status
+    errors do, so redacting only ``raise_for_status`` left a timeout able to
+    print the key in an uncaught traceback.
+    """
+    try:
+        with httpx.Client(transport=transport) as client:
+            response = client.get(url, **kwargs)
+        _raise_for_status(response)
+    except httpx.HTTPError as exc:
+        raise redact_exception(exc) from None
+    return response
+
+
 def default_api_key() -> str | None:
     """Return the NCBI API key from the environment, if one is configured.
 
     Both spellings are accepted because the two have been used interchangeably
     in this project; ``NCBI_API_KEY`` is the preferred one.
     """
-    return os.getenv("NCBI_API_KEY") or os.getenv("NCBI_KEY")
+    return os.getenv("NCBI_API_KEY") or os.getenv("NCBI_KEY") or None
 
 
 def _clean_params(params: dict[str, Any]) -> dict[str, Any]:
@@ -85,9 +101,7 @@ def eutils_search(
         "usehistory": "y",
         "api_key": api_key or default_api_key(),
     }
-    with httpx.Client(transport=transport) as client:
-        response = client.get(base, params=_clean_params(params), timeout=10)
-    _raise_for_status(response)
+    response = _get(base, params=_clean_params(params), timeout=10)
     payload: dict[str, Any] = response.json()
     return payload
 
@@ -126,9 +140,7 @@ def eutils_summary(
         "api_key": api_key or default_api_key(),
     }
 
-    with httpx.Client(transport=transport) as client:
-        response = client.get(base, params=_clean_params(params), timeout=10)
-    _raise_for_status(response)
+    response = _get(base, params=_clean_params(params), timeout=10)
     payload: dict[str, Any] = response.json()
     return payload
 
@@ -176,9 +188,7 @@ def eutils_fetch(
     if query_key is not None:
         params["query_key"] = query_key
 
-    with httpx.Client(transport=transport) as client:
-        response = client.get(base, params=_clean_params(params), timeout=10)
-    _raise_for_status(response)
+    response = _get(base, params=_clean_params(params), timeout=10)
     if retmode == "json":
         payload: dict[str, Any] = response.json()
         return payload
@@ -223,9 +233,7 @@ def eutils_link(
         "cmd": cmd,
         "api_key": api_key or default_api_key(),
     }
-    with httpx.Client(transport=transport) as client:
-        response = client.get(base, params=_clean_params(params), timeout=10)
-    _raise_for_status(response)
+    response = _get(base, params=_clean_params(params), timeout=10)
     payload: dict[str, Any] = response.json()
     return payload
 
@@ -255,10 +263,10 @@ def geo_dataset_id(
     try:
         search_results = eutils_search(query=query, db="gds")
     except httpx.HTTPError as e:
-        logging.error("Failed to search for %s after retries: %s", series, e)
+        logging.error("Failed to search for %s after retries: %s", series, redact_exception(e))
         return None
     except Exception as e:
-        logging.error("Unexpected error while searching for %s: %s", series, e)
+        logging.error("Unexpected error while searching for %s: %s", series, redact_exception(e))
         return None
 
     # Check if the dataset was found and return the ID, or log a warning if not found or multiple matches
@@ -288,9 +296,7 @@ def ae2secondary(series: str) -> list[str]:
     """
     # Get SecondaryAccession values from idf file
     base = f"https://www.ebi.ac.uk/biostudies/files/{series}/{series}.idf.txt"
-    with httpx.Client(transport=transport) as client:
-        response = client.get(base, follow_redirects=True, timeout=30)
-    _raise_for_status(response)
+    response = _get(base, follow_redirects=True, timeout=30)
 
     # Check if there are SecondaryAccession values in the idf file
     pattern = re.compile(r"Comment\s*\[SecondaryAccession\]\s*((?:ERP|EGA\w)\d+)")
@@ -329,9 +335,7 @@ def ae2biosamples(series: str) -> list[str]:
         List[str] | None: A list of biosample IDs associated with the series, or None if no biosamples are found
     """
     base = f"https://www.ebi.ac.uk/biostudies/files/{series}/{series}.sdrf.txt"
-    with httpx.Client(transport=transport) as client:
-        response = client.get(base, follow_redirects=True, timeout=30)
-    _raise_for_status(response)
+    response = _get(base, follow_redirects=True, timeout=30)
 
     reader = csv.DictReader(io.StringIO(response.text), delimiter="\t")
     # csv.DictReader fills missing trailing columns with None, so the key can be
@@ -366,11 +370,7 @@ def read_enaruns(
         "fields": fields,
         "limit": limit,
     }
-    with httpx.Client(transport=transport) as client:
-        response = client.get(
-            base, params=_clean_params(params), timeout=10.0, follow_redirects=True
-        )
-    _raise_for_status(response)
+    response = _get(base, params=_clean_params(params), timeout=10.0, follow_redirects=True)
 
     if format == "json":
         payload: list[dict[str, Any]] = response.json()
@@ -441,11 +441,7 @@ def query_ae(query: str, pagesize: int = 100) -> dict[str, Any]:
         "pageSize": pagesize,
     }
 
-    with httpx.Client(transport=transport) as client:
-        response = client.get(
-            base, params=_clean_params(params), timeout=10.0, follow_redirects=True
-        )
-    _raise_for_status(response)
+    response = _get(base, params=_clean_params(params), timeout=10.0, follow_redirects=True)
     payload: dict[str, Any] = response.json()
     return payload
 

@@ -10,11 +10,10 @@ Knowledge base: docs/pathologies/elink-gds-sra-missing-links.md
 
 from __future__ import annotations
 
-import os
-
 import pytest
 from dotenv import load_dotenv
 
+from fetch_series.core import default_api_key
 from fetch_series.providers import ena_portal, geo
 from fetch_series.providers.eutils import elink_uids, esearch
 from fetch_series.survey import Limits, SurveyClient
@@ -39,7 +38,7 @@ UNREACHABLE = {
 def _client() -> SurveyClient:
     return SurveyClient(
         limits=Limits(rps=3.0, concurrency=2, attempts=3),
-        api_key=os.getenv("NCBI_API_KEY") or os.getenv("NCBI_KEY"),
+        api_key=default_api_key(),
     )
 
 

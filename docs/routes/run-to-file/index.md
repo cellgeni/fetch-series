@@ -99,8 +99,8 @@ files per run, for a corpus in which every run is 10x and therefore paired:
 1,225 of the 2,844 answered runs offer exactly **one** fastq. That is not a
 naming quirk — see
 [ENA's derived fastq omits the read that carries the cell barcode](../../pathologies/ena-paired-library-single-fastq.md),
-where 1,177 of those 1,225 are shown to have more bases in SRA than ENA
-publishes.
+where 1,201 of those 1,225 could be checked against SRA and 1,177 of them hold more
+bases there than ENA publishes.
 
 **The submitter's original deposit exists for only 8.2% of runs.** This is the
 number that makes the previous one serious. For the other 91.8% there is no
