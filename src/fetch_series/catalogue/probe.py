@@ -56,7 +56,14 @@ from fetch_series.catalogue import (
 )
 from fetch_series.catalogue.mechanisms import DBLINK_TYPES, INSDC_FIELDS, RUNINFO_FIELDS
 from fetch_series.catalogue.nodes import SPLIT, TEN_X_RUNS, node_for, read_format
-from fetch_series.files import FileRecord, classify, from_ena_row, from_sdl_files, mate_of
+from fetch_series.files import (
+    FileRecord,
+    classify,
+    from_ena_row,
+    from_sdl_files,
+    mate_of,
+    request_url,
+)
 from fetch_series.filesets import verify
 from fetch_series.logging_utils import redact
 from fetch_series.providers import (
@@ -164,11 +171,10 @@ def _split_sample(address: str) -> tuple[str, str | None]:
 def https(url: str) -> str:
     """A download link as something a HEAD can ask: the archives' FTP hosts serve HTTPS.
 
-    A ``#`` is part of the file name, never a fragment: a Sanger CRAM is named
-    ``27865_1#3.cram``, and asked for unescaped the request is for
-    ``27865_1`` and answers 404 -- a valid file reported as not downloadable.
+    A ``#`` is escaped by :func:`~fetch_series.files.request_url`: a Sanger
+    CRAM's name holds one, and unescaped it is read as a fragment.
     """
-    url = url.strip().replace("#", "%23")
+    url = request_url(url.strip())
     if url.startswith("ftp://"):
         return "https://" + url.removeprefix("ftp://")
     if "://" not in url:

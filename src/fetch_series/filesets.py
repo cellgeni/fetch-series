@@ -26,7 +26,7 @@ from fetch_series.assays import AssayCall
 from fetch_series.assays.chemistry import ChemistryCall, chemistry_of
 from fetch_series.assays.registry import is_10x
 from fetch_series.export.links import LinkRow, links_for
-from fetch_series.files import FileRecord, FileSet, Recommendation, recommend
+from fetch_series.files import FileRecord, FileSet, Recommendation, recommend, request_url
 from fetch_series.graph import REGISTRY, RouteRegistry
 from fetch_series.providers import ena_portal, geo
 from fetch_series.relations import relations
@@ -156,7 +156,7 @@ async def verify(record: FileRecord, client: SurveyClient, timeout: float = 30.0
     mirror, and a file that was replaced without its metadata being updated.
     """
     try:
-        response = await client.head(record.url, timeout=timeout)
+        response = await client.head(request_url(record.url), timeout=timeout)
     except Exception as exc:  # a failed request is itself the verdict
         return Verdict(record=record, status=None, served_bytes=None, error=type(exc).__name__)
     length = response.headers.get("content-length")

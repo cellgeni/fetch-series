@@ -250,6 +250,14 @@ knowledge-base page, promote the route, and remove the test.
   gzipped). It matters: GEO documents none of the `_relation` lines every GEO route reads.
 - **`gds` ESearch needs the entry type.** `GSM1480291[ACCN]` alone matches the sample, its series
   and its platform, and the first UID is the series'. Add `AND GSM[ETYP]`.
+- **A `#` in a file link is part of the name.** Sanger names lane CRAMs `<run>_<lane>#<tag>`:
+  ERR13855116's is `27865_1#3.cram`. Every HTTP client reads `#3.cram` as a fragment and asks for
+  `27865_1`, which answers 404 — a valid 767 MB file reported as missing. Request a published file
+  link through `files.request_url`, and keep the link itself as published: `links.tsv` reproduces it.
+- **SDL answers a project or study with a 504, every time.** `sdl/2/retrieve acc=PRJNA495040` (or
+  `ERP110462`) times out at the gateway after ~10 s on every attempt, and 504 is in
+  `RETRYABLE_STATUS`, so a retrying client spends its whole retry budget on a request that cannot
+  succeed. Ask SDL per run; a run answers in under a second.
 - **Run `hard-cases` before any full corpus.** 34 accessions and seconds. Skipping it cost a partial
   12,755-accession run on a route whose empty rate should have looked wrong immediately.
 

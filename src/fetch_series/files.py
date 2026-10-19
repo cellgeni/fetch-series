@@ -64,6 +64,18 @@ def classify(name: str) -> FileKind:
     return FileKind.OTHER
 
 
+def request_url(url: str) -> str:
+    """A published file link as a request can ask for it.
+
+    A ``#`` in an archive's file link is part of the name, never a fragment.
+    ERR13855116's submitted CRAM is ``27865_1#3.cram`` -- Sanger names lane
+    CRAMs ``<run>_<lane>#<tag>`` -- and asked for unescaped, the request goes to
+    ``27865_1`` and answers 404: a valid 767 MB file reported as missing. The
+    link itself is kept as published, because ``links.tsv`` reproduces it.
+    """
+    return url.replace("#", "%23")
+
+
 def mate_of(name: str) -> int | None:
     """Which mate of a pair a file is, from its name, or None if unmarked.
 
