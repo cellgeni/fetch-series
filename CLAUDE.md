@@ -28,6 +28,15 @@ behind every route that has been.
 The corollary: if you find yourself writing "ENA is usually better here", either measure it or say
 plainly that it is unmeasured. An undated coverage number is not evidence of anything.
 
+**A link that exists is not a route.** `src/fetch_series/catalogue/` lists every one-hop link the
+archive APIs offer between 39 nodes (1,127 of them, INSDC objects split by archive), each measured by
+a route's survey or confirmed by one live probe — and a probe into a file or document confirms it only
+if what it found is usable. A route's per-pair split (`route_splits.json`) is filtered measurement,
+not new evidence. Catalogue links are never ranked
+and never enter `REGISTRY` without a survey, and **a probe never becomes `RouteEvidence`**: it is one
+accession out of one, which proves existence and measures nothing. Promoting a catalogue link to a
+route means surveying it like any other.
+
 **The arguments behind every ranking and fallback decision are in `docs/decisions/`.** Read
 [`route-ranking.md`](docs/decisions/route-ranking.md) before changing anything about ordering;
 it records why banding exists, and why the ranking was *not* hand-tuned when `gds_summary` won
@@ -84,6 +93,7 @@ src/fetch_series/
   metadata/        descriptive metadata: harvest, rules, ontology grounding, measurement
   export/links.py  links.tsv in the incumbent's schema (the M3 parity contract)
   export/graph.py  the route graph as data: what the KB's route-graph page draws
+  catalogue/       every one-hop link the archives offer, by mechanism, with its live probe
   providers/       one module per API surface; typed calls and parsing, no route logic
   survey/          the benchmark harness: corpora, runner, rate limiting
   cache.py         SQLite store of verdicts and raw responses
@@ -110,6 +120,7 @@ uv run pytest                    # offline unit tests; the default
 uv run pytest -m integration     # hits live archive APIs
 uv run pytest -m slow            # needs Git LFS objects fetched
 uv run pytest -m pathology       # known archive bugs
+uv run fetch catalogue probe --write   # re-probe every untested link (live, ~1 min)
 ```
 
 `pytest -m pathology` is inverted from a normal suite: each test asserts that a **known archive bug
@@ -230,6 +241,23 @@ knowledge-base page, promote the route, and remove the test.
   correct metadata from every single-tissue study.
 - **Conflict is a property of sources disagreeing, not of a field's cardinality.** Keying it on
   `multivalued` reported "ENA says lung, GEO says brain" as a *mixture* and hid it.
+- **ENA's `links` endpoint reads `limit=0` as zero rows.** `filereport` and `search` read the
+  same parameter as *no limit*, so copying the parameter across returns a header and nothing,
+  which reads as "no links". `links` also answers a secondary accession (`ERP`, `ERS`) with an
+  empty table rather than an error: key it on the `PRJ` or `SAM`.
+- **NCBI's documentation answers scripts with a browser check**, as does headless Chrome. To check
+  what a page documents, read the Internet Archive's copy (`web.archive.org/web/2026id_/<url>`,
+  gzipped). It matters: GEO documents none of the `_relation` lines every GEO route reads.
+- **`gds` ESearch needs the entry type.** `GSM1480291[ACCN]` alone matches the sample, its series
+  and its platform, and the first UID is the series'. Add `AND GSM[ETYP]`.
+- **A `#` in a file link is part of the name.** Sanger names lane CRAMs `<run>_<lane>#<tag>`:
+  ERR13855116's is `27865_1#3.cram`. Every HTTP client reads `#3.cram` as a fragment and asks for
+  `27865_1`, which answers 404 — a valid 767 MB file reported as missing. Request a published file
+  link through `files.request_url`, and keep the link itself as published: `links.tsv` reproduces it.
+- **SDL answers a project or study with a 504, every time.** `sdl/2/retrieve acc=PRJNA495040` (or
+  `ERP110462`) times out at the gateway after ~10 s on every attempt, and 504 is in
+  `RETRYABLE_STATUS`, so a retrying client spends its whole retry budget on a request that cannot
+  succeed. Ask SDL per run; a run answers in under a second.
 - **Run `hard-cases` before any full corpus.** 34 accessions and seconds. Skipping it cost a partial
   12,755-accession run on a route whose empty rate should have looked wrong immediately.
 

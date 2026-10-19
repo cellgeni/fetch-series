@@ -41,15 +41,15 @@ here.
 
 ## What has been measured
 
-BioProject → runs, over 12,756 BioProjects (2026-05-12), counted at the unique-run level:
+BioProject → runs, over 12,755 BioProjects (2026-05-12), counted at the unique-run level:
 
 | Route | Unique runs | Failed |
 |---|---|---|
-| ENA portal `filereport` | 784,026 | 15 |
-| SRA `sra-db-be` (direct CGI) | 754,277 | 16 |
-| SRA `sra-db-be` (via ELink) | 754,332 | 34 |
-| NCBI `efetch` runinfo (via ELink) | 674,186 | 31 |
-| NCBI `efetch` runinfo (direct `[GPRJ]`) | 673,157 | 15 |
+| ENA portal `filereport` | 784,026 | 14 |
+| SRA `sra-db-be` (direct CGI) | 754,277 | 15 |
+| SRA `sra-db-be` (via ELink) | 754,332 | 33 |
+| NCBI `efetch` runinfo (via ELink) | 674,186 | 30 |
+| NCBI `efetch` runinfo (direct `[GPRJ]`) | 673,157 | 14 |
 
 ENA holds 111,665 runs that `efetch` never returns; about 1,800 runs are missing
 from ENA. GEO series → experiment is covered under [Routes](routes/gse-to-experiment/index.md).

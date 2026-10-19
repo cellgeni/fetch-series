@@ -1,7 +1,7 @@
 """The SRA backend CGI at trace.ncbi.nlm.nih.gov.
 
 Not a documented API, but measurably more complete than ``efetch`` for the same
-question: over 12,756 BioProjects it returned 754,277 unique runs against
+question: over 12,755 BioProjects it returned 754,277 unique runs against
 efetch's 673,157, a gap of about 12%.
 
 It is driven from an E-utilities history rather than an accession list, so it
@@ -18,6 +18,7 @@ from typing import Any
 from fetch_series.survey.client import MalformedResponseError, SurveyClient
 
 CGI = "https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/sra-db-be.cgi"
+RUNINFO = "https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/runinfo"
 
 
 async def runinfo_by_history(
@@ -33,6 +34,21 @@ async def runinfo_by_history(
         },
         timeout=timeout,
     )
+    return parse_runinfo(response.text)
+
+
+async def runinfo_by_accession(
+    client: SurveyClient, accession: str, timeout: float
+) -> list[dict[str, Any]]:
+    """Runinfo rows for one accession, with no ESearch in front.
+
+    The backend resolves the accession itself, and accepts any of a project,
+    study, BioSample, sample, experiment, run, GEO series or GEO sample --
+    every one of GSE60450's family returns the same twelve rows or its own one.
+    A submission accession is answered with an empty body, which
+    :func:`parse_runinfo` reads as no runs.
+    """
+    response = await client.get(RUNINFO, params={"acc": accession}, timeout=timeout)
     return parse_runinfo(response.text)
 
 

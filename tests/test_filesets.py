@@ -77,6 +77,15 @@ class TestVerdict:
             await verify(_record("https://example/y", size=None), no_published)
         ).size_matches is None
 
+    async def test_a_hash_in_a_file_name_is_asked_for_not_dropped(self):
+        """ERR13855116's CRAM is `27865_1#3.cram`; unescaped, the HEAD asks for `27865_1`."""
+        published = "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13855116/27865_1#3.cram"
+        escaped = published.replace("#", "%23")
+        client = _Client({escaped: (200, {"content-length": "100"})})
+        verdict = await verify(_record(published), client)
+        assert client.seen == [escaped]
+        assert verdict.resolves and verdict.record.url == published
+
     async def test_verify_all_covers_every_record(self):
         client = _Client(
             {

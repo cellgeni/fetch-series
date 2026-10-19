@@ -1,0 +1,1258 @@
+{
+ "note": "Written by `fetch catalogue splits --write` from each route's recorded verdicts. Filtered existing measurement: never new evidence, never ranked.",
+ "routes": {
+  "ae_experiment->biosample:sdrf": {
+   "export": "data/surveys/sample_3000@arrayexpress-ena/ae_experiment-to-biosample_sdrf.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "ae_experiment",
+     "target": "biosample",
+     "queried": 3000,
+     "resolved": 1221,
+     "empty": 1768,
+     "failed": 11,
+     "reached": 1221,
+     "distinct": 63153
+    }
+   ]
+  },
+  "ae_experiment->file:sdrf": {
+   "export": "data/surveys/sample_3000@arrayexpress-ena/ae_experiment-to-file_sdrf.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "ae_experiment",
+     "target": "fastq",
+     "queried": 3000,
+     "resolved": 2316,
+     "empty": 673,
+     "failed": 11,
+     "reached": 2316,
+     "distinct": 197089
+    }
+   ]
+  },
+  "ae_experiment->study:idf_secondary": {
+   "export": "data/surveys/arrayexpress-ena/ae_experiment-to-study_idf_secondary.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "ae_experiment",
+     "target": "study_ebi",
+     "queried": 20693,
+     "resolved": 20137,
+     "empty": 551,
+     "failed": 5,
+     "reached": 9775,
+     "distinct": 9763
+    },
+    {
+     "source": "ae_experiment",
+     "target": "study_ncbi",
+     "queried": 20693,
+     "resolved": 20137,
+     "empty": 551,
+     "failed": 5,
+     "reached": 10362,
+     "distinct": 10374
+    }
+   ]
+  },
+  "bioproject->biosample:elink": {
+   "export": "data/surveys/reprocessed-prj/bioproject-to-biosample_elink.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "bioproject",
+     "target": "biosample",
+     "queried": 12755,
+     "resolved": 12080,
+     "empty": 675,
+     "failed": 0,
+     "reached": 12080,
+     "distinct": 244324
+    }
+   ]
+  },
+  "bioproject->biosample:ena_filereport": {
+   "export": "data/surveys/reprocessed-prj/bioproject-to-biosample_ena_filereport.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "bioproject",
+     "target": "biosample",
+     "queried": 12755,
+     "resolved": 12730,
+     "empty": 25,
+     "failed": 0,
+     "reached": 12730,
+     "distinct": 363885
+    }
+   ]
+  },
+  "bioproject->experiment:ena_filereport": {
+   "export": "data/surveys/reprocessed-prj/bioproject-to-experiment_ena_filereport.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "bioproject",
+     "target": "experiment_ddbj",
+     "queried": 12755,
+     "resolved": 12732,
+     "empty": 23,
+     "failed": 0,
+     "reached": 137,
+     "distinct": 1825
+    },
+    {
+     "source": "bioproject",
+     "target": "experiment_ebi",
+     "queried": 12755,
+     "resolved": 12732,
+     "empty": 23,
+     "failed": 0,
+     "reached": 502,
+     "distinct": 201833
+    },
+    {
+     "source": "bioproject",
+     "target": "experiment_ncbi",
+     "queried": 12755,
+     "resolved": 12732,
+     "empty": 23,
+     "failed": 0,
+     "reached": 12093,
+     "distinct": 277657
+    }
+   ]
+  },
+  "bioproject->geo_series:elink": {
+   "export": "data/query/results/bioproject2geo_summary.csv",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "bioproject",
+     "target": "geo_series",
+     "queried": 12114,
+     "resolved": null,
+     "empty": null,
+     "failed": 1078,
+     "reached": 11036,
+     "distinct": 15180
+    }
+   ]
+  },
+  "bioproject->geo_series:gds_direct": {
+   "export": "data/query/results/bioproject2geo_direct_summary.csv",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "bioproject",
+     "target": "geo_series",
+     "queried": 12114,
+     "resolved": null,
+     "empty": null,
+     "failed": 1079,
+     "reached": 11035,
+     "distinct": 15179
+    }
+   ]
+  },
+  "bioproject->run:efetch_direct": {
+   "export": "data/query/results/bioproject2sra_direct_summary.csv",
+   "unparsed": [
+    "-"
+   ],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "bioproject",
+     "target": "run_ddbj",
+     "queried": 12755,
+     "resolved": null,
+     "empty": null,
+     "failed": 14,
+     "reached": 137,
+     "distinct": 2306
+    },
+    {
+     "source": "bioproject",
+     "target": "run_ebi",
+     "queried": 12755,
+     "resolved": null,
+     "empty": null,
+     "failed": 14,
+     "reached": 501,
+     "distinct": 106778
+    },
+    {
+     "source": "bioproject",
+     "target": "run_ncbi",
+     "queried": 12755,
+     "resolved": null,
+     "empty": null,
+     "failed": 14,
+     "reached": 12103,
+     "distinct": 564073
+    }
+   ]
+  },
+  "bioproject->run:efetch_elink": {
+   "export": "data/query/results/bioproject2sra_summary.csv",
+   "unparsed": [
+    "-"
+   ],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "bioproject",
+     "target": "run_ddbj",
+     "queried": 12755,
+     "resolved": null,
+     "empty": null,
+     "failed": 30,
+     "reached": 137,
+     "distinct": 2306
+    },
+    {
+     "source": "bioproject",
+     "target": "run_ebi",
+     "queried": 12755,
+     "resolved": null,
+     "empty": null,
+     "failed": 30,
+     "reached": 500,
+     "distinct": 106818
+    },
+    {
+     "source": "bioproject",
+     "target": "run_ncbi",
+     "queried": 12755,
+     "resolved": null,
+     "empty": null,
+     "failed": 30,
+     "reached": 12088,
+     "distinct": 565062
+    }
+   ]
+  },
+  "bioproject->run:ena_filereport": {
+   "export": "data/surveys/reprocessed-prj/bioproject-to-run_ena_filereport.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "bioproject",
+     "target": "run_ddbj",
+     "queried": 12755,
+     "resolved": 12732,
+     "empty": 23,
+     "failed": 0,
+     "reached": 137,
+     "distinct": 2307
+    },
+    {
+     "source": "bioproject",
+     "target": "run_ebi",
+     "queried": 12755,
+     "resolved": 12732,
+     "empty": 23,
+     "failed": 0,
+     "reached": 502,
+     "distinct": 212055
+    },
+    {
+     "source": "bioproject",
+     "target": "run_ncbi",
+     "queried": 12755,
+     "resolved": 12732,
+     "empty": 23,
+     "failed": 0,
+     "reached": 12093,
+     "distinct": 569574
+    }
+   ]
+  },
+  "bioproject->run:sra_be_direct_cgi": {
+   "export": "data/query/results/bioproject2sra_direct_cgi_summary.csv",
+   "unparsed": [
+    "-"
+   ],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "bioproject",
+     "target": "run_ddbj",
+     "queried": 12755,
+     "resolved": null,
+     "empty": null,
+     "failed": 15,
+     "reached": 137,
+     "distinct": 2306
+    },
+    {
+     "source": "bioproject",
+     "target": "run_ebi",
+     "queried": 12755,
+     "resolved": null,
+     "empty": null,
+     "failed": 15,
+     "reached": 500,
+     "distinct": 194089
+    },
+    {
+     "source": "bioproject",
+     "target": "run_ncbi",
+     "queried": 12755,
+     "resolved": null,
+     "empty": null,
+     "failed": 15,
+     "reached": 12103,
+     "distinct": 557882
+    }
+   ]
+  },
+  "bioproject->run:sra_be_elink": {
+   "export": "data/query/results/bioproject2sra_be_summary.csv",
+   "unparsed": [
+    "-"
+   ],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "bioproject",
+     "target": "run_ddbj",
+     "queried": 12755,
+     "resolved": null,
+     "empty": null,
+     "failed": 33,
+     "reached": 137,
+     "distinct": 2306
+    },
+    {
+     "source": "bioproject",
+     "target": "run_ebi",
+     "queried": 12755,
+     "resolved": null,
+     "empty": null,
+     "failed": 33,
+     "reached": 500,
+     "distinct": 194085
+    },
+    {
+     "source": "bioproject",
+     "target": "run_ncbi",
+     "queried": 12755,
+     "resolved": null,
+     "empty": null,
+     "failed": 33,
+     "reached": 12085,
+     "distinct": 557941
+    }
+   ]
+  },
+  "bioproject->study:ena_filereport": {
+   "export": "data/surveys/reprocessed-prj/bioproject-to-study_ena_filereport.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "bioproject",
+     "target": "study_ddbj",
+     "queried": 12755,
+     "resolved": 12732,
+     "empty": 23,
+     "failed": 0,
+     "reached": 137,
+     "distinct": 137
+    },
+    {
+     "source": "bioproject",
+     "target": "study_ebi",
+     "queried": 12755,
+     "resolved": 12732,
+     "empty": 23,
+     "failed": 0,
+     "reached": 502,
+     "distinct": 502
+    },
+    {
+     "source": "bioproject",
+     "target": "study_ncbi",
+     "queried": 12755,
+     "resolved": 12732,
+     "empty": 23,
+     "failed": 0,
+     "reached": 12093,
+     "distinct": 12109
+    }
+   ]
+  },
+  "biosample->run:ena_filereport": {
+   "export": "data/surveys/sample_3000@results-of_bioproject-to-biosample_ena_filereport@reprocessed-prj/biosample-to-run_ena_filereport.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "biosample",
+     "target": "run_ddbj",
+     "queried": 3000,
+     "resolved": 3000,
+     "empty": 0,
+     "failed": 0,
+     "reached": 20,
+     "distinct": 31
+    },
+    {
+     "source": "biosample",
+     "target": "run_ebi",
+     "queried": 3000,
+     "resolved": 3000,
+     "empty": 0,
+     "failed": 0,
+     "reached": 995,
+     "distinct": 1218
+    },
+    {
+     "source": "biosample",
+     "target": "run_ncbi",
+     "queried": 3000,
+     "resolved": 3000,
+     "empty": 0,
+     "failed": 0,
+     "reached": 1985,
+     "distinct": 3578
+    }
+   ]
+  },
+  "experiment->biosample:ena_filereport": {
+   "export": "data/surveys/sample_3000@reprocessed-srx/experiment-to-biosample_ena_filereport.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "experiment_ddbj",
+     "target": "biosample",
+     "queried": 26,
+     "resolved": 25,
+     "empty": 1,
+     "failed": 0,
+     "reached": 25,
+     "distinct": 25
+    },
+    {
+     "source": "experiment_ebi",
+     "target": "biosample",
+     "queried": 295,
+     "resolved": 295,
+     "empty": 0,
+     "failed": 0,
+     "reached": 295,
+     "distinct": 279
+    },
+    {
+     "source": "experiment_ncbi",
+     "target": "biosample",
+     "queried": 2679,
+     "resolved": 2639,
+     "empty": 40,
+     "failed": 0,
+     "reached": 2639,
+     "distinct": 2589
+    }
+   ]
+  },
+  "experiment->run:ena_filereport": {
+   "export": "data/surveys/results-of_gse-to-experiment_soft_family@reprocessed-gse/experiment-to-run_ena_filereport.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "experiment_ncbi",
+     "target": "run_ncbi",
+     "queried": 3000,
+     "resolved": 2963,
+     "empty": 37,
+     "failed": 0,
+     "reached": 2963,
+     "distinct": 6580
+    }
+   ]
+  },
+  "geo_sample->biosample:acc_cgi": {
+   "export": "data/surveys/sample_1000@reprocessed-sample/geo_sample-to-biosample_acc_cgi.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "geo_sample",
+     "target": "biosample",
+     "queried": 825,
+     "resolved": 822,
+     "empty": 0,
+     "failed": 3,
+     "reached": 822,
+     "distinct": 822
+    }
+   ]
+  },
+  "geo_sample->experiment:acc_cgi": {
+   "export": "data/surveys/sample_1000@reprocessed-sample/geo_sample-to-experiment_acc_cgi.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "geo_sample",
+     "target": "experiment_ncbi",
+     "queried": 825,
+     "resolved": 822,
+     "empty": 0,
+     "failed": 3,
+     "reached": 822,
+     "distinct": 822
+    }
+   ]
+  },
+  "geo_sample->geo_series:acc_cgi": {
+   "export": "data/surveys/sample_1000@reprocessed-sample/geo_sample-to-geo_series_acc_cgi.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "geo_sample",
+     "target": "geo_series",
+     "queried": 825,
+     "resolved": 822,
+     "empty": 0,
+     "failed": 3,
+     "reached": 822,
+     "distinct": 849
+    }
+   ]
+  },
+  "gse->bioproject:gds_summary": {
+   "export": "data/surveys/reprocessed-gse/gse-to-bioproject_gds_summary.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "geo_series",
+     "target": "bioproject",
+     "queried": 13045,
+     "resolved": 13038,
+     "empty": 7,
+     "failed": 0,
+     "reached": 13038,
+     "distinct": 12830
+    }
+   ]
+  },
+  "gse->bioproject:soft_family": {
+   "export": "data/surveys/reprocessed-gse/gse-to-bioproject_soft_family.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "geo_series",
+     "target": "bioproject",
+     "queried": 13045,
+     "resolved": 12572,
+     "empty": 466,
+     "failed": 7,
+     "reached": 12572,
+     "distinct": 12572
+    }
+   ]
+  },
+  "gse->experiment:elink_gds_sra": {
+   "export": "data/surveys/reprocessed-gse/gse-to-experiment_elink_gds_sra.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "geo_series",
+     "target": "experiment_ncbi",
+     "queried": 13045,
+     "resolved": 10752,
+     "empty": 2293,
+     "failed": 0,
+     "reached": 10752,
+     "distinct": 178879
+    }
+   ]
+  },
+  "gse->experiment:soft_bioproject_ena": {
+   "export": "data/surveys/reprocessed-gse/gse-to-experiment_soft_bioproject_ena.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "geo_series",
+     "target": "experiment_ncbi",
+     "queried": 13045,
+     "resolved": 12551,
+     "empty": 487,
+     "failed": 7,
+     "reached": 12551,
+     "distinct": 290462
+    }
+   ]
+  },
+  "gse->experiment:soft_family": {
+   "export": "data/surveys/reprocessed-gse/gse-to-experiment_soft_family.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "geo_series",
+     "target": "experiment_ncbi",
+     "queried": 13045,
+     "resolved": 13022,
+     "empty": 16,
+     "failed": 7,
+     "reached": 13022,
+     "distinct": 308639
+    }
+   ]
+  },
+  "gse->geo_sample:gds_summary": {
+   "export": "data/surveys/reprocessed-gse/gse-to-geo_sample_gds_summary.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "geo_series",
+     "target": "geo_sample",
+     "queried": 13045,
+     "resolved": 13038,
+     "empty": 7,
+     "failed": 0,
+     "reached": 13038,
+     "distinct": 319023
+    }
+   ]
+  },
+  "gse->geo_sample:soft_family": {
+   "export": "data/surveys/reprocessed-gse/gse-to-geo_sample_soft_family.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "geo_series",
+     "target": "geo_sample",
+     "queried": 13045,
+     "resolved": 13038,
+     "empty": 0,
+     "failed": 7,
+     "reached": 13038,
+     "distinct": 319023
+    }
+   ]
+  },
+  "gse->run:elink_gds_sra": {
+   "export": "data/surveys/reprocessed-gse/gse-to-run_elink_gds_sra.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "geo_series",
+     "target": "run_ncbi",
+     "queried": 13045,
+     "resolved": 10751,
+     "empty": 2294,
+     "failed": 0,
+     "reached": 10751,
+     "distinct": 463803
+    }
+   ]
+  },
+  "run->ae_experiment:ena_alias": {
+   "export": "data/surveys/results-of_biosample-to-run_ena_filereport@results-of_ae_experiment-to-biosample_sdrf@arrayexpress-no-secondary/run-to-ae_experiment_ena_alias.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "run_ebi",
+     "target": "ae_experiment",
+     "queried": 1547,
+     "resolved": 91,
+     "empty": 1456,
+     "failed": 0,
+     "reached": 91,
+     "distinct": 6
+    }
+   ]
+  },
+  "run->biosample:ena_filereport": {
+   "export": "data/surveys/sample_3000@reprocessed-srr/run-to-biosample_ena_filereport.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "run_ddbj",
+     "target": "biosample",
+     "queried": 17,
+     "resolved": 17,
+     "empty": 0,
+     "failed": 0,
+     "reached": 17,
+     "distinct": 17
+    },
+    {
+     "source": "run_ebi",
+     "target": "biosample",
+     "queried": 246,
+     "resolved": 246,
+     "empty": 0,
+     "failed": 0,
+     "reached": 246,
+     "distinct": 238
+    },
+    {
+     "source": "run_ncbi",
+     "target": "biosample",
+     "queried": 2737,
+     "resolved": 2714,
+     "empty": 23,
+     "failed": 0,
+     "reached": 2714,
+     "distinct": 2625
+    }
+   ]
+  },
+  "run->experiment:ena_filereport": {
+   "export": "data/surveys/sample_3000@reprocessed-srr/run-to-experiment_ena_filereport.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "run_ddbj",
+     "target": "experiment_ddbj",
+     "queried": 17,
+     "resolved": 17,
+     "empty": 0,
+     "failed": 0,
+     "reached": 17,
+     "distinct": 17
+    },
+    {
+     "source": "run_ebi",
+     "target": "experiment_ebi",
+     "queried": 246,
+     "resolved": 246,
+     "empty": 0,
+     "failed": 0,
+     "reached": 246,
+     "distinct": 239
+    },
+    {
+     "source": "run_ncbi",
+     "target": "experiment_ncbi",
+     "queried": 2737,
+     "resolved": 2714,
+     "empty": 23,
+     "failed": 0,
+     "reached": 2714,
+     "distinct": 2632
+    }
+   ]
+  },
+  "run->file:ena_fastq": {
+   "export": "data/surveys/sample_3000@reprocessed-srr/run-to-file_ena_fastq.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "run_ddbj",
+     "target": "fastq",
+     "queried": 17,
+     "resolved": 17,
+     "empty": 0,
+     "failed": 0,
+     "reached": 17,
+     "distinct": 34
+    },
+    {
+     "source": "run_ebi",
+     "target": "fastq",
+     "queried": 246,
+     "resolved": 118,
+     "empty": 128,
+     "failed": 0,
+     "reached": 118,
+     "distinct": 232
+    },
+    {
+     "source": "run_ncbi",
+     "target": "fastq",
+     "queried": 2737,
+     "resolved": 2709,
+     "empty": 28,
+     "failed": 0,
+     "reached": 2709,
+     "distinct": 4200
+    }
+   ]
+  },
+  "run->file:ena_sra": {
+   "export": "data/surveys/sample_3000@reprocessed-srr/run-to-file_ena_sra.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "run_ddbj",
+     "target": "sra_lite",
+     "queried": 17,
+     "resolved": 0,
+     "empty": 17,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    },
+    {
+     "source": "run_ddbj",
+     "target": "sra_normalized",
+     "queried": 17,
+     "resolved": 0,
+     "empty": 17,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    },
+    {
+     "source": "run_ebi",
+     "target": "sra_lite",
+     "queried": 246,
+     "resolved": 0,
+     "empty": 246,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    },
+    {
+     "source": "run_ebi",
+     "target": "sra_normalized",
+     "queried": 246,
+     "resolved": 0,
+     "empty": 246,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    },
+    {
+     "source": "run_ncbi",
+     "target": "sra_lite",
+     "queried": 2737,
+     "resolved": 0,
+     "empty": 2737,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    },
+    {
+     "source": "run_ncbi",
+     "target": "sra_normalized",
+     "queried": 2737,
+     "resolved": 0,
+     "empty": 2737,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    }
+   ]
+  },
+  "run->file:ena_submitted": {
+   "export": "data/surveys/sample_3000@reprocessed-srr/run-to-file_ena_submitted.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "run_ddbj",
+     "target": "bam",
+     "queried": 17,
+     "resolved": 0,
+     "empty": 17,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    },
+    {
+     "source": "run_ddbj",
+     "target": "cram",
+     "queried": 17,
+     "resolved": 0,
+     "empty": 17,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    },
+    {
+     "source": "run_ddbj",
+     "target": "fastq",
+     "queried": 17,
+     "resolved": 0,
+     "empty": 17,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    },
+    {
+     "source": "run_ebi",
+     "target": "bam",
+     "queried": 246,
+     "resolved": 246,
+     "empty": 0,
+     "failed": 0,
+     "reached": 1,
+     "distinct": 1
+    },
+    {
+     "source": "run_ebi",
+     "target": "cram",
+     "queried": 246,
+     "resolved": 246,
+     "empty": 0,
+     "failed": 0,
+     "reached": 51,
+     "distinct": 51
+    },
+    {
+     "source": "run_ebi",
+     "target": "fastq",
+     "queried": 246,
+     "resolved": 246,
+     "empty": 0,
+     "failed": 0,
+     "reached": 194,
+     "distinct": 540
+    },
+    {
+     "source": "run_ncbi",
+     "target": "bam",
+     "queried": 2737,
+     "resolved": 0,
+     "empty": 2737,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    },
+    {
+     "source": "run_ncbi",
+     "target": "cram",
+     "queried": 2737,
+     "resolved": 0,
+     "empty": 2737,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    },
+    {
+     "source": "run_ncbi",
+     "target": "fastq",
+     "queried": 2737,
+     "resolved": 0,
+     "empty": 2737,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    }
+   ]
+  },
+  "run->file:sdl": {
+   "export": "data/surveys/sample_3000@reprocessed-srr/run-to-file_sdl.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "run_ddbj",
+     "target": "bam",
+     "queried": 17,
+     "resolved": 17,
+     "empty": 0,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    },
+    {
+     "source": "run_ddbj",
+     "target": "cram",
+     "queried": 17,
+     "resolved": 17,
+     "empty": 0,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    },
+    {
+     "source": "run_ddbj",
+     "target": "fastq",
+     "queried": 17,
+     "resolved": 17,
+     "empty": 0,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    },
+    {
+     "source": "run_ddbj",
+     "target": "sra_normalized",
+     "queried": 17,
+     "resolved": 17,
+     "empty": 0,
+     "failed": 0,
+     "reached": 17,
+     "distinct": 17
+    },
+    {
+     "source": "run_ebi",
+     "target": "bam",
+     "queried": 246,
+     "resolved": 246,
+     "empty": 0,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    },
+    {
+     "source": "run_ebi",
+     "target": "cram",
+     "queried": 246,
+     "resolved": 246,
+     "empty": 0,
+     "failed": 0,
+     "reached": 4,
+     "distinct": 4
+    },
+    {
+     "source": "run_ebi",
+     "target": "fastq",
+     "queried": 246,
+     "resolved": 246,
+     "empty": 0,
+     "failed": 0,
+     "reached": 19,
+     "distinct": 53
+    },
+    {
+     "source": "run_ebi",
+     "target": "sra_normalized",
+     "queried": 246,
+     "resolved": 246,
+     "empty": 0,
+     "failed": 0,
+     "reached": 246,
+     "distinct": 246
+    },
+    {
+     "source": "run_ncbi",
+     "target": "bam",
+     "queried": 2737,
+     "resolved": 2733,
+     "empty": 4,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    },
+    {
+     "source": "run_ncbi",
+     "target": "cram",
+     "queried": 2737,
+     "resolved": 2733,
+     "empty": 4,
+     "failed": 0,
+     "reached": 0,
+     "distinct": 0
+    },
+    {
+     "source": "run_ncbi",
+     "target": "fastq",
+     "queried": 2737,
+     "resolved": 2733,
+     "empty": 4,
+     "failed": 0,
+     "reached": 10,
+     "distinct": 32
+    },
+    {
+     "source": "run_ncbi",
+     "target": "sra_normalized",
+     "queried": 2737,
+     "resolved": 2733,
+     "empty": 4,
+     "failed": 0,
+     "reached": 2733,
+     "distinct": 2733
+    }
+   ]
+  },
+  "run->geo_sample:ena_alias": {
+   "export": "data/surveys/sample_3000@reprocessed-srr/run-to-geo_sample_ena_alias.csv.gz",
+   "unparsed": [],
+   "excluded": {
+    "run_ddbj": 17,
+    "run_ebi": 246
+   },
+   "pairs": [
+    {
+     "source": "run_ncbi",
+     "target": "geo_sample",
+     "queried": 2737,
+     "resolved": 2477,
+     "empty": 260,
+     "failed": 0,
+     "reached": 2477,
+     "distinct": 2395
+    }
+   ]
+  },
+  "sample->run:ena_filereport": {
+   "export": "data/surveys/sample_3000@reprocessed-srs/sample-to-run_ena_filereport.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "sample_ddbj",
+     "target": "run_ddbj",
+     "queried": 29,
+     "resolved": 29,
+     "empty": 0,
+     "failed": 0,
+     "reached": 29,
+     "distinct": 41
+    },
+    {
+     "source": "sample_ebi",
+     "target": "run_ebi",
+     "queried": 216,
+     "resolved": 215,
+     "empty": 1,
+     "failed": 0,
+     "reached": 215,
+     "distinct": 1724
+    },
+    {
+     "source": "sample_ncbi",
+     "target": "run_ncbi",
+     "queried": 2755,
+     "resolved": 2743,
+     "empty": 12,
+     "failed": 0,
+     "reached": 2743,
+     "distinct": 6594
+    }
+   ]
+  },
+  "study->ae_experiment:biostudies_search": {
+   "export": "data/surveys/sample_3000@results-of_bioproject-to-study_ena_filereport@reprocessed-prj/study-to-ae_experiment_biostudies_search.csv.gz",
+   "unparsed": [],
+   "excluded": {
+    "study_ddbj": 38
+   },
+   "pairs": [
+    {
+     "source": "study_ebi",
+     "target": "ae_experiment",
+     "queried": 118,
+     "resolved": 96,
+     "empty": 22,
+     "failed": 0,
+     "reached": 96,
+     "distinct": 96
+    },
+    {
+     "source": "study_ncbi",
+     "target": "ae_experiment",
+     "queried": 2844,
+     "resolved": 4,
+     "empty": 2840,
+     "failed": 0,
+     "reached": 4,
+     "distinct": 5
+    }
+   ]
+  },
+  "study->bioproject:ena_filereport": {
+   "export": "data/surveys/sample_3000@results-of_bioproject-to-study_ena_filereport@reprocessed-prj/study-to-bioproject_ena_filereport.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "study_ddbj",
+     "target": "bioproject",
+     "queried": 38,
+     "resolved": 38,
+     "empty": 0,
+     "failed": 0,
+     "reached": 38,
+     "distinct": 38
+    },
+    {
+     "source": "study_ebi",
+     "target": "bioproject",
+     "queried": 118,
+     "resolved": 118,
+     "empty": 0,
+     "failed": 0,
+     "reached": 118,
+     "distinct": 118
+    },
+    {
+     "source": "study_ncbi",
+     "target": "bioproject",
+     "queried": 2844,
+     "resolved": 2844,
+     "empty": 0,
+     "failed": 0,
+     "reached": 2844,
+     "distinct": 2843
+    }
+   ]
+  },
+  "study->run:ena_filereport": {
+   "export": "data/surveys/sample_3000@results-of_bioproject-to-study_ena_filereport@reprocessed-prj/study-to-run_ena_filereport.csv.gz",
+   "unparsed": [],
+   "excluded": {},
+   "pairs": [
+    {
+     "source": "study_ddbj",
+     "target": "run_ddbj",
+     "queried": 38,
+     "resolved": 38,
+     "empty": 0,
+     "failed": 0,
+     "reached": 38,
+     "distinct": 714
+    },
+    {
+     "source": "study_ebi",
+     "target": "run_ebi",
+     "queried": 118,
+     "resolved": 118,
+     "empty": 0,
+     "failed": 0,
+     "reached": 118,
+     "distinct": 69148
+    },
+    {
+     "source": "study_ncbi",
+     "target": "run_ncbi",
+     "queried": 2844,
+     "resolved": 2844,
+     "empty": 0,
+     "failed": 0,
+     "reached": 2844,
+     "distinct": 135313
+    }
+   ]
+  }
+ }
+}

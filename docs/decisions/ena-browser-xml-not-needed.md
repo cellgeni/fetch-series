@@ -67,3 +67,17 @@ should be revisited.
 re-resolving and diffing verdicts; comparing `last_updated` would spot a changed
 record in one request, without resolving anything. Unimplemented, and the
 cheaper design of the two.
+
+## Since: the catalogue probes it
+
+`ena_portal.browser_xml` and `browser_cross_references` exist for
+[the link catalogue](../graph/catalogue.md), which records that a project's
+XML names its GEO series (`PRJNA258286` → `GSE60450`) or its ArrayExpress
+experiment as a URL (`PRJEB15401` → `E-MTAB-5061`). No route reads them, and
+the reliability finding above is why that link is drawn as untested rather
+than surveyed into a route.
+
+One clause above no longer holds: analysis objects do not need the browser
+API. `filereport` with `result=analysis` reports an analysis' study, samples,
+experiment, runs, submission and files, and accepts a project, study or sample
+accession as well as the `ERZ` itself (`ERZ10183054` names four runs).
