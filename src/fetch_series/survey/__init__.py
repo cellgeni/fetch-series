@@ -10,12 +10,21 @@ from fetch_series.survey.client import (
     is_retryable,
 )
 from fetch_series.survey.corpora import Corpus, hard_cases, load, reprocessed
-from fetch_series.survey.runner import RouteFn, SurveyRun, run_route
+from fetch_series.survey.runner import (
+    FanoutFn,
+    FanoutRun,
+    RouteFn,
+    SurveyRun,
+    run_fanout,
+    run_route,
+)
 
 __all__ = [
     "EBI_LIMITS",
     "NCBI_LIMITS",
     "Corpus",
+    "FanoutFn",
+    "FanoutRun",
     "Limits",
     "MalformedResponseError",
     "Outcome",
@@ -27,5 +36,6 @@ __all__ = [
     "is_retryable",
     "load",
     "reprocessed",
+    "run_fanout",
     "run_route",
 ]

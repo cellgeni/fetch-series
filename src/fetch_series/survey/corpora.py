@@ -10,11 +10,12 @@ full corpus.
 from __future__ import annotations
 
 import random
+import re
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from fetch_series.accession import Accession, EntityType, parse_all
+from fetch_series.accession import Accession, Archive, EntityType, parse_all
 
 DATA_DIR = Path("data")
 SAMPLE_TABLE = DATA_DIR / "reference" / "All_10x.sample_table.tsv"
@@ -34,9 +35,13 @@ class Corpus:
     accessions: tuple[Accession, ...]
     source: str
     unparsed: tuple[str, ...] = field(default=())
+    # ArrayExpress samples have no accession: a sample is addressed as its study
+    # plus the SDRF row's Source Name, `E-MTAB-5061:AZ_A1`. Not an identifier
+    # the registry can parse, and not junk either, so not `unparsed`.
+    addresses: tuple[str, ...] = field(default=())
 
     def __len__(self) -> int:
-        return len(self.accessions)
+        return len(self.accessions) + len(self.addresses)
 
     def of_type(self, entity: EntityType) -> tuple[str, ...]:
         return tuple(a.value for a in self.accessions if a.entity is entity)
@@ -46,8 +51,19 @@ class Corpus:
         return tuple(a.value for a in self.accessions)
 
 
+# `E-MTAB-5061:AZ_A1`, `E-GEOD-60450:GSM1480302 1`. The Source Name is the
+# submitter's, so anything after the colon is kept verbatim, spaces included.
+_AE_SAMPLE = re.compile(r"^E-[A-Z]+-\d+:.+$")
+
+
+def is_ae_sample(value: str) -> bool:
+    return _AE_SAMPLE.match(value) is not None
+
+
 def _build(name: str, description: str, source: str, raws: Iterable[str]) -> Corpus:
-    parsed, unknown = parse_all(list(dict.fromkeys(raws)))
+    unique = list(dict.fromkeys(raws))
+    addresses = tuple(raw for raw in unique if is_ae_sample(raw))
+    parsed, unknown = parse_all([raw for raw in unique if not is_ae_sample(raw)])
     return Corpus(
         name=name,
         description=description,
@@ -56,7 +72,25 @@ def _build(name: str, description: str, source: str, raws: Iterable[str]) -> Cor
         # `-` and anything else unrecognised is carried, not dropped: a corpus
         # that silently discards rows has an unknowable denominator.
         unparsed=tuple(unknown),
+        addresses=addresses,
     )
+
+
+# Gates, never evidence. Each is adversarial or fixed by construction -- every
+# hard case is there because it broke something, every probe accession was
+# chosen because it answers -- so a rate measured over one says nothing about
+# how a route or link behaves on the archives' records at large. A corpus drawn
+# or derived from a gate is a gate too.
+GATE_CORPORA = frozenset({"hard-cases", "metadata-hard-cases", "probe-families"})
+
+
+def is_gate(name: str) -> bool:
+    """Whether a corpus is a gate, or drawn or derived from one.
+
+    The innermost corpus of a nested name is its last ``@`` segment: a route id
+    never contains ``@``, and every parameterised form puts its parent last.
+    """
+    return name.rsplit("@", 1)[-1] in GATE_CORPORA
 
 
 # Every accession below broke something, and the note says what. This is the
@@ -296,17 +330,30 @@ def from_survey(route_id: str, corpus: str, cache_path: Path | None = None) -> C
     the failures the question is about.
     """
     from fetch_series.cache import DEFAULT_CACHE_PATH, SurveyCache
+    from fetch_series.survey.export import export_path, read_export
 
     values: set[str] = set()
-    with SurveyCache(cache_path or DEFAULT_CACHE_PATH) as cache:
-        for result in cache.results(corpus, route_id):
-            values.update(result.results)
+    path = cache_path or DEFAULT_CACHE_PATH
+    source = f"survey cache: {route_id} @ {corpus}"
+    if path.exists():
+        with SurveyCache(path) as cache:
+            for result in cache.results(corpus, route_id):
+                values.update(result.results)
+    if not values:
+        # The cache is not committed, so on any other machine -- CI among them --
+        # the population exists only as the committed export. Read that rather
+        # than declare a corpus another checkout can rebuild unbuildable.
+        exported = export_path(corpus, route_id)
+        if exported is not None:
+            for result in read_export(exported, corpus, route_id):
+                values.update(result.results)
+            source = f"survey export: {exported}"
     if not values:
         raise ValueError(f"No recorded results for {route_id} on {corpus}")
     return _build(
         name=f"results-of:{route_id}@{corpus}",
         description=f"Every accession {route_id} returned over {corpus}.",
-        source=f"survey cache: {route_id} @ {corpus}",
+        source=source,
         raws=sorted(values),
     )
 
@@ -328,7 +375,9 @@ def sample_of(name: str, n: int, seed: int = 20260915) -> Corpus:
     if n > len(parent):
         raise ValueError(f"Asked for {n:,} accessions but {name} holds {len(parent):,}")
     rng = random.Random(seed)
-    drawn = rng.sample([a.value for a in parent.accessions], n)
+    # Addresses go after the accessions, and only exist where the parent has
+    # any: every corpus drawn before addresses existed draws exactly as it did.
+    drawn = rng.sample([a.value for a in parent.accessions] + list(parent.addresses), n)
     return _build(
         name=f"sample:{n}@{name}",
         description=f"{n:,} accessions drawn at random from {name} (seed {seed}).",
@@ -337,9 +386,60 @@ def sample_of(name: str, n: int, seed: int = 20260915) -> Corpus:
     )
 
 
+def of_node(node: str, parent_name: str, archive: str | None = None) -> Corpus:
+    """The accessions of one catalogue node within another corpus.
+
+    Filtered *before* any draw: ``sample:300@node:run_ebi@reprocessed-srr`` is
+    300 ERRs, where ``node:run_ebi@sample:300@reprocessed-srr`` would be however
+    many ERRs a 300-run draw happened to hold. ``archive`` stratifies a node
+    the archives share: ``node:bioproject/ebi@reprocessed-prj`` is the PRJEBs.
+    """
+    from fetch_series.catalogue.nodes import NODES, node_for
+
+    known = {n.id for n in NODES}
+    if node not in known:
+        raise ValueError(f"Unknown node {node!r}")
+    if archive is not None and archive not in {a.value for a in Archive}:
+        raise ValueError(f"Unknown archive {archive!r}")
+    parent = load(parent_name)
+    kept = [
+        a.value
+        for a in parent.accessions
+        if node_for(a) == node and (archive is None or a.archive.value == archive)
+    ]
+    if node == "ae_sample":
+        kept += list(parent.addresses)
+    label = f"{node}/{archive}" if archive else node
+    return _build(
+        name=f"node:{label}@{parent_name}",
+        description=f"The {label} accessions of {parent_name}.",
+        source=f"{parent.source} node={label}",
+        raws=kept,
+    )
+
+
+def probe_families() -> Corpus:
+    """Every link's probe accession: the gate a link survey runs before any draw.
+
+    Each was chosen because its link answers for it, so the corpus measures
+    nothing -- it shows that a unit's fetcher produces a verdict, and that the
+    verdict agrees with the recorded probe.
+    """
+    from fetch_series.catalogue import CATALOGUE
+
+    raws = sorted({CATALOGUE.probe_accession(link) for link in CATALOGUE.links})
+    return _build(
+        name="probe-families",
+        description="Every catalogue link's probe accession; a gate, never evidence.",
+        source="fetch_series.catalogue.CATALOGUE.probe_accession",
+        raws=raws,
+    )
+
+
 CORPUS_BUILDERS = {
     "hard-cases": hard_cases,
     "metadata-hard-cases": metadata_hard_cases,
+    "probe-families": probe_families,
     "reprocessed": reprocessed,
     "geo-sample": geo_sample,
 }
@@ -347,8 +447,10 @@ CORPUS_BUILDERS = {
 KNOWN_CORPORA = (
     "hard-cases",
     "metadata-hard-cases",
+    "probe-families",
     "results-of:<route-id>@<corpus>",
     "sample:<n>@<corpus>",
+    "node:<node>[/<archive>]@<corpus>",
     "reprocessed-<column>   (column: " + ", ".join(SAMPLE_TABLE_COLUMNS[:6]) + ")",
     "geo-sample[-<n>]",
     "arrayexpress-ena  (and any other committed data/corpora/<name>/accessions.list)",
@@ -385,6 +487,14 @@ def load(name: str) -> Corpus:
         if not size.isdigit() or not parent:
             raise ValueError(f"Expected sample:<n>@<corpus>, got {name!r}")
         return sample_of(parent, int(size))
+
+    # node:<node>[/<archive>]@<corpus>
+    if name.startswith("node:"):
+        spec, _, parent = name.removeprefix("node:").partition("@")
+        node, _, archive = spec.partition("/")
+        if not node or not parent:
+            raise ValueError(f"Expected node:<node>[/<archive>]@<corpus>, got {name!r}")
+        return of_node(node, parent, archive or None)
 
     # results-of:<route id>@<corpus>
     if name.startswith("results-of:"):

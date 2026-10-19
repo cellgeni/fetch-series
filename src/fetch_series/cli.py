@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import csv
-import gzip
 import json
 import logging
 import tempfile
@@ -63,6 +61,8 @@ from fetch_series.resolver import resolve as resolver_resolve
 from fetch_series.results import Outcome
 from fetch_series.routes import IMPLEMENTATIONS
 from fetch_series.survey import Limits, SurveyClient, corpora, run_route
+from fetch_series.survey.export import slug as export_slug
+from fetch_series.survey.export import write_export
 from fetch_series.survey.runner import shuffled
 
 app = typer.Typer(
@@ -118,13 +118,7 @@ def _client_for_one_query(concurrency: int) -> SurveyClient:
 
 
 def _slug(route_id: str) -> str:
-    """Filesystem-safe form of a route id.
-
-    Route ids read well in a terminal ("gse->experiment:soft_family") and badly
-    as directory names -- ">" needs quoting in every shell that would otherwise
-    tab-complete the path.
-    """
-    return route_id.replace("->", "-to-").replace(":", "_").replace("/", "_")
+    return export_slug(route_id)
 
 
 def _route_or_exit(route_id: str) -> Route:
@@ -1230,18 +1224,6 @@ def cache_stats(
     typer.echo(json.dumps(rows, indent=2))
 
 
-SURVEY_COLUMNS = (
-    "accession",
-    "outcome",
-    "n_results",
-    "results",
-    "error_class",
-    "error_message",
-    "latency_ms",
-    "fetched_at",
-)
-
-
 @survey_app.command("export")
 def survey_export(
     out: Annotated[Path, typer.Option("-o", "--out", help="Directory to write into.")] = Path(
@@ -1272,31 +1254,12 @@ def survey_export(
             if route_id is None or recorded_route == route_id
         ]
         for recorded_corpus, recorded_route in pairs:
-            directory = out / _slug(recorded_corpus)
-            directory.mkdir(parents=True, exist_ok=True)
-            # Gzipped: the results column holds joined accession lists, which
-            # compress 18x. 92 MB of CSV becomes 15 MB, and the user pays for
-            # LFS. `zgrep`, `zcat` and `pandas.read_csv` all read it directly.
-            path = directory / f"{_slug(recorded_route)}.csv.gz"
-            rows = 0
-            with gzip.open(path, "wt", newline="") as handle:
-                writer = csv.writer(handle)
-                writer.writerow(SURVEY_COLUMNS)
-                for result in cache.results(recorded_corpus, recorded_route):
-                    writer.writerow(
-                        [
-                            result.accession,
-                            result.outcome.value,
-                            result.n_results,
-                            ";".join(result.results),
-                            result.error_class or "",
-                            (result.error_message or "").replace("\n", " "),
-                            result.latency_ms,
-                            result.fetched_at.isoformat(),
-                        ]
-                    )
-                    rows += 1
-            (directory / "manifest.txt").write_text(f"corpus: {recorded_corpus}\n")
+            path, rows = write_export(
+                out / _slug(recorded_corpus),
+                recorded_corpus,
+                recorded_route,
+                cache.results(recorded_corpus, recorded_route),
+            )
             written.append((str(path), rows))
 
     for written_path, rows in written:

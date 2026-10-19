@@ -13,7 +13,7 @@ from datetime import date
 from enum import StrEnum
 
 from fetch_series.accession import Archive, EntityType
-from fetch_series.results import Outcome
+from fetch_series.results import Check, Outcome
 
 # The three INSDC archives. Each issues its own study, sample, experiment, run,
 # submission and analysis accessions under its own prefix letter, and the
@@ -270,12 +270,6 @@ class Link:
     @property
     def id(self) -> str:
         return f"{self.source}->{self.target}:{self.mechanism}"
-
-
-# What a check on a found file or document said. ``None`` is "could not be
-# determined", which is not a pass: a file whose completeness is unknown is not
-# known to be valid.
-Check = tuple[str, bool | None]
 
 
 @dataclass(frozen=True, slots=True)

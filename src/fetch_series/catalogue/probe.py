@@ -34,11 +34,12 @@ from __future__ import annotations
 import asyncio
 import gzip
 import io
+import random
 import re
 import tarfile
 from collections.abc import Awaitable, Callable, Iterable, Mapping
 from dataclasses import dataclass, field, replace
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 from urllib.parse import urlencode, urlsplit
 from xml.etree import ElementTree
@@ -1129,15 +1130,48 @@ def _complete_fastq(files: list[FileRecord]) -> bool:
     return {1, 2} <= {read_of(f.name or f.url) for f in files}
 
 
-def _set_of(records: list[FileRecord], prefer: Iterable[str]) -> tuple[str, list[FileRecord]]:
-    """One run's set out of everything found: the probe's own run where it is there."""
+# Given the runs a link found files for, sorted, which one's set to check.
+RunPicker = Callable[[list[str]], str]
+
+
+def prefer_runs(*preferred: str) -> RunPicker:
+    """A probe's picker: the first of ``preferred`` that is there, else the first run.
+
+    Right for a probe, which checks one fixed accession's family on purpose.
+    Wrong for a survey: "the run that sorts first" is the oldest submission of
+    every BioProject, and a check made only on oldest runs measures the oldest.
+    """
+
+    def pick(runs: list[str]) -> str:
+        for run in preferred:
+            if run in runs:
+                return run
+        return runs[0]
+
+    return pick
+
+
+def seeded_runs(seed: int, accession: str) -> RunPicker:
+    """A survey's picker: the accession's own run if it is one, else a seeded choice.
+
+    Seeded per accession (``Random(f"{seed}:{accession}")``), so a resumed or
+    repeated survey checks the same run, and two accessions' choices do not
+    depend on the order they were visited in.
+    """
+    rng = random.Random(f"{seed}:{accession}")
+
+    def pick(runs: list[str]) -> str:
+        return accession if accession in runs else rng.choice(runs)
+
+    return pick
+
+
+def _set_of(records: list[FileRecord], pick_run: RunPicker) -> tuple[str, list[FileRecord]]:
+    """One run's set out of everything found, the run chosen by ``pick_run``."""
     by_run: dict[str, list[FileRecord]] = {}
     for record in records:
         by_run.setdefault(record.run, []).append(record)
-    for run in prefer:
-        if run in by_run:
-            return run, by_run[run]
-    run = sorted(by_run)[0]
+    run = pick_run(sorted(by_run))
     return run, by_run[run]
 
 
@@ -1158,10 +1192,10 @@ async def check_reads(
     node: Node,
     records: list[FileRecord],
     clients: Mapping[str, SurveyClient],
-    prefer: Iterable[str],
+    pick_run: RunPicker,
 ) -> tuple[tuple[Check, ...], str]:
     """Downloadable, verifiable and complete for 10x, on one run's set of ``node``'s format."""
-    run, files = _set_of(records, prefer)
+    run, files = _set_of(records, pick_run)
     data = [f for f in files if f.is_data]
     downloadable = await _downloadable(data, clients)
     verifiable = bool(data) and all(f.md5 and f.size for f in data)
@@ -1196,6 +1230,103 @@ async def check_supplementary(
     return (("downloadable", verdict.resolves), ("size-checkable", checkable)), record.name
 
 
+@dataclass(frozen=True, slots=True)
+class Finding:
+    """What one request said about one link from one accession, in full.
+
+    A probe and a link survey share this. A probe keeps a sample of ``values``
+    (:meth:`probe`); a survey records every one, because the distinct count is
+    the measurement.
+    """
+
+    link: str
+    accession: str
+    outcome: Outcome
+    values: tuple[str, ...] = ()
+    error: str | None = None
+    checks: tuple[Check, ...] = ()
+    checked: str | None = None
+
+    def probe(self, checked_on: date) -> Probe:
+        return Probe(
+            link=self.link,
+            accession=self.accession,
+            checked_on=checked_on,
+            outcome=self.outcome,
+            found=self.values[:PROBE_KEEP],
+            found_count=len(self.values),
+            error=self.error,
+            checks=self.checks,
+            checked=self.checked,
+        )
+
+
+async def answer_links(
+    mechanism: str,
+    accession: str,
+    members: Iterable[Link],
+    clients: Mapping[str, SurveyClient],
+    *,
+    catalogue: Catalogue = CATALOGUE,
+    pick_run: RunPicker | None = None,
+    retry: Callable[[BaseException], bool] | None = None,
+) -> list[Finding]:
+    """Make ``mechanism``'s request for ``accession`` and say what it found for each link.
+
+    One request answers every link in ``members``. A request that fails after
+    its retries fails every one of them, with the redacted error recorded:
+    "the request did not complete" must stay distinguishable from "the field
+    was empty".
+
+    Args:
+        pick_run: which run's file set to check where a link finds several
+            runs' files. A probe prefers its own accession and the 10x family;
+            a survey passes :func:`seeded_runs`.
+        retry: whether a failure is worth another attempt, where it is narrower
+            than the client's own rule -- a request known never to succeed
+            should not spend the retry budget proving it again.
+    """
+    links = list(members)
+    prober = PROBERS[mechanism]
+    client = clients[prober.host]
+    picker = pick_run or prefer_runs(accession, *TEN_X_RUNS)
+    try:
+        raw = await client.with_retry(
+            lambda timeout: prober.fetch(client, accession, timeout),
+            label=f"{mechanism} {accession}",
+            **({"retryable": retry} if retry is not None else {}),
+        )
+    except Exception as exc:
+        error = redact_exception(exc)
+        message = redact(f"{type(error).__name__}: {error}")[:300]
+        return [Finding(link.id, accession, Outcome.FAILED, error=message) for link in links]
+    answer = raw if isinstance(raw, Answer) else Answer(raw)
+    findings = []
+    for link in links:
+        node = catalogue.nodes[link.target]
+        values = normalise(node, lookup(answer.values, node))
+        if link.source == link.target:
+            # A self link names a different record of the same kind -- a
+            # SubSeries, a related experiment. E-MTAB-5061's own JSON links
+            # E-MTAB-5061 (its Expression Atlas page), which is no link.
+            values = [value for value in values if value != accession]
+        checks: tuple[Check, ...] = ()
+        checked = None
+        if values:
+            checks, checked = await _check(node, values, answer, picker, clients)
+        findings.append(
+            Finding(
+                link=link.id,
+                accession=accession,
+                outcome=Outcome.RESOLVED if values else Outcome.EMPTY,
+                values=tuple(values),
+                checks=checks,
+                checked=checked,
+            )
+        )
+    return findings
+
+
 async def probe_links(
     links: Iterable[Link],
     clients: dict[str, SurveyClient],
@@ -1204,9 +1335,8 @@ async def probe_links(
 ) -> list[Probe]:
     """Probe ``links``, one request per mechanism and accession.
 
-    A request that fails after its retries fails every link it would have
-    answered, with the redacted error recorded: "the request did not complete"
-    must stay distinguishable from "the field was empty".
+    :func:`answer_links` truncated to :data:`PROBE_KEEP`: a probe shows what
+    the field holds, it does not copy the archive.
     """
     groups: dict[tuple[str, str], list[Link]] = {}
     for link in links:
@@ -1214,47 +1344,8 @@ async def probe_links(
     checked_on = datetime.now(UTC).date()
 
     async def one(mechanism: str, accession: str, members: list[Link]) -> list[Probe]:
-        prober = PROBERS[mechanism]
-        client = clients[prober.host]
-        try:
-            raw = await client.with_retry(
-                lambda timeout: prober.fetch(client, accession, timeout),
-                label=f"probe {mechanism} {accession}",
-            )
-        except Exception as exc:
-            error = redact_exception(exc)
-            message = redact(f"{type(error).__name__}: {error}")[:300]
-            return [
-                Probe(link.id, accession, checked_on, Outcome.FAILED, error=message)
-                for link in members
-            ]
-        answer = raw if isinstance(raw, Answer) else Answer(raw)
-        probes = []
-        for link in members:
-            node = catalogue.nodes[link.target]
-            values = normalise(node, lookup(answer.values, node))
-            if link.source == link.target:
-                # A self link names a different record of the same kind -- a
-                # SubSeries, a related experiment. E-MTAB-5061's own JSON links
-                # E-MTAB-5061 (its Expression Atlas page), which is no link.
-                values = [value for value in values if value != accession]
-            checks: tuple[Check, ...] = ()
-            checked = None
-            if values:
-                checks, checked = await _check(node, values, answer, accession, clients)
-            probes.append(
-                Probe(
-                    link=link.id,
-                    accession=accession,
-                    checked_on=checked_on,
-                    outcome=Outcome.RESOLVED if values else Outcome.EMPTY,
-                    found=tuple(values[:PROBE_KEEP]),
-                    found_count=len(values),
-                    checks=checks,
-                    checked=checked,
-                )
-            )
-        return probes
+        findings = await answer_links(mechanism, accession, members, clients, catalogue=catalogue)
+        return [finding.probe(checked_on) for finding in findings]
 
     results = await asyncio.gather(
         *(one(mechanism, accession, members) for (mechanism, accession), members in groups.items())
@@ -1266,7 +1357,7 @@ async def _check(
     node: Node,
     values: list[str],
     answer: Answer,
-    accession: str,
+    pick_run: RunPicker,
     clients: Mapping[str, SurveyClient],
 ) -> tuple[tuple[Check, ...], str | None]:
     """The checks a found file or document must pass; none for an accession."""
@@ -1280,9 +1371,8 @@ async def _check(
     if node.kind is NodeKind.READ_FORMAT:
         if not records:
             return (("downloadable", None), ("verifiable", None), ("complete", None)), None
-        prefer = [accession, *TEN_X_RUNS]
         try:
-            return await check_reads(node, records, clients, prefer)
+            return await check_reads(node, records, clients, pick_run)
         except Exception as exc:
             error = redact_exception(exc)
             return (("downloadable", None), ("verifiable", None), ("complete", None)), redact(
@@ -1305,9 +1395,14 @@ __all__ = [
     "PROBERS",
     "Answer",
     "Document",
+    "Finding",
     "Prober",
+    "RunPicker",
+    "answer_links",
     "host_limits",
     "normalise",
+    "prefer_runs",
     "probe_links",
     "read_of",
+    "seeded_runs",
 ]
