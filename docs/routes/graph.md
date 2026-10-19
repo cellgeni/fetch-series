@@ -116,6 +116,12 @@ those one hop longer.
 The data behind this page is printed by `uv run fetch routes graph`, which
 produces it the same way the docs build does. Node positions were searched, not
 placed by hand, by `scripts/route_graph_layout.py`, within each node's row and
-archive column. Colours were chosen by running the categorical palette through
+archive column. The same search then bends a bundle that would pass under a
+node it does not belong to, but only where a bend clears every such node:
+in the default view that leaves 23 route crossings of that kind and 28 untested
+ones, against 32 and 94 drawn with one gentle curve for all. What is left is
+mostly BioProject's and BioSample's lines, which reach almost every node below
+them. Letting those two sit outside the INSDC columns was tried, and the
+search put both back where they were. Colours were chosen by running the categorical palette through
 a validator in both themes: every pair of neighbouring columns separates for
 colour-blind readers, and the pairs that do not are never next to each other.

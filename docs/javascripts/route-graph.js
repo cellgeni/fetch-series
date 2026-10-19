@@ -39,9 +39,12 @@
   // Levels top to bottom, one row each, and archives left to right, one
   // column each; x positions within a node's row and column searched, not
   // drawn by hand, by scripts/route_graph_layout.py over `fetch routes graph`.
-  // Rerun it when nodes or links change and paste its output here.
+  // BOWS is how far a bundle bends to clear the nodes it would otherwise
+  // pass under, as a fraction of its length; every other bundle keeps the
+  // page's own gentle curve. Rerun it when nodes or links change and paste
+  // its output here.
   // LAYOUT-BEGIN
-  // {'energy': 96629.6, 'through': {'routes': 24, 'untested': 150}, 'crossings': 5085, 'overlaps': 0} -- scripts/route_graph_layout.py, 3 seeds x 8000
+  // {'energy': 96629.6, 'through': {'routes': 23, 'untested': 28}, 'through_full': {'routes': 35, 'untested': 110}, 'bent': 83, 'crossings': 5085, 'overlaps': 0} -- scripts/route_graph_layout.py, 3 seeds x 8000
   const ROW = { dataset_shared: 120, dataset: 250, sample_shared: 440, sample: 570, library: 760, run: 940, other: 1120, file: 1320, supplementary: 1500, metadata: 1680, metadata_shared: 1810 };
   const COLUMNS = { geo: [200, 720], ncbi: [720, 1240], ebi: [1240, 1760], ddbj: [1760, 2280], arrayexpress: [2280, 2800] };
   const POSITIONS = {
@@ -84,6 +87,91 @@
     metadata_geo: { x: 315, y: ROW.metadata },
     metadata_ae: { x: 2412, y: ROW.metadata },
     metadata_biosample: { x: 2100, y: ROW.metadata_shared },
+  };
+  const BOWS = {
+    "ae_experiment>experiment_ncbi": -0.06,
+    "ae_experiment>fastq": -0.15,
+    "ae_experiment>run_ebi": 0.3,
+    "ae_sample>biosample": -0.03,
+    "ae_sample>experiment_ebi": 0.15,
+    "ae_sample>metadata_ae": -0.03,
+    "ae_sample>run_ebi": 0.1,
+    "ae_sample>run_ncbi": 0.1,
+    "ae_sample>sample_ebi": 0.06,
+    "analysis_ddbj>study_ddbj": 0.2,
+    "analysis_ebi>biosample": 0.5,
+    "analysis_ebi>study_ebi": 0.1,
+    "analysis_ncbi>bioproject": -0.15,
+    "analysis_ncbi>study_ncbi": -0.06,
+    "bioproject>bam": -0.3,
+    "bioproject>sample_ddbj": 0.3,
+    "bioproject>sample_ebi": 0.5,
+    "bioproject>sample_ncbi": 0.2,
+    "bioproject>sra_lite": 0.15,
+    "biosample>bam": -0.06,
+    "biosample>cram": 0.06,
+    "biosample>experiment_ddbj": 0.15,
+    "biosample>fastq": 0.2,
+    "biosample>sra_normalized": -0.4,
+    "biosample>study_ddbj": 0.2,
+    "biosample>submission_ncbi": 0.15,
+    "biostudy>bioproject": -0.1,
+    "experiment_ddbj>metadata_ebi": -0.03,
+    "experiment_ebi>fastq": -0.15,
+    "experiment_ebi>metadata_ncbi": 0.15,
+    "experiment_ebi>study_ebi": 0.1,
+    "experiment_ncbi>geo_series": 0.15,
+    "experiment_ncbi>metadata_ddbj": 0.15,
+    "experiment_ncbi>metadata_ebi": 0.3,
+    "experiment_ncbi>metadata_ncbi": 0.1,
+    "geo_sample>bioproject": 0.1,
+    "geo_sample>fastq": 0.15,
+    "geo_sample>submission_ncbi": 0.1,
+    "geo_series>experiment_ncbi": 0.15,
+    "geo_series>sra_lite": -0.06,
+    "geo_series>sra_normalized": -0.06,
+    "run_ddbj>bioproject": 0.5,
+    "run_ddbj>biosample": 0.25,
+    "run_ddbj>fastq": -0.06,
+    "run_ddbj>metadata_ddbj": -0.03,
+    "run_ddbj>metadata_ncbi": -0.06,
+    "run_ddbj>study_ddbj": 0.4,
+    "run_ebi>metadata_ebi": 0.1,
+    "run_ebi>metadata_ncbi": 0.5,
+    "run_ebi>sample_ebi": 0.1,
+    "run_ncbi>bioproject": 0.15,
+    "run_ncbi>metadata_ncbi": 0.1,
+    "run_ncbi>study_ncbi": 0.4,
+    "sample_ddbj>bioproject": 0.25,
+    "sample_ddbj>biosample": 0.15,
+    "sample_ddbj>sra_normalized": -0.03,
+    "sample_ebi>analysis_ebi": 0.25,
+    "sample_ebi>fastq": -0.06,
+    "sample_ebi>submission_ebi": 0.1,
+    "sample_ncbi>sra_lite": 0.2,
+    "sample_ncbi>sra_normalized": -0.03,
+    "study_ddbj>fastq": -0.06,
+    "study_ddbj>run_ddbj": 0.3,
+    "study_ddbj>sra_normalized": 0.15,
+    "study_ebi>analysis_ebi": 0.25,
+    "study_ebi>cram": -0.06,
+    "study_ebi>experiment_ebi": 0.4,
+    "study_ebi>run_ebi": 0.5,
+    "study_ebi>submission_ebi": 0.15,
+    "study_ncbi>experiment_ncbi": 0.5,
+    "study_ncbi>fastq": -0.1,
+    "study_ncbi>sra_lite": 0.06,
+    "study_ncbi>sra_normalized": -0.25,
+    "submission_ddbj>bioproject": 0.4,
+    "submission_ddbj>biosample": 0.1,
+    "submission_ddbj>sample_ddbj": 0.3,
+    "submission_ebi>ae_experiment": 0.1,
+    "submission_ebi>bioproject": 0.15,
+    "submission_ebi>fastq": 0.25,
+    "submission_ebi>study_ebi": 0.25,
+    "submission_ncbi>bioproject": 0.3,
+    "submission_ncbi>biosample": 0.25,
+    "submission_ncbi>study_ncbi": 0.1,
   };
   // LAYOUT-END
 
@@ -592,7 +680,12 @@
         // its own width; a lone direction keeps a gentle curve.
         const halfWidth = ((bundle.routes.length - 1) / 2) * LANE;
         const reverse = directions.has(`${bundle.target}>${bundle.source}`);
-        bundle.bow = reverse ? Math.max(0.06, (halfWidth + 20) / bundle.chord) : 0.03;
+        // Unless the layout search found it passes under a node it does not
+        // belong to, and gave it the least bow that clears it (BOWS). Beside
+        // its reverse it only ever bows further out, never across it.
+        const own = reverse ? Math.max(0.06, (halfWidth + 20) / bundle.chord) : 0.03;
+        const searched = BOWS[bundle.key];
+        bundle.bow = searched === undefined ? own : reverse ? Math.max(own, searched) : searched;
         bundle.middle = add(scale(add(s, t), 0.5), scale(bundle.left, bundle.bow * bundle.chord));
         spans.push(bundle);
       }

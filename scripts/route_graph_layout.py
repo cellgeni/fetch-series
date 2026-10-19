@@ -33,13 +33,27 @@ Two views are scored together, because the page draws both: the default, which
 hides submissions, analyses and platforms, and the full one. The default
 weighs more, since it is what a reader sees first.
 
-Straight chords stand in for the drawn curves, which bow only slightly. Pure
-Python and seeded, so the same graph gives the same positions.
+Straight chords stand in for the drawn curves while positions are searched.
+Then each bundle that still passes under a node it does not belong to is given
+the least bow that clears *every* such node -- the page otherwise bows every
+bundle the same slight amount -- and those bows are printed as ``BOWS``. A
+bundle no bow clears keeps the page's curve: bending it to pass under fewer
+nodes swept measured routes through unrelated columns, which read worse. A
+bundle the default view draws is bent for that view. The ``through`` figures
+reported count what each view actually draws, curves and all; the straight
+chords understate it.
+
+Letting BioProject and BioSample sit anywhere, rather than within the INSDC
+columns, was tried with and without bows, on 2026-10-19: the search put both
+back where they are, and found no fewer lines passing under nodes.
+
+Pure Python and seeded, so the same graph gives the same positions.
 """
 
 from __future__ import annotations
 
 import argparse
+import itertools
 import json
 import math
 import random
@@ -99,6 +113,15 @@ W_LABEL = 2.0
 W_CROSS = 3.0
 W_LENGTH = 0.004
 W_DEFAULT, W_FULL = 1.0, 0.5
+
+# Bows a bundle may take, as a fraction of its length: how far its middle sits
+# off the straight line, to the left of travel when positive. The page's own
+# are 0.03 for a lone direction and at least 0.06 beside its reverse
+# (route-graph.js); anything else here is there to clear a node.
+BOW_CHOICES = (0.03, 0.06, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5)
+SAMPLES = 24  # straight pieces a curve is tested as
+ROW_SLACK = 90  # how far past the rows of its ends a curve may bow
+CLEARANCE = 18  # room a bent curve leaves a node, against the 10 a straight one is held to
 
 
 @dataclass(frozen=True, slots=True)
@@ -199,24 +222,137 @@ class Layout:
         }
         self.movable = [n for n in self.nodes if n not in self.fixed]
         self.x: dict[str, float] = {}
+        pairs = {(b.source, b.target) for b in self.bundles}
+        self.reverse = [(b.target, b.source) in pairs for b in self.bundles]
+        self.bow: dict[int, float] = {}  # the searched bows; the page's own otherwise
 
     def at(self, node: str) -> tuple[float, float]:
         return (self.x[node], ROW[self.row[node]])
+
+    def drawn_at(self, node: str, default: bool) -> tuple[float, float]:
+        """Where the page draws ``node``: the default view closes up the row it hides."""
+        x, y = self.at(node)
+        if default and y > ROW["other"]:
+            y -= ROW["file"] - ROW["other"]
+        return (x, y)
+
+    def obstacles(self, i: int, default: bool) -> list[str]:
+        """The nodes bundle ``i`` must not pass under, in one view."""
+        b = self.bundles[i]
+        return [
+            n
+            for n in self.nodes
+            if n not in (b.source, b.target) and not (default and n in self.other)
+        ]
 
     def _weight(self, *nodes: str) -> float:
         return W_FULL if any(n in self.other for n in nodes) else W_DEFAULT + W_FULL
 
     # -------------------------------------------------------------- terms
 
-    def through(self, i: int, node: str) -> float:
-        b = self.bundles[i]
-        margin = (b.lanes - 1) / 2 * LANE + 10
-        x, y = self.at(node)
+    def _box(
+        self, i: int, node: str, room: float = 10, default: bool = False
+    ) -> tuple[float, float, float, float]:
+        """``node``, grown by half of bundle ``i``'s width and ``room``."""
+        margin = (self.bundles[i].lanes - 1) / 2 * LANE + room
+        x, y = self.drawn_at(node, default)
         half = self.width[node] / 2 + margin
-        box = (x - half, y - NODE_HEIGHT / 2 - margin, x + half, y + NODE_HEIGHT / 2 + margin)
-        hit = _clip(self.at(b.source), self.at(b.target), box)
+        return (x - half, y - NODE_HEIGHT / 2 - margin, x + half, y + NODE_HEIGHT / 2 + margin)
+
+    def _through_weight(self, i: int, node: str) -> float:
+        b = self.bundles[i]
         weight = W_THROUGH * (1.0 if b.measured else 1 / 3)
-        return weight * self._weight(b.source, b.target, node) if hit else 0.0
+        return weight * self._weight(b.source, b.target, node)
+
+    def through(self, i: int, node: str) -> float:
+        """Bundle ``i``, drawn straight, passing under ``node``."""
+        b = self.bundles[i]
+        hit = _clip(self.at(b.source), self.at(b.target), self._box(i, node))
+        return self._through_weight(i, node) if hit else 0.0
+
+    # -------------------------------------------------------------- bows
+
+    def page_bow(self, i: int, default: bool = False) -> float:
+        """The bow route-graph.js gives bundle ``i`` unless told otherwise."""
+        b = self.bundles[i]
+        if not self.reverse[i]:
+            return 0.03
+        chord = math.dist(self.drawn_at(b.source, default), self.drawn_at(b.target, default))
+        return max(0.06, ((b.lanes - 1) / 2 * LANE + 20) / chord)
+
+    def curve(self, i: int, bow: float, default: bool = False) -> list[tuple[float, float]]:
+        """Bundle ``i`` as the page draws it with ``bow``: a quadratic, as points."""
+        b = self.bundles[i]
+        (x0, y0), (x1, y1) = self.drawn_at(b.source, default), self.drawn_at(b.target, default)
+        chord = math.hypot(x1 - x0, y1 - y0)
+        left = ((y1 - y0) / chord, -(x1 - x0) / chord)  # of travel, with y down
+        cx = (x0 + x1) / 2 + left[0] * 2 * bow * chord
+        cy = (y0 + y1) / 2 + left[1] * 2 * bow * chord
+        points = []
+        for k in range(SAMPLES + 1):
+            u = k / SAMPLES
+            a, m, c = (1 - u) ** 2, 2 * (1 - u) * u, u * u
+            points.append((a * x0 + m * cx + c * x1, a * y0 + m * cy + c * y1))
+        return points
+
+    def curved_through(
+        self, i: int, node: str, bow: float, room: float = 10, default: bool = False
+    ) -> float:
+        points = self.curve(i, bow, default)
+        box = self._box(i, node, room, default)
+        hit = any(_clip(p, q, box) for p, q in itertools.pairwise(points))
+        return self._through_weight(i, node) if hit else 0.0
+
+    def bow_of(self, i: int, default: bool = False) -> float:
+        own = self.page_bow(i, default)
+        if i not in self.bow:
+            return own
+        return max(own, self.bow[i]) if self.reverse[i] else self.bow[i]
+
+    def bend(self) -> None:
+        """Bend each bundle that passes under a node just enough to clear every one.
+
+        Positions are fixed by now, so each bundle is decided alone, and only a
+        bow that clears *every* node it does not touch is taken -- with room to
+        spare, so it does not skim one either. A bow that merely passes under
+        fewer would trade three short crossings for one long sweep through an
+        unrelated archive's column, which reads worse; such a bundle keeps the
+        page's own curve.
+
+        A bundle beside its reverse bows only further to its own side, so the
+        two never cross; a lone one may bow either way. A curve that would leave
+        the columns, or stray past the rows of its own two ends, is not offered:
+        one that dips through a row it does not reach reads as reaching it.
+
+        A bundle the default view draws is bent for that view: its geometry,
+        with the hidden row closed up, and only the nodes it shows. Bending
+        round a submission nobody can see would put a kink in every reader's
+        first view for the sake of the second.
+        """
+        left, right = BAND[COLUMNS[0]][0], BAND[COLUMNS[-1]][1]
+        for i, b in enumerate(self.bundles):
+            default = not b.other
+            own = self.page_bow(i, default)
+            others = self.obstacles(i, default)
+            if not any(self.curved_through(i, n, own, default=default) for n in others):
+                continue
+            ends = (self.drawn_at(b.source, default)[1], self.drawn_at(b.target, default)[1])
+            top, bottom = min(ends) - ROW_SLACK, max(ends) + ROW_SLACK
+            sides = (1,) if self.reverse[i] else (1, -1)
+            offered = {
+                side * bow
+                for bow in BOW_CHOICES
+                for side in sides
+                if not self.reverse[i] or bow > own
+            }
+            # Nearest the page's own bow first: the gentlest curve that clears.
+            for bow in sorted(offered, key=lambda bow, own=own: (abs(bow - own), -bow)):
+                points = self.curve(i, bow, default)
+                if not all(left <= x <= right and top <= y <= bottom for x, y in points):
+                    continue
+                if not any(self.curved_through(i, n, bow, CLEARANCE, default) for n in others):
+                    self.bow[i] = bow
+                    break
 
     def span(self, i: int) -> float:
         """Label shortfall and length of one bundle."""
@@ -323,18 +459,23 @@ class Layout:
         self.x = best_x
         return best
 
-    def report(self) -> dict[str, object]:
-        through = {
-            kind: sum(
+    def drawn_through(self, default: bool) -> dict[str, int]:
+        """Bundles passing under a node they do not belong to, as one view draws them."""
+        found = {"routes": 0, "untested": 0}
+        for i, b in enumerate(self.bundles):
+            if default and b.other:
+                continue
+            bow = self.bow_of(i, default)
+            hits = sum(
                 1
-                for i, b in enumerate(self.bundles)
-                for n in self.nodes
-                if b.measured is (kind == "routes")
-                and n not in (b.source, b.target)
-                and self.through(i, n)
+                for n in self.obstacles(i, default)
+                if self.curved_through(i, n, bow, default=default)
             )
-            for kind in ("routes", "untested")
-        }
+            found["routes" if b.measured else "untested"] += hits
+        return found
+
+    def report(self) -> dict[str, object]:
+        """What a reader sees: bundles drawn with their bows, not as chords."""
         crossings = sum(
             1
             for i in range(len(self.bundles))
@@ -346,7 +487,9 @@ class Layout:
         )
         return {
             "energy": round(self.energy(), 1),
-            "through": through,
+            "through": self.drawn_through(default=True),
+            "through_full": self.drawn_through(default=False),
+            "bent": len(self.bow),
             "crossings": crossings,
             "overlaps": overlaps,
         }
@@ -375,6 +518,7 @@ def search(graph: dict, seeds: Iterable[int], iterations: int) -> Layout:
         layout = Layout(graph)
         initial(layout, rng)
         energy = layout.anneal(rng, iterations)
+        layout.bend()
         print(f"seed {seed}: {layout.report()}", file=sys.stderr)
         if energy < best_energy:
             best, best_energy = layout, energy
@@ -402,6 +546,11 @@ def main() -> None:
     print("const POSITIONS = {")
     for node in layout.nodes:
         print(f"  {node}: {{ x: {int(layout.x[node])}, y: ROW.{layout.row[node]} }},")
+    print("};")
+    print("const BOWS = {")
+    for i, b in enumerate(layout.bundles):
+        if i in layout.bow:
+            print(f'  "{b.source}>{b.target}": {layout.bow[i]},')
     print("};")
 
 
