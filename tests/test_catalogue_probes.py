@@ -420,5 +420,5 @@ async def test_one_live_probe_still_answers():
 
     link = CATALOGUE.link("run_ncbi->sample_ncbi:ena_filereport")
     async with SurveyClient() as client:
-        (probe,) = await probe_links([link], {"ebi": client})
+        (probe,) = await probe_links([link], {"ena_portal": client})
     assert probe.found == ("SRS685538",)

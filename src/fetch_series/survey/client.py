@@ -266,6 +266,85 @@ class SurveyClient:
         raise last
 
 
+MemoKey = tuple[str, str, tuple[tuple[str, str], ...]]
+
+
+class MemoClient(SurveyClient):
+    """A client that answers a repeated request from memory instead of the archive.
+
+    Several mechanisms read one document: three read sra-db-be's runinfo for an
+    accession, three an SDRF, two a SOFT family file. Surveyed one after
+    another over the same corpus, each would fetch it again -- about 15% of the
+    NCBI requests of a full link survey, spent on bytes already in hand.
+
+    Only requests ``memoize`` admits are kept, and only successes. Anything
+    carrying session state must never be admitted: an E-utilities WebEnv
+    answered from memory an hour later names a history the server has dropped.
+    Memory is bounded by bytes, oldest first out; SOFT files run to megabytes.
+    """
+
+    def __init__(
+        self,
+        limits: Limits | None = None,
+        api_key: str | None = None,
+        client: httpx.AsyncClient | None = None,
+        *,
+        memoize: Callable[[str, str, dict[str, Any]], bool],
+        max_bytes: int = 256 * 1024 * 1024,
+    ) -> None:
+        super().__init__(limits=limits, api_key=api_key, client=client)
+        self._memoize = memoize
+        self._max_bytes = max_bytes
+        self._memo: dict[MemoKey, httpx.Response] = {}
+        self._held = 0
+        self.hits = 0
+
+    @staticmethod
+    def _key(method: str, url: str, params: dict[str, Any]) -> MemoKey:
+        # The key never holds the API key: it is not part of what was asked,
+        # and a memo key is the kind of thing that ends up in a debug log.
+        clean = tuple(
+            sorted((k, str(v)) for k, v in params.items() if v is not None and k != "api_key")
+        )
+        return (method, url, clean)
+
+    def _remember(self, key: MemoKey, response: httpx.Response) -> None:
+        size = len(response.content)
+        if size > self._max_bytes:
+            return
+        while self._memo and self._held + size > self._max_bytes:
+            oldest = next(iter(self._memo))
+            self._held -= len(self._memo.pop(oldest).content)
+        self._memo[key] = response
+        self._held += size
+
+    async def get(
+        self, url: str, params: dict[str, Any] | None = None, timeout: float | None = None
+    ) -> httpx.Response:
+        if not self._memoize("GET", url, params or {}):
+            return await super().get(url, params=params, timeout=timeout)
+        key = self._key("GET", url, params or {})
+        if key in self._memo:
+            self.hits += 1
+            return self._memo[key]
+        response = await super().get(url, params=params, timeout=timeout)
+        self._remember(key, response)
+        return response
+
+    async def post(
+        self, url: str, data: dict[str, Any], timeout: float | None = None
+    ) -> httpx.Response:
+        if not self._memoize("POST", url, data):
+            return await super().post(url, data=data, timeout=timeout)
+        key = self._key("POST", url, data)
+        if key in self._memo:
+            self.hits += 1
+            return self._memo[key]
+        response = await super().post(url, data=data, timeout=timeout)
+        self._remember(key, response)
+        return response
+
+
 # NCBI allows 10 requests/second with an API key and 3 without. 7.5 leaves
 # headroom for the retries a survey inevitably generates.
 NCBI_LIMITS = Limits(rps=7.5, concurrency=8)
