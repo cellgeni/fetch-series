@@ -124,6 +124,35 @@ class RateLimiter:
             self._next_allowed = now + self._interval
 
 
+@dataclass(frozen=True, slots=True)
+class Prefix:
+    """The start of a remote file.
+
+    Args:
+        total: the whole file's size, from ``Content-Range`` or, where the
+            server ignored the range, ``Content-Length``; ``None`` if neither.
+        ranged: the server answered 206, honouring the range.
+        complete: ``data`` is the whole file. A reader must not treat a
+            truncated last record as a short read when it is not.
+    """
+
+    data: bytes
+    status: int
+    total: int | None
+    ranged: bool
+    complete: bool
+
+
+def _total_size(response: httpx.Response) -> int | None:
+    content_range = response.headers.get("content-range", "")
+    if "/" in content_range:
+        size = content_range.rsplit("/", 1)[1]
+        return int(size) if size.isdigit() else None
+    if response.status_code == 200 and response.headers.get("content-length", "").isdigit():
+        return int(response.headers["content-length"])
+    return None
+
+
 class SurveyClient:
     """Rate-limited, bounded HTTP access for one survey run."""
 
@@ -202,6 +231,52 @@ class SurveyClient:
                 )
             except Exception as exc:
                 raise redact_exception(exc) from None
+
+    async def stream_prefix(self, url: str, max_bytes: int, timeout: float | None = None) -> Prefix:
+        """The first ``max_bytes`` of a file, and whether that was all of it.
+
+        Asks with a ``Range`` header, and stops reading at ``max_bytes`` whether
+        or not the server honoured it: a file server that ignores Range and
+        streams 15 GB is cut off at the limit rather than downloaded. The link
+        goes through :func:`files.request_url`, so a ``#`` in a published name
+        (ERR13855116's ``27865_1#3.cram``) is part of the path and not a
+        fragment. Errors are redacted, as every request here is.
+        """
+        from fetch_series.files import request_url
+
+        if self._client is None:
+            raise RuntimeError("SurveyClient must be used as an async context manager")
+        if max_bytes <= 0:
+            raise ValueError("max_bytes must be positive")
+        chunks: list[bytes] = []
+        held = 0
+        async with self._semaphore:
+            await self._limiter.acquire()
+            try:
+                async with self._client.stream(
+                    "GET",
+                    request_url(url),
+                    headers={"Range": f"bytes=0-{max_bytes - 1}"},
+                    timeout=timeout or self.limits.base_timeout,
+                ) as response:
+                    response.raise_for_status()
+                    total = _total_size(response)
+                    async for chunk in response.aiter_bytes():
+                        chunks.append(chunk)
+                        held += len(chunk)
+                        if held >= max_bytes:
+                            break
+            except Exception as exc:
+                raise redact_exception(exc) from None
+        body = b"".join(chunks)[:max_bytes]
+        complete = total is not None and len(body) >= total
+        return Prefix(
+            data=body,
+            status=response.status_code,
+            total=total,
+            ranged=response.status_code == 206,
+            complete=complete or (total is None and held < max_bytes),
+        )
 
     async def post(
         self, url: str, data: dict[str, Any], timeout: float | None = None
