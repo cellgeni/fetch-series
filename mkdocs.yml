@@ -145,6 +145,7 @@ nav:
           - EBI BioStudies search window: upstream/ebi-biostudies-search-window.md
           - EBI ArrayExpress SDRF URIs: upstream/ebi-arrayexpress-sdrf-mirror-uris.md
           - NCBI BioSample efetch prefix: upstream/ncbi-biosample-efetch-accession-prefix.md
+          - DDBJ Search mirrored SRA links: upstream/ddbj-search-mirrored-sra-links.md
       # Earlier exploration notes, kept because they record how each finding was
       # reached. Superseded by the per-route pages.
       - Archive notes:

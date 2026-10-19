@@ -136,9 +136,10 @@ class TestReadFormats:
             ("https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos7/x/SRR29360814.2", "sra_normalized"),
             ("SRR25056225.lite", "sra_lite"),
             ("https://example/SRR1552444/SRR1552444.sralite.1", "sra_lite"),
+            # DDBJ's mirror directory is named for Lite and mostly holds Normalized.
             (
                 "https://ddbj.nig.ac.jp/dra/sralite/ByExp/litesra/ERX1/ERR1630015/ERR1630015.sra",
-                "sra_lite",
+                "sra_normalized",
             ),
             ("https://sra-pub-src-2.s3.amazonaws.com/ERR13855116/27865_1_3.cram.1", "cram"),
             ("SC01_S2_R1_001.fastq.gz.1", "fastq"),

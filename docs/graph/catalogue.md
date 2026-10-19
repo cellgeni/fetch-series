@@ -267,9 +267,19 @@ Measuring an untested link is a survey, and the next step.
 - **runinfo's file is never verifiable.** Its one file column points at the SRA
   Lite object, with no size and no checksum.
 - **DDBJ publishes no checksum anywhere.** Its entries name its own runs' fastqs
-  (bzip2, named for the run) and SRA objects, and only SRA Lite for the runs it
-  mirrors; none carries an md5. Its entry for `SRR25056225` links an SRA Lite
-  object that answers **404**.
+  (bzip2, named for the run) and SRA objects, and an SRA object for each run it
+  mirrors from NCBI or EBI; none carries an md5.
+- **DDBJ links mirrored runs' objects without checking they exist, by design.**
+  Its converter checks its own runs' files and builds a mirrored run's link from
+  a template, and documents that a 404 is accepted. Of 59 SRRs and ERRs
+  sampled with an entry (2026-10-19), **30 answered 404**, `SRR25056225`'s
+  among them; all 17 DRRs downloaded. [Drafted as an upstream report](../upstream/ddbj-search-mirrored-sra-links.md).
+- **A directory named `sralite` mostly holds Normalized objects.** DDBJ files
+  every mirrored run under `dra/sralite/ByExp/litesra/`. Of the 29 that
+  downloaded, 23 had the exact size of NCBI's Normalized object, 3 of its Lite
+  object and 3 of neither, and the converter documents the file as "not
+  SRA-Lite". The catalogue reads the format from the file's name, never its
+  directory, so these sit on SRA Normalized.
 - **ENA's `bam_ftp` and `sra_ftp` have held nothing** for any record probed;
   `sra_ftp` was empty for all 3,000 runs its route surveyed.
 - **A Sanger CRAM name carries a `#`** (`27865_1#3.cram`). Asked for unescaped,

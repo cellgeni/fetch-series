@@ -1248,15 +1248,28 @@ _DDBJ_ENTRY: tuple[Mechanism, ...] = (
         citation_url=DDBJ_SEARCH_SPEC,
         basis=Basis.DOCUMENTED,
         inputs=nodes("run"),
+        # DDBJ files a mirrored run's object under dra/sralite/ whatever it is.
+        # Its converter documents that object as the ordinary .sra, "not
+        # SRA-Lite" (ddbj-search-converter docs/data-architecture.md), and of 29
+        # sampled on 2026-10-19 that downloaded, 23 were the exact size of NCBI's
+        # Normalized object, 3 of its Lite object and 3 of neither. The path
+        # says nothing, so it is declared Normalized, as documented and as
+        # named: `SRR25056225.sra`.
         outputs={
-            "sra_normalized": "distribution[encodingFormat=SRA], under dra/sra/",
-            "sra_lite": "distribution[encodingFormat=SRA], under dra/sralite/",
+            "sra_normalized": (
+                "distribution[encodingFormat=SRA], under dra/sra/ for DDBJ's own runs "
+                "and dra/sralite/ for those it mirrors"
+            ),
         },
         origin=Origin.ARCHIVE_FORMAT,
         note=(
-            "DDBJ serves its own runs' Normalized objects and only SRA Lite for the "
-            "runs it mirrors: DRR231743.sra under dra/sra/, ERR1630015.sra under "
-            "dra/sralite/. No size and no checksum in the entry."
+            "DDBJ's own runs' objects are checked to exist before they are linked; "
+            "a mirrored run's link is built from a template and never checked, by "
+            "design (ddbj-search-converter docs/data-architecture.md), and 30 of 59 "
+            "sampled NCBI and EBI runs' answered 404 on 2026-10-19 -- SRR25056225's "
+            "among them. The mirrored object sits under dra/sralite/ but is usually "
+            "Normalized: 23 of 29 that downloaded matched NCBI's Normalized size, 3 "
+            "its Lite size. No size and no checksum in the entry."
         ),
     ),
     Mechanism(

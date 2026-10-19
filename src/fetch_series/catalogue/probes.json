@@ -8293,15 +8293,6 @@
    "error": null
   },
   {
-   "link": "run_ddbj->sra_lite:ddbj_entry_sra",
-   "accession": "DRR345778",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
    "link": "run_ddbj->sra_lite:efetch_sra_files",
    "accession": "DRR345778",
    "checked_on": "2026-10-16",
@@ -8382,7 +8373,7 @@
   {
    "link": "run_ddbj->sra_normalized:ddbj_entry_sra",
    "accession": "DRR345778",
-   "checked_on": "2026-10-16",
+   "checked_on": "2026-10-19",
    "outcome": "resolved",
    "found_count": 1,
    "found": [
@@ -8868,32 +8859,6 @@
    "error": null
   },
   {
-   "link": "run_ebi->sra_lite:ddbj_entry_sra",
-   "accession": "ERR4265292",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://ddbj.nig.ac.jp/public/ddbj_database/dra/sralite/ByExp/litesra/ERX/ERX421/ERX4219953/ERR4265292/ERR4265292.sra"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     false
-    ],
-    [
-     "complete",
-     false
-    ]
-   ],
-   "checked": "ERR4265292: 1 file"
-  },
-  {
    "link": "run_ebi->sra_lite:efetch_sra_files",
    "accession": "ERR4265292",
    "checked_on": "2026-10-16",
@@ -8975,11 +8940,28 @@
   {
    "link": "run_ebi->sra_normalized:ddbj_entry_sra",
    "accession": "ERR4265292",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
+   "checked_on": "2026-10-19",
+   "outcome": "resolved",
+   "found_count": 1,
+   "found": [
+    "https://ddbj.nig.ac.jp/public/ddbj_database/dra/sralite/ByExp/litesra/ERX/ERX421/ERX4219953/ERR4265292/ERR4265292.sra"
+   ],
+   "error": null,
+   "checks": [
+    [
+     "downloadable",
+     true
+    ],
+    [
+     "verifiable",
+     false
+    ],
+    [
+     "complete",
+     false
+    ]
+   ],
+   "checked": "ERR4265292: 1 file"
   },
   {
    "link": "run_ebi->sra_normalized:efetch_sra_files",
@@ -9486,32 +9468,6 @@
    "error": null
   },
   {
-   "link": "run_ncbi->sra_lite:ddbj_entry_sra",
-   "accession": "SRR25056225",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://ddbj.nig.ac.jp/public/ddbj_database/dra/sralite/ByExp/litesra/SRX/SRX208/SRX20810436/SRR25056225/SRR25056225.sra"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     false
-    ],
-    [
-     "verifiable",
-     false
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 1 file"
-  },
-  {
    "link": "run_ncbi->sra_lite:efetch_sra_files",
    "accession": "SRR25056225",
    "checked_on": "2026-10-16",
@@ -9592,11 +9548,28 @@
   {
    "link": "run_ncbi->sra_normalized:ddbj_entry_sra",
    "accession": "SRR25056225",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
+   "checked_on": "2026-10-19",
+   "outcome": "resolved",
+   "found_count": 1,
+   "found": [
+    "https://ddbj.nig.ac.jp/public/ddbj_database/dra/sralite/ByExp/litesra/SRX/SRX208/SRX20810436/SRR25056225/SRR25056225.sra"
+   ],
+   "error": null,
+   "checks": [
+    [
+     "downloadable",
+     false
+    ],
+    [
+     "verifiable",
+     false
+    ],
+    [
+     "complete",
+     true
+    ]
+   ],
+   "checked": "SRR25056225: 1 file"
   },
   {
    "link": "run_ncbi->sra_normalized:efetch_sra_files",

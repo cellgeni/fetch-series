@@ -313,10 +313,14 @@ _FORMAT_OF_KIND = {FileKind.FASTQ: "fastq", FileKind.BAM: "bam", FileKind.CRAM: 
 
 # SRA Lite objects are named for it wherever NCBI names them: SDL's
 # `filetype=sralite` answer is `SRR25056225.lite`, older ones `SRR1552444.sralite`,
-# runinfo's download_path ends `.lite.1`, and DDBJ serves them under `sralite/`.
-# An SRA object named for its accession alone is Normalized: SRA XML calls
-# exactly that file "SRA Normalized" (checked on SRR25056225, 2026-10-16).
-_LITE = re.compile(r"/sralite/|\.sralite|\.lite(?:\.\d+)?$", re.IGNORECASE)
+# and runinfo's download_path ends `.lite.1`. An SRA object named for its
+# accession alone is Normalized: SRA XML calls exactly that file "SRA Normalized"
+# (checked on SRR25056225, 2026-10-16).
+#
+# A directory is not a name. DDBJ files every run it mirrors under
+# `dra/sralite/ByExp/litesra/`, and what is there is usually the Normalized
+# object: 23 of 29 sampled on 2026-10-19 had its exact size, 3 Lite's.
+_LITE = re.compile(r"\.sralite|\.lite(?:\.\d+)?$", re.IGNORECASE)
 # NCBI versions the objects it stores: `27865_1_3.cram.1`, `SRR29360814.2`.
 _VERSION = re.compile(r"\.\d+$")
 _RUN = re.compile(r"[SED]RR\d+")
