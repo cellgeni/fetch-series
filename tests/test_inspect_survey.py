@@ -178,6 +178,17 @@ class TestUnavailableReaders:
         (only,) = await sample_file(record, object())  # type: ignore[arg-type]
         assert "pysam" in only.facts["why"]
 
+    async def test_a_stalled_cram_read_is_killed(self, monkeypatch, tmp_path):
+        """2026-10-20: htslib's reference fetch stalled a worker, and the survey with it."""
+        # A child that never finishes, as a reference fetch with no deadline does.
+        stall = tmp_path / "stall"
+        stall.write_text("#!/bin/sh\nexec sleep 60\n")
+        stall.chmod(0o755)
+        monkeypatch.setattr(cram, "available", lambda: True)
+        monkeypatch.setattr(cram.sys, "executable", str(stall))
+        with pytest.raises(TimeoutError, match="reference fetch stalled"):
+            await cram.read_cram_bounded(b"", "x.cram", max_reads=10, timeout=0.5)
+
     async def test_a_versioned_name_is_read_by_its_format(self):
         """SRR10377488's submitted BAM is possorted_genome_bam1.bam.1."""
         body = gzip.compress(

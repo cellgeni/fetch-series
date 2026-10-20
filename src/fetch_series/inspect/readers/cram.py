@@ -8,11 +8,20 @@ CRAM that was aligned. Checked on ERR13855116's ``27865_1#3.cram`` on
 records in 0.1 s, paired by 0x40/0x80, R1 26 bases and R2 96.
 
 Without pysam a CRAM is *undetermined (reader unavailable)*, never unfit.
+
+htslib fetches an aligned CRAM's reference with libcurl and no deadline. On
+2026-10-20 one fetch from EBI's registry stalled for over ten minutes inside a
+worker, and since a run node's fan-out finishes only when its last run does,
+it held the whole content survey. A call in C cannot be interrupted from
+Python, so :func:`read_cram_bounded` reads in a child process it can kill.
 """
 
 from __future__ import annotations
 
+import asyncio
 import os
+import pickle
+import sys
 import tempfile
 from importlib.util import find_spec
 from pathlib import Path
@@ -29,6 +38,8 @@ from fetch_series.inspect.readers.bam import (
 
 # EBI's CRAM reference registry serves a reference by the MD5 a CRAM records.
 REF_PATH = "https://www.ebi.ac.uk/ena/cram/md5/%s"
+# Long enough to fetch a chromosome's reference, short of holding a survey.
+TIMEOUT_S = 600.0
 
 
 def available() -> bool:
@@ -99,4 +110,56 @@ def read_cram(
     return samples_from(prefix, source, "cram", max_reads=max_reads)
 
 
-__all__ = ["REF_PATH", "available", "read_cram"]
+async def read_cram_bounded(
+    data: bytes,
+    source: str,
+    *,
+    max_reads: int,
+    complete: bool = False,
+    timeout: float = TIMEOUT_S,
+) -> list[FileSample]:
+    """:func:`read_cram` in a child process, killed if it outlives ``timeout``."""
+    if not available():
+        raise FileNotFoundError("pysam is not installed: install fetch-series[inspect]")
+    with tempfile.TemporaryDirectory(prefix="fetch-cram-") as scratch:
+        path = Path(scratch) / "prefix.cram"
+        path.write_bytes(data)
+        process = await asyncio.create_subprocess_exec(
+            sys.executable,
+            "-m",
+            __name__,
+            str(path),
+            source,
+            str(max_reads),
+            "1" if complete else "0",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        try:
+            out, err = await asyncio.wait_for(process.communicate(), timeout)
+        except TimeoutError:
+            process.kill()
+            await process.wait()
+            raise TimeoutError(
+                f"the CRAM read did not finish in {timeout:.0f} s: a reference fetch stalled"
+            ) from None
+    if process.returncode != 0:
+        tail = err.decode(errors="replace").strip().splitlines()[-1:] or ["no message"]
+        raise RuntimeError(f"the CRAM reader exited {process.returncode}: {tail[0][:200]}")
+    samples: list[FileSample] = pickle.loads(out)
+    return samples
+
+
+def _main(argv: list[str]) -> None:
+    path, source, max_reads, complete = argv
+    samples = read_cram(
+        Path(path).read_bytes(), source, max_reads=int(max_reads), complete=complete == "1"
+    )
+    sys.stdout.buffer.write(pickle.dumps(samples))
+
+
+__all__ = ["REF_PATH", "TIMEOUT_S", "available", "read_cram", "read_cram_bounded"]
+
+
+if __name__ == "__main__":
+    _main(sys.argv[1:])

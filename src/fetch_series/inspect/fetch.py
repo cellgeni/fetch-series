@@ -80,10 +80,11 @@ async def sample_file(
             lambda timeout: client.stream_prefix(url, size, timeout=timeout),
             label=f"prefix {source}",
         )
-        readers: dict[FileKind, Callable[..., list[FileSample]]] = {
-            FileKind.FASTQ: _one_fastq,
-            FileKind.CRAM: cram.read_cram,
-        }
+        if record.kind is FileKind.CRAM:
+            return await cram.read_cram_bounded(
+                prefix.data, source, max_reads=reads, complete=prefix.complete
+            )
+        readers: dict[FileKind, Callable[..., list[FileSample]]] = {FileKind.FASTQ: _one_fastq}
         read = readers.get(record.kind, read_bam)
         return await parse(
             pool, read, prefix.data, source, max_reads=reads, complete=prefix.complete
