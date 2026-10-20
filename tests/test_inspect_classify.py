@@ -237,6 +237,24 @@ class TestLists:
     def test_encoding_is_two_bits_a_base(self):
         assert encode("ACGT") == 0b00011011 and encode("ACGN") is None
 
+    def test_encoding_matches_a_base_by_base_loop(self):
+        """The base-4 parse is an optimisation, so it must agree everywhere."""
+
+        def loop(seq: str) -> int | None:
+            value = 0
+            for base in seq:
+                if base not in "ACGT":
+                    return None
+                value = (value << 2) | "ACGT".index(base)
+            return value
+
+        rng = random.Random(11)
+        cases = ["", "A", "TTTT", "acgt", "AC GT", "AC_GT", "A0C", "+ACG", "ACGT\n"]
+        cases += [
+            "".join(rng.choice("ACGTN") for _ in range(rng.randint(1, 24))) for _ in range(500)
+        ]
+        assert [encode(s) for s in cases] == [loop(s) for s in cases]
+
     def test_one_mismatch_and_an_n_wildcard(self):
         listed = V3_CODES[0]
         flipped = listed[:5] + ("A" if listed[5] != "A" else "C") + listed[6:]
@@ -299,3 +317,20 @@ class TestAgreement:
             }
         )
         assert result["agree"] is True and result["uncalled"] == ["ena"]
+
+
+class TestPool:
+    """The worker pool is an optimisation: what it returns, inline returns."""
+
+    async def test_a_call_in_a_worker_is_the_call_inline(self):
+        from fetch_series.inspect.pool import Pool, judge, parse
+        from fetch_series.inspect.readers.fastq import read_fastq
+
+        samples = library(V3_CODES, umi=12, r1_extra="T" * 10)
+        body = "".join(
+            f"@SRR1.{i}\n{r.seq}\n+\n{r.qual}\n" for i, r in enumerate(samples[0].records)
+        )
+        with Pool(LISTS, REFERENCES, 2) as pool:
+            assert await pool.judge(samples) == judge(samples, LISTS, REFERENCES)
+            parsed = await parse(pool, read_fastq, body.encode(), "x.fastq", max_reads=100)
+        assert parsed == read_fastq(body.encode(), "x.fastq", max_reads=100)

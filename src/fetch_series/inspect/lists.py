@@ -31,8 +31,9 @@ from fetch_series.logging_utils import redact_exception
 
 REGISTER_PATH = Path(__file__).with_name("lists.tsv")
 DEFAULT_CACHE = Path(".cache/lists")
-_CODE = {"A": 0, "C": 1, "G": 2, "T": 3}
 _BASES = "ACGT"
+_ACGT = frozenset(_BASES)
+_DIGITS = str.maketrans(_BASES, "0123")
 # 4 bytes per barcode: a 16-base barcode is 32 bits.
 _TYPECODE = "I"
 
@@ -72,14 +73,16 @@ def cache_dir() -> Path:
 
 
 def encode(seq: str) -> int | None:
-    """A barcode as an integer, two bits a base; ``None`` if it holds anything but ACGT."""
-    value = 0
-    for base in seq:
-        code = _CODE.get(base)
-        if code is None:
-            return None
-        value = (value << 2) | code
-    return value
+    """A barcode as an integer, two bits a base; ``None`` if it holds anything but ACGT.
+
+    Read as a base-4 numeral, in C. A loop over the bases in Python was most of
+    a content survey's CPU -- every barcode window of 100,000 reads is encoded
+    against every list -- and one asyncio process doing that starved its own
+    downloads into read errors.
+    """
+    if not _ACGT.issuperset(seq):
+        return None
+    return int(seq.translate(_DIGITS), 4) if seq else 0
 
 
 class ListMismatch(ValueError):

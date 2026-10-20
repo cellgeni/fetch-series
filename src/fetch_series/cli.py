@@ -6,6 +6,7 @@ import asyncio
 import contextlib
 import json
 import logging
+import os
 import tempfile
 from collections import Counter
 from datetime import UTC, datetime
@@ -329,6 +330,9 @@ def inspect_survey(
     dry_run: Annotated[bool, typer.Option("--plan", help="Print units and sizes only.")] = False,
     retry_failed: Annotated[bool, typer.Option(help="Also re-ask stored failures.")] = False,
     workers: Annotated[int, typer.Option(help="Runs read at once.")] = 6,
+    processes: Annotated[
+        int, typer.Option(help="Worker processes that parse reads and call kits.")
+    ] = max(1, min(8, (os.cpu_count() or 2) - 1)),
     cache_path: Annotated[Path, typer.Option("--cache", help="SQLite store.")] = DEFAULT_CACHE_PATH,
 ) -> None:
     """Read the first reads of what every run-to-reads link finds, and record what they are.
@@ -338,6 +342,7 @@ def inspect_survey(
     """
     from fetch_series.inspect import lists as barcode_lists
     from fetch_series.inspect import references
+    from fetch_series.inspect.pool import Pool
     from fetch_series.inspect.survey import screen_fanout, screen_links
 
     load_dotenv()
@@ -386,9 +391,12 @@ def inspect_survey(
                 )
                 for bucket, bucket_limits in limits.items()
             }
+            pool = stack.enter_context(Pool(lists_held, refs, processes))
             with SurveyCache(cache_path) as cache:
                 for _node, node_links, accessions in jobs:
-                    fn = screen_fanout(node_links, clients, name, lists_held, refs, reads=reads)
+                    fn = screen_fanout(
+                        node_links, clients, name, lists_held, refs, reads=reads, pool=pool
+                    )
                     run = await run_fanout(
                         [screen_unit(reads, link.id) for link in node_links],
                         accessions,

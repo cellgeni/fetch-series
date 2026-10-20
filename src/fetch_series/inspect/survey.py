@@ -19,6 +19,7 @@ to reads.
 
 from __future__ import annotations
 
+import asyncio
 import time
 from collections.abc import Mapping
 from dataclasses import replace
@@ -26,13 +27,12 @@ from typing import Any
 
 from fetch_series.catalogue import CATALOGUE, Catalogue, Link, NodeKind
 from fetch_series.catalogue.probe import answer_links, seeded_runs
-from fetch_series.files import FileKind
+from fetch_series.files import FileKind, FileRecord
 from fetch_series.inspect.checks import check_set
-from fetch_series.inspect.classify import classify
 from fetch_series.inspect.fetch import DEFAULT_READS, sample_file
-from fetch_series.inspect.fit import fit
 from fetch_series.inspect.lists import BarcodeList
 from fetch_series.inspect.model import FileSample
+from fetch_series.inspect.pool import Pool, judge
 from fetch_series.inspect.references import KmerIndex
 from fetch_series.results import Outcome, RouteResult
 from fetch_series.survey.client import SurveyClient
@@ -51,6 +51,10 @@ INSPECT_GATE: dict[str, str] = {
     "SRR11181954": "5' v1/v2: R1 26 + R2 100 like 3' v2, the cDNA read antisense",
 }
 
+
+# Files read at once across a whole survey: the files client's eight downloads,
+# plus room for the fastq-dumps it does not see.
+READS_AT_ONCE = 12
 
 _KIND_OF_NODE = {
     "fastq": FileKind.FASTQ,
@@ -80,6 +84,7 @@ def screen_fanout(
     *,
     reads: int = DEFAULT_READS,
     catalogue: Catalogue = CATALOGUE,
+    pool: Pool | None = None,
 ) -> FanoutFn:
     """One fan-out function for every run-to-reads link from one run node.
 
@@ -88,9 +93,20 @@ def screen_fanout(
     one object, read once and reported against both links -- and each link gets
     its verdict on the files it listed. Reading by link instead read the same
     15 GB object three times per run.
+
+    The distinct files are read at once, and a set two links share is called
+    once: the reads are the same, so the call is. With a ``pool`` the parsing
+    and the calls run in worker processes.
     """
     by_unit = {screen_unit(reads, link.id): link for link in links}
     files_client = clients["files"]
+    # The files client bounds the downloads, but an SRA object is read by
+    # fastq-dump, outside it; this bounds those too, across every run at once.
+    reading = asyncio.Semaphore(READS_AT_ONCE)
+
+    async def read(record: FileRecord) -> list[FileSample]:
+        async with reading:
+            return await sample_file(record, files_client, reads=reads, pool=pool)
 
     async def fn(accession: str, owed: frozenset[str]) -> list[RouteResult]:
         members = [by_unit[u] for u in sorted(owed) if parse_unit(u).kind == "screen"]
@@ -111,7 +127,28 @@ def screen_fanout(
                 make_checks=False,
             )
         ]
-        read: dict[str, list[FileSample]] = {}
+        listed: dict[str, list[FileRecord]] = {}
+        for finding in findings:
+            if finding.outcome is not Outcome.RESOLVED:
+                continue
+            # The link's target says what format its files are: an SRA object
+            # named `SRR25056225.lite.1` is "other" to a name classifier, and
+            # would never be handed to a reader at all.
+            kind = _KIND_OF_NODE.get(by_unit[screen_unit(reads, finding.link)].target)
+            listed[finding.link] = [
+                replace(r, kind=kind) if kind is not None else r
+                for r in finding.files
+                if r.run in ("", accession) and r.is_data
+            ]
+        distinct = {r.url or r.name: r for records in listed.values() for r in records}
+        samples_of = dict(
+            zip(
+                distinct,
+                await asyncio.gather(*(read(record) for record in distinct.values())),
+                strict=True,
+            )
+        )
+        calls: dict[tuple[str, ...], tuple[dict[str, Any], dict[str, Any]]] = {}
         results = []
         for finding in findings:
             unit = screen_unit(reads, finding.link)
@@ -128,21 +165,9 @@ def screen_fanout(
                     )
                 )
                 continue
-            # The link's target says what format its files are: an SRA object
-            # named `SRR25056225.lite.1` is "other" to a name classifier, and
-            # would never be handed to a reader at all.
-            kind = _KIND_OF_NODE.get(by_unit[unit].target)
-            records = [
-                replace(r, kind=kind) if kind is not None else r
-                for r in finding.files
-                if r.run in ("", accession) and r.is_data
-            ]
-            samples: list[FileSample] = []
-            for record in records:
-                key = record.url or record.name
-                if key not in read:
-                    read[key] = await sample_file(record, files_client, reads=reads)
-                samples.extend(read[key])
+            records = listed[finding.link]
+            keys = tuple(r.url or r.name for r in records)
+            samples: list[FileSample] = [s for key in keys for s in samples_of[key]]
             checks = check_set(samples, records)
             checks["unreadable"] = [
                 {"source": s.source, "why": s.facts.get("why")}
@@ -150,12 +175,14 @@ def screen_fanout(
                 if s.facts.get("reader") == "unavailable"
             ]
             checks["reads_per_file"] = reads
-            call = classify(samples, lists, references)
-            detail: dict[str, Any] = {
-                "checks": checks,
-                "call": call.as_detail(),
-                **fit(samples, call),
-            }
+            if keys not in calls:
+                calls[keys] = (
+                    await pool.judge(samples)
+                    if pool is not None
+                    else judge(samples, lists, references)
+                )
+            call, verdict = calls[keys]
+            detail: dict[str, Any] = {"checks": checks, "call": call, **verdict}
             results.append(
                 RouteResult.from_results(
                     accession=accession,
