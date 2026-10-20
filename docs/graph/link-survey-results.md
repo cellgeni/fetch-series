@@ -142,6 +142,36 @@ What it found:
 
 ## Wave 5: read files from a run
 
+Links from a run into its read files that no route measures. A file set is usable only if it
+passes all three checks:
+
+- **downloadable:** a HEAD answers at the size the archive published;
+- **verifiable:** the archive publishes an md5 and a size;
+- **complete for 10x:** both the barcode read and the cDNA read are there.
+
+These checks were made on one run's set, chosen by seed. What the first reads of those
+files *hold* is a separate survey (`fetch inspect`).
+
+What it found:
+
+- **NCBI's SRA XML is a complete file route for both object types.** It lists the
+  Normalized object with an md5, and the object downloads and is complete for 289, 292 and
+  285 of 300 runs from DDBJ, NCBI and EBI. For the Lite object the figures are 286, 285 and
+  284. The incomplete ones (4 to 9 per archive) are runs whose SRA object lost the barcode
+  read, as ERR4265292's did.
+- **Two sources download and can never be verified.** sra-db-be's `download_path` names the
+  Lite object for 291 to 297 runs and publishes no md5. DDBJ's own fastqs download for 300 of
+  300 DRRs and are complete for 298, and publish no md5 either. Both are usable in practice
+  and fail the rule that a download must be checkable, so both count 0 here.
+- **DDBJ's mirror of other archives' SRA objects is half there.** Its search entry names an
+  object for 299 of 300 SRRs and ERRs, and 141 and 162 of those did not download. For DDBJ's
+  own runs all 300 did.
+- **SDL's originals are listed and cold.** SDL named the submitter's fastqs for 298 of 300
+  SRRs, and none downloaded: they are in cold storage, named with an empty link. For ERRs it
+  named fastqs for 232 (28 downloadable), CRAMs for 54 (3) and BAMs for 4 (0).
+- **ENA lists a submitted BAM for 79 of 300 ERRs, and every one is usable.** No SRR or DRR
+  has one.
+
 <!-- link-splits:wave=5 -->
 
 ## Wave 6: everything else
