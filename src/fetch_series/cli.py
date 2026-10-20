@@ -372,6 +372,9 @@ def inspect_survey(
 
     async def main() -> None:
         limits = host_limits(has_api_key=bool(api_key))
+        # A prefix download holds its slot for the whole 16-32 MB, so the
+        # content survey streams more at once, at the same request rate.
+        limits["files"] = Limits(rps=4.0, concurrency=8, base_timeout=120.0)
         async with contextlib.AsyncExitStack() as stack:
             clients = {
                 bucket: await stack.enter_async_context(

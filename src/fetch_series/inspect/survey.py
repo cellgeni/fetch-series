@@ -108,6 +108,7 @@ def screen_fanout(
                 clients,
                 catalogue=catalogue,
                 pick_run=seeded_runs(SHUFFLE_SEED, accession),
+                make_checks=False,
             )
         ]
         read: dict[str, list[FileSample]] = {}
