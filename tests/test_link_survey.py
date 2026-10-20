@@ -224,6 +224,15 @@ class TestFanout:
         run = await run_fanout(UNITS, ["SRR1"], _answer_all(calls), cache, "c", workers=1)
         assert calls == [] and run.skipped == 1
 
+    async def test_redo_asks_an_answered_accession_again_whole(self, cache):
+        """A verdict judged under an older fit rule: every unit again, at one moment."""
+        await run_fanout(UNITS, ["SRR1", "SRR2"], _answer_all([]), cache, "c", workers=1)
+        calls: list[tuple[str, frozenset[str]]] = []
+        await run_fanout(
+            UNITS, ["SRR1", "SRR2"], _answer_all(calls), cache, "c", workers=1, redo={"SRR2"}
+        )
+        assert calls == [("SRR2", frozenset(UNITS))]
+
     async def test_a_raised_error_fails_every_owed_unit(self, cache):
         async def fn(accession, owed):
             raise httpx.ConnectError(f"no route to host ?api_key={KEY}")

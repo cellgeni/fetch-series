@@ -329,6 +329,13 @@ def inspect_survey(
     ] = None,
     dry_run: Annotated[bool, typer.Option("--plan", help="Print units and sizes only.")] = False,
     retry_failed: Annotated[bool, typer.Option(help="Also re-ask stored failures.")] = False,
+    refit: Annotated[
+        bool,
+        typer.Option(
+            help="Read again every run whose verdicts an earlier fit rule judged: "
+            "the older rules did not record what the current one judges on."
+        ),
+    ] = False,
     workers: Annotated[int, typer.Option(help="Runs read at once.")] = 6,
     processes: Annotated[
         int, typer.Option(help="Worker processes that parse reads and call kits.")
@@ -342,6 +349,7 @@ def inspect_survey(
     """
     from fetch_series.inspect import lists as barcode_lists
     from fetch_series.inspect import references
+    from fetch_series.inspect.fit import RULE as FIT_RULE
     from fetch_series.inspect.pool import Pool
     from fetch_series.inspect.survey import screen_fanout, screen_links
 
@@ -397,14 +405,30 @@ def inspect_survey(
                     fn = screen_fanout(
                         node_links, clients, name, lists_held, refs, reads=reads, pool=pool
                     )
+                    units = [screen_unit(reads, link.id) for link in node_links]
+                    stale = (
+                        {
+                            r.accession
+                            for unit in units
+                            for r in cache.results(name, unit)
+                            if r.detail is not None and r.detail.get("rule") != FIT_RULE
+                        }
+                        if refit
+                        else set()
+                    )
+                    if stale:
+                        typer.echo(
+                            f"{len(stale)} runs judged under an earlier fit rule: reading again"
+                        )
                     run = await run_fanout(
-                        [screen_unit(reads, link.id) for link in node_links],
+                        units,
                         accessions,
                         fn,
                         cache,
                         name,
                         workers=workers,
                         retry_failed=retry_failed,
+                        redo=stale,
                     )
                     for unit_id, counts in run.units.items():
                         typer.echo(
