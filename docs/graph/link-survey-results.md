@@ -90,6 +90,23 @@ What it found:
 
 ## Wave 3: BioProject and ArrayExpress
 
+Links between a BioProject and an ArrayExpress study, either way.
+
+What it found:
+
+- **Only an EBI project points at its ArrayExpress study.** ENA's browser XML named one for
+  240 of 300 PRJEBs, and `filereport`'s aliases for 238. Neither did for any PRJNA or PRJDB,
+  as expected, since ArrayExpress submits through ENA.
+- **BioStudies does not know its own projects.** Searching BioStudies for a BioProject found
+  the study for 1 of 300 PRJEBs. ENA's cross-reference service found it for 6.
+- **An ArrayExpress study's own record never names its BioProject.** BioStudies' study JSON
+  named one for 0 of 300 studies; ENA's cross-references for 26. The measured route the
+  other way is through the IDF's secondary accession
+  ([ArrayExpress to study](../routes/ae-experiment-to-study/index.md)), which answers for
+  the study. The BioProject is one more hop.
+- A BioStudies record outside ArrayExpress names a BioProject for 5 of the 82 a first survey
+  reached.
+
 <!-- link-splits:wave=3 -->
 
 ## Wave 4: the ArrayExpress sample chain
