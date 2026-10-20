@@ -63,6 +63,29 @@ What it found:
 
 ## Wave 2: metadata documents
 
+Links into a metadata document. A document counts as usable only if it downloads *and*
+parses with the parser this project already uses for it, and names the record asked for.
+
+What it found:
+
+- **Every archive's own document answers for nearly every record of its own.** GEO's SOFT,
+  MiniML, series matrix and `acc.cgi` answered for 300 of 300 series or samples. NCBI's SRA
+  XML and runinfo answered for 299 or 300 runs and experiments in every archive. DDBJ's
+  search entry answered for 296 to 300. NCBI's and EBI's BioSample records answered for 297
+  to 300 BioSamples of every archive.
+- **ENA does not hold about 8% of DDBJ's records.** ENA's browser XML answered 404 for 25 of
+  300 DRXs and 21 of 300 DRRs. For exactly those records ENA's `filereport` answers with a
+  table that does not name them, so it downloads and does not parse. For NCBI and EBI
+  records both answered for 296 to 300.
+- **DDBJ's DRA XML holds a fifth to a third of other archives' records less.** It answered
+  404 for 66 of 300 SRRs, 80 SRXs, 60 ERRs and 103 ERXs, and for none of DDBJ's own. DDBJ's
+  search entry answered for the same records. So DDBJ indexes them, and the DRA XML path
+  does not serve them.
+- **An ArrayExpress study's IDF or SDRF is missing for 8 to 10 of 300 studies**, as 404s.
+  That is the same population as the 11 SDRF failures of the
+  [ArrayExpress file route](../routes/ae-experiment-to-file/index.md).
+- **runinfo** answered with a table that did not name the experiment asked for 4 of 300 SRXs.
+
 <!-- link-splits:wave=2 -->
 
 ## Wave 3: BioProject and ArrayExpress

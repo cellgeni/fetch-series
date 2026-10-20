@@ -15,6 +15,56 @@
   }
  },
  "links": {
+  "ae_experiment->metadata_ae:biostudies_idf": [
+   {
+    "corpus": "sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 292,
+    "empty": 0,
+    "failed": 8,
+    "reached": 292,
+    "usable": 292,
+    "distinct": 292,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 292,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 292,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "ae_experiment->metadata_ae:biostudies_sdrf": [
+   {
+    "corpus": "sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 290,
+    "empty": 0,
+    "failed": 10,
+    "reached": 290,
+    "usable": 290,
+    "distinct": 290,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 290,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 290,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
   "ae_experiment->sample_ebi:biostudies_sdrf_comments": [
    {
     "corpus": "sample:300@node:ae_experiment@arrayexpress-ena",
@@ -991,6 +1041,148 @@
     "distinct": 329,
     "surveyed_on": "2026-10-19",
     "checks": {}
+   }
+  ],
+  "biosample->metadata_biosample:biosample_record": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "biosample->metadata_biosample:biosamples_record": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 297,
+    "empty": 0,
+    "failed": 3,
+    "reached": 297,
+    "usable": 297,
+    "distinct": 297,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 297,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 297,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 0,
+    "failed": 1,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 299,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 299,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 299,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 297,
+    "empty": 0,
+    "failed": 3,
+    "reached": 297,
+    "usable": 297,
+    "distinct": 297,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 297,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 297,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
    }
   ],
   "biosample->sample_ddbj:biosample_record": [
@@ -2127,6 +2319,156 @@
     "checks": {}
    }
   ],
+  "experiment_ddbj->metadata_ddbj:ddbj_dra_xml": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 113,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "experiment_ddbj->metadata_ddbj:ddbj_entry_document": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "experiment_ddbj->metadata_ebi:ena_browser_xml_document": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 275,
+    "empty": 0,
+    "failed": 25,
+    "reached": 275,
+    "usable": 275,
+    "distinct": 275,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 275,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 275,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "experiment_ddbj->metadata_ebi:ena_filereport_document": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 275,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 275,
+      "failed": 25,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "experiment_ddbj->metadata_ncbi:efetch_sra_xml": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "experiment_ddbj->metadata_ncbi:sra_be_runinfo_document": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
   "experiment_ddbj->run_ddbj:ena_filereport": [
    {
     "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
@@ -2293,6 +2635,156 @@
     "distinct": 285,
     "surveyed_on": "2026-10-19",
     "checks": {}
+   }
+  ],
+  "experiment_ebi->metadata_ddbj:ddbj_dra_xml": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 197,
+    "empty": 0,
+    "failed": 103,
+    "reached": 197,
+    "usable": 197,
+    "distinct": 96,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 197,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 197,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "experiment_ebi->metadata_ddbj:ddbj_entry_document": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "experiment_ebi->metadata_ebi:ena_browser_xml_document": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "experiment_ebi->metadata_ebi:ena_filereport_document": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "experiment_ebi->metadata_ncbi:efetch_sra_xml": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "experiment_ebi->metadata_ncbi:sra_be_runinfo_document": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
    }
   ],
   "experiment_ebi->run_ebi:ena_filereport": [
@@ -2463,6 +2955,156 @@
     "checks": {}
    }
   ],
+  "experiment_ncbi->metadata_ddbj:ddbj_dra_xml": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 220,
+    "empty": 0,
+    "failed": 80,
+    "reached": 220,
+    "usable": 220,
+    "distinct": 212,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 220,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 220,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "experiment_ncbi->metadata_ddbj:ddbj_entry_document": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 296,
+    "empty": 0,
+    "failed": 4,
+    "reached": 296,
+    "usable": 296,
+    "distinct": 296,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 296,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 296,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "experiment_ncbi->metadata_ebi:ena_browser_xml_document": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "experiment_ncbi->metadata_ebi:ena_filereport_document": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 296,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 296,
+      "failed": 4,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "experiment_ncbi->metadata_ncbi:efetch_sra_xml": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "experiment_ncbi->metadata_ncbi:sra_be_runinfo_document": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 296,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 296,
+      "failed": 4,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
   "experiment_ncbi->sample_ncbi:ddbj_dblink": [
    {
     "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
@@ -2589,6 +3231,31 @@
     "checks": {}
    }
   ],
+  "geo_sample->metadata_geo:geo_acc_sample": [
+   {
+    "corpus": "sample:300@node:geo_sample@reprocessed-sample",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
   "geo_sample->sample_ncbi:esummary_sra": [
    {
     "corpus": "sample:300@node:geo_sample@reprocessed-sample",
@@ -2673,6 +3340,106 @@
     "checks": {}
    }
   ],
+  "geo_series->metadata_geo:geo_acc_series": [
+   {
+    "corpus": "sample:300@node:geo_series@reprocessed-gse",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "geo_series->metadata_geo:geo_miniml": [
+   {
+    "corpus": "sample:300@node:geo_series@reprocessed-gse",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "geo_series->metadata_geo:geo_series_matrix": [
+   {
+    "corpus": "sample:300@node:geo_series@reprocessed-gse",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 386,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "geo_series->metadata_geo:geo_soft_family": [
+   {
+    "corpus": "sample:300@node:geo_series@reprocessed-gse",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
   "geo_series->sample_ncbi:ddbj_dblink": [
    {
     "corpus": "sample:300@node:geo_series@reprocessed-gse",
@@ -2755,6 +3522,156 @@
     "distinct": 249,
     "surveyed_on": "2026-10-19",
     "checks": {}
+   }
+  ],
+  "run_ddbj->metadata_ddbj:ddbj_dra_xml": [
+   {
+    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 101,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "run_ddbj->metadata_ddbj:ddbj_entry_document": [
+   {
+    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "run_ddbj->metadata_ebi:ena_browser_xml_document": [
+   {
+    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 300,
+    "resolved": 279,
+    "empty": 0,
+    "failed": 21,
+    "reached": 279,
+    "usable": 279,
+    "distinct": 279,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 279,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 279,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "run_ddbj->metadata_ebi:ena_filereport_document": [
+   {
+    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 279,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 279,
+      "failed": 21,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "run_ddbj->metadata_ncbi:efetch_sra_xml": [
+   {
+    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "run_ddbj->metadata_ncbi:sra_be_runinfo_document": [
+   {
+    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
    }
   ],
   "run_ddbj->sample_ddbj:ddbj_dblink": [
@@ -2897,6 +3814,156 @@
     "checks": {}
    }
   ],
+  "run_ebi->metadata_ddbj:ddbj_dra_xml": [
+   {
+    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 240,
+    "empty": 0,
+    "failed": 60,
+    "reached": 240,
+    "usable": 240,
+    "distinct": 109,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 240,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 240,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "run_ebi->metadata_ddbj:ddbj_entry_document": [
+   {
+    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 0,
+    "failed": 1,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 299,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 299,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 299,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "run_ebi->metadata_ebi:ena_browser_xml_document": [
+   {
+    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "run_ebi->metadata_ebi:ena_filereport_document": [
+   {
+    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 299,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 299,
+      "failed": 1,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "run_ebi->metadata_ncbi:efetch_sra_xml": [
+   {
+    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 299,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 299,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 299,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "run_ebi->metadata_ncbi:sra_be_runinfo_document": [
+   {
+    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 299,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 299,
+      "failed": 1,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
   "run_ebi->sample_ebi:ddbj_dblink": [
    {
     "corpus": "sample:300@node:run_ebi@reprocessed-srr",
@@ -3035,6 +4102,156 @@
     "distinct": 296,
     "surveyed_on": "2026-10-19",
     "checks": {}
+   }
+  ],
+  "run_ncbi->metadata_ddbj:ddbj_dra_xml": [
+   {
+    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 234,
+    "empty": 0,
+    "failed": 66,
+    "reached": 234,
+    "usable": 234,
+    "distinct": 212,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 234,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 234,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "run_ncbi->metadata_ddbj:ddbj_entry_document": [
+   {
+    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 0,
+    "failed": 1,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 299,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 299,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 299,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "run_ncbi->metadata_ebi:ena_browser_xml_document": [
+   {
+    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "run_ncbi->metadata_ebi:ena_filereport_document": [
+   {
+    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 299,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 299,
+      "failed": 1,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "run_ncbi->metadata_ncbi:efetch_sra_xml": [
+   {
+    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 299,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 299,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 299,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "run_ncbi->metadata_ncbi:sra_be_runinfo_document": [
+   {
+    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 299,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 300,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 299,
+      "failed": 1,
+      "undetermined": 0
+     }
+    }
    }
   ],
   "run_ncbi->sample_ncbi:ddbj_dblink": [
