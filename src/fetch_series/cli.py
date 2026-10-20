@@ -25,6 +25,7 @@ from fetch_series.catalogue import (
     DRAWN,
     PROBES_PATH,
     SPLITS_PATH,
+    Link,
     Probe,
     load_probes,
     merge_probes,
@@ -327,6 +328,7 @@ def inspect_survey(
     ] = None,
     dry_run: Annotated[bool, typer.Option("--plan", help="Print units and sizes only.")] = False,
     retry_failed: Annotated[bool, typer.Option(help="Also re-ask stored failures.")] = False,
+    workers: Annotated[int, typer.Option(help="Runs read at once.")] = 6,
     cache_path: Annotated[Path, typer.Option("--cache", help="SQLite store.")] = DEFAULT_CACHE_PATH,
 ) -> None:
     """Read the first reads of what every run-to-reads link finds, and record what they are.
@@ -345,14 +347,18 @@ def inspect_survey(
     name = "inspect-gate" if gate else str(corpus_name)
     corpus = corpora.load(name)
     links = [link for link in screen_links() if mechanism is None or link.mechanism == mechanism]
-    units = units_of(links)
+    # One fan-out per run node, over every mechanism's links: each run's
+    # sources are listed together and each distinct file read once.
+    by_node: dict[str, list[Link]] = {}
+    for link in links:
+        by_node.setdefault(link.source, []).append(link)
     jobs = []
-    for unit in units:
-        accessions = [a.value for a in corpus.accessions if node_for(a) == unit.source]
+    for node, node_links in sorted(by_node.items()):
+        accessions = [a.value for a in corpus.accessions if node_for(a) == node]
         if accessions:
-            jobs.append((unit, accessions))
-    for unit, accessions in jobs:
-        typer.echo(f"{unit.id:44s} {len(unit.links):>2} links {len(accessions):>5} runs")
+            jobs.append((node, node_links, accessions))
+    for node, node_links, accessions in jobs:
+        typer.echo(f"{node:12s} {len(node_links):>3} links {len(accessions):>5} runs")
     if dry_run:
         return
     lists_held = barcode_lists.available()
@@ -378,17 +384,15 @@ def inspect_survey(
                 for bucket, bucket_limits in limits.items()
             }
             with SurveyCache(cache_path) as cache:
-                for unit, accessions in jobs:
-                    fn = screen_fanout(
-                        list(unit.links), clients, name, lists_held, refs, reads=reads
-                    )
+                for _node, node_links, accessions in jobs:
+                    fn = screen_fanout(node_links, clients, name, lists_held, refs, reads=reads)
                     run = await run_fanout(
-                        [screen_unit(reads, link.id) for link in unit.links],
+                        [screen_unit(reads, link.id) for link in node_links],
                         accessions,
                         fn,
                         cache,
                         name,
-                        workers=2,
+                        workers=workers,
                         retry_failed=retry_failed,
                     )
                     for unit_id, counts in run.units.items():
