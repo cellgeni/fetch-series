@@ -34,14 +34,18 @@ def judge(
     samples: list[FileSample],
     lists: dict[str, BarcodeList],
     references: dict[str, KmerIndex],
+    *,
+    run_spot: float | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """The call and the fit verdict for one set of reads, as a report records them."""
     call = classify(samples, lists, references)
-    return call.as_detail(), fit(samples, call)
+    return call.as_detail(), fit(samples, call, run_spot=run_spot)
 
 
-def _judge_in_worker(samples: list[FileSample]) -> tuple[dict[str, Any], dict[str, Any]]:
-    return judge(samples, _WORKER["lists"], _WORKER["references"])
+def _judge_in_worker(
+    samples: list[FileSample], run_spot: float | None
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    return judge(samples, _WORKER["lists"], _WORKER["references"], run_spot=run_spot)
 
 
 class Pool:
@@ -61,8 +65,10 @@ class Pool:
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(self._executor, functools.partial(fn, *args, **kwargs))
 
-    async def judge(self, samples: list[FileSample]) -> tuple[dict[str, Any], dict[str, Any]]:
-        return await self.run(_judge_in_worker, samples)
+    async def judge(
+        self, samples: list[FileSample], *, run_spot: float | None = None
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        return await self.run(_judge_in_worker, samples, run_spot)
 
     def close(self) -> None:
         self._executor.shutdown(wait=True, cancel_futures=True)

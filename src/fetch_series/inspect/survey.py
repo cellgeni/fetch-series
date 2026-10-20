@@ -20,6 +20,7 @@ to reads.
 from __future__ import annotations
 
 import asyncio
+import logging
 import time
 from collections.abc import Mapping
 from dataclasses import replace
@@ -34,6 +35,8 @@ from fetch_series.inspect.lists import BarcodeList
 from fetch_series.inspect.model import FileSample
 from fetch_series.inspect.pool import Pool, judge
 from fetch_series.inspect.references import KmerIndex
+from fetch_series.logging_utils import redact_exception
+from fetch_series.providers import sra_be
 from fetch_series.results import Outcome, RouteResult
 from fetch_series.survey.client import SurveyClient
 from fetch_series.survey.runner import SHUFFLE_SEED, FanoutFn
@@ -52,6 +55,8 @@ INSPECT_GATE: dict[str, str] = {
 }
 
 
+log = logging.getLogger(__name__)
+
 # Files read at once across a whole survey: the files client's eight downloads,
 # plus room for the fastq-dumps it does not see.
 READS_AT_ONCE = 12
@@ -63,6 +68,26 @@ _KIND_OF_NODE = {
     "sra_normalized": FileKind.SRA,
     "sra_lite": FileKind.SRA,
 }
+
+
+async def mean_spot(client: SurveyClient, run: str) -> float | None:
+    """The run's bases per spot, from runinfo: what an SRA object's prefix is held to.
+
+    ``None`` when it cannot be had, and then an SRA object refuses nothing.
+    """
+    try:
+        rows = await client.with_retry(
+            lambda t: sra_be.runinfo_by_accession(client, run, t), label=f"runinfo {run}"
+        )
+    except Exception as exc:
+        log.warning("No runinfo for %s: %s", run, redact_exception(exc))
+        return None
+    row = next((r for r in rows if r.get("Run") == run), None)
+    try:
+        spots, bases = int(row["spots"]), int(row["bases"])  # type: ignore[index]
+    except (TypeError, KeyError, ValueError):
+        return None
+    return round(bases / spots, 1) if spots else None
 
 
 def screen_links(catalogue: Catalogue = CATALOGUE) -> list[Link]:
@@ -148,6 +173,11 @@ def screen_fanout(
                 strict=True,
             )
         )
+        run_spot = (
+            await mean_spot(clients["ncbi_web"], accession)
+            if any(r.kind is FileKind.SRA for r in distinct.values())
+            else None
+        )
         calls: dict[tuple[str, ...], tuple[dict[str, Any], dict[str, Any]]] = {}
         results = []
         for finding in findings:
@@ -177,9 +207,9 @@ def screen_fanout(
             checks["reads_per_file"] = reads
             if keys not in calls:
                 calls[keys] = (
-                    await pool.judge(samples)
+                    await pool.judge(samples, run_spot=run_spot)
                     if pool is not None
-                    else judge(samples, lists, references)
+                    else judge(samples, lists, references, run_spot=run_spot)
                 )
             call, verdict = calls[keys]
             detail: dict[str, Any] = {"checks": checks, "call": call, **verdict}
