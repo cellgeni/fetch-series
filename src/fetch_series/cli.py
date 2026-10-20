@@ -7,6 +7,7 @@ import contextlib
 import json
 import logging
 import os
+import re
 import tempfile
 from collections import Counter
 from datetime import UTC, datetime
@@ -336,6 +337,13 @@ def inspect_survey(
             "the older rules did not record what the current one judges on."
         ),
     ] = False,
+    reread_where: Annotated[
+        list[str] | None,
+        typer.Option(
+            help="Read again every run where a file was unreadable for a reason matching "
+            "this pattern (a regex; repeatable): a full disk is not the archive's answer."
+        ),
+    ] = None,
     workers: Annotated[int, typer.Option(help="Runs read at once.")] = 6,
     processes: Annotated[
         int, typer.Option(help="Worker processes that parse reads and call kits.")
@@ -406,20 +414,21 @@ def inspect_survey(
                         node_links, clients, name, lists_held, refs, reads=reads, pool=pool
                     )
                     units = [screen_unit(reads, link.id) for link in node_links]
-                    stale = (
-                        {
-                            r.accession
-                            for unit in units
-                            for r in cache.results(name, unit)
-                            if r.detail is not None and r.detail.get("rule") != FIT_RULE
-                        }
-                        if refit
-                        else set()
-                    )
+                    local = re.compile("|".join(reread_where)) if reread_where else None
+                    stale: set[str] = set()
+                    for unit in units:
+                        for r in cache.results(name, unit):
+                            if r.detail is None:
+                                continue
+                            if refit and r.detail.get("rule") != FIT_RULE:
+                                stale.add(r.accession)
+                            unreadable = (r.detail.get("checks") or {}).get("unreadable") or []
+                            if local is not None and any(
+                                local.search(u.get("why") or "") for u in unreadable
+                            ):
+                                stale.add(r.accession)
                     if stale:
-                        typer.echo(
-                            f"{len(stale)} runs judged under an earlier fit rule: reading again"
-                        )
+                        typer.echo(f"{len(stale)} runs to read again")
                     run = await run_fanout(
                         units,
                         accessions,
