@@ -15,6 +15,20 @@
   }
  },
  "links": {
+  "ae_experiment->ae_sample:biostudies_sdrf": [
+   {
+    "corpus": "sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 290,
+    "empty": 0,
+    "failed": 10,
+    "reached": 290,
+    "usable": 290,
+    "distinct": 9757,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
   "ae_experiment->bioproject:biostudies_study": [
    {
     "corpus": "sample:300@node:ae_experiment@arrayexpress-ena",
@@ -117,6 +131,198 @@
     "reached": 87,
     "usable": 87,
     "distinct": 2215,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "ae_sample->ae_supplementary:biostudies_sdrf": [
+   {
+    "corpus": "sample:300@node:ae_sample@results-of:link:ae_experiment->ae_sample:biostudies_sdrf@sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 72,
+    "empty": 221,
+    "failed": 7,
+    "reached": 72,
+    "usable": 70,
+    "distinct": 93,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloadable": {
+      "passed": 70,
+      "failed": 2,
+      "undetermined": 0
+     },
+     "size-checkable": {
+      "passed": 70,
+      "failed": 2,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "ae_sample->biosample:biostudies_sdrf_comments": [
+   {
+    "corpus": "sample:300@node:ae_sample@results-of:link:ae_experiment->ae_sample:biostudies_sdrf@sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 181,
+    "empty": 119,
+    "failed": 0,
+    "reached": 181,
+    "usable": 181,
+    "distinct": 181,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "ae_sample->experiment_ebi:biostudies_sdrf_comments": [
+   {
+    "corpus": "sample:300@node:ae_sample@results-of:link:ae_experiment->ae_sample:biostudies_sdrf@sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 200,
+    "empty": 100,
+    "failed": 0,
+    "reached": 200,
+    "usable": 200,
+    "distinct": 212,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "ae_sample->experiment_ncbi:biostudies_sdrf_comments": [
+   {
+    "corpus": "sample:300@node:ae_sample@results-of:link:ae_experiment->ae_sample:biostudies_sdrf@sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 100,
+    "empty": 200,
+    "failed": 0,
+    "reached": 100,
+    "usable": 100,
+    "distinct": 100,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "ae_sample->fastq:biostudies_sdrf_fastq": [
+   {
+    "corpus": "sample:300@node:ae_sample@results-of:link:ae_experiment->ae_sample:biostudies_sdrf@sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 253,
+    "empty": 47,
+    "failed": 0,
+    "reached": 253,
+    "usable": 0,
+    "distinct": 524,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "complete": {
+      "passed": 169,
+      "failed": 84,
+      "undetermined": 0
+     },
+     "downloadable": {
+      "passed": 160,
+      "failed": 93,
+      "undetermined": 0
+     },
+     "verifiable": {
+      "passed": 0,
+      "failed": 253,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "ae_sample->geo_sample:biostudies_sdrf_comments": [
+   {
+    "corpus": "sample:300@node:ae_sample@results-of:link:ae_experiment->ae_sample:biostudies_sdrf@sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 100,
+    "empty": 200,
+    "failed": 0,
+    "reached": 100,
+    "usable": 100,
+    "distinct": 100,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "ae_sample->metadata_ae:biostudies_sdrf": [
+   {
+    "corpus": "sample:300@node:ae_sample@results-of:link:ae_experiment->ae_sample:biostudies_sdrf@sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 293,
+    "empty": 0,
+    "failed": 7,
+    "reached": 293,
+    "usable": 293,
+    "distinct": 92,
+    "surveyed_on": "2026-10-19",
+    "checks": {
+     "downloads": {
+      "passed": 293,
+      "failed": 0,
+      "undetermined": 0
+     },
+     "parses": {
+      "passed": 293,
+      "failed": 0,
+      "undetermined": 0
+     }
+    }
+   }
+  ],
+  "ae_sample->run_ebi:biostudies_sdrf_comments": [
+   {
+    "corpus": "sample:300@node:ae_sample@results-of:link:ae_experiment->ae_sample:biostudies_sdrf@sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 200,
+    "empty": 100,
+    "failed": 0,
+    "reached": 200,
+    "usable": 200,
+    "distinct": 232,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "ae_sample->run_ncbi:biostudies_sdrf_comments": [
+   {
+    "corpus": "sample:300@node:ae_sample@results-of:link:ae_experiment->ae_sample:biostudies_sdrf@sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 94,
+    "empty": 206,
+    "failed": 0,
+    "reached": 94,
+    "usable": 94,
+    "distinct": 118,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "ae_sample->sample_ebi:biostudies_sdrf_comments": [
+   {
+    "corpus": "sample:300@node:ae_sample@results-of:link:ae_experiment->ae_sample:biostudies_sdrf@sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 200,
+    "empty": 100,
+    "failed": 0,
+    "reached": 200,
+    "usable": 200,
+    "distinct": 200,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "ae_sample->sample_ncbi:biostudies_sdrf_comments": [
+   {
+    "corpus": "sample:300@node:ae_sample@results-of:link:ae_experiment->ae_sample:biostudies_sdrf@sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 80,
+    "empty": 220,
+    "failed": 0,
+    "reached": 80,
+    "usable": 80,
+    "distinct": 80,
     "surveyed_on": "2026-10-19",
     "checks": {}
    }

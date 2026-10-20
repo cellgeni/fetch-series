@@ -116,9 +116,17 @@ class TestRecordedProbes:
                 assert probe.checks == (), link_id
 
     def test_a_file_that_failed_a_check_is_not_drawn(self):
+        """Unless a link survey then found it usable: a survey outranks its probe."""
         for link_id, probe in PROBES.items():
             if probe.failed_checks:
-                assert status(CATALOGUE.link(link_id), PROBES) is Status.UNCONFIRMED, link_id
+                link = CATALOGUE.link(link_id)
+                surveyed = CATALOGUE.link_splits(link)
+                if any(split.usable for split in surveyed):
+                    assert status(link, PROBES) is Status.SURVEYED, link_id
+                elif surveyed:
+                    assert status(link, PROBES) is Status.SURVEYED_NONE, link_id
+                else:
+                    assert status(link, PROBES) is Status.UNCONFIRMED, link_id
 
     def test_probes_are_dated_and_not_in_the_future(self):
         today = datetime.now(UTC).date()
