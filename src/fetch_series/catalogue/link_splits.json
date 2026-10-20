@@ -15,6 +15,34 @@
   }
  },
  "links": {
+  "ae_experiment->bioproject:biostudies_study": [
+   {
+    "corpus": "sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "ae_experiment->bioproject:ena_xref_source": [
+   {
+    "corpus": "sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 26,
+    "empty": 274,
+    "failed": 0,
+    "reached": 26,
+    "usable": 26,
+    "distinct": 26,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
   "ae_experiment->metadata_ae:biostudies_idf": [
    {
     "corpus": "sample:300@node:ae_experiment@arrayexpress-ena",
@@ -89,6 +117,158 @@
     "reached": 87,
     "usable": 87,
     "distinct": 2215,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->ae_experiment:biostudies_search": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 1,
+    "empty": 299,
+    "failed": 0,
+    "reached": 1,
+    "usable": 1,
+    "distinct": 1,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->ae_experiment:ena_browser_xml": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 240,
+    "empty": 60,
+    "failed": 0,
+    "reached": 240,
+    "usable": 240,
+    "distinct": 238,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->ae_experiment:ena_filereport_aliases": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 238,
+    "empty": 62,
+    "failed": 0,
+    "reached": 238,
+    "usable": 238,
+    "distinct": 278,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->ae_experiment:ena_xref_target": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 6,
+    "empty": 294,
+    "failed": 0,
+    "reached": 6,
+    "usable": 6,
+    "distinct": 6,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
     "surveyed_on": "2026-10-19",
     "checks": {}
    }
@@ -2245,6 +2425,20 @@
     "reached": 300,
     "usable": 300,
     "distinct": 228,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biostudy->bioproject:biostudies_study": [
+   {
+    "corpus": "node:biostudy@results-of:link:ae_experiment->biostudy:biostudies_search_all@sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 82,
+    "resolved": 5,
+    "empty": 77,
+    "failed": 0,
+    "reached": 5,
+    "usable": 5,
+    "distinct": 7,
     "surveyed_on": "2026-10-19",
     "checks": {}
    }
