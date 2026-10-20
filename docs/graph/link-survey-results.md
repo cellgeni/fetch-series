@@ -176,4 +176,36 @@ What it found:
 
 ## Wave 6: everything else
 
+The rest: NCBI's ELinks and the gds and SRA summaries, DDBJ's dblink, ENA's search and
+cross-reference services, BioStudies records, submissions, and read files reached from a
+record other than a run. 667 links were surveyed, as 991 link splits.
+
+What it found:
+
+- **The two NCBI runinfo-style answers reach everything SRA links.** sra-db-be's runinfo and
+  ESummary on SRA have 93 links each, and every one of them is usable somewhere. Together
+  they are the broadest single requests in the catalogue.
+- **ENA publishes no SRA object.** `filereport`'s `sra_ftp` column was empty for every record
+  of every node it was asked about: 28 links, 0 of 9,386 queries. The SRA objects are
+  NCBI's, reached through SDL and the SRA XML ([wave 5](#wave-5-read-files-from-a-run)).
+- **None of these projects is an umbrella.** ELink's umbrella-to-component link answered for
+  0 of 737 BioProjects, and component-to-umbrella for 76. The one umbrella the probe used,
+  `PRJNA988804`, was chosen because it is one.
+- **ArrayExpress imports of GEO are historical.** BioStudies found an `E-GEOD` study for 0 of
+  300 reprocessed GEO series. ArrayExpress stopped importing GEO before most of them were
+  submitted.
+- **DDBJ's dblink answers for 77 of the 122 links it declares.** It is the one service that
+  links a DDBJ record to everything at once. Of the 45 that never answered, 20 lead into an
+  analysis and 7 into a submission, which no record here reaches by any route. 6 lead into a
+  BioProject and 6 into a GEO series: dblink does not carry those relations for these
+  records, though other services do.
+- **A record's read files from ENA are per run.** `filereport`'s fastq column reached files
+  from 14 links (every record type) for 3,250 of 4,693 queries. The submitted-files column
+  was usable from 19 of 42 links, for 1,572 of 14,079 queries. A BAM came from 6 of 14
+  links, for EBI records only.
+- **No EBI analysis was reachable from any record**, so all 22 `filereport` analysis links
+  are surveyed-none, as their wave-1 neighbours were.
+- **SDL from a record other than a run** answered from 25 of 44 links where its gate allowed
+  it at all. SDL on a project or an EBI study failed its gate and was never drawn.
+
 <!-- link-splits:wave=6 -->
