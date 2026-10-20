@@ -133,6 +133,9 @@ class TestRecordedProbes:
         for link in CATALOGUE:
             if CATALOGUE.split(link) is not None:
                 assert status(link, PROBES) in (Status.MEASURED, Status.MEASURED_NONE)
+            elif CATALOGUE.link_splits(link):
+                # A link survey outranks a probe: the probe stays, as the gate.
+                assert status(link, PROBES) in (Status.SURVEYED, Status.SURVEYED_NONE)
             elif PROBES[link.id].confirmed:
                 assert status(link, PROBES) is Status.UNTESTED
             else:

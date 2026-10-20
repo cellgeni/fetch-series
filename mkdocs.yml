@@ -93,6 +93,7 @@ nav:
           - The route matrix: routes/index.md
           - Route graph: routes/graph.md
           - The link catalogue: graph/catalogue.md
+          - Link survey results: graph/link-survey-results.md
           - Accession types: graph/accession-types.md
           - Routing by archive: graph/routing-by-archive.md
       - From GEO:

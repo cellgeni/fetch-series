@@ -51,6 +51,7 @@ from fetch_series.catalogue.survey import (
     select_links,
     units_of,
 )
+from fetch_series.catalogue.waves import links_through
 from fetch_series.core import default_api_key
 from fetch_series.entities import MISSING, RELATION_COLUMNS, RunRecord
 from fetch_series.export.graph import route_graph
@@ -284,6 +285,9 @@ def catalogue_link_splits(
     write: Annotated[
         bool, typer.Option("--write", help="Write link_splits.json beside the catalogue.")
     ] = False,
+    wave: Annotated[
+        int | None, typer.Option("--wave", help="Only links reported in waves 1 to N.")
+    ] = None,
 ) -> None:
     """Each surveyed link's verdicts per corpus, read from the committed exports.
 
@@ -291,7 +295,8 @@ def catalogue_link_splits(
     resolver or the route ranking reads it. Gate corpora are set aside.
     """
     try:
-        splits = compute_link_splits(CATALOGUE)
+        only = links_through(wave) if wave is not None else None
+        splits = compute_link_splits(CATALOGUE, only=only)
     except LinkSplitError as exc:
         typer.secho(str(exc), fg=typer.colors.RED, err=True)
         raise typer.Exit(2) from None

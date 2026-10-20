@@ -71,9 +71,6 @@ POPULATIONS: dict[str, Population] = {
         f"submission_{a}": Population(via=f"run_{a}->submission_{a}:ena_filereport")
         for a in ARCHIVES
     },
-    "analysis_ebi": Population(
-        via="bioproject->analysis_ebi:ena_filereport_analysis", via_archive="ebi"
-    ),
     "geo_platform": Population(via="geo_series->geo_platform:geo_soft_family"),
     "biostudy": Population(via="ae_experiment->biostudy:biostudies_search_all"),
     "ae_sample": Population(via="ae_experiment->ae_sample:biostudies_sdrf"),
@@ -82,6 +79,12 @@ POPULATIONS: dict[str, Population] = {
 # Nodes with no population, why, and when that was established. Their links
 # stay UNTESTED rather than being surveyed over something that is not them.
 NO_POPULATION: dict[str, tuple[str, date]] = {
+    "analysis_ebi": (
+        "Derived from BioProject -> EBI analysis (ENA filereport, result=analysis), whose "
+        "survey found no analysis for any of 300 PRJEBs, 300 PRJNAs or 137 PRJDBs: nothing "
+        "this project resolves reaches one. The probe's PRJEB44468 was chosen because it has 106.",
+        date(2026, 10, 20),
+    ),
     "analysis_ncbi": (
         "Every link into an NCBI analysis is DDBJ's dblink, and every one is unconfirmed: "
         "no record this project resolves reaches one, so there is nothing to draw.",
