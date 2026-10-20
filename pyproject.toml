@@ -17,6 +17,13 @@ dependencies = [
 requires = ["uv_build>=0.8.0"]
 build-backend = "uv_build"
 
+[project.optional-dependencies]
+# `fetch inspect` reads FASTQ and BAM with the standard library. A CRAM needs
+# pysam; an SRA object needs sra-tools, which is not a Python package and comes
+# with the inspect image (docker/Dockerfile.inspect). Without either a file is
+# undetermined, never unfit.
+inspect = ["pysam>=0.22"]
+
 [dependency-groups]
 dev = [
     "mypy>=1.19.0",
@@ -65,7 +72,7 @@ files = ["src"]
 strict = true
 # Third-party stubs we do not control.
 [[tool.mypy.overrides]]
-module = ["httpx_retries.*", "tenacity.*", "tqdm.*"]
+module = ["httpx_retries.*", "tenacity.*", "tqdm.*", "pysam.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

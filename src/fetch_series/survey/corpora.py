@@ -81,7 +81,7 @@ def _build(name: str, description: str, source: str, raws: Iterable[str]) -> Cor
 # chosen because it answers -- so a rate measured over one says nothing about
 # how a route or link behaves on the archives' records at large. A corpus drawn
 # or derived from a gate is a gate too.
-GATE_CORPORA = frozenset({"hard-cases", "metadata-hard-cases", "probe-families"})
+GATE_CORPORA = frozenset({"hard-cases", "metadata-hard-cases", "probe-families", "inspect-gate"})
 
 
 def is_gate(name: str) -> bool:
@@ -436,10 +436,23 @@ def probe_families() -> Corpus:
     )
 
 
+def inspect_gate() -> Corpus:
+    """The content survey's gate: one run per thing the readers must get right."""
+    from fetch_series.inspect.survey import INSPECT_GATE
+
+    return _build(
+        name="inspect-gate",
+        description="Runs chosen for what their files showed; a gate, never evidence.",
+        source="fetch_series.inspect.survey.INSPECT_GATE",
+        raws=INSPECT_GATE,
+    )
+
+
 CORPUS_BUILDERS = {
     "hard-cases": hard_cases,
     "metadata-hard-cases": metadata_hard_cases,
     "probe-families": probe_families,
+    "inspect-gate": inspect_gate,
     "reprocessed": reprocessed,
     "geo-sample": geo_sample,
 }
@@ -448,6 +461,7 @@ KNOWN_CORPORA = (
     "hard-cases",
     "metadata-hard-cases",
     "probe-families",
+    "inspect-gate",
     "results-of:<route-id>@<corpus>",
     "sample:<n>@<corpus>",
     "node:<node>[/<archive>]@<corpus>",

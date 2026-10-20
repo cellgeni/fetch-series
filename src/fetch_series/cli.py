@@ -35,6 +35,7 @@ from fetch_series.catalogue import Status as CatalogueStatus
 from fetch_series.catalogue import status as catalogue_status
 from fetch_series.catalogue.link_splits import LINK_SPLITS_PATH, LinkSplitError, save_link_splits
 from fetch_series.catalogue.link_splits import compute as compute_link_splits
+from fetch_series.catalogue.nodes import node_for
 from fetch_series.catalogue.populations import NO_POPULATION, standard_corpora
 from fetch_series.catalogue.probe import host_limits, probe_links
 from fetch_series.catalogue.splits import compute as compute_splits
@@ -65,6 +66,7 @@ from fetch_series.filesets import (
     verify_all,
 )
 from fetch_series.graph import REGISTRY, Route
+from fetch_series.inspect.classify import NO_LISTS
 from fetch_series.logging_utils import configure_logging, run_logfile
 from fetch_series.metadata.collect import Collection, collect
 from fetch_series.metadata.evidence import SOURCES as metadata_source_list
@@ -82,8 +84,8 @@ from fetch_series.survey import Limits, SurveyClient, corpora, run_route
 from fetch_series.survey.client import MemoClient
 from fetch_series.survey.export import ExportConflict, write_export
 from fetch_series.survey.export import slug as export_slug
-from fetch_series.survey.runner import FanoutRun, shuffled
-from fetch_series.units import parse_unit
+from fetch_series.survey.runner import FanoutRun, run_fanout, shuffled
+from fetch_series.units import parse_unit, screen_unit
 
 app = typer.Typer(
     help="Resolve public sequencing accessions over documented, benchmarked routes.",
@@ -123,6 +125,10 @@ catalogue_app = typer.Typer(
 app.add_typer(survey_app, name="survey")
 app.add_typer(routes_app, name="routes")
 app.add_typer(catalogue_app, name="catalogue")
+inspect_app = typer.Typer(
+    help="Read the start of a run's files and say what they are.", no_args_is_help=True
+)
+app.add_typer(inspect_app, name="inspect")
 
 
 def _client_for_one_query(concurrency: int) -> SurveyClient:
@@ -278,6 +284,120 @@ def catalogue_splits(
     if write:
         save_splits(splits, sources)
         typer.echo(f"wrote {len(splits)} splits to {SPLITS_PATH}", err=True)
+
+
+@inspect_app.command("lists")
+def inspect_lists(
+    fetch_them: Annotated[
+        bool, typer.Option("--fetch", help="Download every registered list and reference.")
+    ] = False,
+) -> None:
+    """The barcode lists and references the classifier reads, and whether each is fetched.
+
+    None is shipped: 10x's lists are under 10x's terms. Each is registered with
+    its source at a pinned commit and its sha256, and a download that does not
+    match is refused.
+    """
+    from fetch_series.inspect import lists as barcode_lists
+    from fetch_series.inspect import references
+
+    if fetch_them:
+        for entry, path in barcode_lists.fetch_all():
+            typer.echo(f"fetched {entry.id:16s} {entry.count:>10,}  {path}", err=True)
+        for reference in references.REGISTER.values():
+            path = references.fetch(reference)
+            typer.echo(f"fetched {reference.id:24s} {path}", err=True)
+    held = barcode_lists.cache_dir()
+    for entry in barcode_lists.REGISTER.values():
+        state = "fetched" if (held / f"{entry.id}.u32").exists() else "missing"
+        typer.echo(f"{entry.id:16s} {entry.length:>3} {entry.count:>10,}  {state:8s} {entry.terms}")
+    for reference in references.REGISTER.values():
+        typer.echo(f"{reference.id:24s} {reference.terms}")
+
+
+@inspect_app.command("survey")
+def inspect_survey(
+    corpus_name: Annotated[
+        str | None, typer.Option("--corpus", help="Runs to read, e.g. sample:500@...")
+    ] = None,
+    gate: Annotated[bool, typer.Option("--gate", help="Over inspect-gate.")] = False,
+    reads: Annotated[int, typer.Option(help="Reads per file.")] = 100_000,
+    mechanism: Annotated[
+        str | None, typer.Option("--mechanism", help="Only this mechanism's links.")
+    ] = None,
+    dry_run: Annotated[bool, typer.Option("--plan", help="Print units and sizes only.")] = False,
+    retry_failed: Annotated[bool, typer.Option(help="Also re-ask stored failures.")] = False,
+    cache_path: Annotated[Path, typer.Option("--cache", help="SQLite store.")] = DEFAULT_CACHE_PATH,
+) -> None:
+    """Read the first reads of what every run-to-reads link finds, and record what they are.
+
+    Recorded under screen:<reads>:<link id>. A requirement applied to reads,
+    never evidence about a route.
+    """
+    from fetch_series.inspect import lists as barcode_lists
+    from fetch_series.inspect import references
+    from fetch_series.inspect.survey import screen_fanout, screen_links
+
+    load_dotenv()
+    if (corpus_name is None) == (not gate):
+        typer.secho("Choose exactly one of --corpus or --gate", fg=typer.colors.RED, err=True)
+        raise typer.Exit(2)
+    name = "inspect-gate" if gate else str(corpus_name)
+    corpus = corpora.load(name)
+    links = [link for link in screen_links() if mechanism is None or link.mechanism == mechanism]
+    units = units_of(links)
+    jobs = []
+    for unit in units:
+        accessions = [a.value for a in corpus.accessions if node_for(a) == unit.source]
+        if accessions:
+            jobs.append((unit, accessions))
+    for unit, accessions in jobs:
+        typer.echo(f"{unit.id:44s} {len(unit.links):>2} links {len(accessions):>5} runs")
+    if dry_run:
+        return
+    lists_held = barcode_lists.available()
+    if not lists_held:
+        typer.secho(NO_LISTS, fg=typer.colors.RED, err=True)
+        raise typer.Exit(2)
+    refs = {k: v for k in references.REGISTER if (v := references.index(k)) is not None}
+    logfile = run_logfile("inspect-survey")
+    configure_logging(level=logging.INFO, logfile=logfile)
+    api_key = default_api_key()
+
+    async def main() -> None:
+        limits = host_limits(has_api_key=bool(api_key))
+        async with contextlib.AsyncExitStack() as stack:
+            clients = {
+                bucket: await stack.enter_async_context(
+                    MemoClient(
+                        bucket_limits,
+                        api_key=api_key if bucket == "ncbi_eutils" else None,
+                        memoize=memoizable,
+                    )
+                )
+                for bucket, bucket_limits in limits.items()
+            }
+            with SurveyCache(cache_path) as cache:
+                for unit, accessions in jobs:
+                    fn = screen_fanout(
+                        list(unit.links), clients, name, lists_held, refs, reads=reads
+                    )
+                    run = await run_fanout(
+                        [screen_unit(reads, link.id) for link in unit.links],
+                        accessions,
+                        fn,
+                        cache,
+                        name,
+                        workers=2,
+                        retry_failed=retry_failed,
+                    )
+                    for unit_id, counts in run.units.items():
+                        typer.echo(
+                            f"{unit_id:72s} r={counts['resolved']} e={counts['empty']} "
+                            f"f={counts['failed']}"
+                        )
+
+    asyncio.run(main())
 
 
 @catalogue_app.command("link-splits")

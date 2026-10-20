@@ -1334,6 +1334,9 @@ class Finding:
     checked: str | None = None
     # Why an EMPTY is empty, where the reason is known: the record is absent.
     note: str | None = None
+    # The file records behind ``values``, for a link into a read format: what a
+    # content survey reads. Never written to probes.json or an export.
+    files: tuple[FileRecord, ...] = ()
 
     def probe(self, checked_on: date) -> Probe:
         return Probe(
@@ -1411,6 +1414,7 @@ async def answer_links(
         checked = None
         if values:
             checks, checked = await _check(node, values, answer, picker, clients)
+        wanted = set(values)
         findings.append(
             Finding(
                 link=link.id,
@@ -1419,6 +1423,7 @@ async def answer_links(
                 values=tuple(values),
                 checks=checks,
                 checked=checked,
+                files=tuple(r for r in answer.files if (r.url or r.name) in wanted),
             )
         )
     return findings
