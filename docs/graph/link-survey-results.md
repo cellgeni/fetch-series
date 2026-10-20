@@ -111,6 +111,33 @@ What it found:
 
 ## Wave 4: the ArrayExpress sample chain
 
+Links into and out of an ArrayExpress sample: a study's SDRF row, addressed as the study
+plus its Source Name (`E-MTAB-5061:AZ_A1`), because such a sample has no accession of its
+own.
+
+**This population is clustered.** It is a seeded draw of 300 from the 9,757 samples the
+SDRFs of 290 studies listed, so it is 300 samples from fewer than 300 studies. A share here
+describes samples weighted by how many each study has, not studies.
+
+What it found:
+
+- **An SDRF lists its samples** for 290 of 300 studies. The 10 failures are SDRFs that are
+  not served.
+- **An SDRF's fastq URIs are never usable.** They named fastqs for 253 of 300 samples, and
+  the usable count is **0**:
+  - none is verifiable, because no SDRF publishes an md5;
+  - 93 sets did not download, because they point at the decommissioned mirror;
+  - 84 sets are incomplete for 10x.
+
+  This is [the mirror pathology](../pathologies/ae-sdrf-points-at-decommissioned-mirror.md) measured on a draw
+  rather than on two studies.
+- **An SDRF names the sample's ENA records far more often than NCBI's:** an ENA run for 200
+  of 300 samples, an NCBI run for 94; an ENA sample for 200, an NCBI sample for 80; an ENA
+  experiment for 200, an NCBI one for 100. A GEO sample is named for 100, which are the
+  `E-GEOD` imports. A BioSample is named for 181.
+- **Processed files** named by the SDRF were found for 72 samples, and 70 of them downloaded
+  and were size-checkable.
+
 <!-- link-splits:wave=4 -->
 
 ## Wave 5: read files from a run
