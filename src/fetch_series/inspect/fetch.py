@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import re
 from collections.abc import Callable, Iterable
 from dataclasses import replace
@@ -36,6 +37,17 @@ def unavailable(record: FileRecord, why: str) -> FileSample:
     )
 
 
+# This machine running out of room or file handles says nothing about a file.
+# On 2026-10-20 a full disk recorded 196 SRA objects as unreadable; raised
+# instead, the run fails, and a failure is retried rather than reported.
+_LOCAL_ERRNOS = frozenset({errno.ENOSPC, errno.EMFILE, errno.ENFILE, errno.EDQUOT})
+
+
+def _raise_if_local(exc: BaseException) -> None:
+    if isinstance(exc, OSError) and exc.errno in _LOCAL_ERRNOS:
+        raise exc
+
+
 async def sample_file(
     record: FileRecord,
     client: SurveyClient,
@@ -66,6 +78,7 @@ async def sample_file(
         try:
             return await sra.read_sra(record.url, max_reads=reads)
         except Exception as exc:
+            _raise_if_local(exc)
             error = redact_exception(exc)
             return [unavailable(record, redact(f"{type(error).__name__}: {error}")[:300])]
     if record.kind not in PREFIX_BYTES:
@@ -90,6 +103,7 @@ async def sample_file(
             pool, read, prefix.data, source, max_reads=reads, complete=prefix.complete
         )
     except Exception as exc:
+        _raise_if_local(exc)
         error = redact_exception(exc)
         return [unavailable(record, redact(f"{type(error).__name__}: {error}")[:300])]
 

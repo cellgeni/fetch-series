@@ -178,6 +178,19 @@ class TestUnavailableReaders:
         (only,) = await sample_file(record, object())  # type: ignore[arg-type]
         assert "pysam" in only.facts["why"]
 
+    async def test_a_full_disk_fails_the_run_instead_of_the_file(self, monkeypatch):
+        """2026-10-20: a full disk recorded 196 SRA objects as unreadable."""
+        import errno
+
+        async def full(target, *, max_reads):
+            raise OSError(errno.ENOSPC, "No space left on device")
+
+        monkeypatch.setattr(sra, "available", lambda: "fastq-dump")
+        monkeypatch.setattr(sra, "read_sra", full)
+        record = FileRecord("SRR1", "https://h/SRR1", "SRR1", FileKind.SRA, "sdl")
+        with pytest.raises(OSError, match="No space"):
+            await sample_file(record, object())  # type: ignore[arg-type]
+
     async def test_a_stalled_cram_read_is_killed(self, monkeypatch, tmp_path):
         """2026-10-20: htslib's reference fetch stalled a worker, and the survey with it."""
         # A child that never finishes, as a reference fetch with no deadline does.
