@@ -151,8 +151,13 @@ def _link_exports(root: Path) -> Iterator[tuple[str, str, Path]]:
             yield corpus, path.name.removesuffix(".csv.gz"), path
 
 
-def compute(catalogue: Any, root: Path | None = None) -> list[LinkSplit]:
+def compute(
+    catalogue: Any, root: Path | None = None, *, only: set[str] | None = None
+) -> list[LinkSplit]:
     """Every link split the committed exports support, gate corpora set aside.
+
+    ``only`` restricts to those link ids -- a wave's, when results are reported
+    a wave at a time.
 
     The link id is recovered by matching the export's file name against the
     slug of every declared link: a slug is not reversible on its own.
@@ -167,6 +172,8 @@ def compute(catalogue: Any, root: Path | None = None) -> list[LinkSplit]:
         if stem not in by_slug:
             raise LinkSplitError(f"{path} names no declared link")
         link_id = by_slug[stem]
+        if only is not None and link_id not in only:
+            continue
         results = read_export(path, corpus, link_unit(link_id))
         splits.append(split_of(link_id, corpus, results, declared=declared, measured=measured))
     return sorted(splits, key=lambda s: (s.link, s.corpus))

@@ -5,10 +5,4423 @@
    "reason": "Every link into a DDBJ analysis is DDBJ's dblink, and every one is unconfirmed: no record this project resolves reaches one, so there is nothing to draw.",
    "recorded_on": "2026-10-19"
   },
+  "analysis_ebi": {
+   "reason": "Derived from BioProject -> EBI analysis (ENA filereport, result=analysis), whose survey found no analysis for any of 300 PRJEBs, 300 PRJNAs or 137 PRJDBs: nothing this project resolves reaches one. The probe's PRJEB44468 was chosen because it has 106.",
+   "recorded_on": "2026-10-20"
+  },
   "analysis_ncbi": {
    "reason": "Every link into an NCBI analysis is DDBJ's dblink, and every one is unconfirmed: no record this project resolves reaches one, so there is nothing to draw.",
    "recorded_on": "2026-10-19"
   }
  },
- "links": {}
+ "links": {
+  "ae_experiment->sample_ebi:biostudies_sdrf_comments": [
+   {
+    "corpus": "sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 129,
+    "empty": 164,
+    "failed": 7,
+    "reached": 129,
+    "usable": 129,
+    "distinct": 6690,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "ae_experiment->sample_ncbi:biostudies_sdrf_comments": [
+   {
+    "corpus": "sample:300@node:ae_experiment@arrayexpress-ena",
+    "queried": 300,
+    "resolved": 87,
+    "empty": 206,
+    "failed": 7,
+    "reached": 87,
+    "usable": 87,
+    "distinct": 2215,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->biosample:ddbj_dblink": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 137,
+    "empty": 0,
+    "failed": 0,
+    "reached": 137,
+    "usable": 137,
+    "distinct": 1754,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 297,
+    "empty": 3,
+    "failed": 0,
+    "reached": 297,
+    "usable": 297,
+    "distinct": 35945,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 6360,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->biosample:ena_filereport_analysis": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->biosample:ena_links": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 120,
+    "empty": 180,
+    "failed": 0,
+    "reached": 120,
+    "usable": 120,
+    "distinct": 9433,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 50,
+    "empty": 250,
+    "failed": 0,
+    "reached": 50,
+    "usable": 50,
+    "distinct": 1405,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->biosample:esummary_sra": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 137,
+    "empty": 0,
+    "failed": 0,
+    "reached": 137,
+    "usable": 137,
+    "distinct": 1754,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 298,
+    "empty": 2,
+    "failed": 0,
+    "reached": 298,
+    "usable": 298,
+    "distinct": 35959,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 6342,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->biosample:sra_be_runinfo": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 137,
+    "empty": 0,
+    "failed": 0,
+    "reached": 137,
+    "usable": 137,
+    "distinct": 1754,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 297,
+    "empty": 3,
+    "failed": 0,
+    "reached": 297,
+    "usable": 297,
+    "distinct": 35941,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 6272,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->sample_ddbj:ddbj_dblink": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->sample_ddbj:ena_filereport": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 137,
+    "empty": 0,
+    "failed": 0,
+    "reached": 137,
+    "usable": 137,
+    "distinct": 1754,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->sample_ddbj:esummary_sra": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 137,
+    "empty": 0,
+    "failed": 0,
+    "reached": 137,
+    "usable": 137,
+    "distinct": 1754,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->sample_ddbj:sra_be_runinfo": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 137,
+    "empty": 0,
+    "failed": 0,
+    "reached": 137,
+    "usable": 137,
+    "distinct": 1754,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->sample_ebi:ddbj_dblink": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->sample_ebi:ena_filereport": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 298,
+    "empty": 2,
+    "failed": 0,
+    "reached": 298,
+    "usable": 298,
+    "distinct": 34702,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->sample_ebi:ena_filereport_analysis": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->sample_ebi:esummary_sra": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 298,
+    "empty": 2,
+    "failed": 0,
+    "reached": 298,
+    "usable": 298,
+    "distinct": 35959,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->sample_ebi:sra_be_runinfo": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 297,
+    "empty": 3,
+    "failed": 0,
+    "reached": 297,
+    "usable": 297,
+    "distinct": 35941,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->sample_ncbi:ddbj_dblink": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->sample_ncbi:ena_filereport": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 6272,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->sample_ncbi:esummary_sra": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 6342,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->sample_ncbi:sra_be_runinfo": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 6272,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->submission_ddbj:ena_filereport": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 137,
+    "empty": 0,
+    "failed": 0,
+    "reached": 137,
+    "usable": 137,
+    "distinct": 192,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->submission_ebi:ena_filereport": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 298,
+    "empty": 2,
+    "failed": 0,
+    "reached": 298,
+    "usable": 298,
+    "distinct": 676,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "bioproject->submission_ncbi:ena_filereport": [
+   {
+    "corpus": "node:bioproject/ddbj@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 352,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->bioproject:ena_filereport": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 81,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 27,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 200,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->experiment_ddbj:ena_filereport": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 315,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->experiment_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 319,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->experiment_ncbi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 329,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ddbj:biosample_record": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ddbj:biosamples_record": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 297,
+    "empty": 0,
+    "failed": 3,
+    "reached": 297,
+    "usable": 297,
+    "distinct": 297,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 299,
+    "failed": 1,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 297,
+    "failed": 3,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ddbj:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ddbj:ena_filereport": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ddbj:ena_search_sample": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 289,
+    "empty": 11,
+    "failed": 0,
+    "reached": 289,
+    "usable": 289,
+    "distinct": 289,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ddbj:esummary_sra": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ddbj:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ebi:biosample_record": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ebi:biosamples_record": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 297,
+    "failed": 3,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 0,
+    "failed": 1,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 299,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 297,
+    "failed": 3,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ebi:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ebi:ena_filereport_analysis": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ebi:ena_search_sample": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 299,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ebi:esummary_sra": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ebi:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ncbi:biosample_record": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ncbi:biosamples_record": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 297,
+    "failed": 3,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 299,
+    "failed": 1,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 297,
+    "empty": 0,
+    "failed": 3,
+    "reached": 297,
+    "usable": 297,
+    "distinct": 297,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ncbi:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ncbi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ncbi:ena_search_sample": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 297,
+    "empty": 3,
+    "failed": 0,
+    "reached": 297,
+    "usable": 297,
+    "distinct": 297,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ncbi:esummary_sra": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->sample_ncbi:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 299,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->study_ddbj:ena_filereport": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 81,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->study_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 27,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->study_ncbi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 201,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->submission_ddbj:ena_filereport": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 100,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->submission_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 108,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "biosample->submission_ncbi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:biosample/ddbj@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ebi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   },
+   {
+    "corpus": "sample:300@node:biosample/ncbi@results-of:bioproject->biosample:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 228,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ddbj->bioproject:ena_filereport": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 275,
+    "empty": 25,
+    "failed": 0,
+    "reached": 275,
+    "usable": 275,
+    "distinct": 106,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ddbj->biosample:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 291,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ddbj->biosample:elink_sra_biosample": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 291,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ddbj->biosample:esummary_sra": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 291,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ddbj->biosample:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 291,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ddbj->run_ddbj:ena_filereport": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 275,
+    "empty": 25,
+    "failed": 0,
+    "reached": 275,
+    "usable": 275,
+    "distinct": 375,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ddbj->sample_ddbj:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 291,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ddbj->sample_ddbj:ena_filereport": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 272,
+    "empty": 28,
+    "failed": 0,
+    "reached": 272,
+    "usable": 272,
+    "distinct": 264,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ddbj->sample_ddbj:esummary_sra": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 291,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ddbj->sample_ddbj:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 291,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ddbj->study_ddbj:ena_filereport": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 272,
+    "empty": 28,
+    "failed": 0,
+    "reached": 272,
+    "usable": 272,
+    "distinct": 105,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ddbj->submission_ddbj:ena_filereport": [
+   {
+    "corpus": "sample:300@node:experiment_ddbj@reprocessed-srx",
+    "queried": 300,
+    "resolved": 275,
+    "empty": 25,
+    "failed": 0,
+    "reached": 275,
+    "usable": 275,
+    "distinct": 108,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ebi->bioproject:ena_filereport": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 133,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ebi->biosample:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 285,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ebi->biosample:elink_sra_biosample": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 285,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ebi->biosample:esummary_sra": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 285,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ebi->biosample:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 285,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ebi->run_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 558,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ebi->sample_ebi:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 285,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ebi->sample_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 285,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ebi->sample_ebi:esummary_sra": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 285,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ebi->sample_ebi:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 285,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ebi->study_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 133,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ebi->submission_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:experiment_ebi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 153,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ncbi->bioproject:ena_filereport": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 296,
+    "empty": 4,
+    "failed": 0,
+    "reached": 296,
+    "usable": 296,
+    "distinct": 286,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ncbi->biosample:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 296,
+    "empty": 4,
+    "failed": 0,
+    "reached": 296,
+    "usable": 296,
+    "distinct": 296,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ncbi->biosample:elink_sra_biosample": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 296,
+    "empty": 4,
+    "failed": 0,
+    "reached": 296,
+    "usable": 296,
+    "distinct": 296,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ncbi->biosample:esummary_sra": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 296,
+    "empty": 4,
+    "failed": 0,
+    "reached": 296,
+    "usable": 296,
+    "distinct": 296,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ncbi->biosample:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 296,
+    "empty": 4,
+    "failed": 0,
+    "reached": 296,
+    "usable": 296,
+    "distinct": 296,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ncbi->sample_ncbi:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 296,
+    "empty": 4,
+    "failed": 0,
+    "reached": 296,
+    "usable": 296,
+    "distinct": 296,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ncbi->sample_ncbi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 296,
+    "empty": 4,
+    "failed": 0,
+    "reached": 296,
+    "usable": 296,
+    "distinct": 296,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ncbi->sample_ncbi:esummary_sra": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 296,
+    "empty": 4,
+    "failed": 0,
+    "reached": 296,
+    "usable": 296,
+    "distinct": 296,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ncbi->sample_ncbi:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 296,
+    "empty": 4,
+    "failed": 0,
+    "reached": 296,
+    "usable": 296,
+    "distinct": 296,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ncbi->study_ncbi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 296,
+    "empty": 4,
+    "failed": 0,
+    "reached": 296,
+    "usable": 296,
+    "distinct": 286,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "experiment_ncbi->submission_ncbi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:experiment_ncbi@reprocessed-srx",
+    "queried": 300,
+    "resolved": 296,
+    "empty": 4,
+    "failed": 0,
+    "reached": 296,
+    "usable": 296,
+    "distinct": 287,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "geo_sample->biosample:elink_gds_biosample": [
+   {
+    "corpus": "sample:300@node:geo_sample@reprocessed-sample",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "geo_sample->biosample:esummary_sra": [
+   {
+    "corpus": "sample:300@node:geo_sample@reprocessed-sample",
+    "queried": 300,
+    "resolved": 286,
+    "empty": 14,
+    "failed": 0,
+    "reached": 286,
+    "usable": 286,
+    "distinct": 286,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "geo_sample->biosample:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:geo_sample@reprocessed-sample",
+    "queried": 300,
+    "resolved": 285,
+    "empty": 15,
+    "failed": 0,
+    "reached": 285,
+    "usable": 285,
+    "distinct": 285,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "geo_sample->sample_ncbi:esummary_sra": [
+   {
+    "corpus": "sample:300@node:geo_sample@reprocessed-sample",
+    "queried": 300,
+    "resolved": 286,
+    "empty": 14,
+    "failed": 0,
+    "reached": 286,
+    "usable": 286,
+    "distinct": 286,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "geo_sample->sample_ncbi:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:geo_sample@reprocessed-sample",
+    "queried": 300,
+    "resolved": 285,
+    "empty": 15,
+    "failed": 0,
+    "reached": 285,
+    "usable": 285,
+    "distinct": 285,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "geo_series->biosample:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:geo_series@reprocessed-gse",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "geo_series->biosample:elink_gds_biosample": [
+   {
+    "corpus": "sample:300@node:geo_series@reprocessed-gse",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "geo_series->biosample:geo_soft_family_relations": [
+   {
+    "corpus": "sample:300@node:geo_series@reprocessed-gse",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 8217,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "geo_series->biosample:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:geo_series@reprocessed-gse",
+    "queried": 300,
+    "resolved": 248,
+    "empty": 52,
+    "failed": 0,
+    "reached": 248,
+    "usable": 248,
+    "distinct": 5373,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "geo_series->sample_ncbi:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:geo_series@reprocessed-gse",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "geo_series->sample_ncbi:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:geo_series@reprocessed-gse",
+    "queried": 300,
+    "resolved": 248,
+    "empty": 52,
+    "failed": 0,
+    "reached": 248,
+    "usable": 248,
+    "distinct": 5373,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ddbj->bioproject:ena_filereport": [
+   {
+    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 300,
+    "resolved": 279,
+    "empty": 21,
+    "failed": 0,
+    "reached": 279,
+    "usable": 279,
+    "distinct": 95,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ddbj->biosample:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 249,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ddbj->biosample:esummary_sra": [
+   {
+    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 249,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ddbj->biosample:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 249,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ddbj->sample_ddbj:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 249,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ddbj->sample_ddbj:ena_filereport": [
+   {
+    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 300,
+    "resolved": 277,
+    "empty": 23,
+    "failed": 0,
+    "reached": 277,
+    "usable": 277,
+    "distinct": 226,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ddbj->sample_ddbj:esummary_sra": [
+   {
+    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 249,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ddbj->sample_ddbj:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 249,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ddbj->study_ddbj:ena_filereport": [
+   {
+    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 300,
+    "resolved": 277,
+    "empty": 23,
+    "failed": 0,
+    "reached": 277,
+    "usable": 277,
+    "distinct": 94,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ddbj->submission_ddbj:ena_filereport": [
+   {
+    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 300,
+    "resolved": 279,
+    "empty": 21,
+    "failed": 0,
+    "reached": 279,
+    "usable": 279,
+    "distinct": 96,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ebi->bioproject:ena_filereport": [
+   {
+    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 135,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ebi->biosample:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 279,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ebi->biosample:esummary_sra": [
+   {
+    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 279,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ebi->biosample:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 279,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ebi->sample_ebi:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 279,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ebi->sample_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 279,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ebi->sample_ebi:esummary_sra": [
+   {
+    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 279,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ebi->sample_ebi:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 279,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ebi->study_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 135,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ebi->submission_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 149,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ncbi->bioproject:ena_filereport": [
+   {
+    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 272,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ncbi->biosample:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 296,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ncbi->biosample:esummary_sra": [
+   {
+    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 296,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ncbi->biosample:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 296,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ncbi->sample_ncbi:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 296,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ncbi->sample_ncbi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 296,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ncbi->sample_ncbi:esummary_sra": [
+   {
+    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 296,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ncbi->sample_ncbi:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 296,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ncbi->study_ncbi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 272,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "run_ncbi->submission_ncbi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 274,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ddbj->bioproject:ena_filereport": [
+   {
+    "corpus": "sample:300@node:sample_ddbj@reprocessed-srs",
+    "queried": 300,
+    "resolved": 283,
+    "empty": 17,
+    "failed": 0,
+    "reached": 283,
+    "usable": 283,
+    "distinct": 105,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ddbj->biosample:biosamples_filter": [
+   {
+    "corpus": "sample:300@node:sample_ddbj@reprocessed-srs",
+    "queried": 300,
+    "resolved": 290,
+    "empty": 10,
+    "failed": 0,
+    "reached": 290,
+    "usable": 290,
+    "distinct": 290,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ddbj->biosample:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:sample_ddbj@reprocessed-srs",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ddbj->biosample:ena_filereport": [
+   {
+    "corpus": "sample:300@node:sample_ddbj@reprocessed-srs",
+    "queried": 300,
+    "resolved": 283,
+    "empty": 17,
+    "failed": 0,
+    "reached": 283,
+    "usable": 283,
+    "distinct": 283,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ddbj->biosample:ena_search_sample": [
+   {
+    "corpus": "sample:300@node:sample_ddbj@reprocessed-srs",
+    "queried": 300,
+    "resolved": 288,
+    "empty": 12,
+    "failed": 0,
+    "reached": 288,
+    "usable": 288,
+    "distinct": 288,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ddbj->biosample:esummary_sra": [
+   {
+    "corpus": "sample:300@node:sample_ddbj@reprocessed-srs",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ddbj->biosample:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:sample_ddbj@reprocessed-srs",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ddbj->experiment_ddbj:ena_filereport": [
+   {
+    "corpus": "sample:300@node:sample_ddbj@reprocessed-srs",
+    "queried": 300,
+    "resolved": 283,
+    "empty": 17,
+    "failed": 0,
+    "reached": 283,
+    "usable": 283,
+    "distinct": 311,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ddbj->study_ddbj:ena_filereport": [
+   {
+    "corpus": "sample:300@node:sample_ddbj@reprocessed-srs",
+    "queried": 300,
+    "resolved": 283,
+    "empty": 17,
+    "failed": 0,
+    "reached": 283,
+    "usable": 283,
+    "distinct": 105,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ddbj->submission_ddbj:ena_filereport": [
+   {
+    "corpus": "sample:300@node:sample_ddbj@reprocessed-srs",
+    "queried": 300,
+    "resolved": 283,
+    "empty": 17,
+    "failed": 0,
+    "reached": 283,
+    "usable": 283,
+    "distinct": 110,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ebi->bioproject:ena_filereport": [
+   {
+    "corpus": "sample:300@node:sample_ebi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 162,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ebi->biosample:biosamples_filter": [
+   {
+    "corpus": "sample:300@node:sample_ebi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ebi->biosample:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:sample_ebi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ebi->biosample:ena_filereport": [
+   {
+    "corpus": "sample:300@node:sample_ebi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ebi->biosample:ena_filereport_analysis": [
+   {
+    "corpus": "sample:300@node:sample_ebi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ebi->biosample:ena_search_sample": [
+   {
+    "corpus": "sample:300@node:sample_ebi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ebi->biosample:esummary_sra": [
+   {
+    "corpus": "sample:300@node:sample_ebi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 300,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ebi->biosample:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:sample_ebi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 299,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ebi->experiment_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:sample_ebi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 1645,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ebi->study_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:sample_ebi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 162,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ebi->submission_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:sample_ebi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 182,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ncbi->bioproject:ena_filereport": [
+   {
+    "corpus": "sample:300@node:sample_ncbi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 281,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ncbi->biosample:biosamples_filter": [
+   {
+    "corpus": "sample:300@node:sample_ncbi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 298,
+    "empty": 2,
+    "failed": 0,
+    "reached": 298,
+    "usable": 298,
+    "distinct": 298,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ncbi->biosample:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:sample_ncbi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 299,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ncbi->biosample:ena_filereport": [
+   {
+    "corpus": "sample:300@node:sample_ncbi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 299,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ncbi->biosample:ena_search_sample": [
+   {
+    "corpus": "sample:300@node:sample_ncbi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 293,
+    "empty": 7,
+    "failed": 0,
+    "reached": 293,
+    "usable": 293,
+    "distinct": 293,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ncbi->biosample:esummary_sra": [
+   {
+    "corpus": "sample:300@node:sample_ncbi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 299,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ncbi->biosample:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:sample_ncbi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 299,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ncbi->experiment_ncbi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:sample_ncbi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 314,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ncbi->study_ncbi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:sample_ncbi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 281,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "sample_ncbi->submission_ncbi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:sample_ncbi@reprocessed-srs",
+    "queried": 300,
+    "resolved": 299,
+    "empty": 1,
+    "failed": 0,
+    "reached": 299,
+    "usable": 299,
+    "distinct": 289,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ddbj->biosample:ddbj_dblink": [
+   {
+    "corpus": "node:study_ddbj@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 137,
+    "resolved": 0,
+    "empty": 137,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ddbj->biosample:ena_filereport": [
+   {
+    "corpus": "node:study_ddbj@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 137,
+    "resolved": 137,
+    "empty": 0,
+    "failed": 0,
+    "reached": 137,
+    "usable": 137,
+    "distinct": 1754,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ddbj->biosample:esummary_sra": [
+   {
+    "corpus": "node:study_ddbj@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 137,
+    "resolved": 137,
+    "empty": 0,
+    "failed": 0,
+    "reached": 137,
+    "usable": 137,
+    "distinct": 1754,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ddbj->biosample:sra_be_runinfo": [
+   {
+    "corpus": "node:study_ddbj@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 137,
+    "resolved": 137,
+    "empty": 0,
+    "failed": 0,
+    "reached": 137,
+    "usable": 137,
+    "distinct": 1754,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ddbj->experiment_ddbj:ena_filereport": [
+   {
+    "corpus": "node:study_ddbj@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 137,
+    "resolved": 137,
+    "empty": 0,
+    "failed": 0,
+    "reached": 137,
+    "usable": 137,
+    "distinct": 1826,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ddbj->sample_ddbj:ddbj_dblink": [
+   {
+    "corpus": "node:study_ddbj@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 137,
+    "resolved": 137,
+    "empty": 0,
+    "failed": 0,
+    "reached": 137,
+    "usable": 137,
+    "distinct": 1754,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ddbj->sample_ddbj:ena_filereport": [
+   {
+    "corpus": "node:study_ddbj@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 137,
+    "resolved": 137,
+    "empty": 0,
+    "failed": 0,
+    "reached": 137,
+    "usable": 137,
+    "distinct": 1754,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ddbj->sample_ddbj:esummary_sra": [
+   {
+    "corpus": "node:study_ddbj@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 137,
+    "resolved": 137,
+    "empty": 0,
+    "failed": 0,
+    "reached": 137,
+    "usable": 137,
+    "distinct": 1754,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ddbj->sample_ddbj:sra_be_runinfo": [
+   {
+    "corpus": "node:study_ddbj@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 137,
+    "resolved": 137,
+    "empty": 0,
+    "failed": 0,
+    "reached": 137,
+    "usable": 137,
+    "distinct": 1754,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ddbj->submission_ddbj:ena_filereport": [
+   {
+    "corpus": "node:study_ddbj@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 137,
+    "resolved": 137,
+    "empty": 0,
+    "failed": 0,
+    "reached": 137,
+    "usable": 137,
+    "distinct": 192,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ebi->biosample:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:study_ebi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ebi->biosample:ena_filereport": [
+   {
+    "corpus": "sample:300@node:study_ebi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 81341,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ebi->biosample:ena_filereport_analysis": [
+   {
+    "corpus": "sample:300@node:study_ebi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ebi->biosample:esummary_sra": [
+   {
+    "corpus": "sample:300@node:study_ebi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 81340,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ebi->biosample:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:study_ebi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 81339,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ebi->experiment_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:study_ebi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 87472,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ebi->sample_ebi:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:study_ebi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 81339,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ebi->sample_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:study_ebi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 81341,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ebi->sample_ebi:ena_filereport_analysis": [
+   {
+    "corpus": "sample:300@node:study_ebi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ebi->sample_ebi:esummary_sra": [
+   {
+    "corpus": "sample:300@node:study_ebi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 81340,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ebi->sample_ebi:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:study_ebi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 81340,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ebi->submission_ebi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:study_ebi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 647,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ncbi->biosample:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:study_ncbi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 0,
+    "empty": 300,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ncbi->biosample:ena_filereport": [
+   {
+    "corpus": "sample:300@node:study_ncbi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 5041,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ncbi->biosample:esummary_sra": [
+   {
+    "corpus": "sample:300@node:study_ncbi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 5041,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ncbi->biosample:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:study_ncbi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 5041,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ncbi->experiment_ncbi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:study_ncbi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 5335,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ncbi->sample_ncbi:ddbj_dblink": [
+   {
+    "corpus": "sample:300@node:study_ncbi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 5041,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ncbi->sample_ncbi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:study_ncbi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 5041,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ncbi->sample_ncbi:esummary_sra": [
+   {
+    "corpus": "sample:300@node:study_ncbi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 5041,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ncbi->sample_ncbi:sra_be_runinfo": [
+   {
+    "corpus": "sample:300@node:study_ncbi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 5041,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "study_ncbi->submission_ncbi:ena_filereport": [
+   {
+    "corpus": "sample:300@node:study_ncbi@results-of:bioproject->study:ena_filereport@reprocessed-prj",
+    "queried": 300,
+    "resolved": 300,
+    "empty": 0,
+    "failed": 0,
+    "reached": 300,
+    "usable": 300,
+    "distinct": 322,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ddbj->bioproject:ena_filereport": [
+   {
+    "corpus": "node:submission_ddbj@results-of:link:run_ddbj->submission_ddbj:ena_filereport@sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 96,
+    "resolved": 96,
+    "empty": 0,
+    "failed": 0,
+    "reached": 96,
+    "usable": 96,
+    "distinct": 95,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ddbj->biosample:ddbj_dblink": [
+   {
+    "corpus": "node:submission_ddbj@results-of:link:run_ddbj->submission_ddbj:ena_filereport@sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 96,
+    "resolved": 0,
+    "empty": 96,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ddbj->biosample:ena_filereport": [
+   {
+    "corpus": "node:submission_ddbj@results-of:link:run_ddbj->submission_ddbj:ena_filereport@sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 96,
+    "resolved": 96,
+    "empty": 0,
+    "failed": 0,
+    "reached": 96,
+    "usable": 96,
+    "distinct": 1088,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ddbj->biosample:esummary_sra": [
+   {
+    "corpus": "node:submission_ddbj@results-of:link:run_ddbj->submission_ddbj:ena_filereport@sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 96,
+    "resolved": 96,
+    "empty": 0,
+    "failed": 0,
+    "reached": 96,
+    "usable": 96,
+    "distinct": 1279,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ddbj->experiment_ddbj:ena_filereport": [
+   {
+    "corpus": "node:submission_ddbj@results-of:link:run_ddbj->submission_ddbj:ena_filereport@sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 96,
+    "resolved": 96,
+    "empty": 0,
+    "failed": 0,
+    "reached": 96,
+    "usable": 96,
+    "distinct": 1139,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ddbj->run_ddbj:ena_filereport": [
+   {
+    "corpus": "node:submission_ddbj@results-of:link:run_ddbj->submission_ddbj:ena_filereport@sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 96,
+    "resolved": 96,
+    "empty": 0,
+    "failed": 0,
+    "reached": 96,
+    "usable": 96,
+    "distinct": 1549,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ddbj->sample_ddbj:ddbj_dblink": [
+   {
+    "corpus": "node:submission_ddbj@results-of:link:run_ddbj->submission_ddbj:ena_filereport@sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 96,
+    "resolved": 96,
+    "empty": 0,
+    "failed": 0,
+    "reached": 96,
+    "usable": 96,
+    "distinct": 1088,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ddbj->sample_ddbj:ena_filereport": [
+   {
+    "corpus": "node:submission_ddbj@results-of:link:run_ddbj->submission_ddbj:ena_filereport@sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 96,
+    "resolved": 95,
+    "empty": 1,
+    "failed": 0,
+    "reached": 95,
+    "usable": 95,
+    "distinct": 1077,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ddbj->sample_ddbj:esummary_sra": [
+   {
+    "corpus": "node:submission_ddbj@results-of:link:run_ddbj->submission_ddbj:ena_filereport@sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 96,
+    "resolved": 96,
+    "empty": 0,
+    "failed": 0,
+    "reached": 96,
+    "usable": 96,
+    "distinct": 1279,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ddbj->study_ddbj:ena_filereport": [
+   {
+    "corpus": "node:submission_ddbj@results-of:link:run_ddbj->submission_ddbj:ena_filereport@sample:300@node:run_ddbj@reprocessed-srr",
+    "queried": 96,
+    "resolved": 95,
+    "empty": 1,
+    "failed": 0,
+    "reached": 95,
+    "usable": 95,
+    "distinct": 94,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ebi->bioproject:ena_filereport": [
+   {
+    "corpus": "node:submission_ebi@results-of:link:run_ebi->submission_ebi:ena_filereport@sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 149,
+    "resolved": 149,
+    "empty": 0,
+    "failed": 0,
+    "reached": 149,
+    "usable": 149,
+    "distinct": 139,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ebi->biosample:ddbj_dblink": [
+   {
+    "corpus": "node:submission_ebi@results-of:link:run_ebi->submission_ebi:ena_filereport@sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 149,
+    "resolved": 0,
+    "empty": 149,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ebi->biosample:ena_filereport": [
+   {
+    "corpus": "node:submission_ebi@results-of:link:run_ebi->submission_ebi:ena_filereport@sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 149,
+    "resolved": 149,
+    "empty": 0,
+    "failed": 0,
+    "reached": 149,
+    "usable": 149,
+    "distinct": 6246,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ebi->biosample:esummary_sra": [
+   {
+    "corpus": "node:submission_ebi@results-of:link:run_ebi->submission_ebi:ena_filereport@sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 149,
+    "resolved": 149,
+    "empty": 0,
+    "failed": 0,
+    "reached": 149,
+    "usable": 149,
+    "distinct": 6250,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ebi->experiment_ebi:ena_filereport": [
+   {
+    "corpus": "node:submission_ebi@results-of:link:run_ebi->submission_ebi:ena_filereport@sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 149,
+    "resolved": 149,
+    "empty": 0,
+    "failed": 0,
+    "reached": 149,
+    "usable": 149,
+    "distinct": 9484,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ebi->run_ebi:ena_filereport": [
+   {
+    "corpus": "node:submission_ebi@results-of:link:run_ebi->submission_ebi:ena_filereport@sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 149,
+    "resolved": 149,
+    "empty": 0,
+    "failed": 0,
+    "reached": 149,
+    "usable": 149,
+    "distinct": 16812,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ebi->sample_ebi:ddbj_dblink": [
+   {
+    "corpus": "node:submission_ebi@results-of:link:run_ebi->submission_ebi:ena_filereport@sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 149,
+    "resolved": 113,
+    "empty": 36,
+    "failed": 0,
+    "reached": 113,
+    "usable": 113,
+    "distinct": 3163,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ebi->sample_ebi:ena_filereport": [
+   {
+    "corpus": "node:submission_ebi@results-of:link:run_ebi->submission_ebi:ena_filereport@sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 149,
+    "resolved": 149,
+    "empty": 0,
+    "failed": 0,
+    "reached": 149,
+    "usable": 149,
+    "distinct": 6233,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ebi->sample_ebi:esummary_sra": [
+   {
+    "corpus": "node:submission_ebi@results-of:link:run_ebi->submission_ebi:ena_filereport@sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 149,
+    "resolved": 149,
+    "empty": 0,
+    "failed": 0,
+    "reached": 149,
+    "usable": 149,
+    "distinct": 6237,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ebi->study_ebi:ena_filereport": [
+   {
+    "corpus": "node:submission_ebi@results-of:link:run_ebi->submission_ebi:ena_filereport@sample:300@node:run_ebi@reprocessed-srr",
+    "queried": 149,
+    "resolved": 149,
+    "empty": 0,
+    "failed": 0,
+    "reached": 149,
+    "usable": 149,
+    "distinct": 135,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ncbi->bioproject:ena_filereport": [
+   {
+    "corpus": "node:submission_ncbi@results-of:link:run_ncbi->submission_ncbi:ena_filereport@sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 274,
+    "resolved": 274,
+    "empty": 0,
+    "failed": 0,
+    "reached": 274,
+    "usable": 274,
+    "distinct": 272,
+    "surveyed_on": "2026-10-20",
+    "checks": {}
+   }
+  ],
+  "submission_ncbi->biosample:ddbj_dblink": [
+   {
+    "corpus": "node:submission_ncbi@results-of:link:run_ncbi->submission_ncbi:ena_filereport@sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 274,
+    "resolved": 0,
+    "empty": 274,
+    "failed": 0,
+    "reached": 0,
+    "usable": 0,
+    "distinct": 0,
+    "surveyed_on": "2026-10-20",
+    "checks": {}
+   }
+  ],
+  "submission_ncbi->biosample:ena_filereport": [
+   {
+    "corpus": "node:submission_ncbi@results-of:link:run_ncbi->submission_ncbi:ena_filereport@sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 274,
+    "resolved": 274,
+    "empty": 0,
+    "failed": 0,
+    "reached": 274,
+    "usable": 274,
+    "distinct": 7597,
+    "surveyed_on": "2026-10-20",
+    "checks": {}
+   }
+  ],
+  "submission_ncbi->biosample:esummary_sra": [
+   {
+    "corpus": "node:submission_ncbi@results-of:link:run_ncbi->submission_ncbi:ena_filereport@sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 274,
+    "resolved": 274,
+    "empty": 0,
+    "failed": 0,
+    "reached": 274,
+    "usable": 274,
+    "distinct": 7978,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ncbi->experiment_ncbi:ena_filereport": [
+   {
+    "corpus": "node:submission_ncbi@results-of:link:run_ncbi->submission_ncbi:ena_filereport@sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 274,
+    "resolved": 274,
+    "empty": 0,
+    "failed": 0,
+    "reached": 274,
+    "usable": 274,
+    "distinct": 9204,
+    "surveyed_on": "2026-10-20",
+    "checks": {}
+   }
+  ],
+  "submission_ncbi->run_ncbi:ena_filereport": [
+   {
+    "corpus": "node:submission_ncbi@results-of:link:run_ncbi->submission_ncbi:ena_filereport@sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 274,
+    "resolved": 274,
+    "empty": 0,
+    "failed": 0,
+    "reached": 274,
+    "usable": 274,
+    "distinct": 31790,
+    "surveyed_on": "2026-10-20",
+    "checks": {}
+   }
+  ],
+  "submission_ncbi->sample_ncbi:ddbj_dblink": [
+   {
+    "corpus": "node:submission_ncbi@results-of:link:run_ncbi->submission_ncbi:ena_filereport@sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 274,
+    "resolved": 272,
+    "empty": 2,
+    "failed": 0,
+    "reached": 272,
+    "usable": 272,
+    "distinct": 7590,
+    "surveyed_on": "2026-10-20",
+    "checks": {}
+   }
+  ],
+  "submission_ncbi->sample_ncbi:ena_filereport": [
+   {
+    "corpus": "node:submission_ncbi@results-of:link:run_ncbi->submission_ncbi:ena_filereport@sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 274,
+    "resolved": 274,
+    "empty": 0,
+    "failed": 0,
+    "reached": 274,
+    "usable": 274,
+    "distinct": 7597,
+    "surveyed_on": "2026-10-20",
+    "checks": {}
+   }
+  ],
+  "submission_ncbi->sample_ncbi:esummary_sra": [
+   {
+    "corpus": "node:submission_ncbi@results-of:link:run_ncbi->submission_ncbi:ena_filereport@sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 274,
+    "resolved": 274,
+    "empty": 0,
+    "failed": 0,
+    "reached": 274,
+    "usable": 274,
+    "distinct": 7978,
+    "surveyed_on": "2026-10-19",
+    "checks": {}
+   }
+  ],
+  "submission_ncbi->study_ncbi:ena_filereport": [
+   {
+    "corpus": "node:submission_ncbi@results-of:link:run_ncbi->submission_ncbi:ena_filereport@sample:300@node:run_ncbi@reprocessed-srr",
+    "queried": 274,
+    "resolved": 274,
+    "empty": 0,
+    "failed": 0,
+    "reached": 274,
+    "usable": 274,
+    "distinct": 272,
+    "surveyed_on": "2026-10-20",
+    "checks": {}
+   }
+  ]
+ }
 }

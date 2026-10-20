@@ -22,6 +22,7 @@ invisible to MkDocs' own validation.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path, PurePosixPath
 
 from mkdocs.config.defaults import MkDocsConfig
@@ -150,7 +151,44 @@ def _catalogue_sections() -> dict[str, str]:
     )
 
 
+_WAVE_MARKER = re.compile(r"<!-- link-splits:wave=(\d+) -->")
+
+
+def _wave_table(wave: int) -> str:
+    """One wave's link splits, from ``link_splits.json``: counts, never a rank.
+
+    Rows are in link order. A table sorted by yield would be a ranking by
+    another name, and a draw of 300 cannot support one.
+    """
+    from fetch_series.catalogue.waves import wave_of
+
+    probes = load_probes()
+    rows = [
+        "| Link | Corpus | Usable / queried | Resolved · empty · failed | Distinct | Status |",
+        "|---|---|---|---|---|---|",
+    ]
+    for link in sorted(CATALOGUE, key=lambda link: link.id):
+        if wave_of(link) != wave:
+            continue
+        for split in sorted(CATALOGUE.link_splits(link), key=lambda s: s.corpus):
+            checks = "; ".join(
+                f"{name} {c.passed}/{c.passed + c.failed + c.undetermined}"
+                for name, c in split.checks.items()
+            )
+            rows.append(
+                f"| `{_cell(link.id)}` | `{_cell(split.corpus)}` | "
+                f"**{split.usable}** / {split.queried}"
+                + (f" ({checks})" if checks else "")
+                + f" | {split.resolved} · {split.empty} · {split.failed} | {split.distinct} | "
+                f"{status(link, probes)} |"
+            )
+    if len(rows) == 2:
+        return "*No link of this wave has been surveyed yet.*"
+    return "\n".join(rows)
+
+
 def on_page_markdown(markdown: str, *, page: Page, config: MkDocsConfig, files: Files) -> str:
+    markdown = _WAVE_MARKER.sub(lambda m: _wave_table(int(m.group(1))), markdown)
     if page.file.src_uri == CATALOGUE_PAGE:
         for placeholder, text in _catalogue_sections().items():
             if placeholder not in markdown:
