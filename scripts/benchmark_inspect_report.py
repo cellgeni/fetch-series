@@ -84,10 +84,15 @@ def judge(row: dict[str, str], *, high: float, medium: float) -> dict[str, objec
     label = row["label"]
     tchem = tchem_id(row["tchem"])
     r10x = r10x_class(row["rename10xrun"])
-    # A refusal is an abstention, not a disagreement: rename10xrun fails closed
-    # on variable read lengths (SRR23687132) and says nothing about the kit.
-    r10x_ok = r10x is None or r10x == LIST_CLASS.get(call or "")
-    instruments_agree = call is not None and tchem == call and r10x_ok
+    # An instrument that refuses or errors abstains; it does not disagree.
+    # rename10xrun fails closed on variable read lengths (SRR23687132), and
+    # tchem returned nothing for SRR31955810. A label is disputed where at least
+    # one instrument agrees with the call and none contradicts it.
+    agrees = [
+        tchem == call if tchem else None,
+        r10x == LIST_CLASS.get(call or "") if r10x else None,
+    ]
+    instruments_agree = call is not None and True in agrees and False not in agrees
     if call is None:
         verdict = "no call"
     elif call == label:
@@ -117,7 +122,17 @@ def error_rate(counts: Counter[tuple[str, str]], level: str) -> tuple[int, int]:
 
 def main() -> None:
     directory = Path(sys.argv[1])
-    rows = [r for r in csv.DictReader((directory / "calls.csv").open()) if not r["error"]]
+    name = sys.argv[2] if len(sys.argv) > 2 else "calls.csv"
+    rows = [r for r in csv.DictReader((directory / name).open()) if not r["error"]]
+    # The reference instruments do not depend on the classifier's version, so a
+    # re-call takes their calls from the first run rather than repeating them.
+    first = directory / "calls-0.1.0.csv"
+    if first.exists() and name != first.name:
+        earlier = {r["run"]: r for r in csv.DictReader(first.open())}
+        for row in rows:
+            for column in ("tchem", "tchem_level", "rename10xrun"):
+                if not row.get(column) and row["run"] in earlier:
+                    row[column] = earlier[row["run"]][column]
     design = [r for r in rows if r["split"] == "design"]
     held = [r for r in rows if r["split"] == "held-out"]
 
@@ -137,9 +152,9 @@ def main() -> None:
         high,
     )
     summary: dict[str, object] = {"thresholds": {"HIGH_NEAR": high, "MEDIUM_NEAR": medium}}
-    for name, part in (("design", design), ("held-out", held)):
+    for half, part in (("design", design), ("held-out", held)):
         counts = table(part, high, medium)
-        summary[name] = {
+        summary[half] = {
             "runs": len(part),
             "by_level": {f"{lv}|{v}": n for (lv, v), n in sorted(counts.items())},
             "HIGH_errors": error_rate(counts, "HIGH"),
@@ -159,7 +174,10 @@ def main() -> None:
         sum(bool(r["call_100k"]) for r in rows),
     )
     summary["labels"] = dict(Counter(r["label"] for r in rows).most_common())
-    (directory / "summary.json").write_text(json.dumps(summary, indent=1) + "\n")
+    summary["calls"] = name
+    (directory / f"summary-{name.removesuffix('.csv')}.json").write_text(
+        json.dumps(summary, indent=1) + "\n"
+    )
     print(json.dumps(summary, indent=1))
 
 

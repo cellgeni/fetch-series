@@ -277,7 +277,7 @@ def _call_fields(call: Any, suffix: str) -> dict[str, Any]:
 
 
 async def inspect(out: Path, labelled: list[dict[str, str]], args: argparse.Namespace) -> None:
-    path = out / "calls.csv"
+    path = out / args.calls
     done = {row["run"] for row in _read(path, CALL_COLUMNS)}
     barcode_lists = lists.available()
     refs = {k: v for k in references.REGISTER if (v := references.index(k)) is not None}
@@ -349,6 +349,9 @@ async def main() -> None:
     # Run beside a link survey, EBI's ceiling is already spent by its buckets;
     # labelling asks ENA once per run, so it gets what is left.
     parser.add_argument("--rps", type=float, default=2.0)
+    # A new classifier version is re-called over the same labels, into its own
+    # file: an old version's calls are a record, not something to overwrite.
+    parser.add_argument("--calls", default="calls.csv")
     args = parser.parse_args()
     load_dotenv()
     configure_logging(logfile=run_logfile("benchmark-inspect"))

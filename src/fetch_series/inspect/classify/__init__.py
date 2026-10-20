@@ -47,18 +47,21 @@ from fetch_series.inspect.references import KmerIndex
 
 # The classifier is a versioned instrument: a call records the version that
 # made it, and a threshold change is a new version.
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 NO_LISTS = "no barcode list fetched; run `fetch inspect lists --fetch`"
-THRESHOLDS_SET_ON = None  # the benchmark's design half fills this in
+THRESHOLDS_SET_ON = "the 2026-10-19 benchmark's design half: 121 runs"
 
-# Provisional thresholds. HIGH needs most reads to be listed barcodes; LOW only
-# needs them to be listed far above chance (``background``) -- a set where 30%
-# of reads carry a listed barcode is a 10x set read badly, not a coincidence.
+# Set on the benchmark's design half (docs/benchmarks/inspect-2026-10.md): the
+# lowest bars at which the design half's HIGH calls carried no error and its
+# MEDIUM calls one in twenty at most. LOW only needs barcodes listed far above
+# chance (``background``): a set where 30% of reads carry a listed barcode is a
+# 10x set read badly, not a coincidence.
 HIGH_NEAR = 0.70
-MEDIUM_NEAR = 0.50
+MEDIUM_NEAR = 0.70
 LOW_NEAR = 0.20
 MIN_MARGIN = 0.20
 MIN_STRAND_VOTES = 2
+UMI_TRIM = 2
 MIN_UMI_ENTROPY = 1.5
 NEAR_SAMPLE = 2_000
 STRAND_SAMPLE = 20_000
@@ -357,8 +360,29 @@ def classify(
     above = [h for h in hits if h.near >= LOW_NEAR and h.exact >= 10 * h.background]
     if not above:
         return Call(None, [], "none", evidence=evidence, hint=_no_barcode_hint(samples))
-    best = above[0]
-    rival = next((h for h in above[1:] if h.barcode_list != best.barcode_list), None)
+
+    def feasible(hit: ListHit) -> list[Layout]:
+        """The layouts a hit can be, given the read it is on.
+
+        A gene-expression layout needs room for its UMI, less two bases a
+        submitter may have trimmed: SRR31955810's 16-base i5 read matched the
+        ARC gene-expression list at 0.94 and is the ATAC library's barcode, with
+        no UMI after it at all.
+        """
+        length = Counter(samples[hit.read].lengths).most_common(1)[0][0]
+        return [
+            layout
+            for layout in sharing(hit.barcode_list)
+            if hit.offset in layout.offsets
+            and length >= hit.offset + layout.cb
+            and (layout.modality != "gex" or length >= layout.cb + layout.umi - UMI_TRIM)
+        ]
+
+    usable = [h for h in above if feasible(h)]
+    if not usable:
+        return Call(None, [], "none", evidence=evidence, hint=_no_barcode_hint(samples))
+    best = usable[0]
+    rival = next((h for h in above if h.barcode_list != best.barcode_list), None)
     evidence["margin"] = round(best.near - rival.near, 4) if rival else None
 
     barcode = samples[best.read]
@@ -370,11 +394,7 @@ def classify(
         )
 
     read_length = Counter(barcode.lengths).most_common(1)[0][0]
-    candidates: list[Layout] = [
-        layout
-        for layout in sharing(best.barcode_list)
-        if best.offset in layout.offsets and read_length >= best.offset + layout.cb
-    ]
+    candidates: list[Layout] = feasible(best)
     gex = [layout for layout in candidates if layout.modality == "gex"]
     if gex:
         umi_len = max(layout.umi for layout in gex)

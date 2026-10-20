@@ -57,8 +57,9 @@ recommendation.
 Every call carries `version`. A threshold change is a new version, never an edit of an old
 one, for the same reason a route's `RouteEvidence` carries a date: a call cited in the KB
 must be reproducible from its version and its reads. The thresholds are set on the
-benchmark's *design* half and reported on its *held-out* half, by study, seeded. Until that
-has happened they are provisional, and `THRESHOLDS_SET_ON` says so.
+benchmark's *design* half and reported on its *held-out* half, by study, seeded. Version
+0.2.0's were set on the [2026-10 benchmark](../benchmarks/inspect-2026-10.md): 0 errors in 66
+held-out HIGH calls and 0 in 28 MEDIUM, with disputed labels set apart.
 
 The thresholds were first looked at on the gate runs: SRR25056225, SRR11181954,
 SRR10340945, ERR4265292 and SRR29534765. Those runs are chosen, not sampled, so their
@@ -70,7 +71,7 @@ studies are excluded from the benchmark.
 |---|---|
 | Does sra-tools read one specific object? | Yes. `fastq-dump -X N --split-files <url>` reads a given object's first spots. SRR25056225's Normalized object reads 28 + 91 bases with real qualities; its Lite object reads the same bases with `?` throughout. An object is attributed by its URL, so no quality-type fallback is needed |
 | Does pysam read a range-fetched CRAM prefix? | Yes, for an unaligned CRAM. The first 32 MB of ERR13855116's `27865_1#3.cram` read 100,000 records in 0.1 s with `fetch(until_eof=True)`: paired 0x40/0x80, R1 26 bases, R2 96, `BC`/`QT` tags. An unaligned CRAM needs no reference. An aligned one needs EBI's registry (`REF_PATH`) |
-| How stable is a call at 100,000 reads against 200,000? | Measured in the benchmark: each run is called on both |
+| How stable is a call at 100,000 reads against 200,000? | Completely, on the [benchmark](../benchmarks/inspect-2026-10.md): all 240 runs got the same call from both |
 | On what terms are the barcode lists available? | 10x's lists are under 10x's terms. They are fetched at runtime from `Teichlab/scg_lib_structs` at a pinned commit, sha256-checked, and never redistributed. Flex's list ships only inside Cell Ranger, so Flex is not a layout here |
 | A 5' gate run | `SRR11181954` (GSE145926). Its metadata says exactly `10x_5p_v1_v2`, and its reads are R1 26 bases and R2 100 bases, the same geometry as 3' v2. It is classified 5' v1/v2 at HIGH, with the cDNA read 13% sense |
 

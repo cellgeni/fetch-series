@@ -129,6 +129,7 @@ nav:
           - ArrayExpress experiment → file: routes/ae-experiment-to-file/index.md
   - Evidence:
       - Benchmarks: benchmarks/index.md
+      - Read classifier benchmark: benchmarks/inspect-2026-10.md
       - Pathologies:
           - Overview: pathologies/index.md
           - ELink gds to sra returns no links: pathologies/elink-gds-sra-missing-links.md

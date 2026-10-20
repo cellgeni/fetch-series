@@ -125,6 +125,11 @@ class TestClassify:
         five = classify(library(V2_CODES, umi=10, antisense=True), LISTS, REFERENCES)
         assert three.layout == "10x_3p_v2" and five.layout == "10x_5p_v1_v2"
 
+    def test_a_barcode_with_no_room_for_a_umi_is_not_gene_expression(self):
+        """SRR31955810: a 16-base ATAC i5 read matched the ARC GEX list."""
+        call = classify(library(V3_CODES, umi=0), LISTS, REFERENCES)
+        assert call.layout != "10x_3p_v3_family"
+
     def test_one_strand_vote_does_not_settle_a_shared_list(self):
         """SRR19242687: poly-A alone said 3' v2 against a 5' label; tchem said ambiguous."""
         call = classify(library(V2_CODES, umi=10, cdna=lambda: _random(70) + "A" * 21), LISTS, {})
