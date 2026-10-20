@@ -62,6 +62,28 @@ curl -s -r 0-200000 'https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR295/065/SRR29534765
 # @SRR29534765.1 K00337:202:HWNYLBBXX:6:1101:2747:1297/3
 ```
 
+## Confirmed by the reads, 2026-10-20
+
+The number above was measured from metadata: a listing, a declared layout and a base
+count. [The content survey](../benchmarks/content-survey-2026-10.md) read the files. It
+read the first 100,000 reads of every file ENA lists for 500 runs drawn from the same
+3,000, and applied the [fit rule](../decisions/what-a-read-sample-can-prove.md#refusing-a-source-needs-positive-evidence) to them.
+
+| ENA's listing in the census | Fit | Unfit | Undetermined |
+|---|---:|---:|---:|
+| one fastq | 0 | **182** | 0 |
+| two or more | 236 | 2 | 54 |
+
+**Every one of the 182 single-fastq runs is proven unusable by its reads.** None holds a
+read whose first 16 bases are a listed 10x barcode, or none holds a read long enough to be
+the cDNA. For 141 runs with an unfit ENA fastq, NCBI's Normalized SRA object of the same run is fit.
+
+The reads also found a defect the listing cannot see. SRR14522447 has two ENA fastqs, of
+28 and 99 bases. NCBI's Normalized object holds the same 127 bases per spot split as 8, 28
+and 91. ENA's split puts the index read and the first 20 barcode bases in one read, so no
+read starts with a barcode. The SRA Lite object carries the same wrong split. Two files
+are listed, so the check on this page passes the run. Only the reads catch it.
+
 ## What it is — and is not
 
 **It is ENA's derivation, not a broken deposit.** Of the 1,201 single-fastq runs
