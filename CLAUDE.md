@@ -90,10 +90,13 @@ src/fetch_series/
   files.py         the file layer: classification, trust, ranked recommendation
   filesets.py      orchestration — files per run, verification, screening
   assays/          assay and chemistry recognition, pluggable
+  inspect/         read a run's first reads: FASTQ/BAM readers (stdlib), CRAM/SRA (optional),
+                   the 10x classifier, the fit rule, the content survey, the report
   metadata/        descriptive metadata: harvest, rules, ontology grounding, measurement
   export/links.py  links.tsv in the incumbent's schema (the M3 parity contract)
   export/graph.py  the route graph as data: what the KB's route-graph page draws
-  catalogue/       every one-hop link the archives offer, by mechanism, with its live probe
+  catalogue/       every one-hop link the archives offer, by mechanism, with its live probe,
+                   its link survey (populations, waves, link_splits.json), never ranked
   providers/       one module per API surface; typed calls and parsing, no route logic
   survey/          the benchmark harness: corpora, runner (per route, and fan-out per
                    accession), rate limiting, the committed export format

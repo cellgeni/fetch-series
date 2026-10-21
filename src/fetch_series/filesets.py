@@ -97,13 +97,24 @@ async def recommendations_for(
     requests per run, and a user checking what a series holds should not have to
     spend 3,520 requests to find out.
     """
+    sets = await filesets_for(accession, client, limit=limit, include_sdl=include_sdl)
+    return [recommend(fileset) for fileset in sets]
+
+
+async def filesets_for(
+    accession: Accession,
+    client: SurveyClient,
+    *,
+    limit: int | None = None,
+    include_sdl: bool = True,
+) -> list[FileSet]:
+    """Every run's file set, every route's offer kept, nothing chosen yet."""
     runs = await runs_of(accession, client)
     if limit is not None:
         runs = runs[:limit]
-    sets = await asyncio.gather(
-        *(files_for_run(run, client, include_sdl=include_sdl) for run in runs)
+    return list(
+        await asyncio.gather(*(files_for_run(run, client, include_sdl=include_sdl) for run in runs))
     )
-    return [recommend(fileset) for fileset in sets]
 
 
 @dataclass(frozen=True, slots=True)

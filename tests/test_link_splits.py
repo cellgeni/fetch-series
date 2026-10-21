@@ -246,3 +246,59 @@ def test_the_committed_link_splits_are_the_exports():
     except FileNotFoundError:
         pytest.skip("survey exports not present (Git LFS objects not fetched)")
     assert computed == load_link_splits()
+
+
+class TestScreened:
+    """Fit is attached only where the content survey read the link survey's own corpus."""
+
+    def _screen(self, fit, layout="10x_3p_v2"):
+        from fetch_series.units import screen_unit
+
+        return RouteResult.from_results(
+            "ERR1",
+            screen_unit(100_000, READS.id),
+            CORPUS,
+            ["https://h/x.bam"],
+            1,
+            detail={"fit": fit, "call": {"layout": layout}, "checks": {}},
+        )
+
+    def _link(self):
+        result = RouteResult.from_results(
+            "ERR1",
+            link_unit(READS.id),
+            CORPUS,
+            ["https://h/x.bam"],
+            1,
+            detail={"checks": [["downloadable", True]], "checked": "x"},
+        )
+        return result
+
+    def test_the_same_corpus_attaches_fit(self, tmp_path):
+        from fetch_series.units import screen_unit
+
+        write_export(tmp_path / "c", CORPUS, link_unit(READS.id), [self._link()])
+        write_export(tmp_path / "c", CORPUS, screen_unit(100_000, READS.id), [self._screen(False)])
+        (split,) = compute(CATALOGUE, tmp_path)
+        assert split.screened is not None
+        assert (split.screened.inspected, split.screened.unfit) == (1, 1)
+
+    def test_another_corpus_attaches_nothing(self, tmp_path):
+        from fetch_series.units import screen_unit
+
+        write_export(tmp_path / "c", CORPUS, link_unit(READS.id), [self._link()])
+        write_export(
+            tmp_path / "d", "sample:500@other", screen_unit(100_000, READS.id), [self._screen(True)]
+        )
+        (split,) = compute(CATALOGUE, tmp_path)
+        assert split.screened is None
+
+    def test_screened_round_trips(self, tmp_path):
+        from fetch_series.units import screen_unit
+
+        write_export(tmp_path / "c", CORPUS, link_unit(READS.id), [self._link()])
+        write_export(tmp_path / "c", CORPUS, screen_unit(100_000, READS.id), [self._screen(True)])
+        splits = compute(CATALOGUE, tmp_path)
+        path = tmp_path / "s.json"
+        save_link_splits(splits, {}, path)
+        assert load_link_splits(path) == splits

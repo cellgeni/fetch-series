@@ -14082,7 +14082,15 @@
     "usable": 0,
     "distinct": 0,
     "surveyed_on": "2026-10-19",
-    "checks": {}
+    "checks": {},
+    "screened": {
+     "reads": 100000,
+     "inspected": 0,
+     "fit": 0,
+     "unfit": 0,
+     "undetermined": 0,
+     "layouts": {}
+    }
    }
   ],
   "run_ddbj->bam:sdl_original": [
@@ -14096,7 +14104,15 @@
     "usable": 0,
     "distinct": 0,
     "surveyed_on": "2026-10-19",
-    "checks": {}
+    "checks": {},
+    "screened": {
+     "reads": 100000,
+     "inspected": 0,
+     "fit": 0,
+     "unfit": 0,
+     "undetermined": 0,
+     "layouts": {}
+    }
    }
   ],
   "run_ddbj->bioproject:ddbj_dblink": [
@@ -14208,7 +14224,15 @@
     "usable": 0,
     "distinct": 0,
     "surveyed_on": "2026-10-19",
-    "checks": {}
+    "checks": {},
+    "screened": {
+     "reads": 100000,
+     "inspected": 0,
+     "fit": 0,
+     "unfit": 0,
+     "undetermined": 0,
+     "layouts": {}
+    }
    }
   ],
   "run_ddbj->experiment_ddbj:ddbj_dblink": [
@@ -14280,6 +14304,20 @@
       "failed": 300,
       "undetermined": 0
      }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 300,
+     "fit": 254,
+     "unfit": 4,
+     "undetermined": 42,
+     "layouts": {
+      "10x_3p_v2": 10,
+      "10x_3p_v3_family": 226,
+      "10x_3p_v4_gemx": 12,
+      "10x_5p_v1_v2": 33,
+      "10x_multiome_arc_gex": 1
+     }
     }
    }
   ],
@@ -14294,7 +14332,15 @@
     "usable": 0,
     "distinct": 0,
     "surveyed_on": "2026-10-19",
-    "checks": {}
+    "checks": {},
+    "screened": {
+     "reads": 100000,
+     "inspected": 0,
+     "fit": 0,
+     "unfit": 0,
+     "undetermined": 0,
+     "layouts": {}
+    }
    }
   ],
   "run_ddbj->metadata_ddbj:ddbj_dra_xml": [
@@ -14530,6 +14576,20 @@
       "failed": 0,
       "undetermined": 0
      }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 297,
+     "fit": 251,
+     "unfit": 4,
+     "undetermined": 42,
+     "layouts": {
+      "10x_3p_v2": 10,
+      "10x_3p_v3_family": 223,
+      "10x_3p_v4_gemx": 12,
+      "10x_5p_v1_v2": 33,
+      "10x_multiome_arc_gex": 1
+     }
     }
    }
   ],
@@ -14559,6 +14619,20 @@
       "passed": 297,
       "failed": 0,
       "undetermined": 0
+     }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 297,
+     "fit": 251,
+     "unfit": 4,
+     "undetermined": 42,
+     "layouts": {
+      "10x_3p_v2": 10,
+      "10x_3p_v3_family": 223,
+      "10x_3p_v4_gemx": 12,
+      "10x_5p_v1_v2": 33,
+      "10x_multiome_arc_gex": 1
      }
     }
    }
@@ -14590,6 +14664,20 @@
       "failed": 297,
       "undetermined": 0
      }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 297,
+     "fit": 251,
+     "unfit": 4,
+     "undetermined": 42,
+     "layouts": {
+      "10x_3p_v2": 10,
+      "10x_3p_v3_family": 223,
+      "10x_3p_v4_gemx": 12,
+      "10x_5p_v1_v2": 33,
+      "10x_multiome_arc_gex": 1
+     }
     }
    }
   ],
@@ -14620,6 +14708,20 @@
       "failed": 300,
       "undetermined": 0
      }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 300,
+     "fit": 254,
+     "unfit": 4,
+     "undetermined": 42,
+     "layouts": {
+      "10x_3p_v2": 10,
+      "10x_3p_v3_family": 226,
+      "10x_3p_v4_gemx": 12,
+      "10x_5p_v1_v2": 33,
+      "10x_multiome_arc_gex": 1
+     }
     }
    }
   ],
@@ -14649,6 +14751,20 @@
       "passed": 300,
       "failed": 0,
       "undetermined": 0
+     }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 300,
+     "fit": 254,
+     "unfit": 4,
+     "undetermined": 42,
+     "layouts": {
+      "10x_3p_v2": 10,
+      "10x_3p_v3_family": 226,
+      "10x_3p_v4_gemx": 12,
+      "10x_5p_v1_v2": 33,
+      "10x_multiome_arc_gex": 1
      }
     }
    }
@@ -14806,6 +14922,19 @@
       "failed": 0,
       "undetermined": 0
      }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 79,
+     "fit": 53,
+     "unfit": 4,
+     "undetermined": 22,
+     "layouts": {
+      "10x_3p_v2": 4,
+      "10x_3p_v3_family": 47,
+      "10x_5p_v1_v2": 15,
+      "10x_multiome_arc_gex": 1
+     }
     }
    }
   ],
@@ -14836,6 +14965,14 @@
       "failed": 0,
       "undetermined": 0
      }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 4,
+     "fit": 0,
+     "unfit": 0,
+     "undetermined": 4,
+     "layouts": {}
     }
    }
   ],
@@ -14964,6 +15101,17 @@
       "failed": 0,
       "undetermined": 0
      }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 54,
+     "fit": 2,
+     "unfit": 0,
+     "undetermined": 52,
+     "layouts": {
+      "10x_3p_v2": 1,
+      "10x_5p_v1_v2": 1
+     }
     }
    }
   ],
@@ -15035,6 +15183,18 @@
       "passed": 232,
       "failed": 0,
       "undetermined": 0
+     }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 232,
+     "fit": 22,
+     "unfit": 0,
+     "undetermined": 210,
+     "layouts": {
+      "10x_3p_v2": 1,
+      "10x_3p_v3_family": 21,
+      "10x_5p_v1_v2": 5
      }
     }
    }
@@ -15272,6 +15432,19 @@
       "failed": 0,
       "undetermined": 0
      }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 297,
+     "fit": 226,
+     "unfit": 2,
+     "undetermined": 69,
+     "layouts": {
+      "10x_3p_v2": 40,
+      "10x_3p_v3_family": 150,
+      "10x_5p_v1_v2": 57,
+      "10x_multiome_arc_gex": 6
+     }
     }
    }
   ],
@@ -15301,6 +15474,19 @@
       "passed": 298,
       "failed": 0,
       "undetermined": 0
+     }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 298,
+     "fit": 226,
+     "unfit": 2,
+     "undetermined": 70,
+     "layouts": {
+      "10x_3p_v2": 40,
+      "10x_3p_v3_family": 151,
+      "10x_5p_v1_v2": 57,
+      "10x_multiome_arc_gex": 6
      }
     }
    }
@@ -15332,6 +15518,19 @@
       "failed": 297,
       "undetermined": 0
      }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 297,
+     "fit": 226,
+     "unfit": 2,
+     "undetermined": 69,
+     "layouts": {
+      "10x_3p_v2": 40,
+      "10x_3p_v3_family": 150,
+      "10x_5p_v1_v2": 57,
+      "10x_multiome_arc_gex": 6
+     }
     }
    }
   ],
@@ -15362,6 +15561,19 @@
       "failed": 299,
       "undetermined": 0
      }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 299,
+     "fit": 95,
+     "unfit": 1,
+     "undetermined": 203,
+     "layouts": {
+      "10x_3p_v2": 18,
+      "10x_3p_v3_family": 78,
+      "10x_5p_v1_v2": 9,
+      "10x_multiome_arc_gex": 3
+     }
     }
    }
   ],
@@ -15391,6 +15603,19 @@
       "passed": 299,
       "failed": 0,
       "undetermined": 0
+     }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 299,
+     "fit": 226,
+     "unfit": 2,
+     "undetermined": 71,
+     "layouts": {
+      "10x_3p_v2": 40,
+      "10x_3p_v3_family": 151,
+      "10x_5p_v1_v2": 57,
+      "10x_multiome_arc_gex": 6
      }
     }
    }
@@ -15546,7 +15771,15 @@
     "usable": 0,
     "distinct": 0,
     "surveyed_on": "2026-10-19",
-    "checks": {}
+    "checks": {},
+    "screened": {
+     "reads": 100000,
+     "inspected": 0,
+     "fit": 0,
+     "unfit": 0,
+     "undetermined": 0,
+     "layouts": {}
+    }
    }
   ],
   "run_ncbi->bam:sdl_original": [
@@ -15560,7 +15793,15 @@
     "usable": 0,
     "distinct": 0,
     "surveyed_on": "2026-10-19",
-    "checks": {}
+    "checks": {},
+    "screened": {
+     "reads": 100000,
+     "inspected": 0,
+     "fit": 0,
+     "unfit": 0,
+     "undetermined": 0,
+     "layouts": {}
+    }
    }
   ],
   "run_ncbi->bioproject:ddbj_dblink": [
@@ -15672,7 +15913,15 @@
     "usable": 0,
     "distinct": 0,
     "surveyed_on": "2026-10-19",
-    "checks": {}
+    "checks": {},
+    "screened": {
+     "reads": 100000,
+     "inspected": 0,
+     "fit": 0,
+     "unfit": 0,
+     "undetermined": 0,
+     "layouts": {}
+    }
    }
   ],
   "run_ncbi->experiment_ncbi:ddbj_dblink": [
@@ -15744,6 +15993,14 @@
       "failed": 0,
       "undetermined": 0
      }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 298,
+     "fit": 0,
+     "unfit": 0,
+     "undetermined": 298,
+     "layouts": {}
     }
    }
   ],
@@ -16022,6 +16279,21 @@
       "failed": 0,
       "undetermined": 0
      }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 291,
+     "fit": 234,
+     "unfit": 6,
+     "undetermined": 51,
+     "layouts": {
+      "10x_3p_v2": 49,
+      "10x_3p_v3_family": 166,
+      "10x_3p_v4_gemx": 1,
+      "10x_5p_v1_v2": 33,
+      "10x_5p_v3_gemx": 1,
+      "10x_multiome_arc_gex": 10
+     }
     }
    }
   ],
@@ -16051,6 +16323,21 @@
       "passed": 292,
       "failed": 0,
       "undetermined": 0
+     }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 292,
+     "fit": 235,
+     "unfit": 6,
+     "undetermined": 51,
+     "layouts": {
+      "10x_3p_v2": 49,
+      "10x_3p_v3_family": 167,
+      "10x_3p_v4_gemx": 1,
+      "10x_5p_v1_v2": 33,
+      "10x_5p_v3_gemx": 1,
+      "10x_multiome_arc_gex": 10
      }
     }
    }
@@ -16082,6 +16369,21 @@
       "failed": 291,
       "undetermined": 0
      }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 291,
+     "fit": 234,
+     "unfit": 6,
+     "undetermined": 51,
+     "layouts": {
+      "10x_3p_v2": 49,
+      "10x_3p_v3_family": 166,
+      "10x_3p_v4_gemx": 1,
+      "10x_5p_v1_v2": 33,
+      "10x_5p_v3_gemx": 1,
+      "10x_multiome_arc_gex": 10
+     }
     }
    }
   ],
@@ -16112,6 +16414,19 @@
       "failed": 299,
       "undetermined": 0
      }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 299,
+     "fit": 117,
+     "unfit": 5,
+     "undetermined": 177,
+     "layouts": {
+      "10x_3p_v2": 41,
+      "10x_3p_v3_family": 79,
+      "10x_5p_v1_v2": 12,
+      "10x_multiome_arc_gex": 1
+     }
     }
    }
   ],
@@ -16141,6 +16456,21 @@
       "passed": 299,
       "failed": 0,
       "undetermined": 0
+     }
+    },
+    "screened": {
+     "reads": 100000,
+     "inspected": 299,
+     "fit": 238,
+     "unfit": 7,
+     "undetermined": 54,
+     "layouts": {
+      "10x_3p_v2": 49,
+      "10x_3p_v3_family": 171,
+      "10x_3p_v4_gemx": 1,
+      "10x_5p_v1_v2": 33,
+      "10x_5p_v3_gemx": 1,
+      "10x_multiome_arc_gex": 11
      }
     }
    }

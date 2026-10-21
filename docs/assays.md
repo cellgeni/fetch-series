@@ -23,11 +23,13 @@ SRR6798781   10x    VDJ|GEX       10x_5p_v1_v2
 
 ## What it is not
 
-Not a replacement for inferring chemistry from the reads. `rename10xrun` in the
-reprocessing pipeline reads the FASTQ files themselves and **fails closed**,
-which is right for the thing that decides how reads are parsed. This layer is a
-cheap prior computed before anything is downloaded. Where the two disagree, the
-reads win, and the disagreement is a data-quality signal worth recording.
+Not a replacement for reading the reads. [`fetch inspect`](inspect.md) reads a run's first
+reads and names the kit from them, and `rename10xrun` in the reprocessing pipeline does the
+same from the FASTQs and **fails closed**, which is right for the thing that decides how
+reads are parsed. This layer is a cheap prior computed before anything is downloaded. Where
+it and the reads disagree, the reads win, and the disagreement is a finding about the
+submission. On [the 2026-10 benchmark](benchmarks/inspect-2026-10.md) that happened for 26
+of 240 labelled runs.
 
 ## Measured
 
@@ -107,22 +109,24 @@ checked specific-first — ATAC, VDJ, CRISPR, HTO, ADT, then GEX — because alm
 every protocol says "gene expression" somewhere, so ordering decides
 presentation while the ambiguity rule decides truth.
 
-## Chemistry: the one place metadata beats the reads
+## Chemistry: what metadata settles that the reads may not
 
-`rename10xrun`'s `infer_10x_chemistry.py` decides chemistry from the FASTQ files
-— barcode length, UMI length, which whitelist the barcodes hit. That is the
-right way to decide how reads are parsed, it fails closed, and nothing here
-replaces it.
-
-But it cannot answer everything, and it says so itself, in a warning it emits:
+`rename10xrun`'s `infer_10x_chemistry.py` decides chemistry from the FASTQ files: barcode
+length, UMI length, and which whitelist the barcodes hit. It says itself where that runs
+out, in a warning it emits:
 
 > `737K-august-2016` cannot distinguish 3prime v2 from 5prime v1/v2 by FASTQ
 > geometry alone
 
-Both use a 16 bp barcode, a 10 bp UMI and the same whitelist. Geometry is
-genuinely blind there. **Metadata is not**: a protocol naming a *"Chromium Next
-GEM Single Cell 5' Library & Gel Bead Kit"* settles it, and settles it before
-anything is downloaded.
+Both use a 16 bp barcode, a 10 bp UMI and the same whitelist, so geometry is blind there.
+[`fetch inspect`](inspect.md) looks past geometry: it reads the strand of the cDNA read
+(3' is sense, 5' antisense) and what follows the UMI. That settles most such runs. It does
+not settle all of them. On the benchmark, 18 runs labelled 5' were left ambiguous between
+the two, because a 5' barcode read stops at 26 bases and their cDNA reads did not give two
+agreeing strand signals.
+
+**Metadata can still settle those.** A protocol naming a *"Chromium Next GEM Single Cell
+5' Library & Gel Bead Kit"* settles it before anything is downloaded.
 
 ### Measured
 
@@ -148,13 +152,21 @@ The two bolded rows are the payoff: **292 runs where the metadata distinguishes
 3' v2 from 5' v1/v2** and the whitelist cannot. For the other 67% the metadata
 is silent, and silence is the answer it gives.
 
-### What is not measured
+### Measured against the reads
 
-**Agreement with the empirical inference.** That needs the FASTQ files, which
-needs exactly the downloads this layer exists to avoid. The honest claim is
-"metadata settles it for 32.4% of runs"; comparing the two is a cross-check for
-whenever the pipeline runs both, and a disagreement there is a finding about the
-submission rather than a tie to break.
+Measured on [the 2026-10 read classifier benchmark](benchmarks/inspect-2026-10.md): 240 runs
+whose metadata names exactly one kit, read from their SRA objects.
+
+| | Runs |
+|---|---:|
+| Reads name the same kit as the metadata | 186 |
+| Reads disagree, and an instrument agrees with the reads: **the metadata is wrong** | 26 |
+| Reads cannot choose between 3' v2 and 5' v1/v2, where the metadata can | 26 |
+| Reads disagree, unconfirmed (both LOW calls) | 2 |
+
+The metadata is wrong about one run in nine. The commonest mistake, 12 of the 26, is
+"3' v2" for a library whose barcodes are v3's. Six more name an ATAC kit for a multiome
+study's gene-expression runs. Both kinds are a study-level field applied to every run.
 
 The ids are `rename10xrun`'s verbatim — `10x_3p_v3_family`, `10x_5p_v1_v2`,
 `10x_multiome_arc_gex` — so the two answers compare without translation, and a

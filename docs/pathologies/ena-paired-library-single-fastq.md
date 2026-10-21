@@ -147,3 +147,11 @@ makes the loss visible by comparison — 25.7 GB of fastq against a 50.2 GB BAM.
 `tests/test_files.py::TestDeclaredPairedButUnpaired` — the flag fires on a
 paired declaration with one fastq, and does not fire on a single library, an
 undeclared layout, or a BAM; a genuine pair still outranks everything.
+
+## Seen in the reads
+
+[`fetch inspect`](../inspect.md) reads both copies and calls them. For SRR29534765, ENA's fastq
+is one file of 101-base reads named `/3`, and is **unfit**: there is no barcode read in it.
+The SRA object holds 8 + 26 + 101 bases and is called 3' v2. `fetch files --inspect` refuses
+the ENA set on that evidence.
+

@@ -216,6 +216,17 @@ def _link_split(split: LinkSplit) -> dict[str, Any]:
             name: {"passed": c.passed, "failed": c.failed, "undetermined": c.undetermined}
             for name, c in split.checks.items()
         },
+        # What the files held, where the content survey read this very corpus.
+        "screened": None
+        if split.screened is None
+        else {
+            "reads": split.screened.reads,
+            "inspected": split.screened.inspected,
+            "fit": split.screened.fit,
+            "unfit": split.screened.unfit,
+            "undetermined": split.screened.undetermined,
+            "layouts": split.screened.layouts,
+        },
     }
 
 

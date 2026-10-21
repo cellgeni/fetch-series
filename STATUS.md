@@ -1,7 +1,7 @@
 # Where fetch-series stands
 
-**2026-10-19** · [v0.1.0 released](https://github.com/cellgeni/fetch-series/releases/tag/v0.1.0)
-(PRs #1–#7 on `main`) · knowledge base published at
+**2026-10-21** · [v0.1.0 released](https://github.com/cellgeni/fetch-series/releases/tag/v0.1.0),
+then the link surveys and `fetch inspect` on `main` · knowledge base published at
 [cellgeni.github.io/fetch-series](https://cellgeni.github.io/fetch-series/)
 
 A point-in-time overview. The evidence behind every number here lives in
@@ -23,6 +23,8 @@ fetch screen GSE109816                     # exits 2 — Smart-seq2, do not down
 fetch relations GSE236084 --sample-map     # GEO ↔ SRA ↔ ENA ↔ ArrayExpress, per run
 fetch metadata PRJNA434002 --explain       # tissue/disease/donor per sample, as ontology CURIEs
 fetch resolve GSM7518069 --to run --explain
+fetch inspect run SRR29534765              # read every copy: ENA's fastq is UNFIT, the SRA object is 3' v2
+fetch files SRR29534765 --inspect          # recommend, refusing what the reads prove unusable
 ```
 
 Behind it:
@@ -31,9 +33,11 @@ Behind it:
 |---|---|
 | Routes declared, implemented and **measured** | **40 / 40 / 40** |
 | Archives covered | GEO, SRA, ENA, ArrayExpress/BioStudies, DDBJ |
-| Link catalogue | **1,127** one-hop links between 39 nodes: 96 reached by a route's survey (78 answered, 18 measured none), 753 confirmed by one live probe, 278 probed and unconfirmed; none ranked ([the catalogue](docs/graph/catalogue.md)) |
-| Survey verdicts recorded and committed | **251,230** across 78 files in `data/surveys/` |
-| Offline tests | **649** collected by `uv run pytest` (plus integration, pathology and slow suites) |
+| Link catalogue | **1,127** one-hop links between 39 nodes: 96 measured by a route's survey, **288 surveyed** by a link survey of their own (268 answering usably, 20 never), 480 confirmed by one live probe, 263 unconfirmed; none ranked ([the catalogue](docs/graph/catalogue.md), [link survey results](docs/graph/link-survey-results.md)) |
+| Read classifier | 10x kits from the first 100,000 reads: **0 errors in 66 held-out HIGH calls**, 0 in 28 MEDIUM ([benchmark](docs/benchmarks/inspect-2026-10.md)) |
+| Content survey | every run-to-reads link's files read for 1,400 runs ([results](docs/benchmarks/content-survey-2026-10.md)) |
+| Survey verdicts recorded and committed | **681,144** across 3,364 files in `data/surveys/` |
+| Offline tests | **893** collected by `uv run pytest` (plus integration, pathology and slow suites) |
 | Knowledge-base pages | every measured route, 9 pathologies, 6 upstream drafts |
 
 The governing rule held throughout: **no fallback order, ranking or heuristic
@@ -53,6 +57,8 @@ hand-written preference anywhere in the project.
 | **every `SAMEA`/`SAMD`** | BioSample asked of `efetch` by accession returns a *different sample* — prefix stripped, remainder read as a UID, HTTP 200, full attribute block | [pathology](docs/pathologies/biosample-efetch-ignores-accession-prefix.md) |
 | **41%** | of the BioProjects `esummary db=gds` recovers for series GEO leaves empty are species-level umbrellas — `PRJNA30709` holds 7,591 runs | [route](docs/routes/gse-to-bioproject/gds-summary.md) |
 | **0.77%** | of runs already reprocessed successfully no longer exist in *either* archive, and nothing announces it | [route](docs/routes/run-to-experiment/ena-filereport.md) |
+| **182/182** | runs whose ENA listing is one fastq are proven unusable by their reads; NCBI's Normalized object of the same run is fit for 141 runs with an unfit ENA fastq | [content survey](docs/benchmarks/content-survey-2026-10.md) |
+| **248/452** | objects DDBJ Search links for NCBI runs do not exist at DDBJ | [content survey](docs/benchmarks/content-survey-2026-10.md) |
 | **8,604/8,604** | agreement between GEO's own SRA relation and ENA's submitter alias — a route that works where GEO records no relation at all | [route](docs/routes/run-to-geo-sample/ena-alias.md) |
 
 Four of the first five contradicted what this project's own code assumed before
@@ -84,6 +90,8 @@ only 6 recommended sets are a lone ENA fastq
 | **M4** | assay layer, chemistry, pre-download screening | **complete** |
 | **M5** | upstream reports, archive monitor, docs site, contribution guide | **drafted** |
 | **M6** | metadata layer: harvest, rule normalisation, ontology grounding | **tiers 0–2 complete** |
+| **M7** | link surveys: every unmeasured catalogue link over seeded draws | **complete** (six waves) |
+| **M8** | `fetch inspect`: reads, classifier, content survey, refusal path | **complete** |
 
 **M3 parity:** 14 of 14 of the incumbent's own nf-test cases, 422 snapshot rows (400 distinct runs), no
 differences ([the record](docs/fetch10xmeta-parity.md)). Getting there required
@@ -133,7 +141,11 @@ ship.
    it silently attributes one organism's metadata to another, with HTTP 200 and
    no warning. The newest, checked 2026-10-19, is
    [DDBJ Search linking mirrored runs' SRA objects that do not exist](docs/upstream/ddbj-search-mirrored-sra-links.md):
-   30 of 59 answered 404.
+   30 of 59 answered 404. The content survey has since measured it over a draw:
+   248 of 452 NCBI runs' objects are missing. It also found three candidates that
+   are not drafted: ENA's fastq for SRR14522447 splits the barcode across two
+   reads, ENA's fastq is Lite-quality for 121 of 451 NCBI runs, and SDL lists
+   submitted originals with no download link for 450 of 453.
 2. **Publish the container** to `quay.io/cellgeni/fetch-series`. v0.1.0 shipped
    without one: the image is built and smoke-tested by CI on every pull request and push to `main`, and measured
    253 MB when built by hand on 2026-09-15, but it cannot be pushed to your
@@ -158,11 +170,12 @@ ship.
    whole corpus, and an upstream report in its own right.
    [The list](docs/pathologies/index.md#known-declared-and-not-yet-written-up).
 
-5. **Chemistry agreement with `rename10xrun` is unmeasured.** Measuring it needs
-   the FASTQ files, which needs exactly the downloads the metadata layer exists
-   to avoid. The right place to close it is the first real pipeline run with
-   both enabled — the ids are `rename10xrun`'s verbatim so the two diff without
-   translation, and a test asserts the vocabularies have not drifted.
+5. **The metadata-derived chemistry call is still not checked against the reads
+   at scale.** The read classifier benchmark ran `rename10xrun` and `tchem` beside
+   ours on 240 labelled runs (206 of 221 and 217 of 221 agreeing), and found 26
+   of the 240 metadata labels wrong. The assay layer's own calls have not yet been
+   compared with `fetch inspect` over the corpus; the content survey's exports
+   hold what that comparison needs.
 
 ### Deliberately dropped, with the reasons recorded
 

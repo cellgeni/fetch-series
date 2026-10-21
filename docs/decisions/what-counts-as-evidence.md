@@ -189,10 +189,11 @@ platform names, and `scRNA-seq` is deliberately **not** among them because it
 appears in Smart-seq, Drop-seq and inDrop submissions too. Adding it would buy
 recall by manufacturing false positives.
 
-The same reasoning applies to
-[chemistry](../assays.md#chemistry-the-one-place-metadata-beats-the-reads):
-agreement with the empirical FASTQ inference is not claimed, because measuring
-it needs the downloads the metadata layer exists to avoid.
+Chemistry was the same until the reads were read. Agreement between a protocol's kit and
+the reads' is now measured, by [`fetch inspect`](../inspect.md) over 240 labelled runs on
+[the 2026-10 benchmark](../benchmarks/inspect-2026-10.md): the reads named the same kit for
+186, and the metadata was wrong for 26. The labels came from metadata, never from the reads.
+That is what keeps the measurement from grading the classifier against itself.
 
 ## A census is not always worth its cost
 
