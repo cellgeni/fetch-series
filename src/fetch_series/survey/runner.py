@@ -6,7 +6,7 @@ import asyncio
 import logging
 import random
 import time
-from collections.abc import Awaitable, Callable, Sequence
+from collections.abc import Awaitable, Callable, Collection, Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -231,6 +231,7 @@ async def run_fanout(
     workers: int,
     resume: bool = True,
     retry_failed: bool = False,
+    redo: Collection[str] = (),
     on_result: Callable[[RouteResult], None] | None = None,
 ) -> FanoutRun:
     """Ask every accession for every unit, one request per accession.
@@ -250,6 +251,8 @@ async def run_fanout(
             requests; this bounds the coroutines.
         retry_failed: re-ask units whose stored verdict is a failure. Off by
             default for the reason ``run_route`` gives.
+        redo: accessions to ask again for every unit, whatever they hold: a
+            whole accession, so its verdicts still come from one moment.
     """
     started = time.monotonic()
     units = list(dict.fromkeys(unit_ids))
@@ -266,6 +269,8 @@ async def run_fanout(
         if retry_failed:
             for accession, failed in cache.answered_by(corpus, wanted, failed_only=True).items():
                 have[accession] -= failed
+        for accession in redo:
+            have.pop(accession, None)
     todo = [(a, wanted - have.get(a, set())) for a in order]
     todo = [(a, owed) for a, owed in todo if owed]
     skipped = len(order) - len(todo)

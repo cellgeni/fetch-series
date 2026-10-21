@@ -6,6 +6,8 @@ import asyncio
 import contextlib
 import json
 import logging
+import os
+import re
 import tempfile
 from collections import Counter
 from datetime import UTC, datetime
@@ -25,6 +27,7 @@ from fetch_series.catalogue import (
     DRAWN,
     PROBES_PATH,
     SPLITS_PATH,
+    Link,
     Probe,
     load_probes,
     merge_probes,
@@ -327,6 +330,24 @@ def inspect_survey(
     ] = None,
     dry_run: Annotated[bool, typer.Option("--plan", help="Print units and sizes only.")] = False,
     retry_failed: Annotated[bool, typer.Option(help="Also re-ask stored failures.")] = False,
+    refit: Annotated[
+        bool,
+        typer.Option(
+            help="Read again every run whose verdicts an earlier fit rule judged: "
+            "the older rules did not record what the current one judges on."
+        ),
+    ] = False,
+    reread_where: Annotated[
+        list[str] | None,
+        typer.Option(
+            help="Read again every run where a file was unreadable for a reason matching "
+            "this pattern (a regex; repeatable): a full disk is not the archive's answer."
+        ),
+    ] = None,
+    workers: Annotated[int, typer.Option(help="Runs read at once.")] = 6,
+    processes: Annotated[
+        int, typer.Option(help="Worker processes that parse reads and call kits.")
+    ] = max(1, min(8, (os.cpu_count() or 2) - 1)),
     cache_path: Annotated[Path, typer.Option("--cache", help="SQLite store.")] = DEFAULT_CACHE_PATH,
 ) -> None:
     """Read the first reads of what every run-to-reads link finds, and record what they are.
@@ -336,6 +357,8 @@ def inspect_survey(
     """
     from fetch_series.inspect import lists as barcode_lists
     from fetch_series.inspect import references
+    from fetch_series.inspect.fit import RULE as FIT_RULE
+    from fetch_series.inspect.pool import Pool
     from fetch_series.inspect.survey import screen_fanout, screen_links
 
     load_dotenv()
@@ -345,14 +368,18 @@ def inspect_survey(
     name = "inspect-gate" if gate else str(corpus_name)
     corpus = corpora.load(name)
     links = [link for link in screen_links() if mechanism is None or link.mechanism == mechanism]
-    units = units_of(links)
+    # One fan-out per run node, over every mechanism's links: each run's
+    # sources are listed together and each distinct file read once.
+    by_node: dict[str, list[Link]] = {}
+    for link in links:
+        by_node.setdefault(link.source, []).append(link)
     jobs = []
-    for unit in units:
-        accessions = [a.value for a in corpus.accessions if node_for(a) == unit.source]
+    for node, node_links in sorted(by_node.items()):
+        accessions = [a.value for a in corpus.accessions if node_for(a) == node]
         if accessions:
-            jobs.append((unit, accessions))
-    for unit, accessions in jobs:
-        typer.echo(f"{unit.id:44s} {len(unit.links):>2} links {len(accessions):>5} runs")
+            jobs.append((node, node_links, accessions))
+    for node, node_links, accessions in jobs:
+        typer.echo(f"{node:12s} {len(node_links):>3} links {len(accessions):>5} runs")
     if dry_run:
         return
     lists_held = barcode_lists.available()
@@ -366,6 +393,9 @@ def inspect_survey(
 
     async def main() -> None:
         limits = host_limits(has_api_key=bool(api_key))
+        # A prefix download holds its slot for the whole 16-32 MB, so the
+        # content survey streams more at once, at the same request rate.
+        limits["files"] = Limits(rps=4.0, concurrency=8, base_timeout=120.0)
         async with contextlib.AsyncExitStack() as stack:
             clients = {
                 bucket: await stack.enter_async_context(
@@ -377,19 +407,37 @@ def inspect_survey(
                 )
                 for bucket, bucket_limits in limits.items()
             }
+            pool = stack.enter_context(Pool(lists_held, refs, processes))
             with SurveyCache(cache_path) as cache:
-                for unit, accessions in jobs:
+                for _node, node_links, accessions in jobs:
                     fn = screen_fanout(
-                        list(unit.links), clients, name, lists_held, refs, reads=reads
+                        node_links, clients, name, lists_held, refs, reads=reads, pool=pool
                     )
+                    units = [screen_unit(reads, link.id) for link in node_links]
+                    local = re.compile("|".join(reread_where)) if reread_where else None
+                    stale: set[str] = set()
+                    for unit in units:
+                        for r in cache.results(name, unit):
+                            if r.detail is None:
+                                continue
+                            if refit and r.detail.get("rule") != FIT_RULE:
+                                stale.add(r.accession)
+                            unreadable = (r.detail.get("checks") or {}).get("unreadable") or []
+                            if local is not None and any(
+                                local.search(u.get("why") or "") for u in unreadable
+                            ):
+                                stale.add(r.accession)
+                    if stale:
+                        typer.echo(f"{len(stale)} runs to read again")
                     run = await run_fanout(
-                        [screen_unit(reads, link.id) for link in unit.links],
+                        units,
                         accessions,
                         fn,
                         cache,
                         name,
-                        workers=2,
+                        workers=workers,
                         retry_failed=retry_failed,
+                        redo=stale,
                     )
                     for unit_id, counts in run.units.items():
                         typer.echo(

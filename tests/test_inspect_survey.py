@@ -50,7 +50,13 @@ def call(layout: str | None, level: str, *, hits=(), hint=None, library_type="GE
 class TestFit:
     def test_a_called_10x_set_is_fit(self):
         verdict = fit([sample(28), sample(91)], call("10x_3p_v3_family", "HIGH", hits=[hit()]))
-        assert verdict == {"fit": True, "rule": RULE, "reason": "10x_3p_v3_family at HIGH"}
+        assert verdict == {
+            "fit": True,
+            "rule": RULE,
+            "reason": "10x_3p_v3_family at HIGH",
+            "run_spot": None,
+            "mates": 1.0,
+        }
 
     def test_no_cdna_read_is_proven_unusable(self):
         """SRR30132199: 28-base reads only."""
@@ -88,6 +94,64 @@ class TestFit:
         assert verdict["fit"] is False
 
 
+def sra_object(*lengths: int, n: int = 50) -> list[FileSample]:
+    """One SRA object's reads, split by fastq-dump: every read shares the object's URL."""
+    return [
+        FileSample(
+            "https://sra/SRR1",
+            "sra",
+            records=[Record(f"SRR1.{i}", "A" * length, "F" * length) for i in range(n)],
+        )
+        for length in lengths
+    ]
+
+
+class TestFit2:
+    """The three conditions the 2026-10-20 content survey added (fit-2)."""
+
+    def test_an_sra_prefix_short_of_the_run_refuses_nothing(self):
+        """DRR878211: 26 + 8-base spots first, 98-base spots later; a mean of 66."""
+        verdict = fit(sra_object(26, 8), call(None, "none", hits=[hit()]), run_spot=66.0)
+        assert verdict["fit"] is None and "never reached" in verdict["reason"]
+
+    def test_an_sra_prefix_that_is_the_run_still_refuses(self):
+        """SRR30132199: 28 bases a spot, all the way through."""
+        verdict = fit(sra_object(28), call(None, "none", hits=[hit()]), run_spot=28.0)
+        assert verdict["fit"] is False
+
+    def test_an_sra_object_without_the_runs_mean_refuses_nothing(self):
+        assert fit(sra_object(28), call(None, "none", hits=[hit()]))["fit"] is None
+
+    def test_a_derived_fastq_short_of_the_run_is_still_refused(self):
+        """SRR29534765: ENA's lone fastq is short of the run because it omits a read."""
+        verdict = fit([sample(101)], call(None, "none", hint="barcode read missing: ..."))
+        assert verdict["fit"] is False
+
+    def test_a_barcode_shaped_read_no_list_holds_refuses_nothing(self):
+        """SRR9105023: 10x 3' v1 -- 8 + 98 + 14 + 10, its barcode in the 14-base read."""
+        verdict = fit(
+            sra_object(8, 98, 14, 10),
+            call(None, "none", hint="no listed 10x barcode"),
+            run_spot=130.0,
+        )
+        assert verdict["fit"] is None and "14-base" in verdict["reason"]
+
+    def test_a_cdna_read_from_other_spots_is_not_fit(self):
+        """DRR878211's DDBJ fastqs: the 98-base reads are unpaired spots of their own."""
+        barcode = FileSample(
+            "x_1.fastq",
+            "fastq",
+            records=[Record(f"DRR1.{i}", "A" * 26, "F" * 26) for i in range(50)],
+        )
+        orphans = FileSample(
+            "x.fastq",
+            "fastq",
+            records=[Record(f"DRR1.{i + 1000}", "A" * 98, "F" * 98) for i in range(50)],
+        )
+        verdict = fit([orphans, barcode], call("10x_3p_v3_family", "HIGH", hits=[hit(read=1)]))
+        assert verdict["fit"] is None and verdict["mates"] == 0.0
+
+
 class TestScreenLinks:
     def test_every_run_to_reads_link_measured_or_not(self):
         links = screen_links()
@@ -113,6 +177,30 @@ class TestUnavailableReaders:
         )
         (only,) = await sample_file(record, object())  # type: ignore[arg-type]
         assert "pysam" in only.facts["why"]
+
+    async def test_a_full_disk_fails_the_run_instead_of_the_file(self, monkeypatch):
+        """2026-10-20: a full disk recorded 196 SRA objects as unreadable."""
+        import errno
+
+        async def full(target, *, max_reads):
+            raise OSError(errno.ENOSPC, "No space left on device")
+
+        monkeypatch.setattr(sra, "available", lambda: "fastq-dump")
+        monkeypatch.setattr(sra, "read_sra", full)
+        record = FileRecord("SRR1", "https://h/SRR1", "SRR1", FileKind.SRA, "sdl")
+        with pytest.raises(OSError, match="No space"):
+            await sample_file(record, object())  # type: ignore[arg-type]
+
+    async def test_a_stalled_cram_read_is_killed(self, monkeypatch, tmp_path):
+        """2026-10-20: htslib's reference fetch stalled a worker, and the survey with it."""
+        # A child that never finishes, as a reference fetch with no deadline does.
+        stall = tmp_path / "stall"
+        stall.write_text("#!/bin/sh\nexec sleep 60\n")
+        stall.chmod(0o755)
+        monkeypatch.setattr(cram, "available", lambda: True)
+        monkeypatch.setattr(cram.sys, "executable", str(stall))
+        with pytest.raises(TimeoutError, match="reference fetch stalled"):
+            await cram.read_cram_bounded(b"", "x.cram", max_reads=10, timeout=0.5)
 
     async def test_a_versioned_name_is_read_by_its_format(self):
         """SRR10377488's submitted BAM is possorted_genome_bam1.bam.1."""

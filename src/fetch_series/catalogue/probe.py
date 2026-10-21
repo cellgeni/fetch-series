@@ -1361,6 +1361,7 @@ async def answer_links(
     catalogue: Catalogue = CATALOGUE,
     pick_run: RunPicker | None = None,
     retry: Callable[[BaseException], bool] | None = None,
+    make_checks: bool = True,
 ) -> list[Finding]:
     """Make ``mechanism``'s request for ``accession`` and say what it found for each link.
 
@@ -1412,7 +1413,9 @@ async def answer_links(
             values = [value for value in values if value != accession]
         checks: tuple[Check, ...] = ()
         checked = None
-        if values:
+        # A content survey reads the files itself, so it skips the HEADs and
+        # read-length lookups a link survey makes to check them.
+        if values and make_checks:
             checks, checked = await _check(node, values, answer, picker, clients)
         wanted = set(values)
         findings.append(

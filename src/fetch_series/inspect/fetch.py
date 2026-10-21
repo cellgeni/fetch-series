@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
+import errno
 import re
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import replace
 from typing import Any
 
 from fetch_series.files import FileKind, FileRecord, classify
 from fetch_series.inspect.checks import check_set
 from fetch_series.inspect.model import FileSample
+from fetch_series.inspect.pool import Pool, parse
 from fetch_series.inspect.readers import cram, sra
 from fetch_series.inspect.readers.bam import read_bam
 from fetch_series.inspect.readers.fastq import read_fastq
@@ -35,15 +37,30 @@ def unavailable(record: FileRecord, why: str) -> FileSample:
     )
 
 
+# This machine running out of room or file handles says nothing about a file.
+# On 2026-10-20 a full disk recorded 196 SRA objects as unreadable; raised
+# instead, the run fails, and a failure is retried rather than reported.
+_LOCAL_ERRNOS = frozenset({errno.ENOSPC, errno.EMFILE, errno.ENFILE, errno.EDQUOT})
+
+
+def _raise_if_local(exc: BaseException) -> None:
+    if isinstance(exc, OSError) and exc.errno in _LOCAL_ERRNOS:
+        raise exc
+
+
 async def sample_file(
-    record: FileRecord, client: SurveyClient, *, reads: int = DEFAULT_READS
+    record: FileRecord,
+    client: SurveyClient,
+    *,
+    reads: int = DEFAULT_READS,
+    pool: Pool | None = None,
 ) -> list[FileSample]:
     """The first ``reads`` reads of one file, as one sample per original read.
 
     A FASTQ is one sample; a BAM is one per read it holds (R1 rebuilt from its
     tags, R2 from its records). A failure to fetch or to parse is a sample that
     says so -- a 404 on DDBJ's mirrored-run path is ``readable=False``, a check
-    and not an outcome.
+    and not an outcome. With a ``pool`` the parsing runs in a worker process.
     """
     source = record.url or record.name
     if record.kind is FileKind.OTHER:
@@ -61,6 +78,7 @@ async def sample_file(
         try:
             return await sra.read_sra(record.url, max_reads=reads)
         except Exception as exc:
+            _raise_if_local(exc)
             error = redact_exception(exc)
             return [unavailable(record, redact(f"{type(error).__name__}: {error}")[:300])]
     if record.kind not in PREFIX_BYTES:
@@ -75,14 +93,23 @@ async def sample_file(
             lambda timeout: client.stream_prefix(url, size, timeout=timeout),
             label=f"prefix {source}",
         )
-        if record.kind is FileKind.FASTQ:
-            return [read_fastq(prefix.data, source, max_reads=reads, complete=prefix.complete)]
         if record.kind is FileKind.CRAM:
-            return cram.read_cram(prefix.data, source, max_reads=reads, complete=prefix.complete)
-        return read_bam(prefix.data, source, max_reads=reads, complete=prefix.complete)
+            return await cram.read_cram_bounded(
+                prefix.data, source, max_reads=reads, complete=prefix.complete
+            )
+        readers: dict[FileKind, Callable[..., list[FileSample]]] = {FileKind.FASTQ: _one_fastq}
+        read = readers.get(record.kind, read_bam)
+        return await parse(
+            pool, read, prefix.data, source, max_reads=reads, complete=prefix.complete
+        )
     except Exception as exc:
+        _raise_if_local(exc)
         error = redact_exception(exc)
         return [unavailable(record, redact(f"{type(error).__name__}: {error}")[:300])]
+
+
+def _one_fastq(data: bytes, source: str, *, max_reads: int, complete: bool) -> list[FileSample]:
+    return [read_fastq(data, source, max_reads=max_reads, complete=complete)]
 
 
 async def inspect_set(

@@ -45,6 +45,30 @@ The file layer's refusal path ([files](../files.md)) will drop a candidate only 
 sequenced long. A 28-base-only run (SRR30132199) is unusable because it has no cDNA read,
 not because 28 is an unusual length.
 
+**The first spots of an SRA object must account for the run.** This is where the first
+reads stop being the library's structure. DRR878211's object holds 26 + 8-base barcode
+spots first and its 98-base cDNA reads in spots of their own further in. Its runinfo mean
+is 66 bases a spot, against the sample's 34. A refusal of an SRA object therefore holds the
+sampled spot against the run's mean bases per spot, from runinfo. If the sample falls short
+by more than a base, or the mean is unknown, nothing is refused. A derived fastq is not held
+to the mean. ENA's lone fastq of SRR29534765 is short of it *because* it omits a read, and
+that omission is what is being refused.
+
+**A read of 11 to 25 bases may be a barcode no list holds.** SRR9105023 is 10x 3' v1: a
+98-base cDNA read, a 14-base barcode read and a 10-base UMI read. No v1 list is registered,
+so "no listed barcode" proves nothing about it. A sample index is 8 or 10 bases and is
+still set aside.
+
+**Fit needs the barcode read and the cDNA read to be mates.** DDBJ's fastqs of DRR878211
+pair the barcode read with an 8-base index read and put the 98-base reads in a third file of
+unpaired spots. The first reads' spot names agree 0% of the time. That set is
+undetermined, never fit.
+
+These three conditions are rule `fit-2`. The [2026-10 content
+survey](../benchmarks/content-survey-2026-10.md) found each of them by reading the files
+that `fit-1` had judged. Each verdict records what it was judged on (`run_spot`, `mates`),
+so a later rule can be checked against the same inputs.
+
 A library that is not gene expression gets `fit=None`. Whether a VDJ or feature-barcode
 library is usable depends on a pipeline this project does not run.
 
