@@ -92,6 +92,14 @@ an empty answer would read as "this run has no files".
 
 See [ENA publishes an unpaired fastq for a paired library](pathologies/ena-paired-library-single-fastq.md).
 
+### And the reads say so
+
+The listing's evidence is the archive's own word: a declared layout and a file count. The
+reads are the other evidence. `fetch files --inspect` reads the first 100,000 reads of each
+offer, and refuses an offer whose reads prove it unusable, such as a lone cDNA read with no
+barcode read anywhere in it. Only positive evidence refuses an offer. See
+[reading the reads](inspect.md).
+
 ## Do the recommended links actually work?
 
 **1,566 of 1,566.** Every link in the recommended set for a seeded 1,000-run

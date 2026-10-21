@@ -13,12 +13,12 @@ from collections import Counter
 from datetime import UTC, datetime
 from importlib.metadata import version
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import typer
 from dotenv import load_dotenv
 
-from fetch_series.accession import EntityType, UnknownAccessionError, parse
+from fetch_series.accession import Accession, EntityType, UnknownAccessionError, parse
 from fetch_series.assays import AssayCall
 from fetch_series.assays.chemistry import ChemistryCall
 from fetch_series.cache import DEFAULT_CACHE_PATH, SurveyCache
@@ -60,9 +60,10 @@ from fetch_series.core import default_api_key
 from fetch_series.entities import MISSING, RELATION_COLUMNS, RunRecord
 from fetch_series.export.graph import route_graph
 from fetch_series.export.links import LINKS_COLUMNS, LinkRow
-from fetch_series.files import Recommendation
+from fetch_series.files import Recommendation, recommend
 from fetch_series.filesets import (
     Verdict,
+    filesets_for,
     links_table,
     recommendations_for,
     screen,
@@ -316,6 +317,56 @@ def inspect_lists(
         typer.echo(f"{entry.id:16s} {entry.length:>3} {entry.count:>10,}  {state:8s} {entry.terms}")
     for reference in references.REGISTER.values():
         typer.echo(f"{reference.id:24s} {reference.terms}")
+
+
+@inspect_app.command("run")
+def inspect_run(
+    targets: Annotated[
+        list[str], typer.Argument(help="A run accession (every source), or local files.")
+    ],
+    reads: Annotated[int, typer.Option(help="Reads per file.")] = 100_000,
+    json_out: Annotated[
+        Path | None, typer.Option("--json", help="Write the versioned JSON report here.")
+    ] = None,
+    no_sdl: Annotated[bool, typer.Option("--no-sdl", help="Skip NCBI SDL.")] = False,
+) -> None:
+    """Read the first reads of a run's files from every source, and say what they are.
+
+    For each offer: the reads found, their lengths and quality, the 10x layout
+    at a level with its evidence, and whether the set is fit for a 10x
+    gene-expression run -- proven unusable only on positive evidence.
+    """
+    from fetch_series.inspect import lists as barcode_lists
+    from fetch_series.inspect import references
+    from fetch_series.inspect.report import inspect_fileset, inspect_local, summary
+
+    load_dotenv()
+    configure_logging(level=logging.WARNING)
+    held = barcode_lists.available()
+    if not held:
+        typer.secho(NO_LISTS, fg=typer.colors.RED, err=True)
+        raise typer.Exit(2)
+    refs = {k: v for k in references.REGISTER if (v := references.index(k)) is not None}
+    paths = [Path(t) for t in targets]
+
+    async def run_it() -> list[dict[str, Any]]:
+        if all(p.exists() for p in paths):
+            return [await inspect_local(paths, held, refs, reads=reads)]
+        if len(targets) != 1:
+            typer.secho("Give one run accession, or local files.", fg="red", err=True)
+            raise typer.Exit(2)
+        parsed = resolve_input(targets[0])
+        async with _client_for_one_query(6) as client:
+            sets = await filesets_for(parsed, client, include_sdl=not no_sdl)
+            return [await inspect_fileset(s, client, held, refs, reads=reads) for s in sets]
+
+    reports = asyncio.run(run_it())
+    for report in reports:
+        typer.echo(summary(report))
+    if json_out is not None:
+        payload = reports[0] if len(reports) == 1 else {"schema_version": "1", "runs": reports}
+        json_out.write_text(json.dumps(payload, indent=1) + "\n")
+        typer.echo(f"wrote {json_out}", err=True)
 
 
 @inspect_app.command("survey")
@@ -1121,6 +1172,27 @@ def relations(
         typer.echo(f"wrote {len(chosen)} rows to {out}", err=True)
 
 
+async def _inspected(
+    parsed: Accession, client: SurveyClient, limit: int | None, include_sdl: bool, reads: int
+) -> list[Recommendation]:
+    """Recommendations with the refusal path: offers whose reads prove them unusable."""
+    from fetch_series.inspect import lists as barcode_lists
+    from fetch_series.inspect import references
+    from fetch_series.inspect.report import inspect_fileset, refusals, summary
+
+    held = barcode_lists.available()
+    if not held:
+        typer.secho(NO_LISTS, fg=typer.colors.RED, err=True)
+        raise typer.Exit(2)
+    refs = {k: v for k in references.REGISTER if (v := references.index(k)) is not None}
+    recommended = []
+    for fileset in await filesets_for(parsed, client, limit=limit, include_sdl=include_sdl):
+        report = await inspect_fileset(fileset, client, held, refs, reads=reads)
+        typer.echo(summary(report), err=True)
+        recommended.append(recommend(fileset, refusals(report)))
+    return recommended
+
+
 @app.command()
 def files(
     accession: Annotated[str, typer.Argument(help="A run, or anything that resolves to runs.")],
@@ -1141,6 +1213,13 @@ def files(
         bool,
         typer.Option("--verify", help="HEAD every recommended link and check the published size."),
     ] = False,
+    read_them: Annotated[
+        bool,
+        typer.Option(
+            "--inspect", help="Read each offer's first reads; refuse a set proven unusable."
+        ),
+    ] = False,
+    reads: Annotated[int, typer.Option(help="With --inspect: reads per file.")] = 100_000,
 ) -> None:
     """Download links for a run, with checksums and the reason for the choice.
 
@@ -1155,9 +1234,12 @@ def files(
 
     async def run_it() -> tuple[list[Recommendation], list[Verdict]]:
         async with _client_for_one_query(6) as client:
-            recommended = await recommendations_for(
-                parsed, client, limit=limit, include_sdl=not no_sdl
-            )
+            if read_them:
+                recommended = await _inspected(parsed, client, limit, not no_sdl, reads)
+            else:
+                recommended = await recommendations_for(
+                    parsed, client, limit=limit, include_sdl=not no_sdl
+                )
             if not check:
                 return recommended, []
             # Only the recommended files: verifying every alternative triples

@@ -7,8 +7,9 @@ title: Content survey, 2026-10
 **Instrument:** classifier 0.2.0, fit rule `fit-2`, the first 100,000 reads of each file.
 **Run:** 2026-10-20 (UTC). **Data:** the `screen_100000_*` exports in
 `data/surveys/sample_500@sample_3000@reprocessed-srr/`,
-`data/surveys/sample_300@node_run_ddbj@reprocessed-srr/` and
-`data/surveys/sample_300@node_run_ebi@reprocessed-srr/`. They hold counts, lengths, calls and
+`data/surveys/sample_300@node_run_ddbj@reprocessed-srr/`,
+`data/surveys/sample_300@node_run_ebi@reprocessed-srr/` and
+`data/surveys/sample_300@node_run_ncbi@reprocessed-srr/`. They hold counts, lengths, calls and
 verdicts, and no sequence. **Tables:** `scripts/inspect_survey_report.py <export dir>
 --anchor data/surveys/sample_3000@reprocessed-srr/run-to-file_ena_fastq.csv.gz`.
 
@@ -23,7 +24,9 @@ usable for a 10x gene-expression run. It is never evidence for a route and ranks
   3,000 the [ENA fastq census](../pathologies/ena-paired-library-single-fastq.md) measured,
   so the two compare run by run. It holds 457 NCBI runs, 41 EBI runs and 2 DDBJ runs, so two
   top-ups of 300 runs each, `node:run_ddbj` and `node:run_ebi` of the same corpus, cover the
-  links from DDBJ and EBI runs.
+  links from DDBJ and EBI runs. A third, `node:run_ncbi`, reads the 300 NCBI runs the link
+  survey drew, so the [link splits](../graph/link-survey-results.md) carry a fit count for
+  every run node. Its ENA fastq is unfit for 126 of 299, as the main draw's is.
 - **Units.** One unit per link from a run node into a read format, `screen:100000:<link>`:
   19 or 20 per run node, measured by a route or not. A link that lists nothing for a run is
   EMPTY. A listing that fails is FAILED. A listing whose files cannot be read is RESOLVED,

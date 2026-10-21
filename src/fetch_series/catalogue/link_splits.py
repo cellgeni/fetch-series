@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterable, Iterator, Mapping
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -34,7 +34,7 @@ from typing import Any
 from fetch_series.results import Outcome, RouteResult
 from fetch_series.survey.corpora import is_gate
 from fetch_series.survey.export import SURVEYS_DIR, is_lfs_pointer, read_export, slug
-from fetch_series.units import LINK_PREFIX, link_unit
+from fetch_series.units import LINK_PREFIX, SCREEN_PREFIX, link_unit
 
 LINK_SPLITS_PATH = Path(__file__).with_name("link_splits.json")
 
@@ -46,6 +46,24 @@ class CheckCounts:
     passed: int = 0
     failed: int = 0
     undetermined: int = 0
+
+
+@dataclass(frozen=True, slots=True)
+class ScreenCounts:
+    """What the content survey found in the files this link listed, over the same corpus.
+
+    ``fit`` is the file layer's requirement applied to reads (``inspect.fit``):
+    proven fit, proven unusable, or undetermined. It is attached only where the
+    content survey ran over *exactly* the link survey's corpus -- a fit share from
+    another draw beside this draw's usable share would read as one measurement.
+    """
+
+    reads: int
+    inspected: int
+    fit: int
+    unfit: int
+    undetermined: int
+    layouts: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,6 +96,7 @@ class LinkSplit:
     distinct: int
     surveyed_on: date
     checks: dict[str, CheckCounts] = field(default_factory=dict)
+    screened: ScreenCounts | None = None
 
     @property
     def answered(self) -> int:
@@ -175,8 +194,48 @@ def compute(
         if only is not None and link_id not in only:
             continue
         results = read_export(path, corpus, link_unit(link_id))
-        splits.append(split_of(link_id, corpus, results, declared=declared, measured=measured))
+        split = split_of(link_id, corpus, results, declared=declared, measured=measured)
+        screened = _screened(path.parent, corpus, link_id)
+        splits.append(replace(split, screened=screened) if screened else split)
     return sorted(splits, key=lambda s: (s.link, s.corpus))
+
+
+def _screened(directory: Path, corpus: str, link_id: str) -> ScreenCounts | None:
+    """The content survey of this link over this very corpus, if there is one.
+
+    Same directory, same manifest: the same corpus by construction. Where
+    several read counts were surveyed, the largest is taken.
+    """
+    from fetch_series.units import screen_unit
+
+    found = sorted(
+        directory.glob(f"{slug(SCREEN_PREFIX)}*_{slug(link_id)}.csv.gz"),
+        key=lambda p: int(p.name.removeprefix(slug(SCREEN_PREFIX)).split("_", 1)[0]),
+    )
+    for path in reversed(found):
+        reads = int(path.name.removeprefix(slug(SCREEN_PREFIX)).split("_", 1)[0])
+        if path.name != f"{slug(screen_unit(reads, link_id))}.csv.gz":
+            continue
+        counts = {True: 0, False: 0, None: 0}
+        layouts: dict[str, int] = {}
+        inspected = 0
+        for result in read_export(path, corpus, screen_unit(reads, link_id)):
+            if result.outcome is not Outcome.RESOLVED or not result.detail:
+                continue
+            inspected += 1
+            counts[result.detail.get("fit")] += 1
+            layout = (result.detail.get("call") or {}).get("layout")
+            if layout:
+                layouts[layout] = layouts.get(layout, 0) + 1
+        return ScreenCounts(
+            reads,
+            inspected,
+            counts[True],
+            counts[False],
+            counts[None],
+            dict(sorted(layouts.items())),
+        )
+    return None
 
 
 def _as_json(split: LinkSplit) -> dict[str, Any]:
@@ -184,6 +243,8 @@ def _as_json(split: LinkSplit) -> dict[str, Any]:
     del row["link"]
     row["surveyed_on"] = split.surveyed_on.isoformat()
     row["checks"] = {name: asdict(counts) for name, counts in split.checks.items()}
+    if split.screened is None:
+        del row["screened"]
     return row
 
 
@@ -229,6 +290,7 @@ def load_link_splits(path: Path = LINK_SPLITS_PATH) -> list[LinkSplit]:
             distinct=row["distinct"],
             surveyed_on=date.fromisoformat(row["surveyed_on"]),
             checks={name: CheckCounts(**counts) for name, counts in row["checks"].items()},
+            screened=ScreenCounts(**row["screened"]) if row.get("screened") else None,
         )
         for link_id, rows in payload["links"].items()
         for row in rows
@@ -240,6 +302,7 @@ __all__ = [
     "CheckCounts",
     "LinkSplit",
     "LinkSplitError",
+    "ScreenCounts",
     "compute",
     "load_link_splits",
     "save_link_splits",

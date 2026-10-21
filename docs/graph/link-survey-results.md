@@ -150,7 +150,10 @@ passes all three checks:
 - **complete for 10x:** both the barcode read and the cDNA read are there.
 
 These checks were made on one run's set, chosen by seed. What the first reads of those
-files *hold* is a separate survey (`fetch inspect`).
+files *hold* is a separate survey, the [content survey](../benchmarks/content-survey-2026-10.md),
+over the same 300 runs per run node. Its verdicts are the table's **Fit · unfit · ?**
+column: runs whose listed files were read and found fit, proven unfit, or left undetermined
+under rule `fit-2`.
 
 What it found:
 
@@ -171,6 +174,11 @@ What it found:
   named fastqs for 232 (28 downloadable), CRAMs for 54 (3) and BAMs for 4 (0).
 - **ENA lists a submitted BAM for 79 of 300 ERRs, and every one is usable.** No SRR or DRR
   has one.
+- **Read, the copies mostly agree, and the mirror does not.** NCBI's SRA XML objects are fit
+  for 238 of 299 NCBI runs, 226 of 299 EBI runs and 254 of 300 DDBJ runs, as the Normalized
+  object SDL names is. DDBJ's mirror of NCBI objects is fit for 117: the rest are mostly
+  objects that do not exist. ENA's submitted BAMs are fit for 53 of 79, and 22 are libraries
+  that are not gene expression or calls left ambiguous.
 
 <!-- link-splits:wave=5 -->
 

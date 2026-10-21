@@ -16,7 +16,8 @@ comparing the answers does.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from collections.abc import Mapping
+from dataclasses import dataclass, field, replace
 from enum import StrEnum
 from typing import Any
 
@@ -288,6 +289,11 @@ class Candidate:
     source: str
     files: tuple[FileRecord, ...]
     kind: FileKind
+    # Set only by a *proven-unusable* read verdict (``inspect.fit``): the reads
+    # were looked at and the barcode read or the cDNA read is not there. An
+    # undetermined verdict -- no reader, a failed fetch, a weak call -- leaves
+    # this None and changes nothing.
+    refused: str | None = None
 
     @property
     def demonstrably_incomplete(self) -> bool:
@@ -339,6 +345,8 @@ class Candidate:
             parts.append(f"{total / 1e9:.1f} GB" if total >= 1e9 else f"{total / 1e6:.0f} MB")
         if self.demonstrably_incomplete:
             parts.append("INCOMPLETE: archive declares the library paired")
+        if self.refused:
+            parts.append(f"REFUSED by its reads: {self.refused}")
         if not self.free:
             parts.append("retrieval is not free")
         return ", ".join(parts)
@@ -383,7 +391,9 @@ def candidates(fileset: FileSet) -> list[Candidate]:
     ]
 
 
-def recommend(fileset: FileSet) -> Recommendation:
+def recommend(
+    fileset: FileSet, refusals: Mapping[tuple[str, FileKind], str] | None = None
+) -> Recommendation:
     """Rank the candidate file sets and say why the winner won.
 
     Two different kinds of judgement meet here, and they are kept apart on
@@ -394,9 +404,16 @@ def recommend(fileset: FileSet) -> Recommendation:
     and every term below is one of those requirements. Neither is a preference
     between archives.
     """
+    offers = [
+        replace(c, refused=(refusals or {}).get((c.source, c.kind))) for c in candidates(fileset)
+    ]
     ranked = sorted(
-        candidates(fileset),
+        offers,
         key=lambda c: (
+            # Reads that prove a set unusable outrank every other judgement:
+            # SRR29534765's ENA fastq is one file named /3, and the barcode
+            # read is not in it however the set scores otherwise.
+            c.refused is not None,
             not c.is_paired,  # a half pair is not usable
             # A fastq set the archive's own metadata proves incomplete ranks
             # below every format that is merely inconvenient.
@@ -412,6 +429,13 @@ def recommend(fileset: FileSet) -> Recommendation:
         return Recommendation(fileset.run, None, (), "no route offered any data file")
 
     best, rest = ranked[0], tuple(ranked[1:])
+    if best.refused is not None:
+        return Recommendation(
+            fileset.run,
+            None,
+            tuple(ranked),
+            "every offer was proven unusable by its reads",
+        )
     if best.demonstrably_incomplete:
         return Recommendation(
             fileset.run,

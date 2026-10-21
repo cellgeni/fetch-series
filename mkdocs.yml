@@ -83,6 +83,7 @@ nav:
       - The relation table: relations.md
       - The file layer: files.md
       - The assay layer: assays.md
+      - Reading the reads: inspect.md
       - The metadata layer:
           - Overview: metadata.md
           - Fields and their ontologies: metadata/fields.md

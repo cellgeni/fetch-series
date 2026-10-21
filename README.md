@@ -19,7 +19,15 @@ The accession graph, the file layer, parity with the incumbent, and the assay la
 affordable, a named seeded draw where it was not, and a knowledge-base page for every one.
 [The full matrix](docs/routes/index.md).
 
-Newest: a [metadata layer](docs/metadata.md) that resolves tissue, disease, cell type, donor and
+Newest: [`fetch inspect`](docs/inspect.md), which reads the first 100,000 reads of every copy
+of a run and says which 10x kit made them and whether they are usable. ENA's fastq of a
+paired 10x run often lacks the barcode read. The metadata cannot see that, and the reads
+prove it for all 182 such runs in a draw of 500
+([the content survey](docs/benchmarks/content-survey-2026-10.md)). `fetch files --inspect`
+refuses a copy only on that kind of proof. Every one-hop link the archive APIs offer has
+also now been surveyed or probed ([link survey results](docs/graph/link-survey-results.md)).
+
+Before that: a [metadata layer](docs/metadata.md) that resolves tissue, disease, cell type, donor and
 sex per sample and grounds each value in UBERON, CL, MONDO, PATO, EFO or NCBI Taxonomy — from four
 archives this project previously read for identity alone. It needs no LLM key. It asserts only
 exact ontology matches, reports everything else for review, and **does not claim an accuracy
@@ -37,6 +45,10 @@ fetch links GSE111360
 
 # Is this even 10x? Ask before downloading 880 runs of Smart-seq2
 fetch screen GSE109816
+
+# Read every copy of a run: which 10x kit, and is each copy usable?
+fetch inspect run SRR29534765
+fetch files SRR29534765 --inspect --explain   # refuses copies the reads prove unusable
 
 # One row per run, joining what only GEO knows onto what ENA reports
 fetch relations GSE236084 --sample-map

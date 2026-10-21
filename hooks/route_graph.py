@@ -164,8 +164,9 @@ def _wave_table(wave: int) -> str:
 
     probes = load_probes()
     rows = [
-        "| Link | Corpus | Usable / queried | Resolved · empty · failed | Distinct | Status |",
-        "|---|---|---|---|---|---|",
+        "| Link | Corpus | Usable / queried | Resolved · empty · failed | Distinct "
+        "| Fit · unfit · ? (read) | Status |",
+        "|---|---|---|---|---|---|---|",
     ]
     for link in sorted(CATALOGUE, key=lambda link: link.id):
         if wave_of(link) != wave:
@@ -180,7 +181,12 @@ def _wave_table(wave: int) -> str:
                 f"**{split.usable}** / {split.queried}"
                 + (f" ({checks})" if checks else "")
                 + f" | {split.resolved} · {split.empty} · {split.failed} | {split.distinct} | "
-                f"{status(link, probes)} |"
+                + (
+                    f"{split.screened.fit} · {split.screened.unfit} · {split.screened.undetermined}"
+                    if split.screened
+                    else "—"
+                )
+                + f" | {status(link, probes)} |"
             )
     if len(rows) == 2:
         return "*No link of this wave has been surveyed yet.*"
