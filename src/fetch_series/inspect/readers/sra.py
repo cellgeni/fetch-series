@@ -50,6 +50,10 @@ async def read_sra(target: str, *, max_reads: int, timeout: float = TIMEOUT_S) -
             "-O",
             scratch,
             target,
+            # An aligned object's external references are cached relative to
+            # the working directory: ERR15405674's DDBJ copy left 37 MB of
+            # NC_000067.6 under ./https:/ddbj.nig.ac.jp/... in the repository.
+            cwd=scratch,
             stdout=asyncio.subprocess.DEVNULL,
             stderr=asyncio.subprocess.PIPE,
         )
