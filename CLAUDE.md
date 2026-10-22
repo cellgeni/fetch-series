@@ -77,6 +77,11 @@ ranking becomes negotiable, and the rule above stops meaning anything.
 - **Three outcomes, and absence is a fourth.** `RESOLVED` / `EMPTY` / `FAILED`; never queried is
   not the same as empty. `survey compare` keys agreement on `(outcome, results)` because an
   earlier version reported a FAILED and an EMPTY route as agreeing.
+- **A link survey is measurement, not a ranking.** `fetch catalogue survey` measures unmeasured
+  catalogue links over seeded draws of 300 per source node (BioProject and BioSample stratified by
+  issuing archive), recorded under `link:<link id>`. It sets a link's status to surveyed or
+  surveyed-none, and nothing in `graph.py` or `resolver.py` reads it. Promoting a link to a route
+  means surveying it as a route, at `sample:3000`, with a `RouteFn` and a `RouteEvidence` block.
 
 ## Layout
 

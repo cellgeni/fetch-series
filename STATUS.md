@@ -146,17 +146,30 @@ ship.
    are not drafted: ENA's fastq for SRR14522447 splits the barcode across two
    reads, ENA's fastq is Lite-quality for 121 of 451 NCBI runs, and SDL lists
    submitted originals with no download link for 450 of 453.
-2. **Publish the container** to `quay.io/cellgeni/fetch-series`. v0.1.0 shipped
-   without one: the image is built and smoke-tested by CI on every pull request and push to `main`, and measured
-   253 MB when built by hand on 2026-09-15, but it cannot be pushed to your
-   registry from here. [`docker/README.md`](docker/README.md).
+### Deferred until the `fetch inspect` validations land
 
-### Blocked on the above
-
+2. **Publish the container** to `quay.io/cellgeni/fetch-series`. Deferred by
+   the maintainer on 2026-10-21 until the inspect checks and their validation
+   against past STARsolo runs are done, so the image ships with the report it
+   will be used for. v0.1.0 shipped without one: the image is built and
+   smoke-tested by CI on every pull request and push to `main`, and measured
+   253 MB when built by hand on 2026-09-15. [`docker/README.md`](docker/README.md).
 3. **A PR on `nf-reprocessing-public-10x`** swapping the bash module for the
    container. The drop-in is written and parity-tested
    ([`nextflow/fetch10xmeta/`](nextflow/fetch10xmeta/README.md)); it needs an
    image digest to pin, so it waits on (2).
+
+### Decided on 2026-10-21
+
+- **What `fetch inspect` is for.** For each downloadable copy of a run: are its
+  files readable; will they do for mapping (STARsolo) and for conversion
+  (BAM/CRAM/SRA to FASTQ); basic QC, chiefly barcode and UMI metrics; and its
+  features — strand, whitelist, geometry, trimming, library type and
+  technology. A fit verdict is one part of that report, not the whole of it.
+- **A 47-base cDNA read is usable.** The cDNA floor becomes any non-barcode,
+  non-index read of 30 bases or more (`fit-3`), found by SRR34778689.
+- **The CLAUDE.md wording drafted in PR #11** ("A link survey is measurement,
+  not a ranking") is approved and applied.
 
 ### Two honest gaps
 
