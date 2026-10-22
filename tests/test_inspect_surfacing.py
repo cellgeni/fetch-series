@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import gzip
+import json
 import random
 from pathlib import Path
 
@@ -109,6 +110,8 @@ class TestLocalReport:
         (source,) = report["sources"]
         assert source["call"]["barcode_list"] == "tenx_v3"
         assert "AAAA" not in repr(source["checks"])  # counts, never sequences
+        assert source["geometry"]["barcode"]["cb_len"] == 16
+        assert source["convertible"]["reason"] == "already FASTQ"
 
     async def test_a_lone_cdna_file_is_proven_unusable(self, tmp_path):
         r2 = _write(tmp_path / "x.fastq.gz", [_random(91) for _ in range(500)])
@@ -130,3 +133,27 @@ def test_inspect_run_on_local_files(tmp_path, monkeypatch):
     result = CliRunner().invoke(app, ["inspect", "run", str(r1), str(r2), "--json", str(out)])
     assert result.exit_code == 0, result.output
     assert "local files" in result.output and out.exists()
+
+
+def test_inspect_run_params_on_local_files(tmp_path, monkeypatch):
+    from fetch_series.cli import app
+    from fetch_series.inspect import lists as lists_module
+
+    codes = TestLocalReport.CODES
+    monkeypatch.setattr(lists_module, "available", lambda directory=None: _list(codes))
+    whitelist = tmp_path / "3M-february-2018.txt"
+    monkeypatch.setattr(lists_module, "exported", lambda entry, out=None: whitelist)
+    r1 = _write(
+        tmp_path / "x_R1_001.fastq.gz", [RNG.choice(codes) + _random(12) for _ in range(800)]
+    )
+    r2 = _write(tmp_path / "x_R2_001.fastq.gz", [_random(70) + "A" * 21 for _ in range(800)])
+    out = tmp_path / "report.json"
+    result = CliRunner().invoke(
+        app, ["inspect", "run", str(r1), str(r2), "--params", "--json", str(out)]
+    )
+    assert result.exit_code == 0, result.output
+    report = json.loads(out.read_text())
+    (source,) = report["sources"]
+    assert source["mapping"]["whitelist"]["path"] == str(whitelist)
+    assert f"--soloCBwhitelist {whitelist}" in result.output
+    assert f"--readFilesIn {r2} {r1}" in result.output

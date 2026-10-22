@@ -18,6 +18,7 @@ import bisect
 import csv
 import gzip
 import hashlib
+import itertools
 import json
 import os
 from collections.abc import Iterable, Iterator
@@ -40,7 +41,12 @@ _TYPECODE = "I"
 
 @dataclass(frozen=True, slots=True)
 class Entry:
-    """One registered list."""
+    """One registered list.
+
+    ``sha256`` is the download's; ``export_sha256`` is that of the text
+    :func:`export` writes -- the barcodes sorted, one a line -- so an exported
+    whitelist can be checked against the register too.
+    """
 
     id: str
     length: int
@@ -48,6 +54,12 @@ class Entry:
     sha256: str
     source: str
     terms: str
+    export_sha256: str = ""
+
+    @property
+    def file_name(self) -> str:
+        """The name 10x gives the list, as its source names it: ``3M-february-2018.txt``."""
+        return self.source.rsplit("/", 1)[-1].removesuffix(".gz")
 
 
 def load_register(path: Path = REGISTER_PATH) -> dict[str, Entry]:
@@ -60,6 +72,7 @@ def load_register(path: Path = REGISTER_PATH) -> dict[str, Entry]:
                 sha256=row["sha256"],
                 source=row["source"],
                 terms=row["terms"],
+                export_sha256=row.get("export_sha256") or "",
             )
             for row in csv.DictReader(handle, delimiter="\t")
         }
@@ -70,6 +83,13 @@ REGISTER = load_register()
 
 def cache_dir() -> Path:
     return Path(os.environ.get("FETCH_SERIES_LISTS", DEFAULT_CACHE))
+
+
+def exported(entry: Entry, out: Path | None = None) -> Path:
+    """The list as a text whitelist, exported once into ``out`` (default: the cache's ``export/``)."""
+    out = out or cache_dir() / "export"
+    target = out / entry.file_name
+    return target if target.exists() else export(entry, out)[0]
 
 
 def encode(seq: str) -> int | None:
@@ -186,10 +206,52 @@ class BarcodeList:
                     return True
         return False
 
+    def barcodes(self) -> Iterator[str]:
+        """Every listed barcode, in sorted order: what a pipeline reads as a whitelist."""
+        return unpack(self._codes, self.length)
+
     @property
     def background(self) -> float:
         """The chance a random barcode-length string is listed exactly."""
         return float(len(self._codes)) / float(4**self.length)
+
+
+def unpack(codes: Iterable[int], length: int) -> Iterator[str]:
+    """Packed barcodes back to bases: :func:`encode` reversed, by table, eight bases at a time."""
+    low = min(length, 8)
+    low_bases = ["".join(p) for p in itertools.product(_BASES, repeat=low)]
+    high_bases = ["".join(p) for p in itertools.product(_BASES, repeat=length - low)]
+    shift, mask = 2 * low, (1 << 2 * low) - 1
+    for code in codes:
+        yield high_bases[code >> shift] + low_bases[code & mask]
+
+
+def export(entry: Entry, out: Path, directory: Path | None = None) -> tuple[Path, str]:
+    """Write a fetched list as the text STARsolo reads (``--soloCBwhitelist``).
+
+    One barcode a line, sorted -- not in 10x's order, which no aligner reads --
+    from the cache that was checked against the register when it was fetched.
+    The text is checked against the register's ``export_sha256`` before it
+    takes its name. Returns the path and that sha256.
+    """
+    barcodes = load(entry, directory)
+    out.mkdir(parents=True, exist_ok=True)
+    target = out / entry.file_name
+    partial = target.with_suffix(".partial")
+    digest = hashlib.sha256()
+    with partial.open("w") as handle:
+        for barcode in barcodes.barcodes():
+            line = barcode + "\n"
+            handle.write(line)
+            digest.update(line.encode("ascii"))
+    written = digest.hexdigest()
+    if entry.export_sha256 and written != entry.export_sha256:
+        partial.unlink()
+        raise ListMismatch(
+            f"{entry.id}: exported sha256 {written}, the register says {entry.export_sha256}"
+        )
+    partial.rename(target)
+    return target, written
 
 
 def load(entry: Entry, directory: Path | None = None) -> BarcodeList:
@@ -232,9 +294,12 @@ __all__ = [
     "available",
     "cache_dir",
     "encode",
+    "export",
+    "exported",
     "fetch",
     "fetch_all",
     "load",
     "load_register",
     "pack",
+    "unpack",
 ]

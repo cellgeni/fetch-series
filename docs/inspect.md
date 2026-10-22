@@ -99,7 +99,62 @@ key is removed or changes meaning. The classifier (`classifier`) and the fit rul
 | `sources[]` | one per offer: `source`, `kind`, `files`, `checks`, `call`, `fit`, `reason` |
 | `sources[].checks` | files, read counts and lengths, quality, `N` share, roles, BAM facts, duplicates, unreadable files and why |
 | `sources[].call` | `layout`, `candidates`, `level`, `barcode_list`, `evidence`, `contradictions`, `hint`, `library_type`, `version` |
+| `sources[].geometry` | each read's role (R1/R2/I1/I2), lengths (mode, range, share at the mode) and FASTQ names; where the barcode and UMI sit, 1-based; `trimmed` where lengths vary |
+| `sources[].mapping` | for a HIGH or MEDIUM 10x gene-expression call only: the STARsolo options, Cell Ranger's `--chemistry`, the whitelist, what was omitted and why; otherwise `null` |
+| `sources[].convertible` | for a BAM, CRAM or SRA copy: whether it converts to FASTQ, how (`bamtofastq`, `tags`, `samtools fastq`, `fastq-dump --split-files`) and why |
 | `agreement` | whether the sources that could be called agree, and which could not be |
+
+Schema 2 added `geometry`, `mapping` and `convertible`. Nothing in schema 1 was removed or
+changed meaning.
+
+## Mapping a copy
+
+```bash
+uv run fetch inspect run SRR25056225 --params      # the STARsolo and Cell Ranger lines, per source
+uv run fetch inspect lists --export tenx_v3 --out whitelists/   # a whitelist STARsolo reads
+uv run fetch files SRR25056225 --inspect --json report.json     # the same blocks, beside the links
+```
+
+```
+  run->file:sdl (sra):
+    STARsolo     --readFilesIn SRR25056225_2.fastq SRR25056225_1.fastq --soloType CB_UMI_Simple
+                 --soloCBwhitelist .cache/lists/export/737K-august-2016.txt --soloCBstart 1
+                 --soloCBlen 16 --soloUMIstart 17 --soloUMIlen 10 --soloBarcodeReadLength 0
+                 --soloStrand Reverse
+    Cell Ranger  --chemistry SC5P-R2
+```
+
+The mapping block is a requirement table, not a measurement. It states what
+[STARsolo's documentation](https://github.com/alexdobin/STAR/blob/master/docs/STARsolo.md) and
+[10x's](https://www.10xgenomics.com/support/software/cell-ranger/latest/analysis/inputs/cr-specifying-chemistry)
+say the called kit needs:
+
+- **Barcode and UMI** come from the kit's row in the layout table. A barcode read shorter
+  than barcode + UMI gets a shorter `soloUMIlen`, and `umi_short` says so. A barcode read
+  that is not exactly barcode + UMI, or whose lengths vary, gets `--soloBarcodeReadLength 0`.
+- **`soloStrand`** comes from the strand the cDNA read was *measured* on: sense is `Forward`,
+  antisense `Reverse`. An unstranded or unmeasured read leaves it out, with the reason under
+  `omitted`, rather than taking it from the kit's name.
+- **`readFilesIn`** is the cDNA read, then the barcode read. A FASTQ copy uses the files as
+  listed; an SRA object uses the names `fastq-dump --split-files` gives; a BAM or CRAM uses
+  Cell Ranger's convention (`<run>_S1_L001_R1_001.fastq.gz`), which `rename10xrun` also
+  writes.
+- **The whitelist** is exported from the checked cache as sorted text. Its sha256 is in the
+  register (`export_sha256`), and an export that does not match it is refused.
+
+**The block is unvalidated.** It has not yet been compared with what the reprocessing
+pipeline's own STARsolo runs used and achieved, and every block says so (`validated: false`).
+The pipeline settles strand by mapping 200,000 reads both ways. Until that comparison is
+published, check the first run's `Summary.csv`.
+
+`convertible` follows the fit rule's standard and needs positive evidence. A BAM converts with
+`bamtofastq` when its `10x_bam_to_fastq` header says how, and with its tags when the raw
+barcode (`CR`/`CY`) and a UMI (`UR`/`UY` or `RX`/`QX`) are on its records. It splits by flag
+when the barcode read and the cDNA read are mates (ERR13855116's lane CRAM). It is `false`
+only when no sampled record carries a barcode tag and no read is a barcode read. An SRA object
+converts with `fastq-dump --split-files` when the split reads hold the called barcode and cDNA
+reads and its first spots account for the run. A Lite object is flagged: its qualities are
+substituted.
 
 ## Readers, and what is optional
 

@@ -4,15 +4,24 @@ Versioned. ``schema_version`` changes when a key is removed or changes meaning,
 never silently; the classifier and the fit rule carry their own versions, so a
 report says which instrument made each call.
 
-Keys (schema 1):
+Keys (schema 2):
 
 * ``run``, ``reads`` (per file), ``classifier``, ``fit_rule``, and
   ``run_spot``: the run's mean bases per spot, which an SRA object is held to;
 * ``sources``: one per (source, format) offer, with ``files``, the built-in
-  ``checks``, the ``call`` and its ``fit`` and ``reason``;
+  ``checks``, the ``call`` and its ``fit`` and ``reason``, and what the copy is
+  ready for (``inspect.readiness``):
+
+  * ``geometry`` -- each read's role (R1/R2/I1/I2), lengths and FASTQ names,
+    where the barcode and UMI sit (1-based), and whether lengths vary;
+  * ``mapping`` -- for a HIGH or MEDIUM 10x gene-expression call, the
+    STARsolo options, the Cell Ranger chemistry and the whitelist; else null;
+  * ``convertible`` -- whether a BAM, CRAM or SRA copy converts to FASTQ, how,
+    and why;
 * ``agreement``: whether the called sources agree, and which could not be called.
 
-No sequence is ever written.
+Schema 2 added ``geometry``, ``mapping`` and ``convertible``; nothing of
+schema 1 was removed or changed meaning. No sequence is ever written.
 """
 
 from __future__ import annotations
@@ -33,11 +42,12 @@ from fetch_series.inspect.model import FileSample
 from fetch_series.inspect.readers import cram, sra
 from fetch_series.inspect.readers.bam import read_bam
 from fetch_series.inspect.readers.fastq import read_fastq
+from fetch_series.inspect.readiness import readiness
 from fetch_series.inspect.references import KmerIndex
 from fetch_series.inspect.survey import mean_spot
 from fetch_series.survey.client import SurveyClient
 
-SCHEMA_VERSION = "1"
+SCHEMA_VERSION = "2"
 
 
 def _source(
@@ -49,6 +59,7 @@ def _source(
     lists: dict[str, BarcodeList],
     references: dict[str, KmerIndex],
     run_spot: float | None = None,
+    run: str | None = None,
 ) -> tuple[dict[str, Any], Call]:
     checks = check_set(samples, records)
     checks["unreadable"] = [
@@ -58,19 +69,18 @@ def _source(
     ]
     call = classify(samples, lists, references)
     verdict = fit(samples, call, run_spot=run_spot)
-    return (
-        {
-            "source": name,
-            "kind": kind,
-            "files": files,
-            "checks": checks,
-            "call": call.as_detail(),
-            "fit": verdict["fit"],
-            "reason": verdict["reason"],
-            "mates": verdict.get("mates"),
-        },
-        call,
-    )
+    entry: dict[str, Any] = {
+        "source": name,
+        "kind": kind,
+        "files": files,
+        "checks": checks,
+        "call": call.as_detail(),
+        "fit": verdict["fit"],
+        "reason": verdict["reason"],
+        "mates": verdict.get("mates"),
+    }
+    entry.update(readiness(entry, run=run, run_spot=run_spot))
+    return entry, call
 
 
 async def inspect_fileset(
@@ -108,6 +118,7 @@ async def inspect_fileset(
             lists,
             references,
             run_spot,
+            fileset.run,
         )
         sources.append(entry)
         calls[f"{offer.source}:{offer.kind}"] = call
@@ -171,6 +182,23 @@ async def inspect_local(
     }
 
 
+def params(report: dict[str, Any]) -> list[str]:
+    """The STARsolo and Cell Ranger lines for each source a mapping block was made for."""
+    lines = []
+    for source in report["sources"]:
+        block = source.get("mapping")
+        if not block:
+            continue
+        lines.append(f"  {source['source']} ({source['kind']}):")
+        lines.append(f"    STARsolo     {block['starsolo_args']}")
+        if block["cellranger_chemistry"]:
+            lines.append(f"    Cell Ranger  --chemistry {block['cellranger_chemistry']}")
+        for why in block["omitted"]:
+            lines.append(f"    omitted      {why}")
+        lines.append(f"    unvalidated  {block['note']}")
+    return lines
+
+
 def summary(report: dict[str, Any]) -> str:
     """The human-readable lines: one per source."""
     lines = [
@@ -196,6 +224,7 @@ __all__ = [
     "SCHEMA_VERSION",
     "inspect_fileset",
     "inspect_local",
+    "params",
     "refusals",
     "summary",
 ]

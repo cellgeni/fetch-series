@@ -119,6 +119,13 @@ def _short_of_run(read: list[_Read], run_spot: float | None) -> str | None:
     return None
 
 
+def short_of_run(files: list[dict[str, Any]], run_spot: float | None) -> str | None:
+    """:func:`_short_of_run` on recorded file facts (``check_set``'s ``files``)."""
+    return _short_of_run(
+        [_Read(f["source"], f["format"], f["length"]["mode"]) for f in files], run_spot
+    )
+
+
 def _mates(read: list[_Read], barcode: list[int], agree: Agree) -> float | None:
     """How far the barcode read and the best cDNA read share spot names."""
     best: float | None = None
@@ -253,4 +260,4 @@ def fit_from_detail(detail: dict[str, Any]) -> dict[str, Any]:
     return _judge(read, detail["call"], detail.get("run_spot"), agree)
 
 
-__all__ = ["RULE", "MissingInput", "fit", "fit_from_detail"]
+__all__ = ["RULE", "MissingInput", "fit", "fit_from_detail", "short_of_run"]
