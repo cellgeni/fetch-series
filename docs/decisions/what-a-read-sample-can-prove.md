@@ -36,7 +36,8 @@ same for every read of the file, which is why a few thousand reads already say t
 The file layer's refusal path ([files](../files.md)) will drop a candidate only on a
 *proven-unusable* verdict. The standard for one:
 
-- **no read of 50 bases or more** (there is no cDNA read to align), or
+- **no read of 30 bases or more besides the barcode read** (there is no cDNA read to
+  align), or
 - **no read of 26 bases or more whose first 16 bases are a listed barcode above
   background** (there is no barcode read). The background is what the list matches by
   chance: 0.016% exact for the v2 list, 0.16% for v3.
@@ -66,8 +67,24 @@ undetermined, never fit.
 
 These three conditions are rule `fit-2`. The [2026-10 content
 survey](../benchmarks/content-survey-2026-10.md) found each of them by reading the files
-that `fit-1` had judged. Each verdict records what it was judged on (`run_spot`, `mates`),
-so a later rule can be checked against the same inputs.
+that `fit-1` had judged.
+
+**A cDNA read is any read of 30 bases or more that is not the barcode read** (rule `fit-3`).
+`fit-2` asked for 50 and refused every copy of SRR34778689, whose 28 + 47-base reads map;
+the maintainer counts a 47-base cDNA read usable. Thirty bases is still far above an index
+read. The barcode read is excluded by position, not by length, because some barcode reads
+are 30 or 31 bases (SRR22434015, SRR15425104). Excluding it corrected `fit-2` too, which
+let the barcode read stand in for the cDNA read: DRR259182's lone 150-base fastq, every read
+of which starts with a listed barcode, was called fit. A barcode read that long has room
+for a cDNA read after its barcode and UMI, and may be the two reads joined, so such a set is
+undetermined. Only a barcode read too short for that (under 58 bases) with nothing beside
+it is proof.
+
+Each verdict records what it was judged on: every file's format and modal length, the call,
+the run's mean spot (`run_spot`), and the spot-name agreement of every pair of files from
+different sources. `fit_from_detail` judges a recorded verdict again from those alone and
+gives what `fit` gives on the reads, which a test holds it to. A later rule is checked
+against the same inputs, and only a record lacking one is read again.
 
 A library that is not gene expression gets `fit=None`. Whether a VDJ or feature-barcode
 library is usable depends on a pipeline this project does not run.

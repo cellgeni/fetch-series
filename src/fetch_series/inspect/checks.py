@@ -20,8 +20,10 @@ from fetch_series.inspect.readers.fastq import spot_name
 # v3. Anything shorter cannot hold one; an 8-base i7 index read certainly not.
 BARCODE_READ_MIN = 26
 # A cDNA read long enough to align. 10x's own floor for R2 is far above this;
-# the point is to tell a data read from a barcode or index read.
-CDNA_READ_MIN = 50
+# the point is to tell a data read from a barcode or index read. It was 50
+# until SRR34778689: 28 + 47, a 3' v3 library whose 47-base reads map, and
+# which the maintainer counts usable (rule fit-3).
+CDNA_READ_MIN = 30
 # Spot names compared across mates.
 CONCORDANCE_READS = 1_000
 
@@ -93,6 +95,23 @@ def duplicates(records: Iterable[FileRecord]) -> list[list[str]]:
     return [sorted(names) for names in groups.values() if len(names) > 1]
 
 
+def concordances(samples: list[FileSample]) -> list[list[Any]]:
+    """Spot-name agreement for every pair of read files from different sources.
+
+    ``[i, j, share]`` with ``i < j`` indexing the files read, as ``files`` and
+    a call's ``hits`` do. Two reads of one source are mates by construction,
+    so they are not compared. Recorded so a fit rule can say which reads are
+    mates without the reads (``fit.fit_from_detail``).
+    """
+    read = [s for s in samples if s.records]
+    return [
+        [i, j, concordance(read[i], read[j])]
+        for i in range(len(read))
+        for j in range(i + 1, len(read))
+        if read[i].source != read[j].source
+    ]
+
+
 def check_set(samples: list[FileSample], records: Iterable[FileRecord] = ()) -> dict[str, Any]:
     """Every built-in check on one run's set of files.
 
@@ -115,6 +134,7 @@ def check_set(samples: list[FileSample], records: Iterable[FileRecord] = ()) -> 
     plain = [s for s in samples if s.records and not s.derived]
     if len(plain) >= 2 and len({s.source for s in plain}) >= 2:
         checks["spot_names_agree"] = concordance(plain[0], plain[1])
+    checks["concordance"] = concordances(samples)
     bam = next((s.facts for s in samples if s.format in ("bam", "cram") and s.facts), None)
     if bam is not None:
         checks["bam"] = bam
@@ -126,6 +146,7 @@ __all__ = [
     "CDNA_READ_MIN",
     "check_set",
     "concordance",
+    "concordances",
     "duplicates",
     "file_facts",
     "quality_verdict",

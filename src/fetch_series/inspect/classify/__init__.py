@@ -32,6 +32,7 @@ from collections import Counter
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
+from fetch_series.inspect.checks import CDNA_READ_MIN
 from fetch_series.inspect.classify.layouts import (
     BY_ID,
     LAYOUTS,
@@ -46,8 +47,10 @@ from fetch_series.inspect.model import FileSample
 from fetch_series.inspect.references import KmerIndex
 
 # The classifier is a versioned instrument: a call records the version that
-# made it, and a threshold change is a new version.
-VERSION = "0.2.0"
+# made it, and a threshold change is a new version. 0.2.1 takes a cDNA read
+# from 30 bases rather than 50 (rule fit-3, SRR34778689's 28 + 47); a call on
+# a set with no read of 30 to 49 bases is unchanged from 0.2.0.
+VERSION = "0.2.1"
 NO_LISTS = "no barcode list fetched; run `fetch inspect lists --fetch`"
 THRESHOLDS_SET_ON = "the 2026-10-19 benchmark's design half: 121 runs"
 
@@ -414,7 +417,7 @@ def classify(
             for i, s in sorted(
                 enumerate(samples), key=lambda kv: -Counter(kv[1].lengths).most_common(1)[0][0]
             )
-            if i != best.read and Counter(s.lengths).most_common(1)[0][0] >= 50
+            if i != best.read and Counter(s.lengths).most_common(1)[0][0] >= CDNA_READ_MIN
         ),
         None,
     )
@@ -436,7 +439,7 @@ def classify(
         kind, facts = library_type(cdna, references)
         evidence["library"] = facts
     else:
-        contradictions.append("no cDNA read of 50 bases or more")
+        contradictions.append(f"no cDNA read of {CDNA_READ_MIN} bases or more")
 
     # Where layouts share a list, the tail and then the strand decide.
     remaining = list(candidates)
