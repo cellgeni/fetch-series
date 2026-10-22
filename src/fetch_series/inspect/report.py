@@ -18,10 +18,14 @@ Keys (schema 2):
     STARsolo options, the Cell Ranger chemistry and the whitelist; else null;
   * ``convertible`` -- whether a BAM, CRAM or SRA copy converts to FASTQ, how,
     and why;
+  * ``qc`` -- listed-barcode rates, UMI entropy and distinct shares, the
+    CB-UMI pairs' distinct share and the tail, over the sample (``inspect.qc``);
+  * ``library`` -- the library type, a VDJ library's chain and a feature
+    library's multiplexing tags;
 * ``agreement``: whether the called sources agree, and which could not be called.
 
-Schema 2 added ``geometry``, ``mapping`` and ``convertible``; nothing of
-schema 1 was removed or changed meaning. No sequence is ever written.
+Schema 2 added ``geometry``, ``mapping``, ``convertible``, ``qc`` and
+``library``; nothing of schema 1 was removed or changed meaning. No sequence is ever written.
 """
 
 from __future__ import annotations
@@ -39,12 +43,14 @@ from fetch_series.inspect.fetch import DEFAULT_READS, PREFIX_BYTES, sample_file,
 from fetch_series.inspect.fit import RULE, fit
 from fetch_series.inspect.lists import BarcodeList
 from fetch_series.inspect.model import FileSample
+from fetch_series.inspect.qc import library, qc
 from fetch_series.inspect.readers import cram, sra
 from fetch_series.inspect.readers.bam import read_bam
 from fetch_series.inspect.readers.fastq import read_fastq
 from fetch_series.inspect.readiness import readiness
 from fetch_series.inspect.references import KmerIndex
 from fetch_series.inspect.survey import mean_spot
+from fetch_series.inspect.tags import available as tag_sets
 from fetch_series.survey.client import SurveyClient
 
 SCHEMA_VERSION = "2"
@@ -80,6 +86,8 @@ def _source(
         "mates": verdict.get("mates"),
     }
     entry.update(readiness(entry, run=run, run_spot=run_spot))
+    entry["qc"] = qc(samples, entry["call"])
+    entry["library"] = library(samples, entry["call"], references, tag_sets())
     return entry, call
 
 
@@ -195,6 +203,15 @@ def params(report: dict[str, Any]) -> list[str]:
             lines.append(f"    Cell Ranger  --chemistry {block['cellranger_chemistry']}")
         for why in block["omitted"]:
             lines.append(f"    omitted      {why}")
+        measured = source.get("qc") or {}
+        barcodes = measured.get("barcodes")
+        if barcodes:
+            pairs = (measured.get("cb_umi") or {}).get("distinct_share")
+            lines.append(
+                f"    sample QC    listed barcodes {barcodes['exact']:.1%} exact, "
+                f"{barcodes['within_one']:.1%} within one; UMI entropy "
+                f"{measured['umi'].get('entropy')}; CB-UMI pairs distinct {pairs}"
+            )
         lines.append(f"    unvalidated  {block['note']}")
     return lines
 
@@ -210,6 +227,10 @@ def summary(report: dict[str, Any]) -> str:
         files = source["checks"]["files"]
         shape = "+".join(str(f["length"]["mode"]) for f in files) or "-"
         fit_word = {True: "fit", False: "UNFIT", None: "undetermined"}[source["fit"]]
+        kind = source.get("library") or {}
+        finer = kind.get("chain") or kind.get("multiplexing")
+        if finer and named != "-":
+            named = f"{named} {kind['type']}-{finer}"
         lines.append(
             f"  {source['source']:28s} {source['kind']:6s} {shape:12s} {named:22s} "
             f"{call['level']:9s} {fit_word:12s} {source['reason']}"

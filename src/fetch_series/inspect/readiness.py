@@ -56,7 +56,7 @@ def _name(source: str) -> str:
     return source.rsplit("/", 1)[-1] if "://" in source else source
 
 
-def _barcode_hit(call: dict[str, Any]) -> dict[str, Any] | None:
+def barcode_hit(call: dict[str, Any]) -> dict[str, Any] | None:
     """The hit the call rests on: its list, on its barcode read."""
     hits = (call.get("evidence") or {}).get("hits") or []
     return next(
@@ -182,7 +182,7 @@ def geometry(
         "trimmed": any(r["trimmed"] for r in reads),
     }
     layout = BY_ID.get(call.get("layout") or "")
-    hit = _barcode_hit(call)
+    hit = barcode_hit(call)
     if layout is not None and hit is not None:
         mode = files[hit["read"]]["length"]["mode"]
         umi = max(0, min(layout.umi, mode - hit["offset"] - layout.cb))
@@ -426,6 +426,7 @@ def readiness(
 __all__ = [
     "CELLRANGER_CHEMISTRY",
     "SOLO_STRAND",
+    "barcode_hit",
     "convertible",
     "geometry",
     "mapping",

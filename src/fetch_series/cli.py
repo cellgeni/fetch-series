@@ -312,7 +312,7 @@ def inspect_lists(
     match is refused.
     """
     from fetch_series.inspect import lists as barcode_lists
-    from fetch_series.inspect import references
+    from fetch_series.inspect import references, tags
 
     if fetch_them:
         for entry, path in barcode_lists.fetch_all():
@@ -320,6 +320,9 @@ def inspect_lists(
         for reference in references.REGISTER.values():
             path = references.fetch(reference)
             typer.echo(f"fetched {reference.id:24s} {path}", err=True)
+        for tag_set in tags.REGISTER.values():
+            path = tags.fetch(tag_set)
+            typer.echo(f"fetched {tag_set.id:24s} {path}", err=True)
     if export_ids:
         unknown = sorted(set(export_ids) - set(barcode_lists.REGISTER))
         if unknown:
@@ -336,6 +339,9 @@ def inspect_lists(
         typer.echo(f"{entry.id:16s} {entry.length:>3} {entry.count:>10,}  {state:8s} {entry.terms}")
     for reference in references.REGISTER.values():
         typer.echo(f"{reference.id:24s} {reference.terms}")
+    for tag_set in tags.REGISTER.values():
+        state = "fetched" if (tags.cache_dir() / f"{tag_set.id}.csv").exists() else "missing"
+        typer.echo(f"{tag_set.id:24s} {tag_set.kind:3s} {state:8s} {tag_set.terms}")
 
 
 @inspect_app.command("run")

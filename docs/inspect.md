@@ -102,10 +102,12 @@ key is removed or changes meaning. The classifier (`classifier`) and the fit rul
 | `sources[].geometry` | each read's role (R1/R2/I1/I2), lengths (mode, range, share at the mode) and FASTQ names; where the barcode and UMI sit, 1-based; `trimmed` where lengths vary |
 | `sources[].mapping` | for a HIGH or MEDIUM 10x gene-expression call only: the STARsolo options, Cell Ranger's `--chemistry`, the whitelist, what was omitted and why; otherwise `null` |
 | `sources[].convertible` | for a BAM, CRAM or SRA copy: whether it converts to FASTQ, how (`bamtofastq`, `tags`, `samtools fastq`, `fastq-dump --split-files`) and why |
+| `sources[].qc` | over the sample: listed-barcode rates (exact and within one), UMI entropy and distinct share, the CB-UMI pairs' distinct share, poly-T and TSO shares |
+| `sources[].library` | the library type, a VDJ library's chain (T or B), a feature library's multiplexing (`HTO` or `CMO`), and a `suspect` note where it may be a GEX library's TSO artefacts |
 | `agreement` | whether the sources that could be called agree, and which could not be |
 
-Schema 2 added `geometry`, `mapping` and `convertible`. Nothing in schema 1 was removed or
-changed meaning.
+Schema 2 added `geometry`, `mapping`, `convertible`, `qc` and `library`. Nothing in schema 1
+was removed or changed meaning.
 
 ## Mapping a copy
 
@@ -155,6 +157,38 @@ only when no sampled record carries a barcode tag and no read is a barcode read.
 converts with `fastq-dump --split-files` when the split reads hold the called barcode and cDNA
 reads and its first spots account for the run. A Lite object is flagged: its qualities are
 substituted.
+
+## QC and the library's finer type
+
+Every QC number is over the sample, the first reads of each file. The listed-barcode rates
+are the classifier's own: the share of barcode windows that are a listed barcode exactly, and
+within one substitution. That is the nearest thing a sample has to STARsolo's "valid
+barcodes". The CB-UMI pairs' distinct share over 100,000 reads is a proxy for saturation, not
+STARsolo's saturation over the run.
+
+The library block goes one step past the classifier's library type:
+
+- **A VDJ library's chain.** The TCR and BCR constant regions are registered apart as well
+  as together. SRR24474057 and ERR7425794 read 3,621 and 4,888 BCR reads against 7 and 0 TCR
+  reads: B.
+- **A feature library's multiplexing.** The library's feature reads are checked against
+  registered tag sets: 10x's CellPlex CMOs and BioLegend's TotalSeq hashtags. Both are taken
+  from Cell Ranger's source at pinned commits, checked by sha256, and fetched by
+  `fetch inspect lists --fetch`. Hashtags are looked for after ten bases (TotalSeq-B and -C)
+  and at the start (TotalSeq-A). On 2026-10-22, 40 runs the content survey's classifier
+  called feature barcode had the first reads of their ENA R2 checked against both sets:
+    - 8 carry the hashtags on 90–96% of their feature reads. SRR14131898 carries them at the
+      start (TotalSeq-A); the other seven carry them after ten bases.
+    - none carries the CMOs.
+- **A feature library that may not be one.** Two of the rest were looked at by eye.
+  SRR30069691's and SRR23446052's cDNA reads start with 10x's template-switch oligo in a third
+  of reads or more. That is the artefact of a gene-expression library, not a feature
+  library's tags. The library block flags such a library `suspect` and leaves the
+  classifier's call alone. A change to the classifier's call belongs in a benchmarked
+  classifier version.
+
+Both thresholds are **provisional**: a chain needs 80% of the constant-region reads, and a
+tag set half the feature reads. No labelled set has measured them yet, and the block says so.
 
 ## Readers, and what is optional
 
