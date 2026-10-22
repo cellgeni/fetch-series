@@ -295,6 +295,15 @@ def inspect_lists(
     fetch_them: Annotated[
         bool, typer.Option("--fetch", help="Download every registered list and reference.")
     ] = False,
+    export_ids: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--export", help="Write this list as a text whitelist STARsolo reads (repeatable)."
+        ),
+    ] = None,
+    out: Annotated[
+        Path | None, typer.Option("--out", help="With --export: the directory to write to.")
+    ] = None,
 ) -> None:
     """The barcode lists and references the classifier reads, and whether each is fetched.
 
@@ -311,6 +320,16 @@ def inspect_lists(
         for reference in references.REGISTER.values():
             path = references.fetch(reference)
             typer.echo(f"fetched {reference.id:24s} {path}", err=True)
+    if export_ids:
+        unknown = sorted(set(export_ids) - set(barcode_lists.REGISTER))
+        if unknown:
+            typer.secho(f"not registered: {', '.join(unknown)}", fg=typer.colors.RED, err=True)
+            raise typer.Exit(2)
+        for list_id in export_ids:
+            listed = barcode_lists.REGISTER[list_id]
+            path, digest = barcode_lists.export(listed, out or barcode_lists.cache_dir() / "export")
+            typer.echo(f"{listed.id:16s} {listed.count:>10,}  {digest}  {path}")
+        return
     held = barcode_lists.cache_dir()
     for entry in barcode_lists.REGISTER.values():
         state = "fetched" if (held / f"{entry.id}.u32").exists() else "missing"
@@ -329,6 +348,14 @@ def inspect_run(
         Path | None, typer.Option("--json", help="Write the versioned JSON report here.")
     ] = None,
     no_sdl: Annotated[bool, typer.Option("--no-sdl", help="Skip NCBI SDL.")] = False,
+    show_params: Annotated[
+        bool,
+        typer.Option(
+            "--params",
+            help="Print the STARsolo options and Cell Ranger chemistry for each source "
+            "called as 10x gene expression, and export the whitelist they name.",
+        ),
+    ] = False,
 ) -> None:
     """Read the first reads of a run's files from every source, and say what they are.
 
@@ -338,7 +365,14 @@ def inspect_run(
     """
     from fetch_series.inspect import lists as barcode_lists
     from fetch_series.inspect import references
-    from fetch_series.inspect.report import inspect_fileset, inspect_local, summary
+    from fetch_series.inspect.readiness import with_whitelist
+    from fetch_series.inspect.report import (
+        SCHEMA_VERSION,
+        inspect_fileset,
+        inspect_local,
+        params,
+        summary,
+    )
 
     load_dotenv()
     configure_logging(level=logging.WARNING)
@@ -362,9 +396,18 @@ def inspect_run(
 
     reports = asyncio.run(run_it())
     for report in reports:
+        if show_params:
+            for source in report["sources"]:
+                if source["mapping"]:
+                    entry = barcode_lists.REGISTER[source["mapping"]["whitelist"]["id"]]
+                    with_whitelist(source["mapping"], str(barcode_lists.exported(entry)))
         typer.echo(summary(report))
+        if show_params:
+            typer.echo("\n".join(params(report)) or "  no source called as 10x gene expression")
     if json_out is not None:
-        payload = reports[0] if len(reports) == 1 else {"schema_version": "1", "runs": reports}
+        payload = (
+            reports[0] if len(reports) == 1 else {"schema_version": SCHEMA_VERSION, "runs": reports}
+        )
         json_out.write_text(json.dumps(payload, indent=1) + "\n")
         typer.echo(f"wrote {json_out}", err=True)
 
@@ -1202,9 +1245,17 @@ def relations(
 
 
 async def _inspected(
-    parsed: Accession, client: SurveyClient, limit: int | None, include_sdl: bool, reads: int
+    parsed: Accession,
+    client: SurveyClient,
+    limit: int | None,
+    include_sdl: bool,
+    reads: int,
+    reports: list[dict[str, Any]] | None = None,
 ) -> list[Recommendation]:
-    """Recommendations with the refusal path: offers whose reads prove them unusable."""
+    """Recommendations with the refusal path: offers whose reads prove them unusable.
+
+    Each run's inspection report is appended to ``reports`` where one is given.
+    """
     from fetch_series.inspect import lists as barcode_lists
     from fetch_series.inspect import references
     from fetch_series.inspect.report import inspect_fileset, refusals, summary
@@ -1219,6 +1270,8 @@ async def _inspected(
         report = await inspect_fileset(fileset, client, held, refs, reads=reads)
         typer.echo(summary(report), err=True)
         recommended.append(recommend(fileset, refusals(report)))
+        if reports is not None:
+            reports.append(report)
     return recommended
 
 
@@ -1249,6 +1302,14 @@ def files(
         ),
     ] = False,
     reads: Annotated[int, typer.Option(help="With --inspect: reads per file.")] = 100_000,
+    json_out: Annotated[
+        Path | None,
+        typer.Option(
+            "--json",
+            help="With --inspect: write each run's inspection report, with its readiness "
+            "blocks (geometry, mapping, convertible), here.",
+        ),
+    ] = None,
 ) -> None:
     """Download links for a run, with checksums and the reason for the choice.
 
@@ -1259,12 +1320,16 @@ def files(
     """
     load_dotenv()
     configure_logging(level=logging.WARNING)
+    if json_out is not None and not read_them:
+        typer.secho("--json needs --inspect", fg=typer.colors.RED, err=True)
+        raise typer.Exit(2)
     parsed = resolve_input(accession)
+    reports: list[dict[str, Any]] = []
 
     async def run_it() -> tuple[list[Recommendation], list[Verdict]]:
         async with _client_for_one_query(6) as client:
             if read_them:
-                recommended = await _inspected(parsed, client, limit, not no_sdl, reads)
+                recommended = await _inspected(parsed, client, limit, not no_sdl, reads, reports)
             else:
                 recommended = await recommendations_for(
                     parsed, client, limit=limit, include_sdl=not no_sdl
@@ -1277,6 +1342,13 @@ def files(
             return recommended, await verify_all(links, client)
 
     results, verdicts = asyncio.run(run_it())
+    if json_out is not None:
+        from fetch_series.inspect.report import SCHEMA_VERSION
+
+        json_out.write_text(
+            json.dumps({"schema_version": SCHEMA_VERSION, "runs": reports}, indent=1) + "\n"
+        )
+        typer.echo(f"wrote {json_out}", err=True)
     if not results:
         typer.secho(f"No runs found for {parsed}.", fg=typer.colors.YELLOW, err=True)
         raise typer.Exit(1)

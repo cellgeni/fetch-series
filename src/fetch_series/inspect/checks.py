@@ -50,6 +50,7 @@ def file_facts(sample: FileSample) -> dict[str, Any]:
     lengths = sample.lengths
     bases = sum(lengths)
     n = sum(r.seq.upper().count("N") for r in sample.records)
+    mode = _mode(lengths)
     return {
         "source": sample.source,
         "format": sample.format,
@@ -60,8 +61,10 @@ def file_facts(sample: FileSample) -> dict[str, Any]:
         "length": {
             "min": min(lengths) if lengths else None,
             "max": max(lengths) if lengths else None,
-            "mode": _mode(lengths),
+            "mode": mode,
             "distinct": len(set(lengths)),
+            # The share of reads at the mode: how far a trimmed read varies.
+            "at_mode": round(lengths.count(mode) / len(lengths), 4) if mode is not None else None,
         },
         "quality": quality_verdict(sample),
         "n_fraction": round(n / bases, 5) if bases else None,
