@@ -3,17 +3,20 @@
 from __future__ import annotations
 
 import gzip
+from datetime import UTC, datetime
 
 import httpx
 import pytest
 
 from fetch_series.files import FileKind, FileRecord
+from fetch_series.inspect.checks import check_set
 from fetch_series.inspect.classify import NO_LISTS, Call
 from fetch_series.inspect.fetch import sample_file
-from fetch_series.inspect.fit import RULE, fit
+from fetch_series.inspect.fit import RULE, MissingInput, fit, fit_from_detail
 from fetch_series.inspect.model import FileSample, Record
 from fetch_series.inspect.readers import cram, sra
-from fetch_series.inspect.survey import INSPECT_GATE, screen_links
+from fetch_series.inspect.survey import INSPECT_GATE, rejudge, screen_links
+from fetch_series.results import Outcome, RouteResult
 from fetch_series.survey import corpora
 from fetch_series.survey.client import Limits, SurveyClient
 
@@ -150,6 +153,137 @@ class TestFit2:
         )
         verdict = fit([orphans, barcode], call("10x_3p_v3_family", "HIGH", hits=[hit(read=1)]))
         assert verdict["fit"] is None and verdict["mates"] == 0.0
+
+
+class TestFit3:
+    """A cDNA read is any read of 30 bases or more that is not the barcode read."""
+
+    def test_a_47_base_cdna_read_is_usable(self):
+        """SRR34778689: 28 + 47, refused by fit-2 on every copy."""
+        verdict = fit([sample(28), sample(47)], call("10x_3p_v3_family", "MEDIUM", hits=[hit()]))
+        assert verdict["fit"] is True
+
+    def test_a_28_base_set_is_still_unfit(self):
+        """SRR30132199."""
+        verdict = fit([sample(28)], call(None, "none", hits=[hit()]))
+        assert verdict["fit"] is False and verdict["reason"] == "no read of 30 bases or more"
+
+    def test_a_30_base_barcode_read_is_not_its_own_cdna_read(self):
+        """SRR22434015's barcode read is 30 bases; alone, it is no set at all."""
+        verdict = fit([sample(30)], call("10x_3p_v3_family", "MEDIUM", hits=[hit()]))
+        assert verdict["fit"] is False and "besides the barcode read" in verdict["reason"]
+
+    def test_a_30_base_barcode_read_beside_a_cdna_read_is_fit(self):
+        verdict = fit([sample(30), sample(98)], call("10x_3p_v3_family", "HIGH", hits=[hit()]))
+        assert verdict["fit"] is True
+
+    def test_a_long_barcode_read_alone_is_never_fit(self):
+        """DRR259182: one 150-base fastq whose reads start with listed barcodes; fit-2 passed it."""
+        verdict = fit([sample(150)], call("10x_3p_v3_family", "MEDIUM", hits=[hit()]))
+        assert verdict["fit"] is None and "room for one" in verdict["reason"]
+
+    def test_every_verdict_records_its_inputs(self):
+        verdict = fit([sample(28)], call(None, "none", hits=[hit()]), run_spot=28.0)
+        assert verdict["run_spot"] == 28.0 and "mates" in verdict
+
+
+def detail_of(samples, made: Call, run_spot=None):
+    """What the content survey records for a set: checks, call, and verdict."""
+    return {
+        "checks": check_set(samples),
+        "call": made.as_detail(),
+        **fit(samples, made, run_spot=run_spot),
+    }
+
+
+def unpaired() -> list[FileSample]:
+    """DRR878211's DDBJ fastqs: the 98-base reads are spots of their own."""
+    return [
+        FileSample(
+            "x.fastq",
+            "fastq",
+            records=[Record(f"D.{i + 1000}", "A" * 98, "F" * 98) for i in range(50)],
+        ),
+        FileSample(
+            "x_1.fastq", "fastq", records=[Record(f"D.{i}", "A" * 26, "F" * 26) for i in range(50)]
+        ),
+    ]
+
+
+class TestFitFromDetail:
+    """A recorded verdict judged again without its reads gives what fit gives with them."""
+
+    @pytest.mark.parametrize(
+        ("samples", "made", "run_spot"),
+        [
+            ([sample(28), sample(91)], call("10x_3p_v3_family", "HIGH", hits=[hit()]), None),
+            ([sample(28), sample(47)], call("10x_3p_v3_family", "MEDIUM", hits=[hit()]), None),
+            ([sample(28)], call(None, "ambiguous", hits=[hit()]), None),
+            ([sample(150)], call("10x_3p_v3_family", "MEDIUM", hits=[hit()]), None),
+            ([sample(101)], call(None, "none", hint="barcode read missing: ..."), None),
+            ([sample(28), sample(91)], call(None, "none", hint=NO_LISTS), None),
+            (sra_object(26, 8), call(None, "none", hits=[hit()]), 66.0),
+            (sra_object(28), call(None, "none", hits=[hit()]), 28.0),
+            (sra_object(8, 98, 14, 10), call(None, "none", hint="no listed 10x barcode"), 130.0),
+            (unpaired(), call("10x_3p_v3_family", "HIGH", hits=[hit(read=1)]), None),
+            ([FileSample("x", "cram")], call(None, "none"), None),
+        ],
+    )
+    def test_the_same_verdict(self, samples, made, run_spot):
+        assert fit_from_detail(detail_of(samples, made, run_spot)) == fit(
+            samples, made, run_spot=run_spot
+        )
+
+    def test_every_pair_of_sources_is_recorded(self):
+        checks = check_set(unpaired())
+        assert checks["concordance"] == [[0, 1, 0.0]]
+
+    def test_an_older_record_is_judged_again_when_its_mates_share_a_source(self):
+        detail = detail_of([sample(28), sample(47)], call("10x_3p_v3", "MEDIUM", hits=[hit()]))
+        del detail["checks"]["concordance"]
+        assert fit_from_detail(detail)["fit"] is True
+
+    def test_an_older_record_whose_mates_were_compared_needs_its_reads(self):
+        detail = detail_of(unpaired(), call("10x_3p_v3_family", "HIGH", hits=[hit(read=1)]))
+        del detail["checks"]["concordance"]
+        with pytest.raises(MissingInput):
+            fit_from_detail(detail)
+
+
+class TestRejudge:
+    def result(self, accession: str, detail) -> RouteResult:
+        return RouteResult(
+            accession,
+            "screen:100000:run_ncbi->fastq:x",
+            "c",
+            Outcome.RESOLVED,
+            ("u",),
+            fetched_at=datetime(2026, 10, 20, tzinfo=UTC),
+            detail=detail,
+        )
+
+    def test_judged_again_without_a_read(self):
+        fit2 = detail_of([sample(28), sample(47)], call("10x_3p_v3", "MEDIUM", hits=[hit()]))
+        del fit2["checks"]["concordance"]
+        fit2.update(fit=False, rule="fit-2", reason="no read of 50 bases or more")
+        old = detail_of(unpaired(), call("10x_3p_v3_family", "HIGH", hits=[hit(read=1)]))
+        del old["checks"]["concordance"]
+        old["rule"] = "fit-2"
+        changed, lacking = rejudge(
+            [
+                self.result("SRR34778689", fit2),
+                self.result("DRR878211", old),
+                self.result("SRR1", None),
+            ]
+        )
+        (again,) = changed
+        assert again.detail["fit"] is True and again.detail["rule"] == RULE
+        assert again.fetched_at == datetime(2026, 10, 20, tzinfo=UTC), "nothing was read"
+        assert lacking == {"DRR878211"}
+
+    def test_a_verdict_the_rule_does_not_change_is_left(self):
+        current = detail_of([sample(28), sample(91)], call("10x_3p_v3", "HIGH", hits=[hit()]))
+        assert rejudge([self.result("SRR1", current)]) == ([], set())
 
 
 class TestScreenLinks:

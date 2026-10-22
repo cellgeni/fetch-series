@@ -21,7 +21,7 @@ uv run fetch files SRR29534765 --inspect --explain             # recommend, refu
 ```
 
 ```
-SRR29534765  (classifier 0.2.0, fit-2)
+SRR29534765  (classifier 0.2.1, fit-3)
   run->file:ena_fastq          fastq  101          -                      none      UNFIT        no read whose first 16 bases are a listed barcode
   run->file:sdl                sra    8+26+101     10x_3p_v2              MEDIUM    fit          10x_3p_v2 at MEDIUM
 ```
@@ -38,7 +38,8 @@ copy. Only the reads tell the two copies apart.
 - **Quality:** *real*; *substituted*, where the alphabet has two values or fewer, as an SRA
   Lite object reads `?` throughout; or *absent*.
 - **The barcode read:** at least two reads of 26 bases or more, one to hold the barcode and
-  one to be the cDNA. A cDNA read of 50 bases or more must also be there.
+  one to be the cDNA. A cDNA read is any read of 30 bases or more that is not the barcode
+  read.
 - **The kit.** Every listed 10x barcode list is tried against every read long enough. Then
   the UMI's entropy, the tail after the UMI, and the strand of the cDNA read narrow it to a
   layout, at a level: HIGH, MEDIUM, LOW or ambiguous. The method and its benchmark are in
@@ -53,11 +54,14 @@ Nothing read is stored. A report holds counts, lengths and calls, and no sequenc
 
 ## Fit, and the refusal path
 
-`fit` is a requirement (`inspect/fit.py`, rule `fit-2`), not evidence. It applies what
+`fit` is a requirement (`inspect/fit.py`, rule `fit-3`), not evidence. It applies what
 STARsolo needs to what the reads showed:
 
-- **unfit** needs positive evidence: no read of 50 bases or more, or no read of 26 bases or
-  more whose first 16 bases are a listed barcode above background. An SRA object is refused
+- **unfit** needs positive evidence: no read of 30 bases or more besides the barcode read,
+  or no read of 26 bases or more whose first 16 bases are a listed barcode above background.
+  A barcode read long enough to carry a cDNA read after its barcode and UMI (58 bases or
+  more) may be the two reads joined, so a set with no other read is undetermined, not
+  unfit. An SRA object is refused
   only if its first spots account for the run's mean spot length from runinfo, and nothing
   is refused for a missing listed barcode while a read of 11 to 25 bases could be a barcode
   no list holds (10x 3' v1's is 14);
@@ -67,8 +71,16 @@ STARsolo needs to what the reads showed:
   library that is not gene expression, or a set that fails one of the conditions above.
 
 The [content survey](benchmarks/content-survey-2026-10.md) found the `fit-2` conditions,
-one run each, by reading what `fit-1` had judged. The argument is in
-[what a read sample can prove](decisions/what-a-read-sample-can-prove.md).
+one run each, by reading what `fit-1` had judged. `fit-3` lowered the cDNA floor from 50
+bases to 30 after SRR34778689 (28 + 47), and stopped the barcode read counting as its own
+cDNA read, which had let `fit-2` pass a lone 150-base barcode read (DRR259182). The argument
+is in [what a read sample can prove](decisions/what-a-read-sample-can-prove.md).
+
+Every verdict records what it was judged on: each file's format and modal length, the call,
+the run's mean spot, and the spot-name agreement of every pair of files from different
+sources. `fetch inspect survey --rejudge` judges recorded verdicts again under the current
+rule without reading a file, and `--refit` reads again only the runs whose records lack
+something the rule needs.
 
 `fetch files --inspect` refuses an offer only when it is unfit. An undetermined offer is
 ranked exactly as it would have been without reading it. If every offer is unfit, nothing is

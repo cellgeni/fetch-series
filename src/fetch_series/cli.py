@@ -381,11 +381,26 @@ def inspect_survey(
     ] = None,
     dry_run: Annotated[bool, typer.Option("--plan", help="Print units and sizes only.")] = False,
     retry_failed: Annotated[bool, typer.Option(help="Also re-ask stored failures.")] = False,
+    rejudge: Annotated[
+        bool,
+        typer.Option(
+            help="Judge every recorded verdict again under the current fit rule, from "
+            "what it recorded. Reads nothing; says how many runs lack what the rule needs."
+        ),
+    ] = False,
     refit: Annotated[
         bool,
         typer.Option(
-            help="Read again every run whose verdicts an earlier fit rule judged: "
-            "the older rules did not record what the current one judges on."
+            help="Judge recorded verdicts again under the current fit rule, and read "
+            "again only the runs whose records lack what it judges on."
+        ),
+    ] = False,
+    again: Annotated[
+        bool,
+        typer.Option(
+            "--again",
+            help="Read every run again, whatever is recorded: a new classifier, "
+            "or a re-read that should record every verdict's inputs.",
         ),
     ] = False,
     reread_where: Annotated[
@@ -410,6 +425,7 @@ def inspect_survey(
     from fetch_series.inspect import references
     from fetch_series.inspect.fit import RULE as FIT_RULE
     from fetch_series.inspect.pool import Pool
+    from fetch_series.inspect.survey import rejudge as judge_again
     from fetch_series.inspect.survey import screen_fanout, screen_links
 
     load_dotenv()
@@ -433,6 +449,21 @@ def inspect_survey(
         typer.echo(f"{node:12s} {len(node_links):>3} links {len(accessions):>5} runs")
     if dry_run:
         return
+    lacking: set[str] = set()
+    if rejudge or refit:
+        with SurveyCache(cache_path) as cache:
+            for node, node_links, _accessions in jobs:
+                units = [screen_unit(reads, link.id) for link in node_links]
+                recorded = [r for unit in units for r in cache.results(name, unit)]
+                changed, short = judge_again(recorded)
+                cache.record_all(changed)
+                lacking |= short
+                typer.echo(
+                    f"{node:12s} {len(changed):>6} verdicts judged again under {FIT_RULE}, "
+                    f"{len(short)} runs lack what it judges on"
+                )
+        if not refit:
+            return
     lists_held = barcode_lists.available()
     if not lists_held:
         typer.secho(NO_LISTS, fg=typer.colors.RED, err=True)
@@ -466,13 +497,11 @@ def inspect_survey(
                     )
                     units = [screen_unit(reads, link.id) for link in node_links]
                     local = re.compile("|".join(reread_where)) if reread_where else None
-                    stale: set[str] = set()
+                    stale: set[str] = set(accessions) if again else lacking & set(accessions)
                     for unit in units:
                         for r in cache.results(name, unit):
                             if r.detail is None:
                                 continue
-                            if refit and r.detail.get("rule") != FIT_RULE:
-                                stale.add(r.accession)
                             unreadable = (r.detail.get("checks") or {}).get("unreadable") or []
                             if local is not None and any(
                                 local.search(u.get("why") or "") for u in unreadable

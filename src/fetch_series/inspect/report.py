@@ -83,7 +83,7 @@ async def inspect_fileset(
 ) -> dict[str, Any]:
     """Read every offer of one run, each distinct file once.
 
-    An SRA object is held to the run's mean spot from runinfo (rule fit-2), so
+    An SRA object is held to the run's mean spot from runinfo (since rule fit-2), so
     a run with one is looked up once.
     """
     read: dict[str, list[FileSample]] = {}

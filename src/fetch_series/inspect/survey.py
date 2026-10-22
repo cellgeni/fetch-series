@@ -22,7 +22,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import replace
 from typing import Any
 
@@ -31,6 +31,7 @@ from fetch_series.catalogue.probe import answer_links, seeded_runs
 from fetch_series.files import FileKind, FileRecord
 from fetch_series.inspect.checks import check_set
 from fetch_series.inspect.fetch import DEFAULT_READS, sample_file
+from fetch_series.inspect.fit import MissingInput, fit_from_detail
 from fetch_series.inspect.lists import BarcodeList
 from fetch_series.inspect.model import FileSample
 from fetch_series.inspect.pool import Pool, judge
@@ -228,4 +229,28 @@ def screen_fanout(
     return fn
 
 
-__all__ = ["INSPECT_GATE", "screen_fanout", "screen_links"]
+def rejudge(results: Iterable[RouteResult]) -> tuple[list[RouteResult], set[str]]:
+    """Recorded verdicts judged again under the current fit rule, without a read.
+
+    Returns the verdicts the current rule changes -- its name at least -- to be
+    stored again, each keeping its ``fetched_at``, since the reads it was judged
+    on are the ones fetched then; and the runs whose detail lacks something the
+    rule needs, which only reading them again can settle.
+    """
+    changed: list[RouteResult] = []
+    lacking: set[str] = set()
+    for result in results:
+        if result.detail is None or "rule" not in result.detail:
+            continue
+        try:
+            verdict = fit_from_detail(result.detail)
+        except MissingInput:
+            lacking.add(result.accession)
+            continue
+        detail = {**result.detail, **verdict}
+        if detail != result.detail:
+            changed.append(replace(result, detail=detail))
+    return changed, lacking
+
+
+__all__ = ["INSPECT_GATE", "rejudge", "screen_fanout", "screen_links"]
