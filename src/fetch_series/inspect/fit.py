@@ -52,6 +52,14 @@ reading files that ``fit-1`` judged wrongly:
   its barcode and UMI; a longer one may be the two reads joined
   (SRR26701885's 107 bases), so it is undetermined, never fit.
 
+``fit-4`` adds one condition, for the classifier's new reading of other
+technologies:
+
+* **A copy read as another technology is undetermined.** SRR24749105's reads
+  carry microSPLiT's linkers, which Parse Evercode uses: no 10x list holds its
+  barcodes, and under ``fit-3`` that was proof of no barcode read. It is proof
+  of a library this rule does not describe, so it decides nothing.
+
 A verdict records what it was judged on -- each file's format, source and modal
 length, the call, ``run_spot``, and the spot-name agreement of every pair of
 files -- so :func:`fit_from_detail` can judge it again under a later rule
@@ -70,7 +78,7 @@ from fetch_series.inspect.checks import BARCODE_READ_MIN, CDNA_READ_MIN, concord
 from fetch_series.inspect.classify import LOW_NEAR, NO_LISTS, Call
 from fetch_series.inspect.model import FileSample
 
-RULE = "fit-3"
+RULE = "fit-4"
 
 # The longest 10x gene-expression barcode and UMI: 16 + 12 on v3 and v4.
 BARCODE_UMI_MAX = 28
@@ -153,6 +161,9 @@ def _judge(
 
     if not read:
         return verdict(None, "nothing could be read")
+    technology = call.get("technology")
+    if technology not in (None, "10x"):
+        return verdict(None, call.get("hint") or f"a {technology} library, not 10x")
     short = _short_of_run(read, run_spot)
     if not any(r.mode >= CDNA_READ_MIN for r in read):
         if short:
