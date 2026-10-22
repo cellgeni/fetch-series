@@ -4,7 +4,8 @@ None is shipped. Each is registered (``references.tsv``) at a pinned version
 with the sha256 of what is downloaded: two RefSeq mitochondrial genomes at
 versioned accessions, which never change, and two small extracts of GENCODE
 release 44's spliced transcripts -- 40 ubiquitously expressed human genes, and
-the 20 genes of the TCR and BCR constant regions.
+the 20 genes of the TCR and BCR constant regions, together for the
+classifier's VDJ call and apart for the chain (``inspect.qc``).
 
 The method is ``tchem``'s (Apache-2.0), reimplemented: a cDNA read that shares
 k-mers with a transcript in its sense orientation is a sense read, and the

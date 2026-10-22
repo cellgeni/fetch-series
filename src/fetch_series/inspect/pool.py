@@ -21,7 +21,9 @@ from fetch_series.inspect.classify import classify
 from fetch_series.inspect.fit import fit
 from fetch_series.inspect.lists import BarcodeList
 from fetch_series.inspect.model import FileSample
+from fetch_series.inspect.qc import library, qc
 from fetch_series.inspect.references import KmerIndex
+from fetch_series.inspect.tags import available as tag_sets
 
 _WORKER: dict[str, Any] = {}
 
@@ -30,21 +32,27 @@ def _start(lists: dict[str, BarcodeList], references: dict[str, KmerIndex]) -> N
     _WORKER["lists"], _WORKER["references"] = lists, references
 
 
+Judged = tuple[dict[str, Any], dict[str, Any], dict[str, Any]]
+
+
 def judge(
     samples: list[FileSample],
     lists: dict[str, BarcodeList],
     references: dict[str, KmerIndex],
     *,
     run_spot: float | None = None,
-) -> tuple[dict[str, Any], dict[str, Any]]:
-    """The call and the fit verdict for one set of reads, as a report records them."""
+) -> Judged:
+    """The call, the fit verdict, and the QC and library blocks for one set of reads."""
     call = classify(samples, lists, references)
-    return call.as_detail(), fit(samples, call, run_spot=run_spot)
+    made = call.as_detail()
+    measures = {
+        "qc": qc(samples, made),
+        "library": library(samples, made, references, tag_sets()),
+    }
+    return made, fit(samples, call, run_spot=run_spot), measures
 
 
-def _judge_in_worker(
-    samples: list[FileSample], run_spot: float | None
-) -> tuple[dict[str, Any], dict[str, Any]]:
+def _judge_in_worker(samples: list[FileSample], run_spot: float | None) -> Judged:
     return judge(samples, _WORKER["lists"], _WORKER["references"], run_spot=run_spot)
 
 
@@ -65,9 +73,7 @@ class Pool:
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(self._executor, functools.partial(fn, *args, **kwargs))
 
-    async def judge(
-        self, samples: list[FileSample], *, run_spot: float | None = None
-    ) -> tuple[dict[str, Any], dict[str, Any]]:
+    async def judge(self, samples: list[FileSample], *, run_spot: float | None = None) -> Judged:
         return await self.run(_judge_in_worker, samples, run_spot)
 
     def close(self) -> None:
@@ -87,4 +93,4 @@ async def parse[T](pool: Pool | None, fn: Callable[..., T], /, *args: Any, **kwa
     return await pool.run(fn, *args, **kwargs)
 
 
-__all__ = ["Pool", "judge", "parse"]
+__all__ = ["Judged", "Pool", "judge", "parse"]

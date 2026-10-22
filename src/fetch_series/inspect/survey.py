@@ -34,7 +34,7 @@ from fetch_series.inspect.fetch import DEFAULT_READS, sample_file
 from fetch_series.inspect.fit import MissingInput, fit_from_detail
 from fetch_series.inspect.lists import BarcodeList
 from fetch_series.inspect.model import FileSample
-from fetch_series.inspect.pool import Pool, judge
+from fetch_series.inspect.pool import Judged, Pool, judge
 from fetch_series.inspect.references import KmerIndex
 from fetch_series.logging_utils import redact_exception
 from fetch_series.providers import sra_be
@@ -179,7 +179,7 @@ def screen_fanout(
             if any(r.kind is FileKind.SRA for r in distinct.values())
             else None
         )
-        calls: dict[tuple[str, ...], tuple[dict[str, Any], dict[str, Any]]] = {}
+        calls: dict[tuple[str, ...], Judged] = {}
         results = []
         for finding in findings:
             unit = screen_unit(reads, finding.link)
@@ -212,8 +212,8 @@ def screen_fanout(
                     if pool is not None
                     else judge(samples, lists, references, run_spot=run_spot)
                 )
-            call, verdict = calls[keys]
-            detail: dict[str, Any] = {"checks": checks, "call": call, **verdict}
+            call, verdict, measures = calls[keys]
+            detail: dict[str, Any] = {"checks": checks, "call": call, **verdict, **measures}
             results.append(
                 RouteResult.from_results(
                     accession=accession,
