@@ -34,8 +34,9 @@ class _Client:
         outcome = self.responses[url]
         if isinstance(outcome, Exception):
             raise outcome
-        status, headers = outcome
-        return httpx.Response(status_code=status, headers=headers)
+        status, headers, *final = outcome
+        request = httpx.Request("HEAD", final[0]) if final else None
+        return httpx.Response(status_code=status, headers=headers, request=request)
 
 
 class TestVerdict:
@@ -85,6 +86,23 @@ class TestVerdict:
         verdict = await verify(_record(published), client)
         assert client.seen == [escaped]
         assert verdict.resolves and verdict.record.url == published
+
+    async def test_a_link_that_redirects_to_a_directory_does_not_resolve(self):
+        """SRR11040464: ENA lists `_1.fastq.gz` with a size; its server 301s to `_1.fastq.gz/`."""
+        listed = (
+            "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR110/064/SRR11040464/SRR11040464_1.fastq.gz"
+        )
+        client = _Client({listed: (200, {"content-type": "text/html"}, listed + "/")})
+        verdict = await verify(_record(listed, size=583_713_371), client)
+        assert verdict.served_directory and not verdict.resolves
+        assert "directory" in verdict.describe()
+
+    async def test_a_redirect_to_the_file_still_resolves(self):
+        """ENA's ftp.sra.ebi.ac.uk paths answer over HTTPS after a redirect."""
+        listed = "https://example/x.fastq.gz"
+        client = _Client({listed: (200, {"content-length": "100"}, "https://mirror/x.fastq.gz")})
+        verdict = await verify(_record(listed), client)
+        assert verdict.resolves and verdict.final_url == "https://mirror/x.fastq.gz"
 
     async def test_verify_all_covers_every_record(self):
         client = _Client(

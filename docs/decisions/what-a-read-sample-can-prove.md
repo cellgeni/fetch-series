@@ -81,8 +81,9 @@ undetermined. Only a barcode read too short for that (under 58 bases) with nothi
 it is proof.
 
 **A refusal needs every listed file read** (rule `fit-5`). ENA lists SRR11040464's
-`_1.fastq.gz` with a size and an md5 and serves an empty directory at that path, and answers 403
-for one of ERR4065012's fastqs. Judged on the file that could be read, each set was refused for
+`_1.fastq.gz` with a size and an md5 and serves an empty directory at that path, and answered 403
+for one of ERR4065012's fastqs on the day it was read (throttling, it turned out: it answered
+200 the next day). Judged on the file that could be read, each set was refused for
 lacking the read the missing file most likely holds. Half a set is not positive evidence of
 absence, so such a refusal is undetermined, and its reason says which file was missing. A copy
 read as another technology is undetermined too (`fit-4`): a 10x list not holding a Parse or BD

@@ -23,6 +23,9 @@ good news — the archive fixed something.
 | [BioSample efetch ignores the accession prefix](biosample-efetch-ignores-accession-prefix.md) | NCBI | `id=SAMEA11294529` returns a rumen bacterium where a human liver sample was asked for, with HTTP 200 |
 | [ZOOMA's filter forces a term](zooma-filter-forces-a-term.md) | EBI | Constraining to an ontology selects which wrong answer you get, at confidence `GOOD` |
 | [ELink's MegaLink backend fails in bursts](megalink-backend-flakiness.md) | NCBI | A backend message inside an HTTP 200 reads as "no links": 5,107 log lines on 2026-05-11, the dominant failure signal |
+| [ENA's fastq carries Lite qualities](ena-fastq-is-lite-quality.md) | EBI | 122 of 452 NCBI runs' ENA fastqs read `?` for every quality, where NCBI serves real ones |
+| [ENA's fastq splits through the barcode read](ena-fastq-splits-the-barcode-read.md) | EBI | Two files listed, every base present, and no read starts with a cell barcode (SRR14522447) |
+| [ENA lists a fastq it does not serve](ena-serves-a-listed-fastq-wrongly.md) | EBI | 2 of 4,466 listed fastqs are empty directories behind a 301, listed with a size and an md5 |
 
 ## Known, declared, and not yet written up
 

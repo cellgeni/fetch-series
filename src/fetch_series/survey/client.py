@@ -38,6 +38,10 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 RETRYABLE_STATUS = frozenset({408, 429, 500, 502, 503, 504})
+# ENA's file server answers 403 under concurrent load and 200 a moment later:
+# 81 of 4,466 listed fastqs answered 403 in the 2026-10-23 listing census, and
+# 80 of them 200 on a re-check one at a time. Elsewhere a 403 is an answer.
+THROTTLES_WITH_403 = frozenset({"ftp.sra.ebi.ac.uk"})
 
 
 class MalformedResponseError(Exception):
@@ -70,7 +74,15 @@ def is_retryable(exc: BaseException) -> bool:
         | KeyError,
     ):
         return True
-    return isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code in RETRYABLE_STATUS
+    if not isinstance(exc, httpx.HTTPStatusError):
+        return False
+    status = exc.response.status_code
+    if status == 403:
+        try:
+            return exc.request.url.host in THROTTLES_WITH_403
+        except RuntimeError:  # an error built without its request
+            return False
+    return status in RETRYABLE_STATUS
 
 
 @dataclass(frozen=True, slots=True)

@@ -131,10 +131,21 @@ class Verdict:
     status: int | None
     served_bytes: int | None
     error: str | None = None
+    # Where the HEAD ended after redirects, when that was somewhere else.
+    final_url: str | None = None
+
+    @property
+    def served_directory(self) -> bool:
+        """The link redirects to a directory: ENA lists SRR11040464's ``_1.fastq.gz``
+        with a size and an md5, and its server answers 301 to ``_1.fastq.gz/``,
+        an empty directory listing that a followed HEAD reports as 200."""
+        return bool(
+            self.final_url and self.final_url.endswith("/") and not self.record.url.endswith("/")
+        )
 
     @property
     def resolves(self) -> bool:
-        return self.status is not None and 200 <= self.status < 300
+        return self.status is not None and 200 <= self.status < 300 and not self.served_directory
 
     @property
     def size_matches(self) -> bool | None:
@@ -145,6 +156,8 @@ class Verdict:
     def describe(self) -> str:
         if self.error:
             return f"{self.record.url} -- {self.error}"
+        if self.served_directory:
+            return f"{self.record.url} -- the server serves a directory at this path"
         if not self.resolves:
             return f"{self.record.url} -- HTTP {self.status}"
         if self.size_matches is False:
@@ -171,10 +184,15 @@ async def verify(record: FileRecord, client: SurveyClient, timeout: float = 30.0
     except Exception as exc:  # a failed request is itself the verdict
         return Verdict(record=record, status=None, served_bytes=None, error=type(exc).__name__)
     length = response.headers.get("content-length")
+    try:
+        final: str | None = str(response.url)
+    except RuntimeError:  # a response built without its request, as in tests
+        final = None
     return Verdict(
         record=record,
         status=response.status_code,
         served_bytes=int(length) if length and length.isdigit() else None,
+        final_url=final if final and final != request_url(record.url) else None,
     )
 
 

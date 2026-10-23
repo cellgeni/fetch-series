@@ -156,11 +156,14 @@ whose floor was 50, and fit since `fit-3`, which counts a 47-base read as cDNA.
 **ENA lists a file it serves as a directory.** ENA's `filereport` lists SRR11040464's
 `_1.fastq.gz` with a size (583,713,371 bytes) and an md5. At that path the FTP server serves an
 empty directory listing, behind a 301 to the same path with a trailing slash; the `_2` file
-beside it is a real 1.3 GB file. Checked again on 2026-10-23. ENA also answers 403 for one of
-ERR4065012's fastqs. Judged on the file that could be read, both sets were refused under
-`fit-3` for lacking the read the missing file most likely holds. `fit-5` makes such a set
-undetermined. SRR34482399's `_1` answers 403 as well. Nothing of its set was read, so it was
-undetermined already.
+beside it is a real 1.3 GB file. Checked again on 2026-10-23, and measured over 4,466 listed
+links on [its own page](../pathologies/ena-serves-a-listed-fastq-wrongly.md). ENA also answered
+403 for one of ERR4065012's fastqs and for SRR34482399's `_1` on 2026-10-22. Both answered 200
+the next day, so this was throttling, not a missing file, and the client now retries a 403 from
+ENA's file server. Judged on the file that could be read, ERR4065012's and SRR11040464's sets
+were refused under `fit-3` for lacking the read the missing file most likely holds. `fit-5`
+makes such a set undetermined. Nothing of SRR34482399's set was read, so it was undetermined
+already.
 
 ## What the rules got wrong, and changed
 

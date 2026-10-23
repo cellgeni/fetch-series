@@ -93,6 +93,12 @@ class TestRetryClassification:
             httpx.HTTPStatusError("e", request=response.request, response=response)
         )
 
+    def test_a_403_from_enas_file_server_is_a_throttle(self):
+        """81 of 4,466 listed fastqs answered 403 under load; 80 answered 200 a moment later."""
+        url = "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR406/002/ERR4065012/ERR4065012_2.fastq.gz"
+        response = httpx.Response(403, request=httpx.Request("GET", url))
+        assert is_retryable(httpx.HTTPStatusError("e", request=response.request, response=response))
+
     def test_value_errors_are_not_retryable(self):
         assert not is_retryable(ValueError("bad input"))
 

@@ -64,7 +64,7 @@ technologies:
 
 * **A refusal needs every listed file read.** ENA lists SRR11040464's
   ``_1.fastq.gz`` with a size and an md5, and serves an empty directory at
-  that path; ENA answers 403 for one of ERR4065012's fastqs. Judged on the file
+  that path; ENA answered 403, under load, for one of ERR4065012's. Judged on the file
   that could be read, each set was refused for lacking the read the missing
   file most likely holds. Positive evidence of absence cannot come from half a
   set, so such a refusal is undetermined, with both reasons.

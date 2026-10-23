@@ -146,6 +146,9 @@ nav:
           - BioSample efetch ignores the accession prefix: pathologies/biosample-efetch-ignores-accession-prefix.md
           - ZOOMA's filter forces a term: pathologies/zooma-filter-forces-a-term.md
           - ELink MegaLink failures: pathologies/megalink-backend-flakiness.md
+          - ENA fastq carries Lite qualities: pathologies/ena-fastq-is-lite-quality.md
+          - ENA fastq splits through the barcode read: pathologies/ena-fastq-splits-the-barcode-read.md
+          - ENA lists a fastq it does not serve: pathologies/ena-serves-a-listed-fastq-wrongly.md
       - Upstream reports:
           - Overview: upstream/index.md
           - NCBI ELink gds to sra: upstream/ncbi-elink-gds-sra.md
@@ -154,6 +157,7 @@ nav:
           - EBI ArrayExpress SDRF URIs: upstream/ebi-arrayexpress-sdrf-mirror-uris.md
           - NCBI BioSample efetch prefix: upstream/ncbi-biosample-efetch-accession-prefix.md
           - DDBJ Search mirrored SRA links: upstream/ddbj-search-mirrored-sra-links.md
+          - ENA listed and Lite-derived fastqs: upstream/ebi-ena-fastq-files-not-as-listed.md
       # Earlier exploration notes, kept because they record how each finding was
       # reached. Superseded by the per-route pages.
       - Archive notes:

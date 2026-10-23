@@ -1090,7 +1090,12 @@ ROUTES: list[Route] = [
         provider="ena_portal",
         summary="ENA fastq_ftp/fastq_md5/fastq_bytes columns; ENA's own derived fastqs.",
         kb_page="routes/run-to-file/index.md",
-        known_pathologies=("ena-paired-library-single-fastq",),
+        known_pathologies=(
+            "ena-paired-library-single-fastq",
+            "ena-fastq-is-lite-quality",
+            "ena-fastq-splits-the-barcode-read",
+            "ena-serves-a-listed-fastq-wrongly",
+        ),
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         proves_data_exists=True,
         evidence=RouteEvidence(
