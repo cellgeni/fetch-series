@@ -318,8 +318,6 @@ PATHOLOGY_BACKLOG: frozenset[str] = frozenset(
         "superseries-carries-no-bioproject",
         "experiments-outside-the-series-bioproject",
         # EBI.
-        "ae-idf-missing-secondary-accession",
-        "biostudies-silent-25-item-default",
     }
 )
 

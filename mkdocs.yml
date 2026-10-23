@@ -151,6 +151,8 @@ nav:
           - ENA lists a fastq it does not serve: pathologies/ena-serves-a-listed-fastq-wrongly.md
           - ESummary refuses more than 500 UIDs: pathologies/esummary-500-uid-limit.md
           - SRA's ESummary buries its accessions: pathologies/esummary-sra-buries-accessions-in-expxml.md
+          - An IDF does not declare its ENA study: pathologies/ae-idf-missing-secondary-accession.md
+          - BioStudies lists 25 files by default: pathologies/biostudies-silent-25-item-default.md
       - Upstream reports:
           - Overview: upstream/index.md
           - NCBI ELink gds to sra: upstream/ncbi-elink-gds-sra.md

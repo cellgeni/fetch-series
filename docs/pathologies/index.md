@@ -28,11 +28,13 @@ good news — the archive fixed something.
 | [ENA lists a fastq it does not serve](ena-serves-a-listed-fastq-wrongly.md) | EBI | 2 of 4,466 listed fastqs are empty directories behind a 301, listed with a size and an md5 |
 | [ESummary refuses more than 500 UIDs](esummary-500-uid-limit.md) | NCBI | The refusal arrives inside an HTTP 200 with no `result`, which reads as "nothing found" |
 | [SRA's ESummary buries its accessions](esummary-sra-buries-accessions-in-expxml.md) | NCBI | Every accession is inside an XML string in the JSON; reading fields finds none |
+| [An IDF does not declare its ENA study](ae-idf-missing-secondary-accession.md) | EBI | 551 of 20,693 ArrayExpress studies with an ENA link name none in the IDF |
+| [BioStudies lists 25 files by default](biostudies-silent-25-item-default.md) | EBI | A study with 43 files appears to register 25, unless `pagination.total` is read |
 
 ## Known, declared, and not yet written up
 
 A route can declare a behaviour it exhibits before that behaviour has a page.
-Seven do, and they are listed in `PATHOLOGY_BACKLOG` in `graph.py` rather than
+Five do, and they are listed in `PATHOLOGY_BACKLOG` in `graph.py` rather than
 left implicit — `--explain` names them and says *"not yet written up"* instead
 of offering a path to a file that does not exist.
 
@@ -43,8 +45,6 @@ of offering a path to a file that does not exist.
 | `sra-be-timeout-on-large-projects` | NCBI | PRJEB9859, PRJEB82511, PRJEB19038 |
 | `superseries-carries-no-bioproject` | GEO | a SuperSeries records none of its own |
 | `experiments-outside-the-series-bioproject` | GEO | the project holds runs belonging to other series |
-| `ae-idf-missing-secondary-accession` | EBI | 551 of 20,693; [measured](../routes/ae-experiment-to-study/index.md) |
-| `biostudies-silent-25-item-default` | EBI | the files endpoint returns 25 of however many, silently |
 
 Every one is real and observed. What each lacks is the **page contract** above:
 a curl reproducer, a machine-readable affected-accession list, and a matching
