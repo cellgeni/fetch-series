@@ -315,8 +315,6 @@ PATHOLOGY_BACKLOG: frozenset[str] = frozenset(
         # SRA backend CGI.
         "sra-be-timeout-on-large-projects",
         # GEO record modelling.
-        "superseries-carries-no-bioproject",
-        "experiments-outside-the-series-bioproject",
         # EBI.
     }
 )
@@ -638,7 +636,6 @@ ROUTES: list[Route] = [
         summary="!Series_relation = BioProject: from the SOFT family file.",
         kb_page="routes/gse-to-bioproject/soft-family.md",
         cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
-        known_pathologies=("superseries-carries-no-bioproject",),
         evidence=RouteEvidence(
             corpus="reprocessed-gse",
             surveyed_on=date(2026, 9, 15),
