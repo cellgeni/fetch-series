@@ -24,11 +24,11 @@ pipeline (``starsolo_10x_auto.sh``) settles the same question by mapping
 200,000 reads both ways.
 
 A block says whether its layout has been checked against what that pipeline
-used (``VALIDATION``): on the held-out half of its past STARsolo runs
-(``docs/benchmarks/inspect-vs-starsolo-2026-10.md``), every one of 357 blocks
-named the whitelist the pipeline used, and every one of 333 with a
-``soloStrand`` named its strand. A layout no held-out sample was called as is
-unvalidated, and says so.
+used (``VALIDATION``): on a fresh held-out draw of its past STARsolo runs, read
+once under classifier 0.4.0 (``docs/benchmarks/inspect-vs-starsolo-2026-10.md``),
+every one of 404 blocks named the whitelist the pipeline used, and every one of
+386 with a ``soloStrand`` named its strand. A layout no held-out sample was
+called as is unvalidated, and says so.
 """
 
 from __future__ import annotations
@@ -55,38 +55,53 @@ UNVALIDATED = (
     "not yet compared with the reprocessing pipeline's own STARsolo runs: "
     "check the first run's Summary.csv"
 )
-# Blocks set beside the reprocessing pipeline's own STARsolo runs, held-out
-# half, 2026-10-22: per layout, the samples, the blocks whose whitelist was the
-# pipeline's, and the blocks whose soloStrand was (or that omitted it).
+# Blocks set beside the reprocessing pipeline's own STARsolo runs: the second
+# held-out draw, read once under classifier 0.4.0 on 2026-10-23. Per layout, the
+# samples, the blocks whose whitelist was the pipeline's, the blocks whose
+# soloStrand was (or that omitted it), and the blocks whose layout implies the
+# other strand from the one the pipeline found (ERS5577770: 3' v3 at HIGH,
+# soloStrand omitted, mapped Reverse).
 VALIDATION_SOURCE = "docs/benchmarks/inspect-vs-starsolo-2026-10.md"
 VALIDATION = {
+    "10x_3p_v1": {
+        "samples": 1,
+        "blocks": 1,
+        "same_list": 1,
+        "same_strand": 1,
+        "strand_omitted": 0,
+        "layout_other_strand": 0,
+    },
     "10x_3p_v2": {
-        "samples": 175,
-        "blocks": 261,
-        "same_list": 261,
-        "same_strand": 256,
-        "strand_omitted": 5,
+        "samples": 182,
+        "blocks": 272,
+        "same_list": 272,
+        "same_strand": 270,
+        "strand_omitted": 2,
+        "layout_other_strand": 0,
     },
     "10x_3p_v3_family": {
-        "samples": 47,
-        "blocks": 76,
-        "same_list": 76,
-        "same_strand": 66,
-        "strand_omitted": 10,
+        "samples": 56,
+        "blocks": 92,
+        "same_list": 92,
+        "same_strand": 87,
+        "strand_omitted": 5,
+        "layout_other_strand": 3,
     },
     "10x_5p_v1_v2": {
-        "samples": 12,
-        "blocks": 17,
-        "same_list": 17,
-        "same_strand": 8,
-        "strand_omitted": 9,
+        "samples": 21,
+        "blocks": 34,
+        "same_list": 34,
+        "same_strand": 23,
+        "strand_omitted": 11,
+        "layout_other_strand": 0,
     },
     "10x_multiome_arc_gex": {
         "samples": 2,
-        "blocks": 3,
-        "same_list": 3,
-        "same_strand": 3,
+        "blocks": 5,
+        "same_list": 5,
+        "same_strand": 5,
         "strand_omitted": 0,
+        "layout_other_strand": 0,
     },
 }
 
@@ -339,6 +354,11 @@ def _validation(layout_id: str) -> dict[str, Any]:
             f"the same whitelist in {measured['same_list']} of {measured['blocks']} blocks, "
             f"the same strand in {measured['same_strand']} of "
             f"{measured['blocks'] - measured['strand_omitted']} that named one"
+            + (
+                f"; in {measured['layout_other_strand']} the layout implies the other strand"
+                if measured["layout_other_strand"]
+                else ""
+            )
         ),
     }
 

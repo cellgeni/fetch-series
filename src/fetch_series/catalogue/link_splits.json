@@ -14308,14 +14308,14 @@
     "screened": {
      "reads": 100000,
      "inspected": 300,
-     "fit": 253,
+     "fit": 265,
      "unfit": 4,
-     "undetermined": 43,
+     "undetermined": 31,
      "layouts": {
-      "10x_3p_v2": 10,
+      "10x_3p_v2": 12,
       "10x_3p_v3_family": 226,
       "10x_3p_v4_gemx": 12,
-      "10x_5p_v1_v2": 33,
+      "10x_5p_v1_v2": 43,
       "10x_multiome_arc_gex": 1
      }
     }
@@ -14580,14 +14580,14 @@
     "screened": {
      "reads": 100000,
      "inspected": 297,
-     "fit": 250,
+     "fit": 262,
      "unfit": 4,
-     "undetermined": 43,
+     "undetermined": 31,
      "layouts": {
-      "10x_3p_v2": 10,
+      "10x_3p_v2": 12,
       "10x_3p_v3_family": 223,
       "10x_3p_v4_gemx": 12,
-      "10x_5p_v1_v2": 33,
+      "10x_5p_v1_v2": 43,
       "10x_multiome_arc_gex": 1
      }
     }
@@ -14624,14 +14624,14 @@
     "screened": {
      "reads": 100000,
      "inspected": 297,
-     "fit": 250,
+     "fit": 262,
      "unfit": 4,
-     "undetermined": 43,
+     "undetermined": 31,
      "layouts": {
-      "10x_3p_v2": 10,
+      "10x_3p_v2": 12,
       "10x_3p_v3_family": 223,
       "10x_3p_v4_gemx": 12,
-      "10x_5p_v1_v2": 33,
+      "10x_5p_v1_v2": 43,
       "10x_multiome_arc_gex": 1
      }
     }
@@ -14668,14 +14668,14 @@
     "screened": {
      "reads": 100000,
      "inspected": 297,
-     "fit": 250,
+     "fit": 262,
      "unfit": 4,
-     "undetermined": 43,
+     "undetermined": 31,
      "layouts": {
-      "10x_3p_v2": 10,
+      "10x_3p_v2": 12,
       "10x_3p_v3_family": 223,
       "10x_3p_v4_gemx": 12,
-      "10x_5p_v1_v2": 33,
+      "10x_5p_v1_v2": 43,
       "10x_multiome_arc_gex": 1
      }
     }
@@ -14712,14 +14712,14 @@
     "screened": {
      "reads": 100000,
      "inspected": 300,
-     "fit": 253,
+     "fit": 265,
      "unfit": 4,
-     "undetermined": 43,
+     "undetermined": 31,
      "layouts": {
-      "10x_3p_v2": 10,
+      "10x_3p_v2": 12,
       "10x_3p_v3_family": 226,
       "10x_3p_v4_gemx": 12,
-      "10x_5p_v1_v2": 33,
+      "10x_5p_v1_v2": 43,
       "10x_multiome_arc_gex": 1
      }
     }
@@ -14756,14 +14756,14 @@
     "screened": {
      "reads": 100000,
      "inspected": 300,
-     "fit": 253,
+     "fit": 265,
      "unfit": 4,
-     "undetermined": 43,
+     "undetermined": 31,
      "layouts": {
-      "10x_3p_v2": 10,
+      "10x_3p_v2": 12,
       "10x_3p_v3_family": 226,
       "10x_3p_v4_gemx": 12,
-      "10x_5p_v1_v2": 33,
+      "10x_5p_v1_v2": 43,
       "10x_multiome_arc_gex": 1
      }
     }
@@ -14926,13 +14926,13 @@
     "screened": {
      "reads": 100000,
      "inspected": 79,
-     "fit": 52,
+     "fit": 53,
      "unfit": 4,
-     "undetermined": 23,
+     "undetermined": 22,
      "layouts": {
       "10x_3p_v2": 4,
       "10x_3p_v3_family": 47,
-      "10x_5p_v1_v2": 15,
+      "10x_5p_v1_v2": 16,
       "10x_multiome_arc_gex": 1
      }
     }
@@ -15436,13 +15436,13 @@
     "screened": {
      "reads": 100000,
      "inspected": 297,
-     "fit": 223,
+     "fit": 234,
      "unfit": 2,
-     "undetermined": 72,
+     "undetermined": 61,
      "layouts": {
-      "10x_3p_v2": 40,
+      "10x_3p_v2": 48,
       "10x_3p_v3_family": 150,
-      "10x_5p_v1_v2": 57,
+      "10x_5p_v1_v2": 62,
       "10x_multiome_arc_gex": 6
      }
     }
@@ -15479,13 +15479,13 @@
     "screened": {
      "reads": 100000,
      "inspected": 298,
-     "fit": 223,
+     "fit": 234,
      "unfit": 2,
-     "undetermined": 73,
+     "undetermined": 62,
      "layouts": {
-      "10x_3p_v2": 40,
+      "10x_3p_v2": 48,
       "10x_3p_v3_family": 151,
-      "10x_5p_v1_v2": 57,
+      "10x_5p_v1_v2": 62,
       "10x_multiome_arc_gex": 6
      }
     }
@@ -15522,13 +15522,13 @@
     "screened": {
      "reads": 100000,
      "inspected": 297,
-     "fit": 223,
+     "fit": 234,
      "unfit": 2,
-     "undetermined": 72,
+     "undetermined": 61,
      "layouts": {
-      "10x_3p_v2": 40,
+      "10x_3p_v2": 48,
       "10x_3p_v3_family": 150,
-      "10x_5p_v1_v2": 57,
+      "10x_5p_v1_v2": 62,
       "10x_multiome_arc_gex": 6
      }
     }
@@ -15565,13 +15565,13 @@
     "screened": {
      "reads": 100000,
      "inspected": 299,
-     "fit": 92,
+     "fit": 98,
      "unfit": 1,
-     "undetermined": 206,
+     "undetermined": 200,
      "layouts": {
-      "10x_3p_v2": 18,
+      "10x_3p_v2": 22,
       "10x_3p_v3_family": 77,
-      "10x_5p_v1_v2": 9,
+      "10x_5p_v1_v2": 13,
       "10x_multiome_arc_gex": 3
      }
     }
@@ -15608,13 +15608,13 @@
     "screened": {
      "reads": 100000,
      "inspected": 299,
-     "fit": 223,
+     "fit": 234,
      "unfit": 2,
-     "undetermined": 74,
+     "undetermined": 63,
      "layouts": {
-      "10x_3p_v2": 40,
+      "10x_3p_v2": 48,
       "10x_3p_v3_family": 151,
-      "10x_5p_v1_v2": 57,
+      "10x_5p_v1_v2": 62,
       "10x_multiome_arc_gex": 6
      }
     }
@@ -16283,14 +16283,14 @@
     "screened": {
      "reads": 100000,
      "inspected": 291,
-     "fit": 233,
+     "fit": 241,
      "unfit": 6,
-     "undetermined": 52,
+     "undetermined": 44,
      "layouts": {
-      "10x_3p_v2": 49,
+      "10x_3p_v2": 51,
       "10x_3p_v3_family": 166,
       "10x_3p_v4_gemx": 1,
-      "10x_5p_v1_v2": 33,
+      "10x_5p_v1_v2": 39,
       "10x_5p_v3_gemx": 1,
       "10x_multiome_arc_gex": 10
      }
@@ -16328,14 +16328,14 @@
     "screened": {
      "reads": 100000,
      "inspected": 292,
-     "fit": 234,
+     "fit": 242,
      "unfit": 6,
-     "undetermined": 52,
+     "undetermined": 44,
      "layouts": {
-      "10x_3p_v2": 49,
+      "10x_3p_v2": 51,
       "10x_3p_v3_family": 167,
       "10x_3p_v4_gemx": 1,
-      "10x_5p_v1_v2": 33,
+      "10x_5p_v1_v2": 39,
       "10x_5p_v3_gemx": 1,
       "10x_multiome_arc_gex": 10
      }
@@ -16373,14 +16373,14 @@
     "screened": {
      "reads": 100000,
      "inspected": 291,
-     "fit": 233,
+     "fit": 241,
      "unfit": 6,
-     "undetermined": 52,
+     "undetermined": 44,
      "layouts": {
-      "10x_3p_v2": 49,
+      "10x_3p_v2": 51,
       "10x_3p_v3_family": 166,
       "10x_3p_v4_gemx": 1,
-      "10x_5p_v1_v2": 33,
+      "10x_5p_v1_v2": 39,
       "10x_5p_v3_gemx": 1,
       "10x_multiome_arc_gex": 10
      }
@@ -16418,13 +16418,13 @@
     "screened": {
      "reads": 100000,
      "inspected": 299,
-     "fit": 117,
+     "fit": 124,
      "unfit": 5,
-     "undetermined": 177,
+     "undetermined": 170,
      "layouts": {
-      "10x_3p_v2": 41,
+      "10x_3p_v2": 43,
       "10x_3p_v3_family": 79,
-      "10x_5p_v1_v2": 12,
+      "10x_5p_v1_v2": 17,
       "10x_multiome_arc_gex": 1
      }
     }
@@ -16461,14 +16461,14 @@
     "screened": {
      "reads": 100000,
      "inspected": 299,
-     "fit": 237,
+     "fit": 245,
      "unfit": 7,
-     "undetermined": 55,
+     "undetermined": 47,
      "layouts": {
-      "10x_3p_v2": 49,
+      "10x_3p_v2": 51,
       "10x_3p_v3_family": 171,
       "10x_3p_v4_gemx": 1,
-      "10x_5p_v1_v2": 33,
+      "10x_5p_v1_v2": 39,
       "10x_5p_v3_gemx": 1,
       "10x_multiome_arc_gex": 11
      }

@@ -4,10 +4,12 @@ title: Content survey, 2026-10
 
 # Content survey, 2026-10
 
-**Instrument:** classifier 0.2.1, fit rule `fit-5`, the first 100,000 reads of each file.
+**Instrument:** classifier 0.4.0, fit rule `fit-5`, the first 100,000 reads of each file.
 **Run:** read 2026-10-22 and 23 (UTC) under `fit-3`, then judged again under `fit-5` from what
-each verdict recorded, without reading anything twice. The first run, 2026-10-20 under
-`fit-2`, is in git history. **Data:** the `screen_100000_*` exports in
+each verdict recorded, without reading anything twice. On 2026-10-23 every call was decided
+again under classifier 0.4.0 from its recorded evidence (`fetch inspect survey --recall`), and
+judged again; nothing was read. What that changed is [below](#what-classifier-040-changed). The first
+run, 2026-10-20 under `fit-2`, is in git history. **Data:** the `screen_100000_*` exports in
 `data/surveys/sample_500@sample_3000@reprocessed-srr/`,
 `data/surveys/sample_300@node_run_ddbj@reprocessed-srr/`,
 `data/surveys/sample_300@node_run_ebi@reprocessed-srr/` and
@@ -56,14 +58,14 @@ The reads of ENA's fastq, for the runs both cover:
 | ENA's listing in the census | Fit | Unfit | Undetermined |
 |---|---:|---:|---:|
 | one fastq | 0 | **183** | 0 |
-| two or more | 234 | 1 | 56 |
+| two or more | 244 | 1 | 46 |
 
 **All 183 single-fastq runs are proven unusable by their reads**: 176 because no read starts
 with a listed barcode, and 7 because no read is long enough to be the cDNA. One run with two
-fastqs is unfit too: SRR14522447 (below). The 56 undetermined are:
+fastqs is unfit too: SRR14522447 (below). The 46 undetermined are:
 
 - libraries that are not gene expression (36: feature barcode, VDJ, CRISPR);
-- calls the classifier left ambiguous (17);
+- calls the classifier left ambiguous (7);
 - SRR26701885, whose only long read is a 107-base barcode read;
 - SRR11040464 and SRR34482399, sets with a listed fastq that cannot be read (below).
 
@@ -79,26 +81,26 @@ NCBI-submitted runs, from the main draw (457 runs):
 
 | Source | Runs listed | Fit | Unfit | Undetermined |
 |---|---:|---:|---:|---:|
-| ENA fastq (`ena_filereport_fastq`) | 452 | 219 | 183 | 50 |
-| Normalized object (`sdl`) | 457 | 366 | 3 | 88 |
-| Lite object (`sdl_lite`) | 450 | 359 | 4 | 87 |
-| DDBJ's mirror (`ddbj_entry_sra`) | 452 | 163 | 3 | 286 |
+| ENA fastq (`ena_filereport_fastq`) | 452 | 226 | 183 | 43 |
+| Normalized object (`sdl`) | 457 | 383 | 3 | 71 |
+| Lite object (`sdl_lite`) | 450 | 376 | 4 | 70 |
+| DDBJ's mirror (`ddbj_entry_sra`) | 452 | 171 | 3 | 278 |
 | Submitted originals (`sdl_original`) | 453 | 3 | 0 | 450 |
 
 EBI-submitted runs, from the top-up (300 runs):
 
 | Source | Runs listed | Fit | Unfit | Undetermined |
 |---|---:|---:|---:|---:|
-| ENA submitted fastq | 233 | 173 | 3 | 57 |
-| ENA submitted CRAM | 61 | 44 | 0 | 17 |
-| ENA BAM | 79 | 52 | 4 | 23 |
-| ENA fastq | 147 | 101 | 2 | 44 |
-| Normalized object (`sdl`) | 300 | 223 | 2 | 75 |
-| DDBJ's mirror (`ddbj_entry_sra`) | 299 | 92 | 1 | 206 |
+| ENA submitted fastq | 233 | 178 | 3 | 52 |
+| ENA submitted CRAM | 61 | 50 | 0 | 11 |
+| ENA BAM | 79 | 53 | 4 | 22 |
+| ENA fastq | 147 | 109 | 2 | 36 |
+| Normalized object (`sdl`) | 300 | 234 | 2 | 64 |
+| DDBJ's mirror (`ddbj_entry_sra`) | 299 | 98 | 1 | 200 |
 
 DDBJ-submitted runs, from the top-up (300 runs): DDBJ's fastq, ENA's fastq, and the
-Normalized and Lite objects agree on every run where both were read. 253 runs are fit
-everywhere, 4 are unfit everywhere, and the other 43 are undetermined everywhere. ENA lists no
+Normalized and Lite objects agree on every run where both were read. 265 runs are fit
+everywhere, 4 are unfit everywhere, and the other 31 are undetermined everywhere. ENA lists no
 fastq for 22 of the 300.
 
 The full per-link tables, Lite and Normalized separately and every mechanism, are what the
@@ -111,14 +113,14 @@ draw:
 
 | ENA fastq ↓ / Normalized object → | Fit | Unfit | Undetermined |
 |---|---:|---:|---:|
-| fit | 234 | 0 | 0 |
-| unfit | **142** | 4 | 38 |
-| undetermined | 2 | 0 | 54 |
+| fit | 244 | 0 | 0 |
+| unfit | **152** | 4 | 28 |
+| undetermined | 2 | 0 | 44 |
 
-For 142 runs ENA's fastq is unfit and the Normalized object of the same run is fit. Of the
-38 where the object is undetermined, 18 are calls the classifier left ambiguous and 18 are
+For 152 runs ENA's fastq is unfit and the Normalized object of the same run is fit. Of the
+28 where the object is undetermined, 8 are calls the classifier left ambiguous and 18 are
 feature-barcode or VDJ libraries, undetermined by rule. The other two are SRR12103517 and
-SRR9105023, below. Where both were called, ENA and NCBI name the same kit on all 265 runs.
+SRR9105023, below. Where both were called, ENA and NCBI name the same kit on all 277 runs.
 
 **ENA's fastq is often Lite.** The qualities of ENA's fastq are substituted, two values or
 fewer throughout, for 122 of the 452 NCBI runs and 22 of the 278 DDBJ runs. That is what an
@@ -164,6 +166,38 @@ ENA's file server. Judged on the file that could be read, ERR4065012's and SRR11
 were refused under `fit-3` for lacking the read the missing file most likely holds. `fit-5`
 makes such a set undetermined. Nothing of SRR34482399's set was read, so it was undetermined
 already.
+
+## What classifier 0.4.0 changed
+
+Every call above was first made by classifier 0.3.x. On 2026-10-23 each was decided again
+under [0.4.0](inspect-vs-starsolo-2026-10.md#classifier-040-thresholds-set-on-the-design-half)
+from the evidence it recorded, and judged again under `fit-5`. Nothing was read. Of the
+11,060 verdicts across the four corpora that recorded a call:
+
+| Change | Verdicts | Runs |
+|---|---:|---:|
+| strand: unstranded → sense | 593 | 93 |
+| strand: unstranded → antisense | 308 | 45 |
+| level: ambiguous → HIGH | 270 | 42 |
+| level: ambiguous → MEDIUM | 107 | 19 |
+| level: ambiguous → LOW | 6 | 1 |
+| layout: none → 5′ v1/v2 | 247 | 37 |
+| layout: none → 3′ v2 | 136 | 19 |
+| fit: undetermined → fit | 351 | 51 |
+| level: HIGH → MEDIUM | 13 | 2 |
+
+- **No call changed from one kit to another, and no verdict became unfit.** Every change
+  settles something 0.3.x left open, except the last row.
+- **The last row is a contradiction made visible.** ERR15405674 (3′ v2) and SRR33006063 (3′
+  v3) now read antisense on the housekeeping genes, with poly-A undecided. Under 0.3.x the
+  undecided poly-A vote left them unstranded. A 3′ layout read antisense is a contradiction, so
+  each call drops to MEDIUM and says why. Neither has been set beside the pipeline's own
+  mapping, so which signal is right is not known.
+- **The TSO rule for library type changed nothing here.** These verdicts were recorded before
+  0.4.0 measured the TSO share, so the rule has nothing to decide on. A run read again would
+  record it.
+
+The tables on this page are the 0.4.0 ones. The 0.3.x ones are in git history.
 
 ## What the rules got wrong, and changed
 

@@ -153,6 +153,8 @@ class TestMapping:
         }
         assert made["cellranger_chemistry"] == "SC3Pv3" and made["validated"] is True
         assert made["validation"]["same_list"] == made["validation"]["blocks"]
+        # The held-out draw's one layout-class disagreement is said, not averaged away.
+        assert "implies the other strand" in made["note"]
         assert made["starsolo_args"].startswith("--readFilesIn x x --soloType CB_UMI_Simple")
 
     def test_a_bams_reads_go_by_the_names_its_conversion_gives(self):

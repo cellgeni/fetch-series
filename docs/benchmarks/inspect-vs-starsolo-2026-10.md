@@ -7,10 +7,12 @@ title: fetch inspect against past STARsolo runs
 **What was measured:** whether the mapping block `fetch inspect` emits names the whitelist
 and strand the reprocessing pipeline actually used, how its listed-barcode rate compares
 with STARsolo's valid barcodes, and whether a sample the pipeline mapped is ever refused.
-**Instrument:** classifier 0.3.0 and 0.3.1 (each row records which), fit rule `fit-4`, the
-first 100,000 reads of each file.
+**Instrument:** the first held-out draw, classifier 0.3.0 and 0.3.1 (each row records
+which) and fit rule `fit-4`; the second, classifier 0.4.0 and `fit-5`. The first 100,000 reads
+of each file.
 **Data:** `data/benchmarks/inspect/starsolo-2026-10-22/` (`truth.csv`, `draw-heldout.csv`,
-`calls-heldout-*.csv`, `summary-heldout.json`).
+`calls-heldout-*.csv`, `summary-heldout.json`; `draw-design.csv`, `calls-design-*.csv`,
+`tune-design.csv`; `draw-heldout2.csv`, `calls-heldout2-*.csv`, `summary-heldout2.json`).
 **Regenerate:** `fetch inspect truth import <bundle>`, `scripts/inspect_vs_starsolo.py`,
 `scripts/inspect_vs_starsolo_report.py`.
 
@@ -148,14 +150,128 @@ unchanged under 0.4.0.
 0.4.0 is scored once, on a fresh held-out draw that excludes every sample and, where
 possible, every dataset read before. That result is in the next section.
 
+## Classifier 0.4.0 on a fresh held-out draw (2026-10-23)
+
+**The draw.** 300 held-out samples named by an accession, one per dataset, seeded
+(`draw-heldout2.csv`). None was in the first draw. The held-out half holds 362 such datasets,
+so 243 of the 300 datasets were also in the first draw, through a different sample. The
+pipeline used v2 for 233, v3 for 62, v1 for 2, the Multiome list for 2, and named no list for
+1. Its strand is Forward for 269 and Reverse for 31, and it mapped 15 as a pair.
+
+**Read once, after the thresholds were frozen.** Every copy was read on 2026-10-23 under
+0.4.0 and `fit-5`, and scored with `scripts/inspect_vs_starsolo_report.py --split heldout2`.
+Nothing was changed after the read. Five samples resolved to no run, so 295 were read.
+
+**The whitelist.** Where the reads named a list, it was the pipeline's every time:
+
+| | Samples |
+|---|---:|
+| the same list | **285** |
+| a different list | **0** |
+| no call from the reads | 9 |
+| the pipeline named no list (`Undef`) | 1 |
+
+**The mapping block.** 404 blocks were emitted for 262 samples:
+
+- **Every one of the 404 names the pipeline's whitelist.**
+- **Every one of the 386 that names a `soloStrand` names the pipeline's strand.**
+- 18 leave the strand out. None guesses it.
+
+| Layout | Samples | Blocks | Same list | Same strand | Strand left out |
+|---|---:|---:|---:|---:|---:|
+| 3′ v1 | 1 | 1 | 1 | 1 | 0 |
+| 3′ v2 | 182 | 272 | 272 | 270 | 2 |
+| 3′ v3 family | 56 | 92 | 92 | 87 | 5 |
+| 5′ v1/v2 | 21 | 34 | 34 | 23 | 11 |
+| Multiome GEX | 2 | 5 | 5 | 5 | 0 |
+
+This table is now `readiness.VALIDATION`, replacing the first draw's, because it scores the
+classifier that makes the blocks.
+
+**One layout contradicts the pipeline's strand.** ERS5577770 (E-MTAB-9964) is called 3′ v3 at
+HIGH in all three copies, and the pipeline mapped it Reverse. Its block leaves `soloStrand`
+out, because its strand signals disagree. The housekeeping genes read antisense, 1,697 to 630,
+and poly-A reads sense, 2,126 to 79. Its cDNA reads start with the TSO in 64% of reads. The
+pipeline's mapping assigned 16% of its reads uniquely to genes, against a median of 74%
+on this draw. So neither instrument reads this library cleanly. The block is counted
+as found: VALIDATION records its three blocks as `layout_other_strand`, and a v3 block's note
+says so.
+
+**Where no block was emitted.** 33 samples:
+
+| Why | Samples | First draw |
+|---|---:|---:|
+| gene expression, ambiguous between 3′ v2 and 5′ v1/v2 | **7** | 32 |
+| called VDJ | 8 | 6 |
+| called feature barcode | 7 | 12 |
+| no 10x layout | 10 | 10 |
+| a LOW call | 1 | 1 |
+
+**Ambiguity fell from 32 of 297 samples to 7 of 295**, with no list or `soloStrand`
+disagreement. The pipeline mapped 6 of the 7 Forward and 1 Reverse.
+
+**Library type is the new gap.** The pipeline mapped all 8 VDJ-called samples to genes.
+
+- **Five read as B-cell libraries.** Their cDNA reads hit the immunoglobulin constant regions
+  in 16–42% of reads.
+    - Three are called 3′: ERS5345971 (3′ v3), GSM4200472 and GSM3516678 (3′ v2). A 10x V(D)J
+      library is 5′, so a 3′ layout called VDJ is wrong.
+    - These look like gene-expression libraries from plasma-cell-rich tissue.
+- **Three read as T-cell libraries:** GSM3148580, GSM3440855 and ERS5208982. All are 5′ with
+  150-base reads, and the pipeline reports saturation of 0.85 to 0.98. They look like
+  TCR-enriched libraries the pipeline mapped as gene expression, but that is not settled.
+
+The VDJ bar (`VDJ_SHARE`, 0.15) has never been set on a labelled set. It is not changed after
+this read. A next classifier version would set it on the design half and be scored on samples
+not yet read.
+
+Of the 7 feature-barcode calls:
+
+- three are samples the pipeline mapped to almost nothing: GeneFull unique 0.004 or less;
+- one has a GeneFull value of 5.88 in the pipeline's table, which is not a fraction;
+- three the pipeline mapped at 0.17, 0.42 and 0.70.
+
+**The paired 5′ form.** The pipeline mapped 14 of the Reverse samples read as a pair.
+
+- **8 of the 14 got `starsolo_paired`.**
+- **5 of the 14 got no block at all**, because they were called VDJ.
+- **ERS6306681 is read from a BAM.** Cell Ranger keeps only the barcode and UMI of R1 in its
+  tags, so the rebuilt read is 26 bases and the paired form cannot apply.
+
+Of the 16 mapped single-end, one was offered the paired form: ERS5142615 (E-MTAB-9455),
+151 + 151. Why the pipeline did not pair it is not known. Its single-end block leaves
+`soloStrand` out.
+
+**Fit.**
+- 261 samples had a fit copy.
+- 18 had every copy undetermined.
+- 13 had one copy refused and the others undetermined.
+- **3 had every copy refused.**
+    - GSM3602376: the pipeline named no list (`Undef`), as for both of the first draw's.
+    - **GSM2928382 (SRR6459192): a reader bug.** Its submitted BAM's header rebuilds R1 from
+      `CR`, `UR` and `TR`. Cell Ranger writes `TR` only on reads it trimmed. The BAM reader
+      dropped every read that lacked a tag the header names, so it rebuilt no R1, and the
+      BAM was refused for having no barcode. Every other copy of the run holds only the index
+      and cDNA reads. The fix is a separate change, and this draw does not score it.
+    - **GSM4013119 (SRR9917129): one run of eight.** It holds 17,067 spots, read to the end,
+      and its 26-base read matches no list. The pipeline maps a sample's eight runs together,
+      so the run read here does not stand for the sample.
+
+**The listed-barcode rate against STARsolo's valid barcodes.** Over 285 samples:
+
+- the median difference is 0.0009;
+- 277 are within 0.05;
+- the correlation is 0.71.
+
 ## What this does not show
 
-- **A fraction of the record, by design.** 300 samples, one run each, from one half.
+- **A fraction of the record, by design.** Two draws of 300 samples, one run each, from one
+  half. A sample of several runs is judged on the one read.
 - **Only what the pipeline chose, not whether it chose right.** Agreement with the
   pipeline's whitelist and strand says the block reproduces what the pipeline did, which
   mapped. It is not independent ground truth about the kit.
-- **Paired mode.** For a 5′ library whose barcode read is longer than 50 bases, the pipeline
-  maps R1 and R2 as a pair (`--soloBarcodeMate 1 --clip5pNbases 39 0`). The block describes
-  single-end mapping only, and this comparison scores its strand against the pipeline's test,
-  not against how the pair was mapped.
+- **Paired mode, offered rather than chosen.** For a 5′ library whose barcode read is longer
+  than 50 bases, the pipeline maps R1 and R2 as a pair (`--soloBarcodeMate 1 --clip5pNbases 39
+  0`). Since 0.4.0 the block offers that form as `starsolo_paired`, beside the single-end one.
+  The second draw shows when it is offered, not that it maps better.
 - **GEM-X layouts** (3′ v4, 5′ v3) appear in no held-out sample: the bundle predates them.
