@@ -27,6 +27,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from fetch_series.inspect.classify import TSO_CORE
 from fetch_series.inspect.classify.layouts import BY_ID
 from fetch_series.inspect.model import FileSample
 from fetch_series.inspect.readiness import barcode_hit
@@ -40,11 +41,10 @@ CHAIN_SHARE = 0.8
 # Provisional: the share of feature reads carrying a set's tags that names it.
 MULTIPLEX_SHARE = 0.5
 TAG_LENGTH = 15
-# 10x's template-switch oligo, past its first bases. A gene-expression
-# library's TSO artefacts make its cDNA reads start alike, which reads as a
-# feature library's few tags: SRR30069691's and SRR23446052's R2 start
-# AAGCAGTGGTATCAACGCAGAGTAC in a third of reads, and neither is one.
-TSO_CORE = "GTGGTATCAACGCAGAGTAC"
+# A gene-expression library's TSO artefacts make its cDNA reads start alike,
+# which reads as a feature library's few tags: SRR30069691's and SRR23446052's
+# R2 start AAGCAGTGGTATCAACGCAGAGTAC in a third of reads, and neither is one.
+# Since classifier 0.4.0 the call itself says GEX; this still flags a weaker case.
 TSO_SHARE = 0.2
 
 

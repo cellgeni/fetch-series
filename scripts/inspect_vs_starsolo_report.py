@@ -44,7 +44,7 @@ def main() -> None:
     with (args.out / "truth.csv").open() as handle:
         truth = {(r["dataset"], r["sample"]): r for r in csv.DictReader(handle)}
     calls: dict[tuple[str, str], list[dict[str, str]]] = {}
-    for path in sorted(args.out.glob(f"calls-{args.split}-*.csv")):
+    for path in sorted(args.out.glob(f"calls-{args.split}-[0-9]*of*.csv")):
         with path.open() as handle:
             for row in csv.DictReader(handle):
                 calls.setdefault((row["dataset"], row["sample"]), []).append(row)

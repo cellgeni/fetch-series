@@ -55,7 +55,9 @@ from fetch_series.inspect.references import KmerIndex
 # carries them gets no 10x layout; every other call is unchanged. 0.3.1 lets
 # those constants carry one substitution in ten bases, and names Parse by its
 # second linker alone (the 2026-10-22 technology benchmark's design half).
-VERSION = "0.3.1"
+# 0.4.0 decides a call from its recorded evidence (``decide``), and sets the
+# strand and tail rules on the pipeline's own record: see TAIL_SHARE.
+VERSION = "0.4.0"
 NO_LISTS = "no barcode list fetched; run `fetch inspect lists --fetch`"
 THRESHOLDS_SET_ON = "the 2026-10-19 benchmark's design half: 121 runs"
 
@@ -76,6 +78,10 @@ STRAND_SAMPLE = 20_000
 VDJ_SHARE = 0.15
 CRISPR_SHARE = 0.05
 TAG_CONCENTRATION = 0.50
+# 10x's template-switch oligo, past its first bases, and the share of cDNA
+# reads starting with it that makes a few-tag library a GEX one's artefacts.
+TSO_CORE = "GTGGTATCAACGCAGAGTAC"
+TSO_ARTEFACT_SHARE = 0.3
 SCAFFOLD = "GTTTTAGAGCTAGAAATAGCAAGTT"
 POLY_A = "A" * 15
 POLY_T = "T" * 15
@@ -215,6 +221,25 @@ def barcode_hits(samples: list[FileSample], lists: dict[str, BarcodeList]) -> li
     return sorted(hits, key=lambda h: (h.near, h.exact), reverse=True)
 
 
+# 0.4.0's thresholds were set on the design half of the reprocessing pipeline's
+# own record (docs/benchmarks/inspect-vs-starsolo-2026-10.md; scripts/
+# tune_classifier.py): the least ambiguity with no call contradicting the
+# pipeline's whitelist or strand.
+#
+# Where layouts share a list, the share of reads whose tail must show poly-T or
+# the TSO for the tail to decide between them. 150-base 5' barcode reads show
+# the TSO in 35-45% of reads; 0.25 is the highest bar that decided as many
+# design-half calls as any lower one.
+TAIL_SHARE = 0.25
+# Signals whose "unstranded" vote does not overrule the others agreeing. Poly-A
+# undecided blocked 43 design-half calls where the other signals agreed; an
+# undecided chrM, tolerated too, let five wrong strands through.
+UNDECIDED_TOLERATED = frozenset({"housekeeping_human", "poly_a"})
+# Measured and left off: dropping the human housekeeping vote on a mouse
+# library left twelve more design-half calls ambiguous and fixed none. And a
+# single strand vote (MIN_STRAND_VOTES = 1) called one layout wrong.
+HOUSEKEEPING_HUMAN_ONLY: bool = False
+
 # Each strand signal votes, with its own threshold, and needs its own minimum.
 # chrM and poly-A against poly-T were clean on every gate run; the housekeeping
 # set is noisier -- ERR4265292 (3' v3) reads 1,176 sense to 1,076 antisense on it
@@ -248,8 +273,8 @@ def strand_of(seqs: list[str], references: dict[str, KmerIndex]) -> dict[str, An
 
     Each reference with a known strand orients the reads it shares k-mers with;
     poly-A runs in a cDNA read are sense to the transcript, poly-T runs
-    antisense. A strand is called only where every signal that votes agrees;
-    one voting the other way leaves it unstranded.
+    antisense. The counts are recorded, and :func:`strand_votes` decides from
+    them alone, so a recorded call can be decided again under a later rule.
     """
     if not seqs:
         return None
@@ -264,26 +289,37 @@ def strand_of(seqs: list[str], references: dict[str, KmerIndex]) -> dict[str, An
             if orientation:
                 counts[0 if orientation > 0 else 1] += 1
         by_reference[ref_id] = counts
-    poly_a = sum(POLY_A in s for s in sample)
-    poly_t = sum(POLY_T in s for s in sample)
-    by_reference["poly_a"] = [poly_a, poly_t]
+    by_reference["poly_a"] = [sum(POLY_A in s for s in sample), sum(POLY_T in s for s in sample)]
+    return strand_votes(by_reference)
+
+
+def strand_votes(by_reference: dict[str, list[int]]) -> dict[str, Any]:
+    """The strand the recorded counts vote for.
+
+    A strand is called only where every signal that votes agrees; one voting
+    the other way leaves it unstranded. The housekeeping set undecided does not
+    overrule chrM and poly-A.
+    """
     present = [ref for ref in CHRM if ref in by_reference]
     signals = {k: v for k, v in by_reference.items() if k not in CHRM}
     if present:
         species = max(present, key=lambda ref: sum(by_reference[ref]))
         signals["chrM"] = by_reference[species]
+        mouse = species != "human_chrM" and sum(by_reference[species]) > 0
+        if HOUSEKEEPING_HUMAN_ONLY and mouse:
+            signals.pop("housekeeping_human", None)
     votes = {
         signal: vote
         for signal, (sense, anti) in signals.items()
-        if (vote := _vote(sense, anti, *STRAND_VOTES[signal])) is not None
+        if signal in STRAND_VOTES
+        and (vote := _vote(sense, anti, *STRAND_VOTES[signal])) is not None
     }
     directional = {v for v in votes.values() if v != str(Strand.UNSTRANDED)}
     undecided = {signal for signal, v in votes.items() if v == str(Strand.UNSTRANDED)}
     if not votes:
         strand = None
-    elif len(directional) == 1 and undecided <= {"housekeeping_human"}:
-        # The housekeeping set undecided does not overrule chrM and poly-A.
-        strand = directional.pop()
+    elif len(directional) == 1 and undecided <= UNDECIDED_TOLERATED:
+        strand = next(iter(directional))
     else:
         strand = str(Strand.UNSTRANDED)
     sense = sum(c[0] for c in by_reference.values())
@@ -321,17 +357,29 @@ def library_type(
         if total:
             concentrations.append(sum(n for _, n in tags.most_common(100)) / total)
     facts["tag_concentration"] = round(max(concentrations), 4) if concentrations else None
+    facts["tso_share"] = round(sum(TSO_CORE in s[:45] for s in sample) / len(sample), 4)
+    return library_from_facts(facts), facts
+
+
+def library_from_facts(facts: dict[str, Any]) -> str | None:
+    """The library type the recorded facts say."""
+    if not facts:
+        return None
     if facts.get("tcr_bcr_share", 0) >= VDJ_SHARE:
-        return "VDJ", facts
-    if facts["scaffold_share"] >= CRISPR_SHARE:
-        return "CRISPR", facts
-    if (facts["tag_concentration"] or 0) >= TAG_CONCENTRATION:
-        return "feature barcode", facts
-    return "GEX", facts
+        return "VDJ"
+    if facts.get("scaffold_share", 0) >= CRISPR_SHARE:
+        return "CRISPR"
+    if (facts.get("tag_concentration") or 0) >= TAG_CONCENTRATION:
+        # A gene-expression library's template-switch artefacts start its cDNA
+        # reads alike, which reads as a feature library's few tags:
+        # SRR30069691's R2 starts AAGCAGTGGTATCAACGCAGAGTAC in 57% of reads.
+        if (facts.get("tso_share") or 0) >= TSO_ARTEFACT_SHARE:
+            return "GEX"
+        return "feature barcode"
+    return "GEX"
 
 
-def _no_barcode_hint(samples: list[FileSample]) -> str:
-    modes = [Counter(s.lengths).most_common(1)[0][0] for s in samples if s.records]
+def _no_barcode_hint(modes: list[int]) -> str:
     if not any(m >= 16 for m in modes):
         return "no read long enough for a barcode"
     if sum(m >= 26 for m in modes) < 2:
@@ -339,12 +387,45 @@ def _no_barcode_hint(samples: list[FileSample]) -> str:
     return "no listed 10x barcode at any start: not a 10x library, or a list not fetched"
 
 
+def _feasible(hit: dict[str, Any], modes: list[int]) -> list[Layout]:
+    """The layouts a hit can be, given the read it is on.
+
+    A gene-expression layout needs room for its UMI, less two bases a submitter
+    may have trimmed: SRR31955810's 16-base i5 read matched the ARC
+    gene-expression list at 0.94 and is the ATAC library's barcode, with no UMI
+    after it at all.
+    """
+    length = modes[hit["read"]]
+    return [
+        layout
+        for layout in sharing(hit["barcode_list"])
+        if hit["offset"] in layout.offsets
+        and length >= hit["offset"] + layout.cb
+        and (layout.modality != "gex" or length >= layout.cb + layout.umi - UMI_TRIM)
+    ]
+
+
+def _cdna_read(modes: list[int], barcode: int) -> int | None:
+    """The longest read of ``CDNA_READ_MIN`` bases or more that is not the barcode read."""
+    order = sorted(range(len(modes)), key=lambda i: -modes[i])
+    return next((i for i in order if i != barcode and modes[i] >= CDNA_READ_MIN), None)
+
+
+def _above(hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [h for h in hits if h["near"] >= LOW_NEAR and h["exact"] >= 10 * h["background"]]
+
+
 def classify(
     samples: list[FileSample],
     lists: dict[str, BarcodeList],
     references: dict[str, KmerIndex] | None = None,
 ) -> Call:
-    """The layout a run's reads are, at a level, with evidence and contradictions."""
+    """The layout a run's reads are, at a level, with evidence and contradictions.
+
+    Measures, then decides: everything the decision reads is recorded in the
+    call's evidence, and :func:`decide` makes the call from it alone, so a
+    recorded call is decided again under a later version without its reads.
+    """
     references = references or {}
     samples = [s for s in samples if s.records]
     if not samples:
@@ -364,107 +445,100 @@ def classify(
             None, [], "none", hint="no barcode list fetched; run `fetch inspect lists --fetch`"
         )
 
-    hits = barcode_hits(samples, lists)
+    hits = [asdict(h) for h in barcode_hits(samples, lists)]
+    modes = [Counter(s.lengths).most_common(1)[0][0] for s in samples]
+    # Every hit the decision can use, and the six best besides: a later
+    # version must find the same best and rival in the record.
+    above = _above(hits)
+    kept = above + [h for h in hits[:6] if h not in above]
     evidence: dict[str, Any] = {
-        "hits": [asdict(h) for h in hits[:6]],
+        "hits": sorted(kept, key=lambda h: (h["near"], h["exact"]), reverse=True),
         "instrument": next((i for s in samples if (i := instrument(s))), None),
         "files": [
-            {
-                "source": s.source,
-                "role_hint": s.role_hint,
-                "derived": s.derived,
-                "mode": Counter(s.lengths).most_common(1)[0][0],
-            }
-            for s in samples
+            {"source": s.source, "role_hint": s.role_hint, "derived": s.derived, "mode": mode}
+            for s, mode in zip(samples, modes, strict=True)
         ],
     }
-    above = [h for h in hits if h.near >= LOW_NEAR and h.exact >= 10 * h.background]
-    if not above:
-        return Call(None, [], "none", evidence=evidence, hint=_no_barcode_hint(samples))
-
-    def feasible(hit: ListHit) -> list[Layout]:
-        """The layouts a hit can be, given the read it is on.
-
-        A gene-expression layout needs room for its UMI, less two bases a
-        submitter may have trimmed: SRR31955810's 16-base i5 read matched the
-        ARC gene-expression list at 0.94 and is the ATAC library's barcode, with
-        no UMI after it at all.
-        """
-        length = Counter(samples[hit.read].lengths).most_common(1)[0][0]
-        return [
-            layout
-            for layout in sharing(hit.barcode_list)
-            if hit.offset in layout.offsets
-            and length >= hit.offset + layout.cb
-            and (layout.modality != "gex" or length >= layout.cb + layout.umi - UMI_TRIM)
-        ]
-
-    usable = [h for h in above if feasible(h)]
-    if not usable:
-        return Call(None, [], "none", evidence=evidence, hint=_no_barcode_hint(samples))
-    best = usable[0]
-    rival = next((h for h in above if h.barcode_list != best.barcode_list), None)
-    evidence["margin"] = round(best.near - rival.near, 4) if rival else None
-
-    barcode = samples[best.read]
-    seqs = [r.seq for r in barcode.records]
-    contradictions: list[str] = []
-    if barcode.role_hint in ("R2", "I1", "I2"):
-        contradictions.append(
-            f"the barcode is in the file named {barcode.role_hint}: files swapped"
-        )
-
-    read_length = Counter(barcode.lengths).most_common(1)[0][0]
-    candidates: list[Layout] = feasible(best)
-    gex = [layout for layout in candidates if layout.modality == "gex"]
-    if gex:
-        umi_len = max(layout.umi for layout in gex)
-        cb = gex[0].cb
-        entropy = umi_entropy(seqs, best.offset + cb, min(umi_len, max(read_length - cb, 0)))
-        evidence["umi_entropy"] = entropy
-        if entropy is not None and entropy < MIN_UMI_ENTROPY:
-            contradictions.append(f"UMI entropy {entropy} bits is below {MIN_UMI_ENTROPY}")
-        tail = tail_of(seqs, best.offset + cb + umi_len)
-        evidence["tail"] = tail
-    else:
-        tail = None
-
-    cdna_index = next(
-        (
-            i
-            for i, s in sorted(
-                enumerate(samples), key=lambda kv: -Counter(kv[1].lengths).most_common(1)[0][0]
+    usable = [h for h in above if _feasible(h, modes)]
+    if usable:
+        best = usable[0]
+        seqs = [r.seq for r in samples[best["read"]].records]
+        gex = [layout for layout in _feasible(best, modes) if layout.modality == "gex"]
+        if gex:
+            umi_len = max(layout.umi for layout in gex)
+            cb = gex[0].cb
+            read_length = modes[best["read"]]
+            evidence["umi_entropy"] = umi_entropy(
+                seqs, best["offset"] + cb, min(umi_len, max(read_length - cb, 0))
             )
-            if i != best.read and Counter(s.lengths).most_common(1)[0][0] >= CDNA_READ_MIN
-        ),
-        None,
-    )
-    kind: str | None = None
+            evidence["tail"] = tail_of(seqs, best["offset"] + cb + umi_len)
+        cdna_index = _cdna_read(modes, best["read"])
+        if cdna_index is not None and samples[cdna_index].facts.get("sort_order") == "coordinate":
+            # A coordinate-sorted BAM starts at the start of chr1: SRR10377488's
+            # first 680,000 records are all within its first megabase, 97% of them
+            # secondary alignments to repeats and a mitochondrial insertion. Those
+            # reads say nothing about the library's strand or type; its barcodes
+            # are unaffected, because every read of every cell carries one.
+            evidence["strand"] = {
+                "skipped": "coordinate-sorted BAM: the first reads are chr1, not a sample"
+            }
+        elif cdna_index is not None:
+            cdna = [r.seq for r in samples[cdna_index].records]
+            evidence["strand"] = strand_of(cdna, references)
+            evidence["library"] = library_type(cdna, references)[1]
+    return decide(evidence)
+
+
+def decide(evidence: dict[str, Any]) -> Call:
+    """The call recorded evidence supports, under this version's rules: no read is needed.
+
+    Applied to what :func:`classify` measured it gives what :func:`classify`
+    returns, which a test holds it to. Applied to a call recorded by an earlier
+    version it gives what this version would have called from the same reads,
+    provided that version recorded what this one reads.
+    """
+    modes = [f["mode"] for f in evidence.get("files") or []]
+    hits = evidence.get("hits") or []
+    above = _above(hits)
+    if not above:
+        return Call(None, [], "none", evidence=evidence, hint=_no_barcode_hint(modes))
+    usable = [h for h in above if _feasible(h, modes)]
+    if not usable:
+        return Call(None, [], "none", evidence=evidence, hint=_no_barcode_hint(modes))
+    best = usable[0]
+    rival = next((h for h in above if h["barcode_list"] != best["barcode_list"]), None)
+    evidence["margin"] = round(best["near"] - rival["near"], 4) if rival else None
+
+    contradictions: list[str] = []
+    role = (evidence["files"][best["read"]] or {}).get("role_hint")
+    if role in ("R2", "I1", "I2"):
+        contradictions.append(f"the barcode is in the file named {role}: files swapped")
+    candidates = _feasible(best, modes)
+    gex = any(x.modality == "gex" for x in candidates)
+    tail = evidence.get("tail") if gex else None
+    entropy = evidence.get("umi_entropy")
+    if gex and entropy is not None and entropy < MIN_UMI_ENTROPY:
+        contradictions.append(f"UMI entropy {entropy} bits is below {MIN_UMI_ENTROPY}")
+
+    cdna_index = _cdna_read(modes, best["read"])
+    measured = evidence.get("strand") or {}
     strand: dict[str, Any] | None = None
-    if cdna_index is not None and samples[cdna_index].facts.get("sort_order") == "coordinate":
-        # A coordinate-sorted BAM starts at the start of chr1: SRR10377488's
-        # first 680,000 records are all within its first megabase, 97% of them
-        # secondary alignments to repeats and a mitochondrial insertion. Those
-        # reads say nothing about the library's strand or type; its barcodes
-        # are unaffected, because every read of every cell carries one.
-        evidence["strand"] = {
-            "skipped": "coordinate-sorted BAM: the first reads are chr1, not a sample"
-        }
-    elif cdna_index is not None:
-        cdna = [r.seq for r in samples[cdna_index].records]
-        strand = strand_of(cdna, references)
-        evidence["strand"] = strand
-        kind, facts = library_type(cdna, references)
-        evidence["library"] = facts
-    else:
+    kind: str | None = None
+    if cdna_index is None:
         contradictions.append(f"no cDNA read of {CDNA_READ_MIN} bases or more")
+    elif "by_reference" in measured:
+        strand = strand_votes(measured["by_reference"])
+        evidence["strand"] = strand
+        kind = library_from_facts(evidence.get("library") or {})
 
     # Where layouts share a list, the tail and then the strand decide.
     remaining = list(candidates)
     if len(remaining) > 1:
         by_tail = {Tail.POLY_T: "poly_t", Tail.TSO: "tso"}
         if tail is not None:
-            seen = [x for x in remaining if x.tail in by_tail and tail[by_tail[x.tail]] >= 0.5]
+            seen = [
+                x for x in remaining if x.tail in by_tail and tail[by_tail[x.tail]] >= TAIL_SHARE
+            ]
             if len(seen) == 1:
                 remaining = seen
         # Strand settles it only on two agreeing signals. Poly-A alone -- the
@@ -497,17 +571,16 @@ def classify(
             )
 
     ids = [x.id for x in remaining]
+    margin = evidence["margin"]
     if len(ids) > 1:
         level = "ambiguous"
     elif (
-        best.near >= HIGH_NEAR
-        and (evidence["margin"] is None or evidence["margin"] >= MIN_MARGIN)
+        best["near"] >= HIGH_NEAR
+        and (margin is None or margin >= MIN_MARGIN)
         and not contradictions
     ):
         level = "HIGH"
-    elif best.near >= MEDIUM_NEAR and (
-        evidence["margin"] is None or evidence["margin"] >= MIN_MARGIN
-    ):
+    elif best["near"] >= MEDIUM_NEAR and (margin is None or margin >= MIN_MARGIN):
         # A rival list close behind is not a MEDIUM call: SRR31168852's 26-base
         # barcode read matched v3 at 0.66 with the v4 list near it.
         level = "MEDIUM"
@@ -517,8 +590,8 @@ def classify(
         layout=ids[0] if len(ids) == 1 else None,
         candidates=ids,
         level=level,
-        barcode_list=best.barcode_list,
-        barcode_read=best.read,
+        barcode_list=best["barcode_list"],
+        barcode_read=best["read"],
         cdna_read=cdna_index,
         evidence=evidence,
         contradictions=contradictions,
@@ -535,9 +608,12 @@ __all__ = [
     "ListHit",
     "barcode_hits",
     "classify",
+    "decide",
     "instrument",
+    "library_from_facts",
     "library_type",
     "strand_of",
+    "strand_votes",
     "tail_of",
     "umi_entropy",
 ]
