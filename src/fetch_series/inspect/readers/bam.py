@@ -191,6 +191,14 @@ def _original(record: BamRecord) -> tuple[str, str | None]:
     return record.seq.translate(_COMPLEMENT)[::-1], record.qual[::-1] if record.qual else None
 
 
+# Tags a header may name that a record carries only sometimes. Cell Ranger 2
+# writes `TR`/`TQ`, the bases it trimmed after the UMI, only on reads it trimmed:
+# SRR6459192's header rebuilds R1 from CR:CY,UR:UY,TR:TQ, and its records have no
+# TR, so requiring every named tag rebuilt no R1 at all and refused the BAM for
+# lacking a barcode it holds.
+OPTIONAL_TAGS = frozenset({"TR"})
+
+
 def _rebuild(record: BamRecord, spec: list[tuple[str, str]]) -> Record | None:
     """One original read from a record, as ``bamtofastq`` would assemble it."""
     seqs: list[str] = []
@@ -202,6 +210,8 @@ def _rebuild(record: BamRecord, spec: list[tuple[str, str]]) -> Record | None:
             quals.append(qual or "")
             continue
         value = record.tags.get(seq_tag)
+        if value is None and seq_tag in OPTIONAL_TAGS:
+            continue
         if not isinstance(value, str):
             return None
         seqs.append(value)
