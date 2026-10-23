@@ -4,8 +4,10 @@ title: Content survey, 2026-10
 
 # Content survey, 2026-10
 
-**Instrument:** classifier 0.2.0, fit rule `fit-2`, the first 100,000 reads of each file.
-**Run:** 2026-10-20 (UTC). **Data:** the `screen_100000_*` exports in
+**Instrument:** classifier 0.2.1, fit rule `fit-5`, the first 100,000 reads of each file.
+**Run:** read 2026-10-22 and 23 (UTC) under `fit-3`, then judged again under `fit-5` from what
+each verdict recorded, without reading anything twice. The first run, 2026-10-20 under
+`fit-2`, is in git history. **Data:** the `screen_100000_*` exports in
 `data/surveys/sample_500@sample_3000@reprocessed-srr/`,
 `data/surveys/sample_300@node_run_ddbj@reprocessed-srr/`,
 `data/surveys/sample_300@node_run_ebi@reprocessed-srr/` and
@@ -35,12 +37,16 @@ usable for a 10x gene-expression run. It is never evidence for a route and ranks
   range-fetched prefix. An SRA object is read by `fastq-dump -X` from its own URL, so a
   result belongs to the Normalized or Lite object it came from. Each distinct file is read
   once per run and reported against every link that lists it.
-- **The gate first.** The seven runs of `inspect-gate` were read before each corpus. Each is
-  there for what it showed, and every expectation held under `fit-2`.
-- **Local failures are not verdicts.** A full disk partway through left 196 SRA reads
-  failed with "no space left on device", and a handful of others failed with transient
-  fastq-dump errors. Those runs were read again whole (`--reread-where`), and a full disk
-  now fails a run rather than recording the file as unreadable.
+- **The gate first.** The seven runs `inspect-gate` held then were read before the corpora,
+  and every expectation held under `fit-3`. Two runs added since for other technologies
+  (SRR24749105, DRR346905) were read with classifier 0.3.1. The gate is never evidence.
+- **Every verdict was read again under `fit-3`**, because `fit-2` had not recorded what it
+  judged on. Each now records each file's format and modal length, the call, the run's mean
+  spot, which listed files could not be read, and the spot-name agreement of every pair of
+  files. `fetch inspect survey --rejudge` then judged all 11,436 again under `fit-5` with no
+  network, and found none that lacked an input.
+- **Local failures are not verdicts.** ENA's portal answered 500 to everything for ten
+  minutes before the re-read began. The re-read waited for it rather than recording failures.
 
 ## The anchor: ENA's single fastq
 
@@ -49,17 +55,22 @@ The reads of ENA's fastq, for the runs both cover:
 
 | ENA's listing in the census | Fit | Unfit | Undetermined |
 |---|---:|---:|---:|
-| one fastq | 0 | **182** | 0 |
-| two or more | 236 | 2 | 54 |
+| one fastq | 0 | **183** | 0 |
+| two or more | 234 | 1 | 56 |
 
-**All 182 single-fastq runs are proven unusable by their reads**: 175 because no read starts
-with a listed barcode, and 7 because no read is long enough to be the cDNA. Two runs with
-two fastqs are unfit too: SRR14522447 and SRR34778689 (below). The 54 undetermined are
-libraries that are not gene expression (37: feature barcode, VDJ, CRISPR), or calls the
-classifier left ambiguous (17).
+**All 183 single-fastq runs are proven unusable by their reads**: 176 because no read starts
+with a listed barcode, and 7 because no read is long enough to be the cDNA. One run with two
+fastqs is unfit too: SRR14522447 (below). The 56 undetermined are:
 
-The defect belongs to NCBI's runs. ENA's fastq is unfit for 183 of the 451 NCBI-submitted
-runs that list it. For EBI-submitted runs the figure is 2 of 146, and for DDBJ-submitted runs
+- libraries that are not gene expression (36: feature barcode, VDJ, CRISPR);
+- calls the classifier left ambiguous (17);
+- SRR26701885, whose only long read is a 107-base barcode read;
+- SRR11040464 and SRR34482399, sets with a listed fastq that cannot be read (below).
+
+SRR34778689, unfit under `fit-2` for its 47-base cDNA read, is fit under `fit-3` and since.
+
+The defect belongs to NCBI's runs. ENA's fastq is unfit for 183 of the 452 NCBI-submitted
+runs that list it. For EBI-submitted runs the figure is 2 of 147, and for DDBJ-submitted runs
 4 of 278. Those six are deposits that hold no cDNA read in any copy.
 
 ## What each source holds
@@ -68,9 +79,9 @@ NCBI-submitted runs, from the main draw (457 runs):
 
 | Source | Runs listed | Fit | Unfit | Undetermined |
 |---|---:|---:|---:|---:|
-| ENA fastq (`ena_filereport_fastq`) | 451 | 221 | 183 | 47 |
-| Normalized object (`sdl`) | 457 | 366 | 4 | 87 |
-| Lite object (`sdl_lite`) | 450 | 359 | 5 | 86 |
+| ENA fastq (`ena_filereport_fastq`) | 452 | 219 | 183 | 50 |
+| Normalized object (`sdl`) | 457 | 366 | 3 | 88 |
+| Lite object (`sdl_lite`) | 450 | 359 | 4 | 87 |
 | DDBJ's mirror (`ddbj_entry_sra`) | 452 | 163 | 3 | 286 |
 | Submitted originals (`sdl_original`) | 453 | 3 | 0 | 450 |
 
@@ -78,16 +89,16 @@ EBI-submitted runs, from the top-up (300 runs):
 
 | Source | Runs listed | Fit | Unfit | Undetermined |
 |---|---:|---:|---:|---:|
-| ENA submitted fastq | 233 | 175 | 3 | 55 |
+| ENA submitted fastq | 233 | 173 | 3 | 57 |
 | ENA submitted CRAM | 61 | 44 | 0 | 17 |
-| ENA BAM | 79 | 53 | 4 | 22 |
-| ENA fastq | 146 | 103 | 2 | 41 |
-| Normalized object (`sdl`) | 300 | 226 | 2 | 72 |
-| DDBJ's mirror (`ddbj_entry_sra`) | 299 | 95 | 1 | 203 |
+| ENA BAM | 79 | 52 | 4 | 23 |
+| ENA fastq | 147 | 101 | 2 | 44 |
+| Normalized object (`sdl`) | 300 | 223 | 2 | 75 |
+| DDBJ's mirror (`ddbj_entry_sra`) | 299 | 92 | 1 | 206 |
 
 DDBJ-submitted runs, from the top-up (300 runs): DDBJ's fastq, ENA's fastq, and the
-Normalized and Lite objects agree on every run where both were read. 254 runs are fit
-everywhere, 4 are unfit everywhere, and the rest are undetermined everywhere. ENA lists no
+Normalized and Lite objects agree on every run where both were read. 253 runs are fit
+everywhere, 4 are unfit everywhere, and the other 43 are undetermined everywhere. ENA lists no
 fastq for 22 of the 300.
 
 The full per-link tables, Lite and Normalized separately and every mechanism, are what the
@@ -100,18 +111,18 @@ draw:
 
 | ENA fastq ↓ / Normalized object → | Fit | Unfit | Undetermined |
 |---|---:|---:|---:|
-| fit | 236 | 0 | 0 |
-| unfit | **141** | 5 | 38 |
-| undetermined | 0 | 0 | 54 |
+| fit | 234 | 0 | 0 |
+| unfit | **142** | 4 | 38 |
+| undetermined | 2 | 0 | 54 |
 
-For 141 runs ENA's fastq is unfit and the Normalized object of the same run is fit. Of the
+For 142 runs ENA's fastq is unfit and the Normalized object of the same run is fit. Of the
 38 where the object is undetermined, 18 are calls the classifier left ambiguous and 18 are
 feature-barcode or VDJ libraries, undetermined by rule. The other two are SRR12103517 and
-SRR9105023, below. Where both were called, ENA and NCBI name the same kit on all 267 runs.
+SRR9105023, below. Where both were called, ENA and NCBI name the same kit on all 265 runs.
 
 **ENA's fastq is often Lite.** The qualities of ENA's fastq are substituted, two values or
-fewer throughout, for 121 of the 451 NCBI runs and 22 of the 278 DDBJ runs. That is what an
-SRA Lite object reads as. None of the 146 EBI runs' ENA fastqs is. The reads are the same,
+fewer throughout, for 122 of the 452 NCBI runs and 22 of the 278 DDBJ runs. That is what an
+SRA Lite object reads as. None of the 147 EBI runs' ENA fastqs is. The reads are the same,
 so fit does not change, but a quality-aware step downstream gets nothing to work with.
 
 **ENA's split can put the barcode in the wrong read.** SRR14522447 lists two ENA fastqs, of 28
@@ -126,7 +137,7 @@ object's on 492 of the 493 runs both were read for. The one that differs is SRR1
 whose Lite object carries ENA's split.
 
 **DDBJ's mirror of NCBI and EBI objects is mostly missing.** For 248 of the 452 NCBI runs, and
-171 of the 299 EBI runs, the object DDBJ Search links does not exist: `fastq-dump` answers
+176 of the 299 EBI runs, the object DDBJ Search links does not exist: `fastq-dump` answers
 "item not found" and the URL answers 404. That is [the upstream
 draft](../upstream/ddbj-search-mirrored-sra-links.md)'s finding, now over a draw rather than
 59 runs. Of the 204 NCBI objects that do exist, 20 hold substituted qualities, which makes
@@ -138,16 +149,30 @@ submitter's own fastqs for 453 NCBI runs and 232 EBI runs. It gives no download 
 and 204 of them respectively, so those cannot be read here and are undetermined.
 
 **Some deposits hold no cDNA read anywhere.** SRR11300684, SRR17100003, SRR34580087 and
-ERR14686479 are 26 or 28 bases a spot, in every copy and in runinfo, as SRR30132199 on the gate is.
-SRR34778689's cDNA read is 47 bases, under the rule's 50. Those are refused everywhere,
-correctly by the rule. Whether 47 bases is enough for STARsolo is a requirement question this
-survey does not answer.
+ERR14686479 are 26 or 28 bases a spot, in every copy and in runinfo, as SRR30132199 on the gate
+is. They are refused everywhere. SRR34778689's cDNA read is 47 bases: refused under `fit-2`,
+whose floor was 50, and fit since `fit-3`, which counts a 47-base read as cDNA.
 
-## What `fit-1` got wrong, and `fit-2` changed
+**ENA lists a file it serves as a directory.** ENA's `filereport` lists SRR11040464's
+`_1.fastq.gz` with a size (583,713,371 bytes) and an md5. At that path the FTP server serves an
+empty directory listing, behind a 301 to the same path with a trailing slash; the `_2` file
+beside it is a real 1.3 GB file. Checked again on 2026-10-23. ENA also answers 403 for one of
+ERR4065012's fastqs. Judged on the file that could be read, both sets were refused under
+`fit-3` for lacking the read the missing file most likely holds. `fit-5` makes such a set
+undetermined. SRR34482399's `_1` answers 403 as well. Nothing of its set was read, so it was
+undetermined already.
+
+## What the rules got wrong, and changed
+
+`fit-3`, `fit-4` and `fit-5` are recorded in `inspect/fit.py`. `fit-3` lowered the cDNA floor
+to 30 bases and stopped the barcode read counting as its own cDNA read, which had let `fit-2`
+pass 43 verdicts on a lone barcode read of 100 to 155 bases. `fit-4` makes a copy read as another technology
+undetermined. `fit-5` is the directory above. The rest of this section is the first run's.
+
+### What `fit-1` got wrong, and `fit-2` changed
 
 The survey was first run under `fit-1`. Reading the runs it refused or passed turned up three
-rules that did not hold. They are now `fit-2`, and every verdict above was made under it,
-from the reads, with the inputs it judged on (`run_spot`, `mates`) recorded beside it:
+rules that did not hold. They became `fit-2`, and are kept in every rule since:
 
 - **DRR878211**: its SRA object holds 26 + 8-base barcode spots first and the 98-base cDNA
   reads in spots of their own further in. Runinfo's mean is 66 bases a spot against the
@@ -169,14 +194,14 @@ so the cost is a source not refused, never a source wrongly refused.
 ## What this does not show
 
 - **The first reads, not the file.** A verdict is about the first 100,000 reads of each
-  file. `fit-2` refuses an SRA object only when its prefix accounts for the run, but a FASTQ
+  file. The rule refuses an SRA object only when its prefix accounts for the run, but a FASTQ
   or BAM whose reads change partway through would still be judged on its start.
 - **10x gene expression only.** Feature-barcode, VDJ and CRISPR libraries are undetermined by
   rule. Their usability depends on pipelines this project does not run.
-- **Some reads never finished.** The CRAMs of ERR15411117 and ERR15411164 needed a reference
-  from EBI's registry that did not arrive within 600 s. ERR5029524, ERR5470677, ERR6110583
-  and ERR7459500's SRA objects did not finish `fastq-dump` within 900 s on two attempts.
-  All of these are undetermined.
+- **Some reads never finished.** In the first run, the CRAMs of ERR15411117 and ERR15411164
+  needed a reference from EBI's registry that did not arrive within 600 s, and four SRA
+  objects did not finish `fastq-dump` within 900 s on two attempts. Reads that do not finish
+  are undetermined.
 - **Six runs DDBJ Search does not hold.** Its entry endpoint answers 404 for SRR28781227,
   SRR31012370, SRR31012443, SRR31012512, SRR31342328 and ERR15850668, so their
   `ddbj_entry_sra` verdict is a failure, as the link survey recorded it.

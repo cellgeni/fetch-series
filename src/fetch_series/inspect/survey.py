@@ -202,11 +202,6 @@ def screen_fanout(
             keys = tuple(r.url or r.name for r in records)
             samples: list[FileSample] = [s for key in keys for s in samples_of[key]]
             checks = check_set(samples, records)
-            checks["unreadable"] = [
-                {"source": s.source, "why": s.facts.get("why")}
-                for s in samples
-                if s.facts.get("reader") == "unavailable"
-            ]
             checks["reads_per_file"] = reads
             if keys not in calls:
                 calls[keys] = (

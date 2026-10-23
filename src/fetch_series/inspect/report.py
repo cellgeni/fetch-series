@@ -80,11 +80,6 @@ def _source(
     run: str | None = None,
 ) -> tuple[dict[str, Any], Call]:
     checks = check_set(samples, records)
-    checks["unreadable"] = [
-        {"source": s.source, "why": s.facts.get("why")}
-        for s in samples
-        if s.facts.get("reader") == "unavailable"
-    ]
     call = classify(samples, lists, references)
     verdict = fit(samples, call, run_spot=run_spot)
     entry: dict[str, Any] = {

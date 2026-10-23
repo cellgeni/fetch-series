@@ -115,6 +115,15 @@ def concordances(samples: list[FileSample]) -> list[list[Any]]:
     ]
 
 
+def unreadable(samples: list[FileSample]) -> list[dict[str, Any]]:
+    """The files a reader could not read, and why: what no verdict may be judged on."""
+    return [
+        {"source": s.source, "why": s.facts.get("why")}
+        for s in samples
+        if s.facts.get("reader") == "unavailable"
+    ]
+
+
 def check_set(samples: list[FileSample], records: Iterable[FileRecord] = ()) -> dict[str, Any]:
     """Every built-in check on one run's set of files.
 
@@ -133,6 +142,7 @@ def check_set(samples: list[FileSample], records: Iterable[FileRecord] = ()) -> 
         "cdna_read": any(m >= CDNA_READ_MIN for m in modes),
         "quality": sorted({f["quality"] for f in files}),
         "duplicates": duplicates(records),
+        "unreadable": unreadable(samples),
     }
     plain = [s for s in samples if s.records and not s.derived]
     if len(plain) >= 2 and len({s.source for s in plain}) >= 2:
@@ -153,4 +163,5 @@ __all__ = [
     "duplicates",
     "file_facts",
     "quality_verdict",
+    "unreadable",
 ]
