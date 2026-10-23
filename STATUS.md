@@ -37,6 +37,7 @@ Behind it:
 | Read classifier | 10x kits from the first 100,000 reads: **0 errors in 66 held-out HIGH calls**, 0 in 28 MEDIUM ([benchmark](docs/benchmarks/inspect-2026-10.md)) |
 | Content survey | every run-to-reads link's files read for 1,400 runs ([results](docs/benchmarks/content-survey-2026-10.md)) |
 | Mapping block | classifier 0.4.0, set beside the reprocessing pipeline's own STARsolo runs on a fresh draw of 300 held-out samples: the pipeline's whitelist in **404 of 404** blocks, its strand in **386 of 386** that name one; 7 left ambiguous, down from 32 ([comparison](docs/benchmarks/inspect-vs-starsolo-2026-10.md)) |
+| Metadata kit call | names one kit for **964 of 5,465** samples the pipeline mapped; its list is the pipeline's for 900, its strand for 946 of 948; where it and the reads disagree, **the pipeline sides with the reads 20 of 20** ([comparison](docs/benchmarks/metadata-vs-reads-2026-10.md)) |
 | Other technologies | Parse, BD Rhapsody, inDrop and others named from their constants; **no non-10x run called 10x** on the held-out half ([benchmark](docs/benchmarks/technologies-2026-10.md)) |
 | Survey verdicts recorded and committed | **681,144** across 3,364 files in `data/surveys/` |
 | Offline tests | **893** collected by `uv run pytest` (plus integration, pathology and slow suites) |
@@ -188,20 +189,20 @@ ship.
    `superseries-carries-no-bioproject` were retired: neither reproduces.
    [The list](docs/pathologies/index.md#known-declared-and-not-yet-written-up).
 
-5. **The metadata-derived chemistry call is still not checked against the reads
-   at scale.** The read classifier benchmark ran `rename10xrun` and `tchem` beside
-   ours on 240 labelled runs (206 of 221 and 217 of 221 agreeing), and found 26
-   of the 240 metadata labels wrong. The assay layer's own calls have not yet been
-   compared with `fetch inspect` over the corpus; the content survey's exports
-   hold what that comparison needs.
-
-6. **The read classifier's VDJ call has never been set on labelled data.** On
+5. **The read classifier's VDJ call has never been set on labelled data.** On
    the second held-out draw (2026-10-23), 8 samples the pipeline mapped to genes
    were called VDJ. Five read as B-cell libraries, and three of those on a 3′
    layout, which no 10x V(D)J kit is: gene-expression libraries from
    plasma-cell-rich tissue, by the look of them. `VDJ_SHARE` stays as it is
    until it is set on the design half and scored on samples not yet read
    ([the comparison](docs/benchmarks/inspect-vs-starsolo-2026-10.md#classifier-040-on-a-fresh-held-out-draw-2026-10-23)).
+
+6. **Metadata may break the 3′ v2 / 5′ tie, but nothing does yet.** Decided on
+   2026-10-23 under the rule set before measuring
+   ([the decision](docs/decisions/when-metadata-may-break-a-tie.md)): offered
+   beside the read-derived block, only where the reads abstain and the metadata
+   names exactly one of the two. It would settle 9 of 94 abstentions. Building it
+   needs `fetch inspect run` to harvest metadata, which it does not.
 
 ### Deliberately dropped, with the reasons recorded
 

@@ -134,6 +134,7 @@ nav:
       - Content survey: benchmarks/content-survey-2026-10.md
       - Other technologies: benchmarks/technologies-2026-10.md
       - Against past STARsolo runs: benchmarks/inspect-vs-starsolo-2026-10.md
+      - Metadata against the reads: benchmarks/metadata-vs-reads-2026-10.md
       - Pathologies:
           - Overview: pathologies/index.md
           - ELink gds to sra returns no links: pathologies/elink-gds-sra-missing-links.md
@@ -182,3 +183,4 @@ nav:
       - ENA browser XML not needed: decisions/ena-browser-xml-not-needed.md
       - Why fetch-series reads the reads itself: decisions/why-fetch-series-reads-the-reads-itself.md
       - What a read sample can prove: decisions/what-a-read-sample-can-prove.md
+      - When metadata may break a tie: decisions/when-metadata-may-break-a-tie.md
