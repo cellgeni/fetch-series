@@ -134,8 +134,8 @@ ship.
 
 ### Needs your decision or your credentials
 
-1. **File the six upstream reports.** Written and ready to paste, each carrying
-   the command that regenerates its evidence first — three to EBI, two to NCBI,
+1. **File the seven upstream reports.** Written and ready to paste, each carrying
+   the command that regenerates its evidence first — four to EBI, two to NCBI,
    one to DDBJ. [`docs/upstream/`](docs/upstream/index.md). Left drafted
    deliberately: sending them is outward-facing and yours. The most
    consequential is
@@ -144,10 +144,10 @@ ship.
    no warning. The newest, checked 2026-10-19, is
    [DDBJ Search linking mirrored runs' SRA objects that do not exist](docs/upstream/ddbj-search-mirrored-sra-links.md):
    30 of 59 answered 404. The content survey has since measured it over a draw:
-   248 of 452 NCBI runs' objects are missing. It also found three candidates that
-   are not drafted: ENA's fastq for SRR14522447 splits the barcode across two
-   reads, ENA's fastq is Lite-quality for 121 of 451 NCBI runs, and SDL lists
-   submitted originals with no download link for 450 of 453.
+   248 of 452 NCBI runs' objects are missing. A seventh, to EBI, was drafted on
+   2026-10-23: ENA lists fastqs its server does not serve (3 of 4,466 links), derives
+   some fastqs from SRA Lite (122 of 452 NCBI runs) and split SRR14522447 through
+   its barcode read ([the draft](docs/upstream/ebi-ena-fastq-files-not-as-listed.md)).
 ### Deferred until the `fetch inspect` validations land
 
 2. **Publish the container** to `quay.io/cellgeni/fetch-series`. Deferred by
