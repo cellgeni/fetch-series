@@ -28,8 +28,9 @@ reads and names the kit from them, and `rename10xrun` in the reprocessing pipeli
 same from the FASTQs and **fails closed**, which is right for the thing that decides how
 reads are parsed. This layer is a cheap prior computed before anything is downloaded. Where
 it and the reads disagree, the reads win, and the disagreement is a finding about the
-submission. On [the 2026-10 benchmark](benchmarks/inspect-2026-10.md) that happened for 26
-of 240 labelled runs.
+submission. Over the reprocessing pipeline's own record, metadata and reads named different
+kits for 20 samples, and the pipeline sided with the reads in all 20
+([the comparison](benchmarks/metadata-vs-reads-2026-10.md)).
 
 ## Measured
 
@@ -121,12 +122,14 @@ out, in a warning it emits:
 Both use a 16 bp barcode, a 10 bp UMI and the same whitelist, so geometry is blind there.
 [`fetch inspect`](inspect.md) looks past geometry: it reads the strand of the cDNA read
 (3' is sense, 5' antisense) and what follows the UMI. That settles most such runs. It does
-not settle all of them. On the benchmark, 18 runs labelled 5' were left ambiguous between
-the two, because a 5' barcode read stops at 26 bases and their cDNA reads did not give two
-agreeing strand signals.
+not settle all of them. Under classifier 0.4.0, 94 of the 979 samples read from the
+pipeline's record are left ambiguous between the two. A 26-base barcode read cannot show the
+TSO, and the strand signals did not agree.
 
-**Metadata can still settle those.** A protocol naming a *"Chromium Next GEM Single Cell
-5' Library & Gel Bead Kit"* settles it before anything is downloaded.
+**Metadata settles some of those.** A protocol naming a *"Chromium Next GEM Single Cell 5'
+Library & Gel Bead Kit"* settles it before anything is downloaded. It did so for 9 of the
+94, and all 9 the way the pipeline mapped them. When that may be used is
+[its own decision](decisions/when-metadata-may-break-a-tie.md).
 
 ### Measured
 
@@ -152,21 +155,36 @@ The two bolded rows are the payoff: **292 runs where the metadata distinguishes
 3' v2 from 5' v1/v2** and the whitelist cannot. For the other 67% the metadata
 is silent, and silence is the answer it gives.
 
-### Measured against the reads
+### Measured against the reads and the pipeline
 
-Measured on [the 2026-10 read classifier benchmark](benchmarks/inspect-2026-10.md): 240 runs
-whose metadata names exactly one kit, read from their SRA objects.
+Measured on 2026-10-23 over the reprocessing pipeline's own record: 5,762 samples it mapped,
+979 of them read by `fetch inspect`
+([the comparison](benchmarks/metadata-vs-reads-2026-10.md)). Over the 964 samples whose
+metadata names exactly one kit:
 
-| | Runs |
+| | Samples |
 |---|---:|
-| Reads name the same kit as the metadata | 186 |
-| Reads disagree, and an instrument agrees with the reads: **the metadata is wrong** | 26 |
-| Reads cannot choose between 3' v2 and 5' v1/v2, where the metadata can | 26 |
-| Reads disagree, unconfirmed (both LOW calls) | 2 |
+| the kit's list is the pipeline's whitelist | 900 |
+| it is another list | **64** |
+| the kit's strand is the pipeline's | 946 of 948 |
+| read, and the reads name the same kit | 147 |
+| read, and the reads name another: **the pipeline sides with the reads** | **20 of 20** |
 
-The metadata is wrong about one run in nine. The commonest mistake, 12 of the 26, is
-"3' v2" for a library whose barcodes are v3's. Six more name an ATAC kit for a multiome
-study's gene-expression runs. Both kinds are a study-level field applied to every run.
+The metadata is wrong about the list for one sample in fifteen. Every mistake is a field
+written once for a study and applied to every sample:
+
+- "3' v2" for a v3 study, or the reverse (33);
+- an ATAC or Multiome kit named for the gene-expression samples (29);
+- a GEM-X 3' v4 kit for v2 samples (2).
+
+The two strand mistakes are the same kind: GSE121380's protocol names a 5' kit for all its
+samples, and the pipeline mapped two of them as 3'.
+
+This replaces a 240-run table on this page that counted 26 runs whose reads could not choose
+between 3' v2 and 5'. That figure could not be regenerated from the benchmark's committed
+calls, which give 19, as [the benchmark](benchmarks/inspect-2026-10.md) says. The table
+above regenerates from committed CSVs. The benchmark's own finding stands: 26 of its 240
+metadata labels were disputed by the reads and an instrument together.
 
 The ids are `rename10xrun`'s verbatim — `10x_3p_v3_family`, `10x_5p_v1_v2`,
 `10x_multiome_arc_gex` — so the two answers compare without translation, and a
