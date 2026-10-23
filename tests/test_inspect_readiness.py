@@ -151,7 +151,8 @@ class TestMapping:
             "soloStrand": "Forward",
             "readFilesIn": ["x", "x"],
         }
-        assert made["cellranger_chemistry"] == "SC3Pv3" and made["validated"] is False
+        assert made["cellranger_chemistry"] == "SC3Pv3" and made["validated"] is True
+        assert made["validation"]["same_list"] == made["validation"]["blocks"]
         assert made["starsolo_args"].startswith("--readFilesIn x x --soloType CB_UMI_Simple")
 
     def test_a_bams_reads_go_by_the_names_its_conversion_gives(self):
@@ -198,6 +199,12 @@ class TestMapping:
     )
     def test_no_block_for_anything_but_a_firm_gex_call(self, call, fit):
         assert block([facts(28), facts(91)], call, fit) is None
+
+
+def test_a_layout_never_compared_says_it_is_unvalidated():
+    call = a_call("10x_3p_v4_gemx", barcode_list="tenx_v4_3p")
+    made = block([facts(28), facts(91)], call)
+    assert made is not None and made["validated"] is False and made["validation"] is None
 
 
 class TestConvertible:

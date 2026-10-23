@@ -133,6 +133,7 @@ nav:
       - Read classifier benchmark: benchmarks/inspect-2026-10.md
       - Content survey: benchmarks/content-survey-2026-10.md
       - Other technologies: benchmarks/technologies-2026-10.md
+      - Against past STARsolo runs: benchmarks/inspect-vs-starsolo-2026-10.md
       - Pathologies:
           - Overview: pathologies/index.md
           - ELink gds to sra returns no links: pathologies/elink-gds-sra-missing-links.md

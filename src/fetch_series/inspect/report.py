@@ -220,7 +220,9 @@ def params(report: dict[str, Any]) -> list[str]:
                 f"{barcodes['within_one']:.1%} within one; UMI entropy "
                 f"{measured['umi'].get('entropy')}; CB-UMI pairs distinct {pairs}"
             )
-        lines.append(f"    unvalidated  {block['note']}")
+        lines.append(
+            f"    {'validated' if block['validated'] else 'unvalidated':12s} {block['note']}"
+        )
     return lines
 
 
