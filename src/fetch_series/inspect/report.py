@@ -207,6 +207,8 @@ def params(report: dict[str, Any]) -> list[str]:
             continue
         lines.append(f"  {source['source']} ({source['kind']}):")
         lines.append(f"    STARsolo     {block['starsolo_args']}")
+        if block.get("starsolo_paired_args"):
+            lines.append(f"    or paired    {block['starsolo_paired_args']}")
         if block["cellranger_chemistry"]:
             lines.append(f"    Cell Ranger  --chemistry {block['cellranger_chemistry']}")
         for why in block["omitted"]:

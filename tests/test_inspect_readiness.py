@@ -172,6 +172,26 @@ class TestMapping:
         assert made["cellranger_chemistry"] == "SC5P-R2"
         assert made["starsolo"]["soloCBwhitelist"] == "737K-august-2016.txt"
 
+    def test_a_long_r1_5p_library_gets_the_pipelines_paired_form(self):
+        """starsolo_10x_auto.sh: R1 > 50 and Reverse is mapped as a pair, clipped 39, Forward."""
+        call = a_call("10x_5p_v1_v2", barcode_list="tenx_v2", strand="antisense")
+        made = block([facts(150, source="a_1.fastq.gz"), facts(150, source="a_2.fastq.gz")], call)
+        assert made is not None and made["starsolo"]["soloStrand"] == "Reverse"
+        paired = made["starsolo_paired"]
+        assert paired["readFilesIn"] == ["a_1.fastq.gz", "a_2.fastq.gz"]
+        assert paired["soloBarcodeMate"] == 1 and paired["clip5pNbases"] == [39, 0]
+        assert paired["soloStrand"] == "Forward" and "soloBarcodeReadLength" not in paired
+        assert "--clip5pNbases 39 0" in made["starsolo_paired_args"]
+
+    def test_no_paired_form_for_a_3p_library_or_a_short_r1(self):
+        long_3p = block([facts(150), facts(150)], a_call("10x_3p_v2", barcode_list="tenx_v2"))
+        short_5p = block(
+            [facts(26), facts(98)],
+            a_call("10x_5p_v1_v2", barcode_list="tenx_v2", strand="antisense"),
+        )
+        assert long_3p is not None and long_3p["starsolo_paired"] is None
+        assert short_5p is not None and short_5p["starsolo_paired"] is None
+
     @pytest.mark.parametrize("strand", ["unstranded", None])
     def test_an_unmeasured_strand_is_omitted_not_guessed(self, strand):
         made = block([facts(28), facts(91)], a_call("10x_3p_v3_family", strand=strand))

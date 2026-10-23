@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import gzip
 import hashlib
 import random
@@ -16,7 +17,9 @@ from fetch_series.inspect.classify import (
     SCAFFOLD,
     Call,
     classify,
+    decide,
     instrument,
+    strand_votes,
     umi_entropy,
 )
 from fetch_series.inspect.classify.layouts import BY_ID, LAYOUTS, TSO_PREFIX, list_class
@@ -214,6 +217,40 @@ class TestClassify:
         assert classify(library(V3_CODES, umi=12), LISTS, REFERENCES).version == VERSION
 
 
+class TestDecide:
+    """A call decided again from its recorded evidence is the call the reads made."""
+
+    @pytest.mark.parametrize(
+        "samples",
+        [
+            pytest.param(lambda: library(V3_CODES, umi=12), id="3p v3"),
+            pytest.param(lambda: library(V2_CODES, umi=10), id="3p v2"),
+            pytest.param(lambda: library(V2_CODES, umi=10, antisense=True), id="5p"),
+            pytest.param(
+                lambda: library(V2_CODES, umi=10, cdna=lambda: _random(91)), id="ambiguous"
+            ),
+            pytest.param(
+                lambda: library(V2_CODES, umi=10, r1_extra=TSO_PREFIX + "AAAAAAAAAAA"), id="tail"
+            ),
+            pytest.param(lambda: library(ATAC_CODES, umi=0, offset=8), id="atac"),
+            pytest.param(lambda: library(V3_CODES, umi=12, constant_umi=True), id="constant umi"),
+            pytest.param(
+                lambda: [_sample([_cdna(False) for _ in range(500)], "x.fastq.gz", None)],
+                id="lone cdna",
+            ),
+        ],
+    )
+    def test_the_same_call(self, samples):
+        made = classify(samples(), LISTS, REFERENCES)
+        again = decide(copy.deepcopy(made.evidence))
+        assert again == made
+
+    def test_strand_votes_are_the_strand_of_the_counts(self):
+        made = classify(library(V3_CODES, umi=12), LISTS, REFERENCES)
+        recorded = made.evidence["strand"]
+        assert strand_votes(recorded["by_reference"]) == recorded
+
+
 class TestSignals:
     def test_umi_entropy(self):
         assert umi_entropy([_random(28) for _ in range(500)], 16, 12) > 1.9
@@ -334,3 +371,29 @@ class TestPool:
             assert await pool.judge(samples) == judge(samples, LISTS, REFERENCES)
             parsed = await parse(pool, read_fastq, body.encode(), "x.fastq", max_reads=100)
         assert parsed == read_fastq(body.encode(), "x.fastq", max_reads=100)
+
+
+def test_recall_leaves_a_call_the_current_rules_made():
+    from datetime import UTC, datetime
+
+    from fetch_series.inspect.checks import check_set
+    from fetch_series.inspect.fit import fit
+    from fetch_series.inspect.survey import recall
+    from fetch_series.results import Outcome, RouteResult
+
+    samples = library(V3_CODES, umi=12)
+    made = classify(samples, LISTS, REFERENCES)
+    detail = {"checks": check_set(samples), "call": made.as_detail(), **fit(samples, made)}
+    result = RouteResult(
+        "SRR1",
+        "screen:100000:x",
+        "c",
+        Outcome.RESOLVED,
+        ("u",),
+        fetched_at=datetime(2026, 10, 23, tzinfo=UTC),
+        detail=detail,
+    )
+    assert recall([result]) == ([], set())
+    detail["call"]["level"] = "LOW"  # as an older classifier might have called it
+    (again,), lacking = recall([result])
+    assert again.detail["call"]["level"] == "HIGH" and again.detail["fit"] is True and not lacking

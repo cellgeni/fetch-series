@@ -482,6 +482,14 @@ def inspect_survey(
             "again only the runs whose records lack what it judges on."
         ),
     ] = False,
+    recall_them: Annotated[
+        bool,
+        typer.Option(
+            "--recall",
+            help="Decide every recorded call again under the current classifier, from the "
+            "evidence it recorded, then judge it again. Reads nothing.",
+        ),
+    ] = False,
     again: Annotated[
         bool,
         typer.Option(
@@ -512,6 +520,7 @@ def inspect_survey(
     from fetch_series.inspect import references
     from fetch_series.inspect.fit import RULE as FIT_RULE
     from fetch_series.inspect.pool import Pool
+    from fetch_series.inspect.survey import recall as call_again
     from fetch_series.inspect.survey import rejudge as judge_again
     from fetch_series.inspect.survey import screen_fanout, screen_links
 
@@ -535,6 +544,18 @@ def inspect_survey(
     for node, node_links, accessions in jobs:
         typer.echo(f"{node:12s} {len(node_links):>3} links {len(accessions):>5} runs")
     if dry_run:
+        return
+    if recall_them:
+        with SurveyCache(cache_path) as cache:
+            for node, node_links, _accessions in jobs:
+                units = [screen_unit(reads, link.id) for link in node_links]
+                recorded = [r for unit in units for r in cache.results(name, unit)]
+                changed, short = call_again(recorded)
+                cache.record_all(changed)
+                typer.echo(
+                    f"{node:12s} {len(changed):>6} calls decided again, "
+                    f"{len(short)} runs lack what the fit rule judges on"
+                )
         return
     lacking: set[str] = set()
     if rejudge or refit:

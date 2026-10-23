@@ -20,6 +20,7 @@ to reads.
 from __future__ import annotations
 
 import asyncio
+import copy
 import logging
 import time
 from collections.abc import Iterable, Mapping
@@ -30,6 +31,7 @@ from fetch_series.catalogue import CATALOGUE, Catalogue, Link, NodeKind
 from fetch_series.catalogue.probe import answer_links, seeded_runs
 from fetch_series.files import FileKind, FileRecord
 from fetch_series.inspect.checks import check_set
+from fetch_series.inspect.classify import decide
 from fetch_series.inspect.fetch import DEFAULT_READS, sample_file
 from fetch_series.inspect.fit import MissingInput, fit_from_detail
 from fetch_series.inspect.lists import BarcodeList
@@ -226,6 +228,34 @@ def screen_fanout(
     return fn
 
 
+def recall(results: Iterable[RouteResult]) -> tuple[list[RouteResult], set[str]]:
+    """Recorded calls decided again by the current classifier, and judged again, without a read.
+
+    ``classify.decide`` makes the call from the evidence the read recorded; the
+    fit rule then judges it as :func:`rejudge` does. A call whose evidence
+    names another technology, or records no files, is left as it was.
+    """
+    changed: list[RouteResult] = []
+    lacking: set[str] = set()
+    for result in results:
+        detail = result.detail
+        if detail is None or "call" not in detail:
+            continue
+        evidence = (detail["call"] or {}).get("evidence") or {}
+        if not evidence.get("files") or "technology" in evidence:
+            continue
+        call = decide(copy.deepcopy(evidence)).as_detail()
+        updated = {**detail, "call": call}
+        try:
+            updated.update(fit_from_detail(updated))
+        except MissingInput:
+            lacking.add(result.accession)
+            continue
+        if updated != detail:
+            changed.append(replace(result, detail=updated))
+    return changed, lacking
+
+
 def rejudge(results: Iterable[RouteResult]) -> tuple[list[RouteResult], set[str]]:
     """Recorded verdicts judged again under the current fit rule, without a read.
 
@@ -250,4 +280,4 @@ def rejudge(results: Iterable[RouteResult]) -> tuple[list[RouteResult], set[str]
     return changed, lacking
 
 
-__all__ = ["INSPECT_GATE", "rejudge", "screen_fanout", "screen_links"]
+__all__ = ["INSPECT_GATE", "recall", "rejudge", "screen_fanout", "screen_links"]

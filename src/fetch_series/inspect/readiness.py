@@ -36,7 +36,7 @@ from __future__ import annotations
 from typing import Any
 
 from fetch_series.inspect.checks import CDNA_READ_MIN
-from fetch_series.inspect.classify.layouts import BY_ID, Layout
+from fetch_series.inspect.classify.layouts import BY_ID, TSO_PREFIX, Layout, Tail
 from fetch_series.inspect.fit import INDEX_READ_MAX, short_of_run
 from fetch_series.inspect.lists import REGISTER
 
@@ -308,9 +308,12 @@ def mapping(
         solo["readFilesIn"] = [",".join(by_role["R2"]), ",".join(by_role["R1"])]
     else:
         omitted.append("readFilesIn: no cDNA read and barcode read pair")
+    paired = _paired(layout, barcode, bc_read, solo)
     return {
         "starsolo": solo,
         "starsolo_args": starsolo_args(solo),
+        "starsolo_paired": paired,
+        "starsolo_paired_args": starsolo_args(paired) if paired else None,
         "cellranger_chemistry": CELLRANGER_CHEMISTRY.get(layout.id),
         "whitelist": {
             "id": entry.id,
@@ -340,11 +343,47 @@ def _validation(layout_id: str) -> dict[str, Any]:
     }
 
 
+# Above this, a 5' library's barcode read carries cDNA after the barcode, UMI
+# and TSO, and the reprocessing pipeline maps the two reads as a pair.
+PAIRED_BARCODE_READ = 50
+
+
+def _paired(
+    layout: Layout, barcode: dict[str, Any], bc_read: dict[str, Any], solo: dict[str, Any]
+) -> dict[str, Any] | None:
+    """The paired-end form the reprocessing pipeline maps a long-R1 5' library with.
+
+    ``starsolo_10x_auto.sh`` runs ``--readFilesIn R1 R2 --soloBarcodeMate 1
+    --clip5pNbases 39 0 --soloStrand Forward`` when R1 is longer than 50 bases
+    and the test mapping finds the library Reverse: the barcode read's cDNA,
+    after barcode, UMI and the 13-base TSO, is mapped as the first mate, and the
+    second mate then reads forward. This is the script's choice, given as an
+    alternative, not this project's judgement of which is better.
+    """
+    if layout.tail is not Tail.TSO or bc_read["length"]["mode"] <= PAIRED_BARCODE_READ:
+        return None
+    files = solo.get("readFilesIn")
+    if not files:
+        return None
+    paired = {k: v for k, v in solo.items() if k not in ("readFilesIn", "soloBarcodeReadLength")}
+    clip = barcode["cb_start"] - 1 + barcode["cb_len"] + barcode["umi_len"] + len(TSO_PREFIX)
+    paired.update(
+        readFilesIn=[files[1], files[0]],
+        soloBarcodeMate=1,
+        clip5pNbases=[clip, 0],
+        soloStrand="Forward",
+    )
+    return paired
+
+
 def with_whitelist(block: dict[str, Any], path: str) -> None:
     """Point a mapping block at an exported whitelist file."""
     block["whitelist"]["path"] = path
     block["starsolo"]["soloCBwhitelist"] = path
     block["starsolo_args"] = starsolo_args(block["starsolo"])
+    if block.get("starsolo_paired"):
+        block["starsolo_paired"]["soloCBwhitelist"] = path
+        block["starsolo_paired_args"] = starsolo_args(block["starsolo_paired"])
 
 
 def starsolo_args(solo: dict[str, Any]) -> str:
@@ -355,7 +394,7 @@ def starsolo_args(solo: dict[str, Any]) -> str:
         if key not in solo:
             continue
         value = solo[key]
-        text = " ".join(value) if isinstance(value, list) else str(value)
+        text = " ".join(str(v) for v in value) if isinstance(value, list) else str(value)
         parts.append(f"--{key} {text}")
     return " ".join(parts)
 

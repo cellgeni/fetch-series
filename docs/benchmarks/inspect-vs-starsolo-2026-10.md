@@ -108,6 +108,46 @@ Of the 10 that differ by more than 0.05:
   either** (`Undef`), and mapped them anyway. They are in the reprocessed table but do not
   read as 10x. No sample the pipeline mapped with a whitelist was refused.
 
+## Classifier 0.4.0: thresholds set on the design half
+
+The held-out comparison above left 32 gene-expression samples ambiguous between 3′ v2 and
+5′ v1/v2. Reading their recorded evidence showed why:
+
+- **Undecided poly-A.** chrM and the housekeeping set agreed on a strand, but poly-A, under its
+  0.80 bar, said "unstranded", and only an undecided *housekeeping* vote was tolerated.
+- **The TSO tail.** A 150-base 5′ barcode read shows the template-switch oligo after the UMI in
+  35–45% of reads, under the 0.5 bar a tail needed to decide anything.
+
+Those samples have now been looked at, so they cannot test a fix. The fix was set on the
+**design half** instead:
+
+- **The draw.** 392 samples from 241 datasets (`draw-design.csv`), stratified so 5′ is not
+  drowned out: 150 v2 Forward, 150 v2 Reverse (93 single, 57 paired), 60 v3, and every v1 and
+  Multiome sample the half holds.
+- **Reading.** Every copy was read once and its evidence recorded.
+- **Scoring.** `classify.decide` makes a call from recorded evidence alone, so
+  `scripts/tune_classifier.py` re-decides every copy under each of 240 settings without a
+  read, and scores the sample's best copy against the pipeline's whitelist and strand
+  (`tune-design.csv`).
+- **The rule for choosing.** A setting is admissible only if no call contradicts the
+  pipeline's list, layout or strand. Of those, the least ambiguous wins.
+
+| Setting | Ambiguous 3′ v2 / 5′ | Layout right | Wrong |
+|---|---:|---:|---:|
+| 0.3.1 (undecided poly-A blocks; tail bar 0.5) | 114 | 253 | 0 |
+| **0.4.0** (undecided poly-A tolerated; tail bar 0.25) | **67** | **300** | **0** |
+| also tolerate an undecided chrM | 51 | 316 | 5 strands |
+| a single strand vote decides | 57 | — | 1 layout, 1 strand |
+| drop the human housekeeping vote on mouse libraries | 79 | — | 0 |
+
+0.4.0 also makes a few-tag library whose cDNA reads start with 10x's TSO in 30% or more of
+reads a GEX call, not a feature-barcode one. That cuts the design half's feature-barcode
+calls on samples the pipeline mapped to genes from 4 to 2. The inspect gate's calls are
+unchanged under 0.4.0.
+
+0.4.0 is scored once, on a fresh held-out draw that excludes every sample and, where
+possible, every dataset read before. That result is in the next section.
+
 ## What this does not show
 
 - **A fraction of the record, by design.** 300 samples, one run each, from one half.

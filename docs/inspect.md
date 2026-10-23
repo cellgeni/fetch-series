@@ -141,6 +141,10 @@ say the called kit needs:
   listed; an SRA object uses the names `fastq-dump --split-files` gives; a BAM or CRAM uses
   Cell Ranger's convention (`<run>_S1_L001_R1_001.fastq.gz`), which `rename10xrun` also
   writes.
+- **A 5′ library with a barcode read longer than 50 bases** also gets `starsolo_paired`: the
+  paired-end form the reprocessing pipeline runs it with (`--readFilesIn R1 R2
+  --soloBarcodeMate 1 --clip5pNbases 39 0 --soloStrand Forward`). It is offered as that
+  script's choice, beside the single-end block.
 - **The whitelist** is exported from the checked cache as sorted text. Its sha256 is in the
   register (`export_sha256`), and an export that does not match it is refused.
 
