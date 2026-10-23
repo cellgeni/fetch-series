@@ -310,11 +310,8 @@ NCBI_FTP_RPS = 3.0
 PATHOLOGY_BACKLOG: frozenset[str] = frozenset(
     {
         # NCBI E-utilities mechanics, all four observed in the 2026-05 logs.
-        "esummary-500-uid-limit",
-        "elink-history-missing-querykey",
         "gprj-falls-through-to-all-fields",
         "efetch-returns-fewer-runs-than-esearch-counts",
-        "esummary-sra-buries-accessions-in-expxml",
         # SRA backend CGI.
         "sra-be-timeout-on-large-projects",
         # GEO record modelling.
@@ -449,7 +446,7 @@ ROUTES: list[Route] = [
                 "provenance, not API: re-created, withdrawn or private projects."
             ),
         ),
-        known_pathologies=("elink-history-missing-querykey", "esummary-500-uid-limit"),
+        known_pathologies=("esummary-500-uid-limit",),
     ),
     Route(
         id="bioproject->geo_series:gds_direct",
