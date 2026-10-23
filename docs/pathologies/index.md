@@ -22,11 +22,12 @@ good news — the archive fixed something.
 | [SDRF URIs on a decommissioned mirror](ae-sdrf-points-at-decommissioned-mirror.md) | EBI | Trusting them discards the real submission; two studies look identical and are not |
 | [BioSample efetch ignores the accession prefix](biosample-efetch-ignores-accession-prefix.md) | NCBI | `id=SAMEA11294529` returns a rumen bacterium where a human liver sample was asked for, with HTTP 200 |
 | [ZOOMA's filter forces a term](zooma-filter-forces-a-term.md) | EBI | Constraining to an ontology selects which wrong answer you get, at confidence `GOOD` |
+| [ELink's MegaLink backend fails in bursts](megalink-backend-flakiness.md) | NCBI | A backend message inside an HTTP 200 reads as "no links": 5,107 log lines on 2026-05-11, the dominant failure signal |
 
 ## Known, declared, and not yet written up
 
 A route can declare a behaviour it exhibits before that behaviour has a page.
-Eleven do, and they are listed in `PATHOLOGY_BACKLOG` in `graph.py` rather than
+Ten do, and they are listed in `PATHOLOGY_BACKLOG` in `graph.py` rather than
 left implicit — `--explain` names them and says *"not yet written up"* instead
 of offering a path to a file that does not exist.
 
@@ -34,7 +35,6 @@ of offering a path to a file that does not exist.
 |---|---|---|
 | `esummary-500-uid-limit` | NCBI | over 500 UIDs is refused with an HTTP 200 and no `result` key |
 | `elink-history-missing-querykey` | NCBI | `cmd=neighbor_history` returns no usable querykey; 27/27 recovered via `cmd=neighbor` |
-| `megalink-backend-flakiness` | NCBI | **3,135 occurrences** in the 2026-05 logs — the single dominant failure signal |
 | `gprj-falls-through-to-all-fields` | NCBI | `[GPRJ]` silently becomes `[All Fields]` for renamed or merged projects |
 | `efetch-returns-fewer-runs-than-esearch-counts` | NCBI | PRJNA940674 is the worked example |
 | `esummary-sra-buries-accessions-in-expxml` | NCBI | accessions live inside an XML blob in a JSON field |

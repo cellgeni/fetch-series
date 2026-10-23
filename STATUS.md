@@ -175,14 +175,15 @@ ship.
 
 ### Two honest gaps
 
-4. **Eleven known archive behaviours have no pathology page.** They are declared
+4. **Ten known archive behaviours have no pathology page.** They are declared
    on the routes that exhibit them and listed in `PATHOLOGY_BACKLOG`, so
    `--explain` names them and says *"not yet written up"* rather than offering a
    path to a file that does not exist. Each is real and observed; what they lack
    is the page contract — a curl reproducer, an affected-accession list, and a
-   regression test. `megalink-backend-flakiness` is the one worth writing first:
-   3,135 occurrences in the 2026-05 logs, the dominant failure signal in the
-   whole corpus, and an upstream report in its own right.
+   regression test. The first of the eleven,
+   [`megalink-backend-flakiness`](docs/pathologies/megalink-backend-flakiness.md),
+   was written up on 2026-10-23, and writing it found that a backend message
+   inside an ELink link set still read as "no links".
    [The list](docs/pathologies/index.md#known-declared-and-not-yet-written-up).
 
 5. **The metadata-derived chemistry call is still not checked against the reads
