@@ -26,21 +26,20 @@ good news — the archive fixed something.
 | [ENA's fastq carries Lite qualities](ena-fastq-is-lite-quality.md) | EBI | 122 of 452 NCBI runs' ENA fastqs read `?` for every quality, where NCBI serves real ones |
 | [ENA's fastq splits through the barcode read](ena-fastq-splits-the-barcode-read.md) | EBI | Two files listed, every base present, and no read starts with a cell barcode (SRR14522447) |
 | [ENA lists a fastq it does not serve](ena-serves-a-listed-fastq-wrongly.md) | EBI | 2 of 4,466 listed fastqs are empty directories behind a 301, listed with a size and an md5 |
+| [ESummary refuses more than 500 UIDs](esummary-500-uid-limit.md) | NCBI | The refusal arrives inside an HTTP 200 with no `result`, which reads as "nothing found" |
+| [SRA's ESummary buries its accessions](esummary-sra-buries-accessions-in-expxml.md) | NCBI | Every accession is inside an XML string in the JSON; reading fields finds none |
 
 ## Known, declared, and not yet written up
 
 A route can declare a behaviour it exhibits before that behaviour has a page.
-Ten do, and they are listed in `PATHOLOGY_BACKLOG` in `graph.py` rather than
+Seven do, and they are listed in `PATHOLOGY_BACKLOG` in `graph.py` rather than
 left implicit — `--explain` names them and says *"not yet written up"* instead
 of offering a path to a file that does not exist.
 
 | Slug | Archive | What it is |
 |---|---|---|
-| `esummary-500-uid-limit` | NCBI | over 500 UIDs is refused with an HTTP 200 and no `result` key |
-| `elink-history-missing-querykey` | NCBI | `cmd=neighbor_history` returns no usable querykey; 27/27 recovered via `cmd=neighbor` |
 | `gprj-falls-through-to-all-fields` | NCBI | `[GPRJ]` silently becomes `[All Fields]` for renamed or merged projects |
 | `efetch-returns-fewer-runs-than-esearch-counts` | NCBI | PRJNA940674 is the worked example |
-| `esummary-sra-buries-accessions-in-expxml` | NCBI | accessions live inside an XML blob in a JSON field |
 | `sra-be-timeout-on-large-projects` | NCBI | PRJEB9859, PRJEB82511, PRJEB19038 |
 | `superseries-carries-no-bioproject` | GEO | a SuperSeries records none of its own |
 | `experiments-outside-the-series-bioproject` | GEO | the project holds runs belonging to other series |
@@ -59,3 +58,12 @@ A pathology page is not finished until it can be handed to the archive. Drafts
 live in [upstream/](../upstream/index.md), each with the command that regenerates
 its affected-accession list, so a report is current on the day it is filed rather
 than on the day it was written.
+
+## Retired: declared once, not reproduced
+
+A declared behaviour that no longer reproduces is retired here, with the date and how it was
+checked, rather than left declared on a route as a claim nothing supports.
+
+| Slug | Archive | Retired | Why |
+|---|---|---|---|
+| `elink-history-missing-querykey` | NCBI | 2026-10-23 | In 2026-05, 27 BioProjects got an ELink `cmd=neighbor_history` answer with no usable `querykey` (`docs/bioproject2geo_troubleshooting.md`). On 2026-10-23 all four named examples (PRJNA1214811, PRJNA1088541, PRJNA672686, PRJNA1169288) answered with a `querykey`, from UIDs and from an ESearch history alike. The routes use `cmd=neighbor`, which needs no history, so nothing depended on it. |

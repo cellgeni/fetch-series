@@ -149,6 +149,8 @@ nav:
           - ENA fastq carries Lite qualities: pathologies/ena-fastq-is-lite-quality.md
           - ENA fastq splits through the barcode read: pathologies/ena-fastq-splits-the-barcode-read.md
           - ENA lists a fastq it does not serve: pathologies/ena-serves-a-listed-fastq-wrongly.md
+          - ESummary refuses more than 500 UIDs: pathologies/esummary-500-uid-limit.md
+          - SRA's ESummary buries its accessions: pathologies/esummary-sra-buries-accessions-in-expxml.md
       - Upstream reports:
           - Overview: upstream/index.md
           - NCBI ELink gds to sra: upstream/ncbi-elink-gds-sra.md
