@@ -145,7 +145,7 @@ ship.
    [DDBJ Search linking mirrored runs' SRA objects that do not exist](docs/upstream/ddbj-search-mirrored-sra-links.md):
    30 of 59 answered 404. The content survey has since measured it over a draw:
    248 of 452 NCBI runs' objects are missing. A seventh, to EBI, was drafted on
-   2026-10-23: ENA lists fastqs its server does not serve (3 of 4,466 links), derives
+   2026-10-23: ENA lists fastqs its server does not serve (2 of 4,466 links), derives
    some fastqs from SRA Lite (122 of 452 NCBI runs) and split SRR14522447 through
    its barcode read ([the draft](docs/upstream/ebi-ena-fastq-files-not-as-listed.md)).
 ### Deferred until the `fetch inspect` validations land
