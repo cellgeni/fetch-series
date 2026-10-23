@@ -175,7 +175,7 @@ ship.
 
 ### Two honest gaps
 
-4. **Seven known archive behaviours have no pathology page.** They are declared
+4. **Five known archive behaviours have no pathology page.** They are declared
    on the routes that exhibit them and listed in `PATHOLOGY_BACKLOG`, so
    `--explain` names them and says *"not yet written up"* rather than offering a
    path to a file that does not exist. Each is real and observed; what they lack
@@ -183,7 +183,7 @@ ship.
    regression test. The first of the eleven,
    [`megalink-backend-flakiness`](docs/pathologies/megalink-backend-flakiness.md),
    was written up on 2026-10-23, and writing it found that a backend message
-   inside an ELink link set still read as "no links". Two more were written up the
+   inside an ELink link set still read as "no links". Four more were written up the
    same day, and `elink-history-missing-querykey` was retired: it no longer
    reproduces.
    [The list](docs/pathologies/index.md#known-declared-and-not-yet-written-up).
