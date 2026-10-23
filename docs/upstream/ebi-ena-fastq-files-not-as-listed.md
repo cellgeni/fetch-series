@@ -5,8 +5,8 @@ title: EBI — listed fastqs that are not served, and fastqs derived from SRA Li
 # EBI — listed fastqs that are not served, and fastqs derived from SRA Lite
 
 **Status:** draft, not filed **Archive:** EBI ENA
-**Checked:** 2026-10-23. All three files below are still served wrongly, and SRR11442250's fastq
-still carries `?` for every quality.
+**Checked:** 2026-10-23. Both directories below are still served as directories, and
+SRR11442250's fastq still carries `?` for every quality.
 **Evidence:** [pathologies/ena-serves-a-listed-fastq-wrongly.md](../pathologies/ena-serves-a-listed-fastq-wrongly.md),
 [pathologies/ena-fastq-is-lite-quality.md](../pathologies/ena-fastq-is-lite-quality.md),
 [pathologies/ena-fastq-splits-the-barcode-read.md](../pathologies/ena-fastq-splits-the-barcode-read.md)
@@ -35,20 +35,25 @@ single-cell data. We found three separate problems with the derived fastqs. In e
 ### 1. Listed files that are not there
 
 We sent a HEAD request for each of the 4,466 `fastq_ftp` links listed for 2,844 of those
-runs. Three do not serve the file `filereport` describes:
+runs. Two do not serve the file `filereport` describes:
 
 | Run | File | `fastq_bytes` | What `ftp.sra.ebi.ac.uk` serves |
 |---|---|---:|---|
 | SRR11040464 | `SRR11040464_1.fastq.gz` | 583,713,371 | 301 to `…_1.fastq.gz/`, an empty directory |
 | SRR27782870 | `SRR27782870_1.fastq.gz` | 606,656,529 | 301 to `…_1.fastq.gz/`, an empty directory |
-| ERR15320482 | `ERR15320482_2.fastq.gz` | 7,197,985,953 | a 4,096-byte file: the start of a gzip stream |
 
 ```bash
 curl -sI https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR110/064/SRR11040464/SRR11040464_1.fastq.gz | head -1
-curl -sI https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR153/082/ERR15320482/ERR15320482_2.fastq.gz | grep -i content-length
 ```
 
 The other file of each pair is served correctly.
+
+We also noticed two transient behaviours, which we are not reporting as defects:
+
+- The server answered 403 for 81 links under concurrent requests, and 200 for 80 of them
+  when asked one at a time.
+- For a while on 2026-10-23, it answered 4,096 bytes for ERR15320482's `_2.fastq.gz`. That file
+  is listed at 7,197,985,953 bytes and has the same `Last-Modified`.
 
 ### 2. Fastqs derived from the SRA Lite object
 
@@ -69,7 +74,7 @@ library, so no listing check notices.
 
 ### What would resolve it
 
-- **Listed files that are not there:** re-derive or remove the three files, and check
+- **Listed files that are not there:** re-derive or remove the two files, and check
   `fastq_bytes` against what the server holds.
 - **Lite-derived fastqs:** derive the fastqs from the Normalized object where NCBI has one.
 - **The split spot:** split by the read boundaries NCBI records for the run.

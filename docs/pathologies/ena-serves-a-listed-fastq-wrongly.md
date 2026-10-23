@@ -22,16 +22,20 @@ list any. It was asked as `fetch files --verify` asks: a HEAD with redirects fol
 | answered 403 twice | 1 |
 | timed out | 1 |
 | **served an empty directory at the file's path** | **2** |
-| **served a file of 4,096 bytes where 7,197,985,953 are published** | **1** |
+| served a file of 4,096 bytes where 7,197,985,953 are published, then the whole file | 1 |
 
-Three listed files are not there to download, **3 of 4,466 links**. Each looks complete to a
-listing: a name, a size and an md5.
+Two listed files are not there to download, **2 of 4,466 links**. Each looks complete to a
+listing: a name, a size and an md5. They were still directories every time they were asked
+on 2026-10-23.
 
 - **SRR11040464 `_1.fastq.gz`** is listed at 583,713,371 bytes, and SRR27782870 `_1.fastq.gz`
   at 606,656,529. At each path the server answers 301 to the same path with a trailing slash,
   and serves an empty directory listing. The `_2` file beside each is real.
-- **ERR15320482 `_2.fastq.gz`** is listed at 7,197,985,953 bytes. The server holds 4,096
-  bytes: the gzip header of an upload that stopped.
+- **ERR15320482 `_2.fastq.gz`** is listed at 7,197,985,953 bytes. The census read 4,096
+  bytes for it, the start of a gzip stream, and at 12:54 UTC the directory index still listed
+  it as 4.0K. By 13:10 UTC the server answered the full 7,197,985,953 bytes, with the same
+  `Last-Modified`. Two backends of one server disagreed, briefly. This is not counted as a
+  missing file, and it cannot be tested for.
 
 ## Reproducer
 
@@ -39,12 +43,8 @@ listing: a name, a size and an md5.
 curl -sI https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR110/064/SRR11040464/SRR11040464_1.fastq.gz | head -1
 # HTTP/1.1 301 Moved Permanently   -> .../SRR11040464_1.fastq.gz/  (an empty directory)
 
-curl -sI https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR153/082/ERR15320482/ERR15320482_2.fastq.gz \
-  | grep -i content-length
-# Content-Length: 4096
-
-curl -s 'https://www.ebi.ac.uk/ena/portal/api/filereport?accession=ERR15320482&result=read_run&fields=fastq_bytes&format=tsv'
-# ERR15320482  4208835871;7197985953
+curl -sI https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR277/070/SRR27782870/SRR27782870_1.fastq.gz | head -1
+# HTTP/1.1 301 Moved Permanently   -> .../SRR27782870_1.fastq.gz/  (an empty directory)
 ```
 
 Checked on 2026-10-23.
@@ -63,17 +63,16 @@ Checked on 2026-10-23.
 
 - **A directory answers 200.** A client that follows the redirect, as every client must for
   ENA's `ftp.sra.ebi.ac.uk` links, gets a 200 and an HTML index.
-- **The truncated file decompresses** for its first 4 KB and then ends.
+- **A stub served for a moment** decompresses for its first 4 KB and then ends. A download
+  that landed in that window would be caught only by its md5.
 - **The fit rule is protected.** In the content survey SRR11040464's set was refused on its
   other file alone, until `fit-5` stopped any refusal while a listed file cannot be read.
 
 ## Detection and workaround
 
-`fetch files --verify` flags all three.
-
-- A redirect to a path ending `/` is `served_directory`, and never `resolves`
-  (`filesets.Verdict`).
-- The 4,096-byte file fails `size_matches`.
+`fetch files --verify` flags both directories: a redirect to a path ending `/` is
+`served_directory`, and never `resolves` (`filesets.Verdict`). A stub fails `size_matches`
+while it is being served.
 
 The other offers of the same run are unaffected: NCBI's SRA objects of SRR11040464 read fit.
 
@@ -89,6 +88,6 @@ The 2026-10-23 census is `data/benchmarks/ena-listing/2026-10-23/links.csv`.
 
 ## Regression test
 
-`tests/pathologies/test_ena_serves_a_listed_fastq_wrongly.py` asserts that SRR11040464's
-`_1.fastq.gz` is still served as a directory, and that ERR15320482's `_2.fastq.gz` still serves
-4,096 bytes. The non-inverted half checks that `verify` flags both.
+`tests/pathologies/test_ena_serves_a_listed_fastq_wrongly.py` asserts that SRR11040464's and
+SRR27782870's `_1.fastq.gz` are still served as directories, and that `verify` never calls
+either a file.
