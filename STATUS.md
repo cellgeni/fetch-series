@@ -57,7 +57,7 @@ hand-written preference anywhere in the project.
 | **every `SAMEA`/`SAMD`** | BioSample asked of `efetch` by accession returns a *different sample* — prefix stripped, remainder read as a UID, HTTP 200, full attribute block | [pathology](docs/pathologies/biosample-efetch-ignores-accession-prefix.md) |
 | **41%** | of the BioProjects `esummary db=gds` recovers for series GEO leaves empty are species-level umbrellas — `PRJNA30709` holds 7,591 runs | [route](docs/routes/gse-to-bioproject/gds-summary.md) |
 | **0.77%** | of runs already reprocessed successfully no longer exist in *either* archive, and nothing announces it | [route](docs/routes/run-to-experiment/ena-filereport.md) |
-| **182/182** | runs whose ENA listing is one fastq are proven unusable by their reads; NCBI's Normalized object of the same run is fit for 141 runs with an unfit ENA fastq | [content survey](docs/benchmarks/content-survey-2026-10.md) |
+| **183/183** | runs whose ENA listing is one fastq are proven unusable by their reads; NCBI's Normalized object of the same run is fit for 142 runs with an unfit ENA fastq | [content survey](docs/benchmarks/content-survey-2026-10.md) |
 | **248/452** | objects DDBJ Search links for NCBI runs do not exist at DDBJ | [content survey](docs/benchmarks/content-survey-2026-10.md) |
 | **8,604/8,604** | agreement between GEO's own SRA relation and ENA's submitter alias — a route that works where GEO records no relation at all | [route](docs/routes/run-to-geo-sample/ena-alias.md) |
 

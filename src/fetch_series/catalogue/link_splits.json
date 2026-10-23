@@ -14308,9 +14308,9 @@
     "screened": {
      "reads": 100000,
      "inspected": 300,
-     "fit": 254,
+     "fit": 253,
      "unfit": 4,
-     "undetermined": 42,
+     "undetermined": 43,
      "layouts": {
       "10x_3p_v2": 10,
       "10x_3p_v3_family": 226,
@@ -14580,9 +14580,9 @@
     "screened": {
      "reads": 100000,
      "inspected": 297,
-     "fit": 251,
+     "fit": 250,
      "unfit": 4,
-     "undetermined": 42,
+     "undetermined": 43,
      "layouts": {
       "10x_3p_v2": 10,
       "10x_3p_v3_family": 223,
@@ -14624,9 +14624,9 @@
     "screened": {
      "reads": 100000,
      "inspected": 297,
-     "fit": 251,
+     "fit": 250,
      "unfit": 4,
-     "undetermined": 42,
+     "undetermined": 43,
      "layouts": {
       "10x_3p_v2": 10,
       "10x_3p_v3_family": 223,
@@ -14668,9 +14668,9 @@
     "screened": {
      "reads": 100000,
      "inspected": 297,
-     "fit": 251,
+     "fit": 250,
      "unfit": 4,
-     "undetermined": 42,
+     "undetermined": 43,
      "layouts": {
       "10x_3p_v2": 10,
       "10x_3p_v3_family": 223,
@@ -14712,9 +14712,9 @@
     "screened": {
      "reads": 100000,
      "inspected": 300,
-     "fit": 254,
+     "fit": 253,
      "unfit": 4,
-     "undetermined": 42,
+     "undetermined": 43,
      "layouts": {
       "10x_3p_v2": 10,
       "10x_3p_v3_family": 226,
@@ -14756,9 +14756,9 @@
     "screened": {
      "reads": 100000,
      "inspected": 300,
-     "fit": 254,
+     "fit": 253,
      "unfit": 4,
-     "undetermined": 42,
+     "undetermined": 43,
      "layouts": {
       "10x_3p_v2": 10,
       "10x_3p_v3_family": 226,
@@ -14926,9 +14926,9 @@
     "screened": {
      "reads": 100000,
      "inspected": 79,
-     "fit": 53,
+     "fit": 52,
      "unfit": 4,
-     "undetermined": 22,
+     "undetermined": 23,
      "layouts": {
       "10x_3p_v2": 4,
       "10x_3p_v3_family": 47,
@@ -15436,9 +15436,9 @@
     "screened": {
      "reads": 100000,
      "inspected": 297,
-     "fit": 226,
+     "fit": 223,
      "unfit": 2,
-     "undetermined": 69,
+     "undetermined": 72,
      "layouts": {
       "10x_3p_v2": 40,
       "10x_3p_v3_family": 150,
@@ -15479,9 +15479,9 @@
     "screened": {
      "reads": 100000,
      "inspected": 298,
-     "fit": 226,
+     "fit": 223,
      "unfit": 2,
-     "undetermined": 70,
+     "undetermined": 73,
      "layouts": {
       "10x_3p_v2": 40,
       "10x_3p_v3_family": 151,
@@ -15522,9 +15522,9 @@
     "screened": {
      "reads": 100000,
      "inspected": 297,
-     "fit": 226,
+     "fit": 223,
      "unfit": 2,
-     "undetermined": 69,
+     "undetermined": 72,
      "layouts": {
       "10x_3p_v2": 40,
       "10x_3p_v3_family": 150,
@@ -15565,12 +15565,12 @@
     "screened": {
      "reads": 100000,
      "inspected": 299,
-     "fit": 95,
+     "fit": 92,
      "unfit": 1,
-     "undetermined": 203,
+     "undetermined": 206,
      "layouts": {
       "10x_3p_v2": 18,
-      "10x_3p_v3_family": 78,
+      "10x_3p_v3_family": 77,
       "10x_5p_v1_v2": 9,
       "10x_multiome_arc_gex": 3
      }
@@ -15608,9 +15608,9 @@
     "screened": {
      "reads": 100000,
      "inspected": 299,
-     "fit": 226,
+     "fit": 223,
      "unfit": 2,
-     "undetermined": 71,
+     "undetermined": 74,
      "layouts": {
       "10x_3p_v2": 40,
       "10x_3p_v3_family": 151,
@@ -16283,9 +16283,9 @@
     "screened": {
      "reads": 100000,
      "inspected": 291,
-     "fit": 234,
+     "fit": 233,
      "unfit": 6,
-     "undetermined": 51,
+     "undetermined": 52,
      "layouts": {
       "10x_3p_v2": 49,
       "10x_3p_v3_family": 166,
@@ -16328,9 +16328,9 @@
     "screened": {
      "reads": 100000,
      "inspected": 292,
-     "fit": 235,
+     "fit": 234,
      "unfit": 6,
-     "undetermined": 51,
+     "undetermined": 52,
      "layouts": {
       "10x_3p_v2": 49,
       "10x_3p_v3_family": 167,
@@ -16373,9 +16373,9 @@
     "screened": {
      "reads": 100000,
      "inspected": 291,
-     "fit": 234,
+     "fit": 233,
      "unfit": 6,
-     "undetermined": 51,
+     "undetermined": 52,
      "layouts": {
       "10x_3p_v2": 49,
       "10x_3p_v3_family": 166,
@@ -16461,9 +16461,9 @@
     "screened": {
      "reads": 100000,
      "inspected": 299,
-     "fit": 238,
+     "fit": 237,
      "unfit": 7,
-     "undetermined": 54,
+     "undetermined": 55,
      "layouts": {
       "10x_3p_v2": 49,
       "10x_3p_v3_family": 171,

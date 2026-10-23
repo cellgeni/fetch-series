@@ -60,6 +60,15 @@ technologies:
   barcodes, and under ``fit-3`` that was proof of no barcode read. It is proof
   of a library this rule does not describe, so it decides nothing.
 
+``fit-5`` adds one more, found by re-reading the content survey under ``fit-3``:
+
+* **A refusal needs every listed file read.** ENA lists SRR11040464's
+  ``_1.fastq.gz`` with a size and an md5, and serves an empty directory at
+  that path; ENA answers 403 for one of ERR4065012's fastqs. Judged on the file
+  that could be read, each set was refused for lacking the read the missing
+  file most likely holds. Positive evidence of absence cannot come from half a
+  set, so such a refusal is undetermined, with both reasons.
+
 A verdict records what it was judged on -- each file's format, source and modal
 length, the call, ``run_spot``, and the spot-name agreement of every pair of
 files -- so :func:`fit_from_detail` can judge it again under a later rule
@@ -74,11 +83,11 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
-from fetch_series.inspect.checks import BARCODE_READ_MIN, CDNA_READ_MIN, concordance
+from fetch_series.inspect.checks import BARCODE_READ_MIN, CDNA_READ_MIN, concordance, unreadable
 from fetch_series.inspect.classify import LOW_NEAR, NO_LISTS, Call
 from fetch_series.inspect.model import FileSample
 
-RULE = "fit-4"
+RULE = "fit-5"
 
 # The longest 10x gene-expression barcode and UMI: 16 + 12 on v3 and v4.
 BARCODE_UMI_MAX = 28
@@ -152,11 +161,23 @@ def _mates(read: list[_Read], barcode: list[int], agree: Agree) -> float | None:
 
 
 def _judge(
-    read: list[_Read], call: dict[str, Any], run_spot: float | None, agree: Agree
+    read: list[_Read],
+    call: dict[str, Any],
+    run_spot: float | None,
+    agree: Agree,
+    missing_files: Callable[[], int],
 ) -> dict[str, Any]:
     inputs: dict[str, Any] = {"run_spot": run_spot, "mates": None}
 
     def verdict(value: bool | None, reason: str) -> dict[str, Any]:
+        if value is False and (missing := missing_files()):
+            return {
+                "fit": None,
+                "rule": RULE,
+                "reason": f"{reason} in what was read, but {missing} listed "
+                f"file{'s' if missing > 1 else ''} could not be read",
+                **inputs,
+            }
         return {"fit": value, "rule": RULE, "reason": reason, **inputs}
 
     if not read:
@@ -230,6 +251,7 @@ def fit(samples: list[FileSample], call: Call, *, run_spot: float | None = None)
     ``run_spot`` is the run's mean bases per spot, from its metadata; it is what
     an SRA object's first spots are held against.
     """
+    missing = len(unreadable(samples))
     samples = [s for s in samples if s.records]
     read = [_Read(s.source, s.format, _mode(s)) for s in samples]
     return _judge(
@@ -237,6 +259,7 @@ def fit(samples: list[FileSample], call: Call, *, run_spot: float | None = None)
         call.as_detail(),
         run_spot,
         lambda i, j: concordance(samples[i], samples[j]),
+        lambda: missing,
     )
 
 
@@ -268,7 +291,12 @@ def fit_from_detail(detail: dict[str, Any]) -> dict[str, Any]:
                 return share  # type: ignore[no-any-return]
         raise MissingInput(f"no spot-name agreement recorded for files {i} and {j}")
 
-    return _judge(read, detail["call"], detail.get("run_spot"), agree)
+    def missing() -> int:
+        if "unreadable" not in checks:
+            raise MissingInput("which listed files could not be read is not recorded")
+        return len(checks["unreadable"] or [])
+
+    return _judge(read, detail["call"], detail.get("run_spot"), agree, missing)
 
 
 __all__ = ["RULE", "MissingInput", "fit", "fit_from_detail", "short_of_run"]

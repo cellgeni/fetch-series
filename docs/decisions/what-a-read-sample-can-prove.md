@@ -80,6 +80,14 @@ for a cDNA read after its barcode and UMI, and may be the two reads joined, so s
 undetermined. Only a barcode read too short for that (under 58 bases) with nothing beside
 it is proof.
 
+**A refusal needs every listed file read** (rule `fit-5`). ENA lists SRR11040464's
+`_1.fastq.gz` with a size and an md5 and serves an empty directory at that path, and answers 403
+for one of ERR4065012's fastqs. Judged on the file that could be read, each set was refused for
+lacking the read the missing file most likely holds. Half a set is not positive evidence of
+absence, so such a refusal is undetermined, and its reason says which file was missing. A copy
+read as another technology is undetermined too (`fit-4`): a 10x list not holding a Parse or BD
+Rhapsody barcode says nothing about whether the library is usable.
+
 Each verdict records what it was judged on: every file's format and modal length, the call,
 the run's mean spot (`run_spot`), and the spot-name agreement of every pair of files from
 different sources. `fit_from_detail` judges a recorded verdict again from those alone and

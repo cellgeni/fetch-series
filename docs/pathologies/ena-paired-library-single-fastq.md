@@ -71,12 +71,14 @@ read the first 100,000 reads of every file ENA lists for 500 runs drawn from the
 
 | ENA's listing in the census | Fit | Unfit | Undetermined |
 |---|---:|---:|---:|
-| one fastq | 0 | **182** | 0 |
-| two or more | 236 | 2 | 54 |
+| one fastq | 0 | **183** | 0 |
+| two or more | 234 | 1 | 56 |
 
-**Every one of the 182 single-fastq runs is proven unusable by its reads.** None holds a
+**Every one of the 183 single-fastq runs is proven unusable by its reads.** None holds a
 read whose first 16 bases are a listed 10x barcode, or none holds a read long enough to be
-the cDNA. For 141 runs with an unfit ENA fastq, NCBI's Normalized SRA object of the same run is fit.
+the cDNA. For 142 runs with an unfit ENA fastq, NCBI's Normalized SRA object of the same run is
+fit. (Read on 2026-10-22 under `fit-3`, judged under `fit-5`; the first reading, under `fit-2`,
+found 182 and 141.)
 
 The reads also found a defect the listing cannot see. SRR14522447 has two ENA fastqs, of
 28 and 99 bases. NCBI's Normalized object holds the same 127 bases per spot split as 8, 28

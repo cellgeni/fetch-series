@@ -197,7 +197,8 @@ constant sequences (`inspect/classify/technologies.tsv`): SPLiT-seq, microSPLiT 
 Evercode, BD Rhapsody, inDrop, Microwell-seq, HyDrop, sci-RNA-seq3 and a few more, each row
 citing Teichlab/scg_lib_structs at the pinned commit. A copy whose reads carry one is named
 (`technology`), and gets **no 10x layout, no mapping block, and is never fit**: `fit-4`
-calls it undetermined, since a 10x list not holding its barcodes proves nothing about it.
+calls it undetermined (and `fit-5` keeps it), since a 10x list not holding its barcodes proves
+nothing about it.
 
 Drop-seq, Seq-Well, CEL-seq2 and MARS-seq read random bases and then poly-T, with no constant to
 find. They are `unknown`, not guessed. Parse Evercode carries microSPLiT's linkers and is
@@ -218,12 +219,14 @@ the Normalized or the Lite object it came from.
 The [2026-10 content survey](benchmarks/content-survey-2026-10.md) read every run-to-reads
 link's files for 500 runs of the reprocessed corpus, and 300 runs from each run node:
 
-- All 182 runs whose ENA listing is one fastq are **unfit** by their reads. For 141 runs with
+- All 183 runs whose ENA listing is one fastq are **unfit** by their reads. For 142 runs with
   an unfit ENA fastq, NCBI's Normalized object of the same run is fit, and
   `fetch files --inspect` would choose it.
-- ENA's fastq is unfit for 183 of 451 NCBI-submitted runs, and for 2 of 146 EBI-submitted
+- ENA's fastq is unfit for 183 of 452 NCBI-submitted runs, and for 2 of 147 EBI-submitted
   runs. The defect is in how ENA derives fastq from NCBI's objects.
 - Where ENA's fastq and the Normalized object were both called, they name the same kit on all
-  267 runs. The Lite object agrees with the Normalized one on 492 of 493.
-- Reading the reads changed the rule: `fit-1`'s verdicts on DRR878211, SRR9105023 and DDBJ's
-  fastqs of DRR878211 were wrong, and `fit-2` is the result.
+  265 runs. The Lite object agrees with the Normalized one on 492 of 493.
+- Reading the reads changed the rule, more than once: `fit-1`'s verdicts on DRR878211,
+  SRR9105023 and DDBJ's fastqs of DRR878211 were wrong (`fit-2`), and re-reading under `fit-3`
+  found ENA listing SRR11040464's `_1.fastq.gz` and serving an empty directory there (`fit-5`:
+  a refusal needs every listed file read).

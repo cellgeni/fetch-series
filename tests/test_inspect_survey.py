@@ -210,6 +210,44 @@ def unpaired() -> list[FileSample]:
     ]
 
 
+def unavailable_file(name: str = "x_1.fastq.gz") -> FileSample:
+    return FileSample(name, "fastq", facts={"reader": "unavailable", "why": "403 Forbidden"})
+
+
+class TestFit5:
+    """A refusal needs every listed file read."""
+
+    def test_a_set_with_an_unreadable_file_is_not_refused(self):
+        """ERR4065012: ENA answers 403 for one fastq; the other alone has no barcode read."""
+        verdict = fit(
+            [unavailable_file(), sample(91)],
+            call(None, "none", hint="barcode read missing: ..."),
+        )
+        assert verdict["fit"] is None
+        assert "1 listed file could not be read" in verdict["reason"]
+
+    def test_an_unreadable_file_does_not_stop_a_fit_verdict(self):
+        verdict = fit(
+            [sample(28), sample(91), unavailable_file()],
+            call("10x_3p_v3_family", "HIGH", hits=[hit()]),
+        )
+        assert verdict["fit"] is True
+
+    def test_judged_again_the_same_way(self):
+        samples = [unavailable_file(), sample(91)]
+        made = call(None, "none", hint="barcode read missing: ...")
+        assert fit_from_detail(detail_of(samples, made)) == fit(samples, made)
+
+    def test_an_older_record_without_the_list_needs_its_reads_only_to_refuse(self):
+        refused = detail_of([sample(28)], call(None, "none", hits=[hit()]))
+        del refused["checks"]["unreadable"]
+        with pytest.raises(MissingInput):
+            fit_from_detail(refused)
+        passed = detail_of([sample(28), sample(91)], call("10x_3p_v3", "HIGH", hits=[hit()]))
+        del passed["checks"]["unreadable"]
+        assert fit_from_detail(passed)["fit"] is True
+
+
 class TestFitFromDetail:
     """A recorded verdict judged again without its reads gives what fit gives with them."""
 
