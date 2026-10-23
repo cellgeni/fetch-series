@@ -53,6 +53,8 @@ INSPECT_GATE: dict[str, str] = {
     "SRR30132199": "28-base reads only: no cDNA read, unfit everywhere",
     "DRR345778": "DDBJ: bzip2 fastqs, and an SRA object of 28 + 91",
     "SRR11181954": "5' v1/v2: R1 26 + R2 100 like 3' v2, the cDNA read antisense",
+    "SRR24749105": "Parse Evercode: microSPLiT's linkers at 18 and 56 of R2; named, never fit",
+    "DRR346905": "BD Rhapsody's original beads: both linkers in R1; named, never fit",
 }
 
 

@@ -190,6 +190,21 @@ The library block goes one step past the classifier's library type:
 Both thresholds are **provisional**: a chain needs 80% of the constant-region reads, and a
 tag set half the feature reads. No labelled set has measured them yet, and the block says so.
 
+## Other technologies: detected and named
+
+Before any 10x list is tried, the reads are checked against a table of other technologies'
+constant sequences (`inspect/classify/technologies.tsv`): SPLiT-seq, microSPLiT and Parse
+Evercode, BD Rhapsody, inDrop, Microwell-seq, HyDrop, sci-RNA-seq3 and a few more, each row
+citing Teichlab/scg_lib_structs at the pinned commit. A copy whose reads carry one is named
+(`technology`), and gets **no 10x layout, no mapping block, and is never fit**: `fit-4`
+calls it undetermined, since a 10x list not holding its barcodes proves nothing about it.
+
+Drop-seq, Seq-Well, CEL-seq2 and MARS-seq read random bases and then poly-T, with no constant to
+find. They are `unknown`, not guessed. Parse Evercode carries microSPLiT's linkers and is
+named together with it. On the [held-out half](benchmarks/technologies-2026-10.md), no run
+labelled as another technology was called 10x, and no 10x control was named as another
+technology. Parse was named for 9 of 11 runs and BD Rhapsody for 10 of 10.
+
 ## Readers, and what is optional
 
 FASTQ (plain, gzip, bzip2) and BAM are read with the standard library. A CRAM needs pysam

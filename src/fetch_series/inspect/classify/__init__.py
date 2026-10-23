@@ -42,6 +42,7 @@ from fetch_series.inspect.classify.layouts import (
     Tail,
     sharing,
 )
+from fetch_series.inspect.classify.technologies import detect
 from fetch_series.inspect.lists import BarcodeList
 from fetch_series.inspect.model import FileSample
 from fetch_series.inspect.references import KmerIndex
@@ -49,8 +50,12 @@ from fetch_series.inspect.references import KmerIndex
 # The classifier is a versioned instrument: a call records the version that
 # made it, and a threshold change is a new version. 0.2.1 takes a cDNA read
 # from 30 bases rather than 50 (rule fit-3, SRR34778689's 28 + 47); a call on
-# a set with no read of 30 to 49 bases is unchanged from 0.2.0.
-VERSION = "0.2.1"
+# a set with no read of 30 to 49 bases is unchanged from 0.2.0. 0.3.0 reads
+# other technologies' constants first (``technologies``), and a copy that
+# carries them gets no 10x layout; every other call is unchanged. 0.3.1 lets
+# those constants carry one substitution in ten bases, and names Parse by its
+# second linker alone (the 2026-10-22 technology benchmark's design half).
+VERSION = "0.3.1"
 NO_LISTS = "no barcode list fetched; run `fetch inspect lists --fetch`"
 THRESHOLDS_SET_ON = "the 2026-10-19 benchmark's design half: 121 runs"
 
@@ -122,6 +127,9 @@ class Call:
     contradictions: list[str] = field(default_factory=list)
     hint: str | None = None
     library_type: str | None = None
+    # ``10x`` when a 10x layout was called, another table row's id when that
+    # technology's constants were read, ``None`` when neither.
+    technology: str | None = None
     version: str = VERSION
 
     def as_detail(self) -> dict[str, Any]:
@@ -341,6 +349,16 @@ def classify(
     samples = [s for s in samples if s.records]
     if not samples:
         return Call(None, [], "none", hint="nothing could be read")
+    other = detect(samples)
+    if other is not None:
+        return Call(
+            None,
+            [],
+            "none",
+            evidence={"technology": other},
+            hint=f"a {other['name']} library, not 10x",
+            technology=other["id"],
+        )
     if not lists:
         return Call(
             None, [], "none", hint="no barcode list fetched; run `fetch inspect lists --fetch`"
@@ -505,6 +523,7 @@ def classify(
         evidence=evidence,
         contradictions=contradictions,
         library_type=kind,
+        technology="10x" if ids else None,
     )
 
 

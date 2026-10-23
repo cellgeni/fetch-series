@@ -22,10 +22,12 @@ Keys (schema 2):
     CB-UMI pairs' distinct share and the tail, over the sample (``inspect.qc``);
   * ``library`` -- the library type, a VDJ library's chain and a feature
     library's multiplexing tags;
+  * ``technology`` -- 10x, another technology whose constants the reads carry
+    (``classify.technologies``), or unknown;
 * ``agreement``: whether the called sources agree, and which could not be called.
 
-Schema 2 added ``geometry``, ``mapping``, ``convertible``, ``qc`` and
-``library``; nothing of schema 1 was removed or changed meaning. No sequence is ever written.
+Schema 2 added ``geometry``, ``mapping``, ``convertible``, ``qc``,
+``library`` and ``technology``; nothing of schema 1 was removed or changed meaning. No sequence is ever written.
 """
 
 from __future__ import annotations
@@ -54,6 +56,16 @@ from fetch_series.inspect.tags import available as tag_sets
 from fetch_series.survey.client import SurveyClient
 
 SCHEMA_VERSION = "2"
+
+
+def technology_of(call: dict[str, Any]) -> dict[str, Any]:
+    """What made the library: 10x, another table row the reads carry, or unknown."""
+    other: dict[str, Any] | None = (call.get("evidence") or {}).get("technology")
+    if other:
+        return other
+    if call.get("technology") == "10x":
+        return {"id": "10x", "name": "10x Genomics"}
+    return {"id": None, "name": "unknown"}
 
 
 def _source(
@@ -86,6 +98,7 @@ def _source(
         "mates": verdict.get("mates"),
     }
     entry.update(readiness(entry, run=run, run_spot=run_spot))
+    entry["technology"] = technology_of(entry["call"])
     entry["qc"] = qc(samples, entry["call"])
     entry["library"] = library(samples, entry["call"], references, tag_sets())
     return entry, call
@@ -224,6 +237,8 @@ def summary(report: dict[str, Any]) -> str:
     for source in report["sources"]:
         call = source["call"]
         named = call["layout"] or (" | ".join(call["candidates"]) if call["candidates"] else "-")
+        if (source.get("technology") or {}).get("id") not in (None, "10x"):
+            named = source["technology"]["name"]
         files = source["checks"]["files"]
         shape = "+".join(str(f["length"]["mode"]) for f in files) or "-"
         fit_word = {True: "fit", False: "UNFIT", None: "undetermined"}[source["fit"]]
