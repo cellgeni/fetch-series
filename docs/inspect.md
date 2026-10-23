@@ -149,11 +149,20 @@ say the called kit needs:
   register (`export_sha256`), and an export that does not match it is refused.
 
 **The block has been set beside the reprocessing pipeline's own STARsolo runs**
-([the comparison](benchmarks/inspect-vs-starsolo-2026-10.md)). On 300 held-out samples:
+([the comparison](benchmarks/inspect-vs-starsolo-2026-10.md)). Classifier 0.4.0's thresholds
+were set on a design half, and it was then read once on 300 held-out samples it had never
+seen:
 
-- every one of 357 blocks named the whitelist the pipeline used;
-- every one of the 333 that named a `soloStrand` named the pipeline's strand;
-- the listed-barcode rate was within 0.05 of STARsolo's valid barcodes for 277 of 287 samples.
+- every one of 404 blocks named the whitelist the pipeline used;
+- every one of the 386 that named a `soloStrand` named the pipeline's strand;
+- one sample's layout implies the other strand from the pipeline's: ERS5577770, 3′ v3 with
+  `soloStrand` left out, which the pipeline mapped Reverse;
+- 7 gene-expression samples were left ambiguous between 3′ v2 and 5′, down from 32 under
+  0.3.x;
+- the listed-barcode rate was within 0.05 of STARsolo's valid barcodes for 277 of 285 samples.
+
+The same draw found the next gap: 8 samples the pipeline mapped to genes were called VDJ.
+Five of them read as B-cell libraries, three of those on a 3′ layout, which no V(D)J kit is.
 
 A block says which layouts were compared, and how often (`validated`, `validation`). A
 layout no held-out sample was called as, such as GEM-X v4 or 5′ v3, says it is unvalidated.

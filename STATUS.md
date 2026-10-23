@@ -36,7 +36,7 @@ Behind it:
 | Link catalogue | **1,127** one-hop links between 39 nodes: 96 measured by a route's survey, **288 surveyed** by a link survey of their own (268 answering usably, 20 never), 480 confirmed by one live probe, 263 unconfirmed; none ranked ([the catalogue](docs/graph/catalogue.md), [link survey results](docs/graph/link-survey-results.md)) |
 | Read classifier | 10x kits from the first 100,000 reads: **0 errors in 66 held-out HIGH calls**, 0 in 28 MEDIUM ([benchmark](docs/benchmarks/inspect-2026-10.md)) |
 | Content survey | every run-to-reads link's files read for 1,400 runs ([results](docs/benchmarks/content-survey-2026-10.md)) |
-| Mapping block | set beside the reprocessing pipeline's own STARsolo runs on 300 held-out samples: the pipeline's whitelist in **357 of 357** blocks, its strand in **333 of 333** that name one ([comparison](docs/benchmarks/inspect-vs-starsolo-2026-10.md)) |
+| Mapping block | classifier 0.4.0, set beside the reprocessing pipeline's own STARsolo runs on a fresh draw of 300 held-out samples: the pipeline's whitelist in **404 of 404** blocks, its strand in **386 of 386** that name one; 7 left ambiguous, down from 32 ([comparison](docs/benchmarks/inspect-vs-starsolo-2026-10.md)) |
 | Other technologies | Parse, BD Rhapsody, inDrop and others named from their constants; **no non-10x run called 10x** on the held-out half ([benchmark](docs/benchmarks/technologies-2026-10.md)) |
 | Survey verdicts recorded and committed | **681,144** across 3,364 files in `data/surveys/` |
 | Offline tests | **893** collected by `uv run pytest` (plus integration, pathology and slow suites) |
@@ -173,7 +173,7 @@ ship.
 - **The CLAUDE.md wording drafted in PR #11** ("A link survey is measurement,
   not a ranking") is approved and applied.
 
-### Two honest gaps
+### Honest gaps
 
 4. **Three known archive behaviours have no pathology page.** They are declared
    on the routes that exhibit them and listed in `PATHOLOGY_BACKLOG`, so
@@ -194,6 +194,14 @@ ship.
    of the 240 metadata labels wrong. The assay layer's own calls have not yet been
    compared with `fetch inspect` over the corpus; the content survey's exports
    hold what that comparison needs.
+
+6. **The read classifier's VDJ call has never been set on labelled data.** On
+   the second held-out draw (2026-10-23), 8 samples the pipeline mapped to genes
+   were called VDJ. Five read as B-cell libraries, and three of those on a 3′
+   layout, which no 10x V(D)J kit is: gene-expression libraries from
+   plasma-cell-rich tissue, by the look of them. `VDJ_SHARE` stays as it is
+   until it is set on the design half and scored on samples not yet read
+   ([the comparison](docs/benchmarks/inspect-vs-starsolo-2026-10.md#classifier-040-on-a-fresh-held-out-draw-2026-10-23)).
 
 ### Deliberately dropped, with the reasons recorded
 
