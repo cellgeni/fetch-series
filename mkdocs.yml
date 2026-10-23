@@ -145,6 +145,7 @@ nav:
           - ArrayExpress SDRF mirror URIs: pathologies/ae-sdrf-points-at-decommissioned-mirror.md
           - BioSample efetch ignores the accession prefix: pathologies/biosample-efetch-ignores-accession-prefix.md
           - ZOOMA's filter forces a term: pathologies/zooma-filter-forces-a-term.md
+          - ELink MegaLink failures: pathologies/megalink-backend-flakiness.md
       - Upstream reports:
           - Overview: upstream/index.md
           - NCBI ELink gds to sra: upstream/ncbi-elink-gds-sra.md

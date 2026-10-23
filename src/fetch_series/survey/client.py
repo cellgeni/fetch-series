@@ -57,8 +57,9 @@ def is_retryable(exc: BaseException) -> bool:
     responses for the same endpoint, and a missing key is far more often a
     transient backend hiccup than a parser bug. The dominant failure signal in
     this project's logs is NCBI backend flakiness -- ``callMLink: Query failed
-    on MegaLink server`` (1,712 occurrences) and ``Couldn't resolve
-    #pmquerysrv-mz`` (1,423) -- not client error.
+    on MegaLink server`` and ``Couldn't resolve #pmquerysrv-mz``, 5,107 lines
+    in the 2026-05-11 ELink surveys, in bursts -- not client error
+    (docs/pathologies/megalink-backend-flakiness.md).
     """
     if isinstance(
         exc,

@@ -312,7 +312,6 @@ PATHOLOGY_BACKLOG: frozenset[str] = frozenset(
         # NCBI E-utilities mechanics, all four observed in the 2026-05 logs.
         "esummary-500-uid-limit",
         "elink-history-missing-querykey",
-        "megalink-backend-flakiness",  # 3,135 occurrences; the dominant failure
         "gprj-falls-through-to-all-fields",
         "efetch-returns-fewer-runs-than-esearch-counts",
         "esummary-sra-buries-accessions-in-expxml",

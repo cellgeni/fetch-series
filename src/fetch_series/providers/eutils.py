@@ -179,6 +179,14 @@ async def elink_uids(
     payload = response.json()
     if "linksets" not in payload:
         raise MalformedResponseError(f"elink returned no 'linksets' for {dbfrom}->{db}")
+    # A failed backend answers HTTP 200 with its message where the links should
+    # be -- 'callMLink: Query failed on MegaLink server', "Couldn't resolve
+    # #pmquerysrv-mz" -- and a link set with no links read as empty would
+    # record a project as having none. It is a failure, and retried as one.
+    errors = [str(s["ERROR"]) for s in payload["linksets"] if s.get("ERROR")]
+    if payload.get("ERROR") or errors:
+        message = payload.get("ERROR") or "; ".join(errors)
+        raise MalformedResponseError(f"elink backend error for {dbfrom}->{db}: {message}")
 
     # A single ELink response lists the same neighbours under several link
     # names -- bioproject->biosample comes back as bioproject_biosample,
