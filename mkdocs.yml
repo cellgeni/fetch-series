@@ -153,6 +153,7 @@ nav:
           - SRA's ESummary buries its accessions: pathologies/esummary-sra-buries-accessions-in-expxml.md
           - An IDF does not declare its ENA study: pathologies/ae-idf-missing-secondary-accession.md
           - BioStudies lists 25 files by default: pathologies/biostudies-silent-25-item-default.md
+          - A series' BioProject holds more than the series: pathologies/experiments-outside-the-series-bioproject.md
       - Upstream reports:
           - Overview: upstream/index.md
           - NCBI ELink gds to sra: upstream/ncbi-elink-gds-sra.md

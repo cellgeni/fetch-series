@@ -30,11 +30,12 @@ good news — the archive fixed something.
 | [SRA's ESummary buries its accessions](esummary-sra-buries-accessions-in-expxml.md) | NCBI | Every accession is inside an XML string in the JSON; reading fields finds none |
 | [An IDF does not declare its ENA study](ae-idf-missing-secondary-accession.md) | EBI | 551 of 20,693 ArrayExpress studies with an ENA link name none in the IDF |
 | [BioStudies lists 25 files by default](biostudies-silent-25-item-default.md) | EBI | A study with 43 files appears to register 25, unless `pagination.total` is read |
+| [A series' BioProject holds more than the series](experiments-outside-the-series-bioproject.md) | NCBI | 77 series get 5,115 experiments their SOFT file does not name, by asking for their project |
 
 ## Known, declared, and not yet written up
 
 A route can declare a behaviour it exhibits before that behaviour has a page.
-Five do, and they are listed in `PATHOLOGY_BACKLOG` in `graph.py` rather than
+Three do, and they are listed in `PATHOLOGY_BACKLOG` in `graph.py` rather than
 left implicit — `--explain` names them and says *"not yet written up"* instead
 of offering a path to a file that does not exist.
 
@@ -43,8 +44,6 @@ of offering a path to a file that does not exist.
 | `gprj-falls-through-to-all-fields` | NCBI | `[GPRJ]` silently becomes `[All Fields]` for renamed or merged projects |
 | `efetch-returns-fewer-runs-than-esearch-counts` | NCBI | PRJNA940674 is the worked example |
 | `sra-be-timeout-on-large-projects` | NCBI | PRJEB9859, PRJEB82511, PRJEB19038 |
-| `superseries-carries-no-bioproject` | GEO | a SuperSeries records none of its own |
-| `experiments-outside-the-series-bioproject` | GEO | the project holds runs belonging to other series |
 
 Every one is real and observed. What each lacks is the **page contract** above:
 a curl reproducer, a machine-readable affected-accession list, and a matching
@@ -66,4 +65,5 @@ checked, rather than left declared on a route as a claim nothing supports.
 
 | Slug | Archive | Retired | Why |
 |---|---|---|---|
+| `superseries-carries-no-bioproject` | GEO | 2026-10-23 | Of 400 seeded series of the reprocessed corpus, 62 are SuperSeries, and all 62 carry their own BioProject relation. The SubSeries are the ones that often carry none (GSE287249's three siblings, GSE201855's), and the SuperSeries is where their project is found. Nothing measured the claim as written. |
 | `elink-history-missing-querykey` | NCBI | 2026-10-23 | In 2026-05, 27 BioProjects got an ELink `cmd=neighbor_history` answer with no usable `querykey` (`docs/bioproject2geo_troubleshooting.md`). On 2026-10-23 all four named examples (PRJNA1214811, PRJNA1088541, PRJNA672686, PRJNA1169288) answered with a `querykey`, from UIDs and from an ESearch history alike. The routes use `cmd=neighbor`, which needs no history, so nothing depended on it. |
