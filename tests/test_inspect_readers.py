@@ -149,6 +149,38 @@ class TestBam:
         assert r1.facts["sort_order"] == "coordinate" and r1.facts["first_reads_are_chr1"]
         assert r1.facts["bamtofastq"] == ["R1", "R2"]
 
+    def test_a_trimmed_tag_named_by_the_header_may_be_absent(self):
+        """SRR6459192: Cell Ranger 2 names TR:TQ in R1's spec and writes it only on trimmed reads."""
+        header = (
+            "@HD\tVN:1.4\tSO:coordinate\n"
+            "@CO\t10x_bam_to_fastq:I1(BC:QT)\n"
+            "@CO\t10x_bam_to_fastq:R1(CR:CY,UR:UY,TR:TQ)\n"
+            "@CO\t10x_bam_to_fastq:R2(SEQ:QUAL)\n"
+        )
+        tags = (
+            _tag("BC", "G" * 8)
+            + _tag("QT", "F" * 8)
+            + _tag("CR", "A" * 16)
+            + _tag("CY", "F" * 16)
+            + _tag("UR", "C" * 10)
+            + _tag("UY", "F" * 10)
+        )
+        trimmed = tags + _tag("TR", "T" * 4) + _tag("TQ", "F" * 4)
+        records = [
+            _record(f"r{i}", "ACGT" * 25, flag=0, tags=trimmed if i % 4 == 0 else tags)
+            for i in range(20)
+        ]
+        i1, r1, r2 = read_bam(bam(header, records), "x.bam", max_reads=100, complete=True)
+        assert (i1.role_hint, set(i1.lengths)) == ("I1", {8})
+        assert (r1.role_hint, len(r1.records), set(r1.lengths)) == ("R1", 20, {26, 30})
+        assert set(r2.lengths) == {100}
+
+    def test_a_barcode_tag_named_by_the_header_is_never_optional(self):
+        header = "@CO\t10x_bam_to_fastq:R1(CR:CY,UR:UY)\n@CO\t10x_bam_to_fastq:R2(SEQ:QUAL)\n"
+        records = [_record("r", "ACGT" * 25, flag=0, tags=_tag("UR", "C" * 10))]
+        r1, _ = read_bam(bam(header, records), "x.bam", max_reads=10, complete=True)
+        assert r1.records == []
+
     def test_a_bam_without_the_header_is_rebuilt_from_its_tags(self):
         """ERR4265292: fastq_pre_barcodes wrote CR/CY and RX/QX, no 10x_bam_to_fastq."""
         tags = (
