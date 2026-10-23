@@ -144,10 +144,15 @@ say the called kit needs:
 - **The whitelist** is exported from the checked cache as sorted text. Its sha256 is in the
   register (`export_sha256`), and an export that does not match it is refused.
 
-**The block is unvalidated.** It has not yet been compared with what the reprocessing
-pipeline's own STARsolo runs used and achieved, and every block says so (`validated: false`).
-The pipeline settles strand by mapping 200,000 reads both ways. Until that comparison is
-published, check the first run's `Summary.csv`.
+**The block has been set beside the reprocessing pipeline's own STARsolo runs**
+([the comparison](benchmarks/inspect-vs-starsolo-2026-10.md)). On 300 held-out samples:
+
+- every one of 357 blocks named the whitelist the pipeline used;
+- every one of the 333 that named a `soloStrand` named the pipeline's strand;
+- the listed-barcode rate was within 0.05 of STARsolo's valid barcodes for 277 of 287 samples.
+
+A block says which layouts were compared, and how often (`validated`, `validation`). A
+layout no held-out sample was called as, such as GEM-X v4 or 5′ v3, says it is unvalidated.
 
 `convertible` follows the fit rule's standard and needs positive evidence. A BAM converts with
 `bamtofastq` when its `10x_bam_to_fastq` header says how, and with its tags when the raw

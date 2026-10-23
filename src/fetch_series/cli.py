@@ -290,6 +290,44 @@ def catalogue_splits(
         typer.echo(f"wrote {len(splits)} splits to {SPLITS_PATH}", err=True)
 
 
+truth_app = typer.Typer(help="The reprocessing pipeline's own STARsolo runs, as a record.")
+inspect_app.add_typer(truth_app, name="truth")
+
+
+@truth_app.command("import")
+def inspect_truth_import(
+    bundle: Annotated[
+        Path, typer.Argument(help="The bundle: one directory per dataset, as in iRODS.")
+    ],
+    out: Annotated[Path, typer.Option(help="Where to write truth.csv.")] = Path(
+        "data/benchmarks/inspect/starsolo"
+    ),
+) -> None:
+    """One row per sample: the whitelist, strand and pairing the pipeline used, and how it mapped.
+
+    Read from each dataset's ``solo_qc`` table and each sample's GeneFull
+    ``Summary.csv``. Split into design and held-out halves by dataset, seeded.
+    """
+    from collections import Counter
+
+    from fetch_series.inspect import truth
+
+    samples = list(truth.read_bundle(bundle))
+    if not samples:
+        typer.secho(f"no solo_qc rows under {bundle}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(2)
+    # Controlled-access datasets are counted, not written: their sample names
+    # are not public, and their reads cannot be read to compare anyway.
+    truth.write([s for s in samples if s.public], out / "truth.csv")
+    halves = Counter((s.split, s.public) for s in samples)
+    typer.echo(
+        f"{len(samples):,} samples from {len({s.dataset for s in samples})} datasets; "
+        f"{sum(s.public for s in samples):,} public ones -> {out / 'truth.csv'}"
+    )
+    for (half, public), n in sorted(halves.items()):
+        typer.echo(f"  {half:8s} {'public' if public else 'controlled':10s} {n:>6,}")
+
+
 @inspect_app.command("lists")
 def inspect_lists(
     fetch_them: Annotated[

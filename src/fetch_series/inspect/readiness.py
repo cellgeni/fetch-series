@@ -21,8 +21,14 @@ needs is what STAR's and 10x's documentation say it needs:
 the kit's name: sense is ``Forward``, antisense ``Reverse``, and an unstranded
 or unmeasured read leaves it out rather than guessed. The reprocessing
 pipeline (``starsolo_10x_auto.sh``) settles the same question by mapping
-200,000 reads both ways; until its past runs are compared with these blocks
-(``docs/benchmarks``), a block says it is unvalidated.
+200,000 reads both ways.
+
+A block says whether its layout has been checked against what that pipeline
+used (``VALIDATION``): on the held-out half of its past STARsolo runs
+(``docs/benchmarks/inspect-vs-starsolo-2026-10.md``), every one of 357 blocks
+named the whitelist the pipeline used, and every one of 333 with a
+``soloStrand`` named its strand. A layout no held-out sample was called as is
+unvalidated, and says so.
 """
 
 from __future__ import annotations
@@ -49,6 +55,40 @@ UNVALIDATED = (
     "not yet compared with the reprocessing pipeline's own STARsolo runs: "
     "check the first run's Summary.csv"
 )
+# Blocks set beside the reprocessing pipeline's own STARsolo runs, held-out
+# half, 2026-10-22: per layout, the samples, the blocks whose whitelist was the
+# pipeline's, and the blocks whose soloStrand was (or that omitted it).
+VALIDATION_SOURCE = "docs/benchmarks/inspect-vs-starsolo-2026-10.md"
+VALIDATION = {
+    "10x_3p_v2": {
+        "samples": 175,
+        "blocks": 261,
+        "same_list": 261,
+        "same_strand": 256,
+        "strand_omitted": 5,
+    },
+    "10x_3p_v3_family": {
+        "samples": 47,
+        "blocks": 76,
+        "same_list": 76,
+        "same_strand": 66,
+        "strand_omitted": 10,
+    },
+    "10x_5p_v1_v2": {
+        "samples": 12,
+        "blocks": 17,
+        "same_list": 17,
+        "same_strand": 8,
+        "strand_omitted": 9,
+    },
+    "10x_multiome_arc_gex": {
+        "samples": 2,
+        "blocks": 3,
+        "same_list": 3,
+        "same_strand": 3,
+        "strand_omitted": 0,
+    },
+}
 
 
 def _name(source: str) -> str:
@@ -280,8 +320,23 @@ def mapping(
             "path": (whitelists or {}).get(entry.id),
         },
         "omitted": omitted,
-        "validated": False,
-        "note": UNVALIDATED,
+        **_validation(layout.id),
+    }
+
+
+def _validation(layout_id: str) -> dict[str, Any]:
+    measured = VALIDATION.get(layout_id)
+    if measured is None:
+        return {"validated": False, "validation": None, "note": UNVALIDATED}
+    return {
+        "validated": True,
+        "validation": {**measured, "source": VALIDATION_SOURCE},
+        "note": (
+            f"set beside {measured['samples']} held-out samples the reprocessing pipeline mapped: "
+            f"the same whitelist in {measured['same_list']} of {measured['blocks']} blocks, "
+            f"the same strand in {measured['same_strand']} of "
+            f"{measured['blocks'] - measured['strand_omitted']} that named one"
+        ),
     }
 
 
