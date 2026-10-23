@@ -133,9 +133,23 @@ ship.
 
 ## What is left
 
-### Needs your decision or your credentials
+### The final step, in this order
 
-1. **File the seven upstream reports.** Written and ready to paste, each carrying
+Decided by the maintainer on 2026-10-23: these come last, after the inspect,
+pathology and metadata work, in this order. Purging the leaked key from git
+history is not part of it.
+
+1. **Publish the container** to `quay.io/cellgeni/fetch-series`. Deferred by
+   the maintainer on 2026-10-21 until the inspect checks and their validation
+   against past STARsolo runs are done, so the image ships with the report it
+   will be used for. v0.1.0 shipped without one: the image is built and
+   smoke-tested by CI on every pull request and push to `main`, and measured
+   253 MB when built by hand on 2026-09-15. [`docker/README.md`](docker/README.md).
+2. **A PR on `nf-reprocessing-public-10x`** swapping the bash module for the
+   container. The drop-in is written and parity-tested
+   ([`nextflow/fetch10xmeta/`](nextflow/fetch10xmeta/README.md)); it needs an
+   image digest to pin, so it waits on (1).
+3. **File the seven upstream reports.** Written and ready to paste, each carrying
    the command that regenerates its evidence first — four to EBI, two to NCBI,
    one to DDBJ. [`docs/upstream/`](docs/upstream/index.md). Left drafted
    deliberately: sending them is outward-facing and yours. The most
@@ -149,18 +163,10 @@ ship.
    2026-10-23: ENA lists fastqs its server does not serve (2 of 4,466 links), derives
    some fastqs from SRA Lite (122 of 452 NCBI runs) and split SRR14522447 through
    its barcode read ([the draft](docs/upstream/ebi-ena-fastq-files-not-as-listed.md)).
-### Deferred until the `fetch inspect` validations land
-
-2. **Publish the container** to `quay.io/cellgeni/fetch-series`. Deferred by
-   the maintainer on 2026-10-21 until the inspect checks and their validation
-   against past STARsolo runs are done, so the image ships with the report it
-   will be used for. v0.1.0 shipped without one: the image is built and
-   smoke-tested by CI on every pull request and push to `main`, and measured
-   253 MB when built by hand on 2026-09-15. [`docker/README.md`](docker/README.md).
-3. **A PR on `nf-reprocessing-public-10x`** swapping the bash module for the
-   container. The drop-in is written and parity-tested
-   ([`nextflow/fetch10xmeta/`](nextflow/fetch10xmeta/README.md)); it needs an
-   image digest to pin, so it waits on (2).
+   Each is re-checked live the day before it is filed.
+4. **Rotate the NCBI API key.** The key that reached this repository is still
+   live. Rotating it mid-survey is destructive (every remaining accession records
+   a permanent 400), so it is the last thing done.
 
 ### Decided on 2026-10-21
 
@@ -176,7 +182,7 @@ ship.
 
 ### Honest gaps
 
-4. **Three known archive behaviours have no pathology page.** They are declared
+5. **Three known archive behaviours have no pathology page.** They are declared
    on the routes that exhibit them and listed in `PATHOLOGY_BACKLOG`, so
    `--explain` names them and says *"not yet written up"* rather than offering a
    path to a file that does not exist. Each is real and observed; what they lack
@@ -189,7 +195,7 @@ ship.
    `superseries-carries-no-bioproject` were retired: neither reproduces.
    [The list](docs/pathologies/index.md#known-declared-and-not-yet-written-up).
 
-5. **The read classifier's VDJ call has never been set on labelled data.** On
+6. **The read classifier's VDJ call has never been set on labelled data.** On
    the second held-out draw (2026-10-23), 8 samples the pipeline mapped to genes
    were called VDJ. Five read as B-cell libraries, and three of those on a 3′
    layout, which no 10x V(D)J kit is: gene-expression libraries from
@@ -197,7 +203,7 @@ ship.
    until it is set on the design half and scored on samples not yet read
    ([the comparison](docs/benchmarks/inspect-vs-starsolo-2026-10.md#classifier-040-on-a-fresh-held-out-draw-2026-10-23)).
 
-6. **Metadata may break the 3′ v2 / 5′ tie, but nothing does yet.** Decided on
+7. **Metadata may break the 3′ v2 / 5′ tie, but nothing does yet.** Decided on
    2026-10-23 under the rule set before measuring
    ([the decision](docs/decisions/when-metadata-may-break-a-tie.md)): offered
    beside the read-derived block, only where the reads abstain and the metadata
