@@ -177,8 +177,10 @@ knowledge-base page, promote the route, and remove the test.
   used to carry could never match a real one.
 - **BioStudies pages silently**: with no explicit limit it returns the first 25 of however many
   there are.
-- **`[GPRJ]` is not reliable** for renamed or merged projects — the term falls through to
-  `[All Fields]`.
+- **`[GPRJ]` misses experiments its project holds, and ELink adds its siblings'.** PRJNA66167's
+  SRX135150 names the project in every record and is not under `PRJNA66167[GPRJ]`; ELink from
+  PRJNA1033389 returns 72 runs of the projects under its umbrella. No `[GPRJ]` search was seen to
+  fall through to `[All Fields]` (2026-10-26).
 - **MkDocs strips em dashes from anchors rather than replacing them**, so `## GPU — cellbender`
   becomes `#gpu-cellbender` with one hyphen. The build runs `--strict`, so this breaks CI.
 - **`data/` is Git LFS**, but some files committed before `.gitattributes` are plain blobs. Check
