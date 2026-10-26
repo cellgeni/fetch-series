@@ -221,9 +221,29 @@ disagreement. The pipeline mapped 6 of the 7 Forward and 1 Reverse.
   150-base reads, and the pipeline reports saturation of 0.85 to 0.98. They look like
   TCR-enriched libraries the pipeline mapped as gene expression, but that is not settled.
 
-The VDJ bar (`VDJ_SHARE`, 0.15) has never been set on a labelled set. It is not changed after
-this read. A next classifier version would set it on the design half and be scored on samples
-not yet read.
+The VDJ bar (`VDJ_SHARE`, 0.15) has never been set on a labelled set, and it is not changed
+after this read.
+
+**Classifier 0.4.1 (2026-10-26) adds one rule, from the kits rather than from tuning: no 3′
+library is VDJ.** Every 10x V(D)J kit is 5′. Applied to the recorded evidence of all three
+draws, it moves 7 samples, 10 copies, from VDJ to GEX:
+
+| Draw | Samples |
+|---|---|
+| design | GSM3819857 |
+| first held-out | GSM2994860, GSM4200473, GSM6614349 |
+| this draw | ERS5345971, GSM3516678, GSM4200472 |
+
+In every one, the pipeline mapped the sample Forward with the list the reads name, at 62% to
+80% unique. Because the rule was written after this draw was read, the draw is not a test of
+it. It rests on the kits' design, as the mapping block's requirement tables do.
+
+The VDJ calls left are on 5′ or 3′/5′-ambiguous layouts. What they share is few cDNA reads on
+housekeeping genes, chrM or poly-A: usually a few hundred of 20,000 (28 to 2,113). The
+gene-expression libraries with the highest constant-region shares show 2,600 to 10,300. That
+signal might separate V(D)J-enriched libraries from T-cell-rich 5′ gene expression, but there
+is no label to set it against: the pipeline's record does not say which of its mapped
+libraries were enriched.
 
 Of the 7 feature-barcode calls:
 

@@ -4,10 +4,10 @@ title: Content survey, 2026-10
 
 # Content survey, 2026-10
 
-**Instrument:** classifier 0.4.0, fit rule `fit-5`, the first 100,000 reads of each file.
+**Instrument:** classifier 0.4.1, fit rule `fit-5`, the first 100,000 reads of each file.
 **Run:** read 2026-10-22 and 23 (UTC) under `fit-3`, then judged again under `fit-5` from what
 each verdict recorded, without reading anything twice. On 2026-10-23 every call was decided
-again under classifier 0.4.0 from its recorded evidence (`fetch inspect survey --recall`), and
+again under classifier 0.4.0 from its recorded evidence, and on 2026-10-26 under 0.4.1 (`fetch inspect survey --recall`), and
 judged again; nothing was read. What that changed is [below](#what-classifier-040-changed). The first
 run, 2026-10-20 under `fit-2`, is in git history. **Data:** the `screen_100000_*` exports in
 `data/surveys/sample_500@sample_3000@reprocessed-srr/`,
@@ -58,13 +58,13 @@ The reads of ENA's fastq, for the runs both cover:
 | ENA's listing in the census | Fit | Unfit | Undetermined |
 |---|---:|---:|---:|
 | one fastq | 0 | **183** | 0 |
-| two or more | 244 | 1 | 46 |
+| two or more | 245 | 1 | 45 |
 
 **All 183 single-fastq runs are proven unusable by their reads**: 176 because no read starts
 with a listed barcode, and 7 because no read is long enough to be the cDNA. One run with two
-fastqs is unfit too: SRR14522447 (below). The 46 undetermined are:
+fastqs is unfit too: SRR14522447 (below). The 45 undetermined are:
 
-- libraries that are not gene expression (36: feature barcode, VDJ, CRISPR);
+- libraries that are not gene expression (35: feature barcode, VDJ, CRISPR);
 - calls the classifier left ambiguous (7);
 - SRR26701885, whose only long read is a 107-base barcode read;
 - SRR11040464 and SRR34482399, sets with a listed fastq that cannot be read (below).
@@ -81,10 +81,10 @@ NCBI-submitted runs, from the main draw (457 runs):
 
 | Source | Runs listed | Fit | Unfit | Undetermined |
 |---|---:|---:|---:|---:|
-| ENA fastq (`ena_filereport_fastq`) | 452 | 226 | 183 | 43 |
-| Normalized object (`sdl`) | 457 | 383 | 3 | 71 |
-| Lite object (`sdl_lite`) | 450 | 376 | 4 | 70 |
-| DDBJ's mirror (`ddbj_entry_sra`) | 452 | 171 | 3 | 278 |
+| ENA fastq (`ena_filereport_fastq`) | 452 | 227 | 183 | 42 |
+| Normalized object (`sdl`) | 457 | 385 | 3 | 69 |
+| Lite object (`sdl_lite`) | 450 | 378 | 4 | 68 |
+| DDBJ's mirror (`ddbj_entry_sra`) | 452 | 172 | 3 | 277 |
 | Submitted originals (`sdl_original`) | 453 | 3 | 0 | 450 |
 
 EBI-submitted runs, from the top-up (300 runs):
@@ -113,12 +113,12 @@ draw:
 
 | ENA fastq ↓ / Normalized object → | Fit | Unfit | Undetermined |
 |---|---:|---:|---:|
-| fit | 244 | 0 | 0 |
-| unfit | **152** | 4 | 28 |
-| undetermined | 2 | 0 | 44 |
+| fit | 245 | 0 | 0 |
+| unfit | **153** | 4 | 27 |
+| undetermined | 2 | 0 | 43 |
 
-For 152 runs ENA's fastq is unfit and the Normalized object of the same run is fit. Of the
-28 where the object is undetermined, 8 are calls the classifier left ambiguous and 18 are
+For 153 runs ENA's fastq is unfit and the Normalized object of the same run is fit. Of the
+27 where the object is undetermined, 8 are calls the classifier left ambiguous and 17 are
 feature-barcode or VDJ libraries, undetermined by rule. The other two are SRR12103517 and
 SRR9105023, below. Where both were called, ENA and NCBI name the same kit on all 277 runs.
 
@@ -197,7 +197,11 @@ from the evidence it recorded, and judged again under `fit-5`. Nothing was read.
   0.4.0 measured the TSO share, so the rule has nothing to decide on. A run read again would
   record it.
 
-The tables on this page are the 0.4.0 ones. The 0.3.x ones are in git history.
+**0.4.1 (2026-10-26) calls no 3′ library VDJ.** Every 10x V(D)J kit is 5′. Three runs
+(ERR11746906, SRR13766417, SRR24474057), on 18 verdicts, move from VDJ to GEX and from
+undetermined to fit. Nothing else changed.
+
+The tables on this page are the 0.4.1 ones. Earlier ones are in git history.
 
 ## What the rules got wrong, and changed
 

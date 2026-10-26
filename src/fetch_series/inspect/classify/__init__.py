@@ -56,8 +56,9 @@ from fetch_series.inspect.references import KmerIndex
 # those constants carry one substitution in ten bases, and names Parse by its
 # second linker alone (the 2026-10-22 technology benchmark's design half).
 # 0.4.0 decides a call from its recorded evidence (``decide``), and sets the
-# strand and tail rules on the pipeline's own record: see TAIL_SHARE.
-VERSION = "0.4.0"
+# strand and tail rules on the pipeline's own record: see TAIL_SHARE. 0.4.1
+# calls no library VDJ whose layout is 3': see ``decide``.
+VERSION = "0.4.1"
 NO_LISTS = "no barcode list fetched; run `fetch inspect lists --fetch`"
 THRESHOLDS_SET_ON = "the 2026-10-19 benchmark's design half: 121 runs"
 
@@ -569,6 +570,14 @@ def decide(evidence: dict[str, Any]) -> Call:
             contradictions.append(
                 f"{layout.id} reads {layout.strand}; the cDNA read is {strand['strand']}"
             )
+
+    # Every 10x V(D)J kit is 5' (its barcode read ends in the TSO), so a library
+    # whose layout is 3' is not one, however many of its reads hit a TCR or BCR
+    # constant region. That is a kit's requirement, not a threshold: ERS5345971
+    # (3' v3) read 42% immunoglobulin constant region, and is a gene-expression
+    # library from plasma-cell-rich tissue that the pipeline mapped at 62% unique.
+    if kind == "VDJ" and remaining and not any(x.tail is Tail.TSO for x in remaining):
+        kind = "GEX"
 
     ids = [x.id for x in remaining]
     margin = evidence["margin"]
