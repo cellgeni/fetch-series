@@ -44,6 +44,20 @@ ELink) returns ([the comparison](../routes/bioproject-to-run/index.md)):
 Nobody wrote that order down wrongly out of carelessness. It was a reasonable
 guess, held for years, and only a census over all 12,755 BioProjects settled it.
 
+**Re-surveyed 2026-10-26, the gap was mostly the archives' caps, not the routes.** One EFetch
+request stops at [10,000 records](../pathologies/efetch-returns-fewer-runs-than-esearch-counts.md),
+and `sra-db-be`'s history form at [5,000 runs](../pathologies/sra-be-history-caps-at-5000-runs.md).
+Worked around, all four NCBI routes return 784,935 to 786,586 runs with no failures left,
+within one yield band of ENA's 783,936. The ranking did not need a hand edit to follow:
+
+- **Yield.** The banding put all five routes in one band.
+- **Failure rate.** All five failed nothing.
+- **Cost.** It now decides: ENA's one request first, then the two-request direct routes,
+  then the three-request ELink ones.
+
+ENA stays first, now on cost rather than yield. The table above is kept as the evidence the
+decision was made on. A ranking whose inputs changed is re-derived, not re-argued.
+
 ## The precedence, in order
 
 ### 1. Measured before unmeasured

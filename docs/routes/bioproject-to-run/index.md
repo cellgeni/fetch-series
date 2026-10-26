@@ -5,9 +5,9 @@ title: BioProject → run
 # BioProject → run
 
 **Needs:** a BioProject accession **Feeds:** run → files
-**Routes:** 5 measured. One of them is worth using.
+**Routes:** 5 measured, all within 0.4% of each other once two archive caps are worked around.
 
-The direction with the most competing implementations and the clearest winner.
+The direction with the most competing implementations. Its "clear winner" was mostly two caps.
 
 ## Routes
 
@@ -21,54 +21,71 @@ The direction with the most competing implementations and the clearest winner.
 
 ## Measured behaviour
 
-Counted at the **unique-run** level over the BioProjects in the reprocessed table. That
-qualifier matters: the `sra_be` result files hold 824,216 rows but only 754,277 distinct
-runs — 69,923 rows repeat within a single project — so a row count overstates that route by
-about 9%.
+Counted at the **unique-run** level over the 12,755 BioProjects in the reprocessed table
+(`reprocessed-prj`). That qualifier matters: the 2026-05 `sra_be` result files held 824,216
+rows but only 754,277 distinct runs.
 
-| Route | Unique runs | Failed | Surveyed |
-|---|---|---|---|
-| **`ena_filereport`** | **783,936** | **0** | 2026-09-15, harness census |
-| `sra_be_elink` | 754,332 | 33 | 2026-05-12, script |
-| `sra_be_direct_cgi` | 754,277 | 15 | 2026-05-12, script |
-| `efetch_elink` | 674,186 | 30 | 2026-05-12, script |
-| `efetch_direct` | 673,157 | 14 | 2026-05-12, script |
+| Route | Unique runs | Empty | Failed | ENA's runs it lacks | Runs ENA lacks | Surveyed |
+|---|---:|---:|---:|---:|---:|---|
+| `efetch_elink` | 786,586 | 22 | 0 | 162 | 2,812 | 2026-10-24 to 26 |
+| `sra_be_elink` | 785,656 | 22 | 0 | 851 | 2,571 | 2026-10-24 to 26 |
+| `efetch_direct` | 784,976 | 23 | 0 | 1,270 | 2,310 | 2026-10-24 to 26 |
+| `sra_be_direct_cgi` | 784,935 | 22 | 0 | 1,262 | 2,261 | 2026-10-24 to 26 |
+| **`ena_filereport`** | **783,936** | 23 | **0** | — | — | 2026-09-15 |
 
-The 2026-05 scripts also sent the reprocessed table's `-` placeholder as a BioProject, and
-every one recorded it as a failure. It is not a BioProject, so it is counted in none of the
-figures above: each script queried 12,755 projects, not the 12,756 it once claimed.
+- **Every NCBI route is within 0.4% of ENA.** The differences in both directions are
+  fractions of a percent. Six weeks separate ENA's census from the NCBI re-survey, and runs
+  released in between are on the NCBI side of that gap.
+- **No failure is left.** Some projects failed a first pass and answered on retry: 2 on
+  `sra_be_direct_cgi`, 4 on `sra_be_elink`, 2 on `efetch_direct` and 3 on `efetch_elink`.
+  Every retry was a transport error: read timeouts, dropped connections and 502s.
+  PRJNA772116, with 73,888 runs, answered `sra_be_elink` only on its fourth pass.
+- **ELink and `[GPRJ]` find different experiments.** `efetch_elink` returns 1,610 runs
+  `efetch_direct` does not, and none the other way. PRJNA66167's `[GPRJ]` search finds 5,499
+  runs, where ELink and ENA find 5,910.
 
-ENA holds **111,665 runs that `efetch` never returns**, against roughly 1,800 runs missing
-from it. Both are set differences over distinct run accessions from the same 2026-05-12
-survey of the same 12,755 projects: ENA's 784,026 runs minus `efetch_elink`'s 674,186 leaves
-111,665, and 1,825 go the other way. (Subtracting totals instead — 783,936 − 673,157 =
-110,779 — mixes two surveys and two `efetch` routes, and counts no set of runs at all.) Against `efetch_direct` the same set
-difference is 112,314. The 2026-09 census reproduced the 2026-05 ENA figure of 784,026 to within 0.011%
-while eliminating all 14 of that run's failures — so the harness agrees with the scripts it
-replaces, and improves on them.
+### What the 2026-05 numbers were
 
-### Why the NCBI routes were not re-censused
+| Route | Unique runs, 2026-05-12 | Failed | What capped it |
+|---|---:|---:|---|
+| `sra_be_elink` | 754,332 | 33 | [the history form stops at 5,000 runs](../../pathologies/sra-be-history-caps-at-5000-runs.md) |
+| `sra_be_direct_cgi` | 754,277 | 15 | the same |
+| `efetch_elink` | 674,186 | 30 | [one EFetch stops at 10,000 records](../../pathologies/efetch-returns-fewer-runs-than-esearch-counts.md) |
+| `efetch_direct` | 673,157 | 14 | the same |
 
-At roughly 11 seconds per accession the `sra_be` and `efetch` routes need five hours each
-for a full corpus. Their 2026-05 figures already place them 4–14% behind ENA on
-completeness, and nothing has been observed that would reverse a gap that size. Re-running
-them is deliberately deferred rather than forgotten; the 2026-05 numbers above are labelled
-with their date and their provenance.
+On those numbers this page said ENA holds **111,665 runs `efetch` never returns**. That was a
+true set difference, over runs, from one survey. It described two archive caps, not the
+routes. Measuring why is what found them.
+
+### How the re-survey was protected
+
+Large answers misbehave without an error, so the routes now refuse three things a client would
+otherwise record as the answer:
+
+- **A capped `sra-db-be` history.** The route asks for the project by accession instead.
+- **An empty answer to a history ESearch counted.** Under load, `sra-db-be` answered
+  PRJNA772116, with 73,888 runs, with an empty 200.
+- **A body cut off mid-row.** PRJEB14362's 46,468 runs came back as 15,265 and as 23,748
+  rows, each ending in a short row, with HTTP 200.
+
+Each raises a retryable failure, and a project that still fails is recorded FAILED, never
+EMPTY or short. In the re-survey every large project answered whole.
 
 ## Recommendation
 
-**Use `ena_filereport`.** One request, the most complete answer, zero failures across
-12,755 projects, and it answers for every issuing archive — unlike the NCBI routes, which
+**Use `ena_filereport`.** One request, as complete as any route, no failures across 12,755
+projects, and it answers for every issuing archive — unlike the NCBI routes, which
 [only reliably resolve NCBI-issued accessions](../../graph/routing-by-archive.md).
 
-The 23 projects it reports as empty are withdrawn, private or unreleased.
+`ranked()` now puts it first on cost, not on yield. All five routes sit in one yield band and
+fail nothing, so the order is ENA (one request), then `efetch_direct` and `sra_be_direct_cgi`
+(two), then `efetch_elink` and `sra_be_elink` (three), each pair by route id. In the default
+union mode every route is asked anyway, and the runs ENA lacks come from the NCBI routes.
+
+The 23 projects ENA reports as empty are withdrawn, private or unreleased.
 [BioProject → BioSample](../bioproject-to-biosample/index.md#why-this-route-has-25-empties-and-bioproject-run-has-23)
 reports 25 through the same endpoint: two projects have runs in ENA but no BioSample on
 any of them, so they resolve here and are empty there. Five of them are
 the BioProjects of the same GEO series that resolved to nothing in the
 [GEO census](../gse-to-experiment/index.md), so two independent routes over two different
 corpora agree about which data is not released.
-
-Prefer `sra_be_direct_cgi` over either `efetch` route if an NCBI route is needed for
-cross-checking: same yield band as its ELink sibling, one fewer request, and half the
-failure rate.

@@ -19,14 +19,14 @@ from typing import Any
 from fetch_series.files import FileRecord, classify, from_ena_row, from_sdl_files, mate_of
 from fetch_series.providers import biostudies, ena_portal, geo, sdl, sra_be
 from fetch_series.providers.eutils import (
-    efetch_text,
+    efetch_pages,
     elink_uids,
     epost_history,
     esearch,
     esearch_all_uids,
     esummary_by_ids,
 )
-from fetch_series.survey.client import SurveyClient
+from fetch_series.survey.client import MalformedResponseError, SurveyClient
 from fetch_series.survey.runner import RouteFn
 
 # --------------------------------------------------------------------------
@@ -156,13 +156,15 @@ async def gse_to_run_elink(series: str, client: SurveyClient, timeout: float) ->
     sra_uids = await elink_uids(client, dbfrom="gds", db="sra", uids=[uid], timeout=timeout)
     if not sra_uids:
         return []
-    text = await efetch_text(client, db="sra", uids=sra_uids, timeout=timeout)
-    return _runs_from_runinfo(text)
+    pages = await efetch_pages(client, db="sra", uids=sra_uids, timeout=timeout)
+    return _runs_from_runinfo(pages)
 
 
-def _runs_from_runinfo(text: str) -> list[str]:
-    """Pull the Run column out of an SRA runinfo CSV."""
-    return sorted(sra_be.column(sra_be.parse_runinfo(text), "Run"))
+def _runs_from_runinfo(pages: list[str]) -> list[str]:
+    """Pull the Run column out of every page of an SRA runinfo CSV."""
+    return sorted(
+        {run for text in pages for run in sra_be.column(sra_be.parse_runinfo(text), "Run")}
+    )
 
 
 # --------------------------------------------------------------------------
@@ -198,7 +200,7 @@ async def gsm_to_series(sample: str, client: SurveyClient, timeout: float) -> li
 
 async def _bioproject_sra_history(
     accession: str, client: SurveyClient, timeout: float, *, via_elink: bool
-) -> tuple[str, str] | None:
+) -> tuple[str, str, int] | None:
     """Get an ESearch history over the SRA records of a BioProject.
 
     Two ways in, and the survey says they differ. ``via_elink`` searches
@@ -210,7 +212,7 @@ async def _bioproject_sra_history(
         result = await esearch(client, db="sra", term=f"{accession}[GPRJ]", timeout=timeout)
         if result.get("count") == "0":
             return None
-        return result["webenv"], result["querykey"]
+        return result["webenv"], result["querykey"], int(result["count"])
 
     project = await esearch(client, db="bioproject", term=f"{accession}[PRJA]", timeout=timeout)
     uids = project.get("idlist") or []
@@ -226,7 +228,8 @@ async def _bioproject_sra_history(
     # hundreds of SRA records would make that term many kilobytes of GET URL and
     # earn a non-retryable 414 -- failing on precisely the large projects worth
     # not failing on, which is exactly what the same mistake cost at ESummary.
-    return await epost_history(client, db="sra", uids=sra_uids, timeout=timeout)
+    webenv, query_key = await epost_history(client, db="sra", uids=sra_uids, timeout=timeout)
+    return webenv, query_key, len(sra_uids)
 
 
 def _bioproject_run_route(*, backend: str, via_elink: bool) -> RouteFn:
@@ -234,14 +237,37 @@ def _bioproject_run_route(*, backend: str, via_elink: bool) -> RouteFn:
         history = await _bioproject_sra_history(accession, client, timeout, via_elink=via_elink)
         if history is None:
             return []
-        webenv, query_key = history
+        webenv, query_key, count = history
         if backend == "sra_be":
             rows = await sra_be.runinfo_by_history(client, webenv, query_key, timeout)
-            return sra_be.column(rows, "Run")
-        text = await efetch_text(
-            client, db="sra", webenv=webenv, query_key=query_key, timeout=timeout
+            if not rows:
+                # ESearch counted records, and the backend answered none: under
+                # load it answers an empty 200 (PRJNA772116, 95 experiments and
+                # 73,888 runs, was recorded empty on 2026-10-23). An experiment
+                # may hold no run, but a project whose every one does is not
+                # what an empty body means here.
+                raise MalformedResponseError(
+                    f"sra-db-be answered no runs for {accession}'s {count} records"
+                )
+            if sra_be.history_was_capped(rows):
+                # The history form stops at 5,000 runs and repeats them; the
+                # project asked for by accession is answered whole.
+                capped = set(sra_be.column(rows, "Run"))
+                rows = await sra_be.runinfo_by_accession(client, accession, timeout)
+                if len(set(sra_be.column(rows, "Run"))) < len(capped):
+                    # The by-accession endpoint also answers an empty 200 at
+                    # times: PRJEB82511 got 0 bytes in 2 s, then 7,263 runs in
+                    # 15 s, on 2026-10-23. Fewer runs than the capped history
+                    # already showed is a failed answer, never the project's.
+                    raise MalformedResponseError(
+                        f"sra-db-be runinfo answered {accession} with fewer runs "
+                        f"than its capped history held ({len(capped)})"
+                    )
+            return sorted(set(sra_be.column(rows, "Run")))
+        pages = await efetch_pages(
+            client, db="sra", webenv=webenv, query_key=query_key, count=count, timeout=timeout
         )
-        return _runs_from_runinfo(text)
+        return _runs_from_runinfo(pages)
 
     return route
 

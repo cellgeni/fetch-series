@@ -16,10 +16,12 @@ with the answers — and the answer is almost always *keep both and say so*.
 
 A fallback chain stops at the first route that answers, which means it can only
 ever be as complete as its best single route. The evidence says no single route
-is complete: ENA holds 111,665 runs `efetch` never returns, and about 1,800 runs
-are missing from ENA — both set differences over the same 12,755 projects in one survey. Taking the union of the two is strictly better than
-picking either, and the cost is one extra request against a rate limit that is
-not the bottleneck.
+is complete. The 2026-05 survey put the gap at 111,665 runs ENA holds that `efetch` never
+returns. Most of that was [EFetch's 10,000-record cap](../pathologies/efetch-returns-fewer-runs-than-esearch-counts.md),
+since worked around, and the 2026-10-26 re-survey still finds it in both directions. Over the
+same 12,755 projects, the best NCBI route misses 162 of ENA's runs, and holds 2,812 that
+ENA's census did not. Taking the union is strictly better than picking either, and the cost
+is one extra request against a rate limit that is not the bottleneck.
 
 `Mode.FIRST` exists because sometimes latency matters more than completeness,
 and the caller is the only one who knows which.

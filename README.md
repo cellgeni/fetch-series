@@ -131,10 +131,11 @@ Nothing in this project has a hand-written preference order. `RouteRegistry.rank
 order from the `RouteEvidence` blocks in `graph.py` — corpus, date, measured counts — and a route
 nobody has surveyed sorts behind every route that has been.
 
-That matters because the incumbent tries NCBI's `efetch` before ENA, and the evidence says that is
-backwards by **111,665 runs** — the runs ENA returns that `efetch` never does, counted as a set
-difference over the same 12,755 BioProjects. Nobody wrote it down wrongly out of carelessness; it was a
-reasonable guess, held for years, and only a census settled it.
+That matters because the incumbent tries NCBI's `efetch` before ENA. The 2026-05 evidence said
+that was backwards by **111,665 runs**, the runs ENA returns that `efetch` never does, counted as a
+set difference over the same 12,755 BioProjects. Measuring why is what found the answer: one EFetch
+request stops at 10,000 records. Paged, `efetch` agrees with ENA to within 0.4% (2026-10-26), and ENA
+still ranks first, on cost: one request against two or three.
 
 **[`docs/decisions/`](docs/decisions/index.md) records every such choice** — the argument, the
 measurement it rests on, and what would reverse it:

@@ -155,6 +155,8 @@ nav:
           - An IDF does not declare its ENA study: pathologies/ae-idf-missing-secondary-accession.md
           - BioStudies lists 25 files by default: pathologies/biostudies-silent-25-item-default.md
           - A series' BioProject holds more than the series: pathologies/experiments-outside-the-series-bioproject.md
+          - One EFetch stops at 10,000 runs: pathologies/efetch-returns-fewer-runs-than-esearch-counts.md
+          - sra-db-be stops at 5,000 runs: pathologies/sra-be-history-caps-at-5000-runs.md
       - Upstream reports:
           - Overview: upstream/index.md
           - NCBI ELink gds to sra: upstream/ncbi-elink-gds-sra.md

@@ -125,6 +125,9 @@ def eutils_summary(
     Returns:
         Dict[str, Any]: JSON response from the E-utilities API containing summaries of records
     """
+    # EFetch serves at most 10,000 records a request and says nothing of the
+    # rest; this legacy helper does not page. The routes use
+    # providers.eutils.efetch_pages (docs/pathologies/efetch-returns-fewer-runs-than-esearch-counts.md).
     # Check that either ids or webenv and query_key are specified
     if (ids is None) == (webenv is None or query_key is None):
         raise ValueError("Must specify either ids OR webenv and query_key")
@@ -168,6 +171,9 @@ def eutils_fetch(
     Returns:
         Dict[str, Any]: JSON response from the E-utilities API containing records
     """
+    # EFetch serves at most 10,000 records a request and says nothing of the
+    # rest; this legacy helper does not page. The routes use
+    # providers.eutils.efetch_pages (docs/pathologies/efetch-returns-fewer-runs-than-esearch-counts.md).
     # Check that either ids or webenv and query_key are specified
     if (ids is None) == (webenv is None or query_key is None):
         raise ValueError("Must specify either ids OR webenv and query_key")
@@ -217,6 +223,9 @@ def eutils_link(
     Returns:
         Dict[str, Any]: JSON response from the E-utilities API containing search results
     """
+    # EFetch serves at most 10,000 records a request and says nothing of the
+    # rest; this legacy helper does not page. The routes use
+    # providers.eutils.efetch_pages (docs/pathologies/efetch-returns-fewer-runs-than-esearch-counts.md).
     # Check that either ids or webenv and query_key are specified
     if (ids is None) == (webenv is None or query_key is None):
         raise ValueError("Must specify either ids OR webenv and query_key")

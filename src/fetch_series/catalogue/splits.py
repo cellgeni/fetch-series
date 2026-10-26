@@ -19,10 +19,12 @@ survey actually measured -- a route surveyed on GEO series' experiments
 queried no ERX, so says nothing about one -- and how each measured link is
 drawn.
 
-The six routes measured by the 2026-05 scripts left no per-accession verdicts,
-only their result tables in ``data/query/results/``: one row per project and
-run, with a success flag that lumped empty in with failed. Their splits keep
-``resolved`` and ``empty`` unknown, as their evidence does.
+The two routes still measured only by the 2026-05 scripts left no
+per-accession verdicts, only their result tables in ``data/query/results/``:
+one row per project and result, with a success flag that lumped empty in with
+failed. Their splits keep ``resolved`` and ``empty`` unknown, as their evidence
+does. The four BioProject -> run routes were re-surveyed on 2026-10-26 and read
+from their exports.
 
 The exports are Git LFS objects and CI builds the docs without them, so the
 result is committed as ``route_splits.json`` by ``fetch catalogue splits
@@ -50,10 +52,6 @@ RESULTS_2026_05 = Path("data/query/results")
 # that wrote each is named after the file (scripts/query_bioproject2sra_be.py
 # writes bioproject2sra_be_summary.csv, and so on).
 SUMMARY_EXPORTS: dict[str, tuple[str, str]] = {
-    "bioproject->run:sra_be_direct_cgi": ("bioproject2sra_direct_cgi_summary.csv", "Run"),
-    "bioproject->run:sra_be_elink": ("bioproject2sra_be_summary.csv", "Run"),
-    "bioproject->run:efetch_elink": ("bioproject2sra_summary.csv", "Run"),
-    "bioproject->run:efetch_direct": ("bioproject2sra_direct_summary.csv", "Run"),
     "bioproject->geo_series:elink": ("bioproject2geo_summary.csv", "accession"),
     "bioproject->geo_series:gds_direct": ("bioproject2geo_direct_summary.csv", "accession"),
 }
