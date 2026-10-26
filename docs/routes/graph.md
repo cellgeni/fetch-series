@@ -118,6 +118,31 @@ A documented link whose probe found nothing, or found something that failed a
 check, is not drawn; it is listed in the panels and on
 [the catalogue page](../graph/catalogue.md#gaps).
 
+### A line out of a metadata document
+
+Every line leaving a metadata document is **the second half of the request that
+fetched it**:
+
+- **The request.** `GEO series → GEO metadata` fetches the SOFT family file.
+- **The read.** `GEO series → GEO sample` reads that same file for its samples.
+- **The line.** `GEO metadata → GEO sample` is the two joined. It is how the reprocessing
+  pipeline itself gets from a dataset to its samples, through SDRF, IDF and SOFT family
+  files.
+
+How these lines behave:
+
+- **They make no request and are not catalogue links.** The catalogue's counts do not
+  change.
+- **Their style is the record link's.** A line is drawn surveyed where the record link it
+  continues is measured or surveyed, and untested where that link is untested.
+- **Their panel names both halves.** It shows the mechanism that fetches the document and
+  the one that reads it, with the record link's own evidence.
+- **Paths go through documents,** so *Find a path* can pass through one.
+
+Only a mechanism that reads **the same document** continues it. MINiML, series matrix, SRA
+XML and DDBJ entry documents are fetched, but nothing declared reads them for records yet,
+so they have no line out.
+
 ### Panels, matrix and paths
 
 Clicking a node lists everything it **reaches in one hop**, with what is known

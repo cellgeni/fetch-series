@@ -143,8 +143,10 @@ def _catalogue_sections() -> dict[str, str]:
     gaps.append("")
     gaps.append(
         "Only declared links are listed: a pair nothing declares is a blank in the "
-        "matrix under [the route graph](../routes/graph.md), and files and documents "
-        "are left out, because nothing links onward from one."
+        "matrix under [the route graph](../routes/graph.md). Files are left out, because "
+        "nothing links onward from one. A document links onward only as the second half "
+        "of the request that fetched it, which is not a link of its own "
+        "([the route graph](../routes/graph.md#a-line-out-of-a-metadata-document))."
     )
     return dict(
         zip(CATALOGUE_PLACEHOLDERS, (summary, "\n".join(rows), "\n".join(gaps)), strict=True)
