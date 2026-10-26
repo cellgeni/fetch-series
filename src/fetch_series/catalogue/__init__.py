@@ -55,6 +55,7 @@ from fetch_series.catalogue.nodes import (
     PROBE_ACCESSIONS,
     TEN_X_PROBES,
 )
+from fetch_series.graph import PROMOTED
 from fetch_series.results import Check, Outcome
 
 __all__ = [
@@ -180,6 +181,7 @@ class Catalogue:
         ten_x: Mapping[str, str] | None = None,
         splits: Iterable[Split] = (),
         link_splits: Iterable[LinkSplit] = (),
+        promoted: Iterable[tuple[str, str, str, str]] = (),
     ) -> None:
         self.nodes: dict[str, Node] = {}
         for node in nodes:
@@ -229,6 +231,19 @@ class Catalogue:
                 claimed[route_id] = mechanism.id
                 for pair in mine:
                     covered[pair] = route_id
+            # A link promoted to a route by its own survey (graph.PROMOTED):
+            # every link of the mechanism from a node of the route's source
+            # entity type into a node of its target's.
+            for mechanism_id, source_group, target_group, route_id in promoted:
+                if mechanism_id != mechanism.id:
+                    continue
+                for pair in pairs:
+                    if (
+                        pair not in covered
+                        and self._in_group(pair[0], source_group)
+                        and self._in_group(pair[1], target_group)
+                    ):
+                        covered[pair] = route_id
             for (source, target), read_from in pairs.items():
                 self.links.append(
                     Link(
@@ -421,6 +436,9 @@ CATALOGUE = Catalogue(
     ten_x=TEN_X_PROBES,
     splits=load_splits(),
     link_splits=load_link_splits(),
+    promoted=[
+        (row.mechanism, row.source.value, row.target.value, row.id) for row in PROMOTED
+    ],
 )
 
 

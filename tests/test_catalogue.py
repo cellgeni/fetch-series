@@ -408,3 +408,30 @@ class TestProbeAccessions:
         assert mechanism.probe_accession("a", "b", "PRJNA9") == "PRJEB2"
         assert mechanism.probe_accession("a", "c", "PRJNA9") == "PRJNA1"
         assert _mechanism().probe_accession("a", "b", "PRJNA9") == "PRJNA9"
+
+
+class TestPromotedCoverage:
+    """A link promoted to a route by its own survey is that route's, like any measured link."""
+
+    def test_a_promoted_route_covers_its_mechanisms_links(self):
+        from fetch_series.catalogue import FAMILIES, MECHANISMS, NODES, PROBE_ACCESSIONS, Catalogue
+
+        catalogue = Catalogue(
+            NODES,
+            MECHANISMS,
+            PROBE_ACCESSIONS,
+            families=FAMILIES,
+            promoted=[
+                ("sra_be_runinfo", "bioproject", "sample", "bioproject->sample:sra_be_runinfo")
+            ],
+        )
+        mine = [
+            link
+            for link in catalogue
+            if link.mechanism == "sra_be_runinfo" and link.source == "bioproject"
+        ]
+        covered = {
+            link.target for link in mine if link.route_id == "bioproject->sample:sra_be_runinfo"
+        }
+        assert covered == {"sample_ncbi", "sample_ebi", "sample_ddbj"}
+        assert all(link.route_id is None for link in mine if link.target not in covered)
