@@ -279,8 +279,9 @@ Each of these looks like an over-complication until you read why it is there.
 Full arguments in `docs/decisions/`.
 
 - **Union is the default resolver mode, not a fallback chain.** A chain can only be as complete
-  as its best single route, and no route here is complete: ENA holds 111,665 runs `efetch` never
-  returns, and ~1,800 runs are missing from ENA.
+  as its best single route, and no route here is complete: over 12,755 BioProjects the best NCBI
+  route misses 162 of ENA's runs and holds 2,812 ENA lacks (2026-10-26). The 2026-05 figure of
+  111,665 runs ENA held over `efetch` was EFetch's 10,000-record cap, not a route difference.
 - **`RunRecord.set()` is first-wins *and* records the loser.** Routes are offered in measured
   order, so the first answer is the best-evidenced one — but a second, different answer goes into
   `conflicts` rather than being dropped. Those conflicts are where the pathologies came from.
