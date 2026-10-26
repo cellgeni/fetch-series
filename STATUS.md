@@ -182,18 +182,18 @@ history is not part of it.
 
 ### Honest gaps
 
-5. **One known archive behaviour has no pathology page:**
-   `gprj-falls-through-to-all-fields`. It is declared on the routes that
-   exhibit it and listed in `PATHOLOGY_BACKLOG`, so `--explain` says *"not yet
-   written up"*. It needs a renamed or merged project to reproduce on, and none
-   has been found: every `[GPRJ]` search checked on 2026-10-23 was honoured as
-   written. Of the backlog's eleven, seven were written up on 2026-10-23 and
-   three retired as not reproducing. One of those, the sra-db-be timeout, was
-   replaced by a page on what large projects actually meet. Writing them found three silent losses
-   still in the code: a backend message inside an ELink link set read as "no
-   links"; one EFetch stopping at 10,000 runs; and sra-db-be answers cut off or
-   empty under load, recorded as results.
-   [The list](docs/pathologies/index.md#known-declared-and-not-yet-written-up).
+5. **Every declared archive behaviour has a pathology page.** The backlog of
+   eleven is empty since 2026-10-26: seven written up, and four retired as not
+   reproducing. One of those was replaced by a page on what large projects
+   actually meet, and one by two pages on what `[GPRJ]` and ELink really do.
+   Writing them found four silent losses still in the code:
+    - a backend message inside an ELink link set read as "no links";
+    - one EFetch stopping at 10,000 runs;
+    - sra-db-be answers cut off or empty under load, recorded as results;
+    - ELink giving a project its siblings' runs.
+
+   The first three are fixed. The fourth is declared and marked UNCONFIRMED by
+   the resolver ([the index](docs/pathologies/index.md)).
 
 6. **The read classifier's VDJ call on a 5′ library has no label to be set
    against.** Since 0.4.1 a 3′ library is never VDJ, because every 10x V(D)J kit

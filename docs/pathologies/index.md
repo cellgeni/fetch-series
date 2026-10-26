@@ -33,23 +33,19 @@ good news — the archive fixed something.
 | [A series' BioProject holds more than the series](experiments-outside-the-series-bioproject.md) | NCBI | 77 series get 5,115 experiments their SOFT file does not name, by asking for their project |
 | [One EFetch stops at 10,000 runs](efetch-returns-fewer-runs-than-esearch-counts.md) | NCBI | PRJEB14362's 46,468 runs come back as 5,387 from one request, with HTTP 200; the reason ENA once held "111,665 runs efetch never returns" |
 | [sra-db-be stops at 5,000 runs, and is cut off under load](sra-be-history-caps-at-5000-runs.md) | NCBI | PRJEB82511's 7,263 runs come back as 10,000 rows of 5,000; under load an answer ends mid-row or is empty, with HTTP 200 |
+| [`[GPRJ]` misses experiments its project holds](gprj-misses-experiments-of-the-project.md) | NCBI | PRJNA66167's SRX135150 names the project in every record and is not under `PRJNA66167[GPRJ]`: 1,100 runs in 2 projects |
+| [ELink gives a BioProject its siblings' runs](elink-returns-runs-of-sibling-projects.md) | NCBI | PRJNA1033389's 8 runs come back as 80, with 72 from projects under the same umbrella: 607 runs in 22 projects |
 
 ## Known, declared, and not yet written up
 
-A route can declare a behaviour it exhibits before that behaviour has a page.
-One does, and it is listed in `PATHOLOGY_BACKLOG` in `graph.py` rather than
-left implicit — `--explain` names them and says *"not yet written up"* instead
-of offering a path to a file that does not exist.
+None, since 2026-10-26. A route can declare a behaviour it exhibits before that behaviour has
+a page, and such a slug goes in `PATHOLOGY_BACKLOG` in `graph.py` rather than being left
+implicit: `--explain` names it and says *"not yet written up"* instead of offering a path to a
+file that does not exist. Three tests keep the backlog honest:
 
-| Slug | Archive | What it is |
-|---|---|---|
-| `gprj-falls-through-to-all-fields` | NCBI | `[GPRJ]` silently becomes `[All Fields]` for renamed or merged projects |
-
-Every one is real and observed. What each lacks is the **page contract** above:
-a curl reproducer, a machine-readable affected-accession list, and a matching
-`@pytest.mark.pathology` test. Three tests keep the backlog honest — a declared
-slug must be a page or a backlog entry, a written page must leave the backlog,
-and a page no route declares is a warning the resolver can never issue.
+- a declared slug must be a page or a backlog entry;
+- a written page must leave the backlog;
+- a page no route declares is a warning the resolver can never issue.
 
 ## Reporting upstream
 
@@ -65,6 +61,7 @@ checked, rather than left declared on a route as a claim nothing supports.
 
 | Slug | Archive | Retired | Why |
 |---|---|---|---|
+| `gprj-falls-through-to-all-fields` | NCBI | 2026-10-26 | No `[GPRJ]` search fell through. The 24 projects where `[GPRJ]` and ELink disagree, the 22 `[GPRJ]` still finds empty, and an accession that does not exist all kept `[GPRJ]` in their query translation; the empty ones answer `phrasesnotfound`. What does go wrong is [narrower](gprj-misses-experiments-of-the-project.md), and ELink's [opposite](elink-returns-runs-of-sibling-projects.md). |
 | `sra-be-timeout-on-large-projects` | NCBI | 2026-10-23 | It rested on one `ReadTimeout`, PRJEB9859's in the 2026-05 script survey. On 2026-10-23 all three named projects answered in full on both sra-db-be routes. What large projects meet is a [5,000-run cap and cut-off answers under load](sra-be-history-caps-at-5000-runs.md), now written up. |
 | `superseries-carries-no-bioproject` | GEO | 2026-10-23 | Of 400 seeded series of the reprocessed corpus, 62 are SuperSeries, and all 62 carry their own BioProject relation. The SubSeries are the ones that often carry none (GSE287249's three siblings, GSE201855's), and the SuperSeries is where their project is found. Nothing measured the claim as written. |
 | `elink-history-missing-querykey` | NCBI | 2026-10-23 | In 2026-05, 27 BioProjects got an ELink `cmd=neighbor_history` answer with no usable `querykey` (`docs/bioproject2geo_troubleshooting.md`). On 2026-10-23 all four named examples (PRJNA1214811, PRJNA1088541, PRJNA672686, PRJNA1169288) answered with a `querykey`, from UIDs and from an ESearch history alike. The routes use `cmd=neighbor`, which needs no history, so nothing depended on it. |
