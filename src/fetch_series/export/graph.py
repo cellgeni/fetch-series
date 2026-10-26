@@ -53,6 +53,7 @@ from fetch_series.catalogue import (
     Status,
     load_probes,
 )
+from fetch_series.catalogue.continuations import Continuation, continuations, status_of
 from fetch_series.graph import PATHOLOGY_BACKLOG, REGISTRY, Route, RouteRegistry
 from fetch_series.routes import IMPLEMENTATIONS
 
@@ -263,6 +264,53 @@ def _grouped(
     ]
 
 
+def _continued(
+    catalogue: Catalogue,
+    found: list[Continuation],
+    probes: Mapping[str, Probe],
+    statuses: Mapping[str, Status],
+) -> list[dict[str, Any]]:
+    """Document -> record pairs: the second half of the request that fetched the document.
+
+    Drawn as the record link they continue is drawn -- surveyed (or measured) as
+    surveyed, untested as untested -- and listing that link's own evidence. Not a
+    catalogue link, so no count of the catalogue's changes.
+    """
+    by_pair: dict[tuple[str, str], list[Continuation]] = {}
+    for item in found:
+        by_pair.setdefault((item.document, item.target), []).append(item)
+    edges = []
+    for (document, target), items in sorted(by_pair.items()):
+        best = status_of(items, statuses)
+        reads: list[dict[str, Any]] = []
+        for item in items:
+            entry = _link(catalogue, item.read_by, probes.get(item.read_by.id))
+            entry["splits"] = [
+                _link_split(split)
+                for split in sorted(catalogue.link_splits(item.read_by), key=lambda s: s.corpus)
+            ]
+            reads.append(entry)
+        edges.append(
+            {
+                "id": f"continues:{document}>{target}",
+                "status": str(Status.UNTESTED if best is Status.UNTESTED else Status.SURVEYED),
+                "source": document,
+                "target": target,
+                "links": reads,
+                "continues": [
+                    {
+                        "fetched_by": item.fetched_by.id,
+                        "read_by": item.read_by.id,
+                        "route": item.read_by.route_id,
+                        "status": str(statuses[item.read_by.id]),
+                    }
+                    for item in items
+                ],
+            }
+        )
+    return edges
+
+
 def _measured_none(catalogue: Catalogue, links: list[Link]) -> list[dict[str, Any]]:
     """Pairs a route's survey measured and found nothing on, by pair."""
     by_pair: dict[tuple[str, str], list[dict[str, Any]]] = {}
@@ -344,6 +392,16 @@ def route_graph(
     surveyed_none = [link for link in catalogue if statuses[link.id] is Status.SURVEYED_NONE]
     edges += _grouped(catalogue, surveyed, probes, Status.SURVEYED)
     edges += _grouped(catalogue, untested, probes, Status.UNTESTED)
+    continued = continuations(catalogue, probes)
+    edges += _continued(catalogue, continued, probes, statuses)
+    # As links, for the path search: a document leads on to what it names.
+    reads = [
+        Link(c.document, c.target, c.read_by.mechanism, "the fetched document", None)
+        for c in continued
+    ]
+    read_status = {
+        (c.document, c.target, c.read_by.mechanism): statuses[c.read_by.id] for c in continued
+    }
 
     nodes = []
     for node in catalogue.nodes.values():
@@ -385,8 +443,12 @@ def route_graph(
     measured_links = [link for link in catalogue if statuses[link.id] is Status.MEASURED]
     known_links = [
         link for link in catalogue if statuses[link.id] in (Status.MEASURED, Status.SURVEYED)
+    ] + [
+        r
+        for r in reads
+        if read_status[(r.source, r.target, r.mechanism)] in (Status.MEASURED, Status.SURVEYED)
     ]
-    drawn = [link for link in catalogue if statuses[link.id] in DRAWN]
+    drawn = [link for link in catalogue if statuses[link.id] in DRAWN] + reads
     adjacency: dict[str, set[str]] = {}
     for link in drawn:
         if link.source != link.target:

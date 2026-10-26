@@ -1698,6 +1698,25 @@
           "so it says whether a link answers, not which answers best. Listed by name, never ranked, and never route evidence."
         );
       };
+      const continued = [linked, untested].find((e) => e && e.continues);
+      if (continued) {
+        parts.push(
+          el("h4", { text: "Read from the fetched document" }),
+          el(
+            "p",
+            { class: "rg-muted" },
+            "Not a request of its own: the second half of the one that fetched this document. " +
+              "The record link that reads it is drawn with its own evidence, and this line with it.",
+          ),
+          el(
+            "ul",
+            {},
+            continued.continues.map((c) =>
+              el("li", {}, code(c.fetched_by), el("span", { class: "rg-muted", text: " fetches it; " }), code(c.read_by), el("span", { class: "rg-muted", text: ` reads it (${c.status}${c.route ? `, route ${c.route}` : ""})` })),
+            ),
+          ),
+        );
+      }
       if (linked) {
         parts.push(
           el("h4", { text: `Surveyed (${linked.links.length})` }),

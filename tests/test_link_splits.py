@@ -191,7 +191,10 @@ class TestNeverRanked:
     def test_a_surveyed_edge_carries_counts_and_no_rank(self):
         catalogue = _catalogue(_made())
         graph = route_graph(catalogue=catalogue, probes={})
-        (edge,) = [e for e in graph["edges"] if e["status"] == "surveyed"]
+        # A document's continuations are drawn as surveyed too; this is about links.
+        (edge,) = [
+            e for e in graph["edges"] if e["status"] == "surveyed" and not e.get("continues")
+        ]
         assert "rank" not in edge and "of" not in edge
         (entry,) = edge["links"]
         assert entry["splits"][0]["usable"] == 10
@@ -202,7 +205,9 @@ class TestNeverRanked:
     def test_surveyed_none_is_listed_and_not_drawn(self):
         catalogue = _catalogue(_made(usable=0))
         graph = route_graph(catalogue=catalogue, probes={})
-        assert not [e for e in graph["edges"] if e["status"] == "surveyed"]
+        assert not [
+            e for e in graph["edges"] if e["status"] == "surveyed" and not e.get("continues")
+        ]
         assert graph["surveyed_none"][0]["links"][0]["splits"][0]["usable"] == 0
 
 
