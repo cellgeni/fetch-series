@@ -35,6 +35,7 @@ good news — the archive fixed something.
 | [sra-db-be stops at 5,000 runs, and is cut off under load](sra-be-history-caps-at-5000-runs.md) | NCBI | PRJEB82511's 7,263 runs come back as 10,000 rows of 5,000; under load an answer ends mid-row or is empty, with HTTP 200 |
 | [`[GPRJ]` misses experiments its project holds](gprj-misses-experiments-of-the-project.md) | NCBI | PRJNA66167's SRX135150 names the project in every record and is not under `PRJNA66167[GPRJ]`: 1,100 runs in 2 projects |
 | [ELink gives a BioProject its siblings' runs](elink-returns-runs-of-sibling-projects.md) | NCBI | PRJNA1033389's 8 runs come back as 80, with 72 from projects under the same umbrella: 607 runs in 22 projects |
+| [BioStudies answers 404 for a file it holds](biostudies-files-404s-registered-files.md) | EBI | E-MTAB-13459's IDF answers 404 at its address and 200 on the mirror: 328 of 3,000 ArrayExpress IDFs on 2026-10-26 |
 
 ## Known, declared, and not yet written up
 

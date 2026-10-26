@@ -294,6 +294,29 @@ def geo_dataset_id(
         return uid
 
 
+def _study_file(series: str, name: str) -> httpx.Response:
+    """A file a BioStudies study registers, from the mirror where the front door 404s.
+
+    The synchronous twin of ``providers.biostudies.study_file``, which explains
+    the 404 (E-MTAB-13459's IDF).
+    """
+    try:
+        return _get(
+            f"https://www.ebi.ac.uk/biostudies/files/{series}/{name}",
+            follow_redirects=True,
+            timeout=30,
+        )
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code != 404:
+            raise
+        missing = exc
+    info = _get(f"https://www.ebi.ac.uk/biostudies/api/v1/studies/{series}/info", timeout=30)
+    link = info.json().get("httpLink")
+    if not isinstance(link, str) or not link.startswith("https://ftp.ebi.ac.uk/"):
+        raise missing
+    return _get(f"{link}/Files/{name}", follow_redirects=True, timeout=30)
+
+
 def ae2secondary(series: str) -> list[str]:
     """
     Retrieves SecondaryAccession values associated with a given series from the EBI BioStudies database
@@ -304,8 +327,7 @@ def ae2secondary(series: str) -> list[str]:
         List[str]: A list of SecondaryAccession values associated with the series
     """
     # Get SecondaryAccession values from idf file
-    base = f"https://www.ebi.ac.uk/biostudies/files/{series}/{series}.idf.txt"
-    response = _get(base, follow_redirects=True, timeout=30)
+    response = _study_file(series, f"{series}.idf.txt")
 
     # Check if there are SecondaryAccession values in the idf file
     pattern = re.compile(r"Comment\s*\[SecondaryAccession\]\s*((?:ERP|EGA\w)\d+)")
@@ -343,8 +365,7 @@ def ae2biosamples(series: str) -> list[str]:
     Returns:
         List[str] | None: A list of biosample IDs associated with the series, or None if no biosamples are found
     """
-    base = f"https://www.ebi.ac.uk/biostudies/files/{series}/{series}.sdrf.txt"
-    response = _get(base, follow_redirects=True, timeout=30)
+    response = _study_file(series, f"{series}.sdrf.txt")
 
     reader = csv.DictReader(io.StringIO(response.text), delimiter="\t")
     # csv.DictReader fills missing trailing columns with None, so the key can be

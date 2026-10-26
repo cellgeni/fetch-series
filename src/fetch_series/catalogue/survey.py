@@ -73,7 +73,8 @@ def units_of(links: Iterable[Link]) -> list[SurveyUnit]:
 def memoizable(method: str, url: str, params: Mapping[str, object]) -> bool:
     """The repeated requests a link survey answers from memory, and nothing else.
 
-    sra-db-be runinfo (three mechanisms), an IDF or SDRF (three), a SOFT family
+    sra-db-be runinfo (three mechanisms), an IDF or SDRF (three) -- and the
+    study ``info`` that finds one on the mirror -- a SOFT family
     file (two), an SRA XML efetch by UID (two), a DDBJ entry (three), and an ENA
     ``filereport`` -- which the promoted routes from one source read once for
     each target they answer, with the same fields. Each is a stateless document
@@ -85,7 +86,11 @@ def memoizable(method: str, url: str, params: Mapping[str, object]) -> bool:
         return (
             url == sra_be.RUNINFO
             or url == ena_portal.FILEREPORT
-            or (url.startswith(biostudies.FILES) and url.endswith((".sdrf.txt", ".idf.txt")))
+            or (
+                url.startswith((biostudies.FILES, biostudies.MIRROR))
+                and url.endswith((".sdrf.txt", ".idf.txt"))
+            )
+            or (url.startswith(f"{biostudies.API}/studies/") and url.endswith("/info"))
             or (url.startswith(geo.FTP_BASE) and url.endswith("_family.soft.gz"))
             or url.startswith(DDBJ_ENTRY)
         )

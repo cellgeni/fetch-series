@@ -170,6 +170,7 @@ nav:
           - sra-db-be stops at 5,000 runs: pathologies/sra-be-history-caps-at-5000-runs.md
           - "[GPRJ] misses experiments of the project": pathologies/gprj-misses-experiments-of-the-project.md
           - ELink gives a project its siblings' runs: pathologies/elink-returns-runs-of-sibling-projects.md
+          - BioStudies answers 404 for a file it holds: pathologies/biostudies-files-404s-registered-files.md
       - Upstream reports:
           - Overview: upstream/index.md
           - NCBI ELink gds to sra: upstream/ncbi-elink-gds-sra.md
