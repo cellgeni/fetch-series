@@ -436,9 +436,7 @@ CATALOGUE = Catalogue(
     ten_x=TEN_X_PROBES,
     splits=load_splits(),
     link_splits=load_link_splits(),
-    promoted=[
-        (row.mechanism, row.source.value, row.target.value, row.id) for row in PROMOTED
-    ],
+    promoted=[(row.mechanism, row.source.value, row.target.value, row.id) for row in PROMOTED],
 )
 
 
