@@ -162,7 +162,9 @@ seen:
 - the listed-barcode rate was within 0.05 of STARsolo's valid barcodes for 277 of 285 samples.
 
 The same draw found the next gap: 8 samples the pipeline mapped to genes were called VDJ.
-Five of them read as B-cell libraries, three of those on a 3′ layout, which no V(D)J kit is.
+Since 0.4.1 no 3′ library is called VDJ, because every 10x V(D)J kit is 5′. That moves 7
+samples across the three draws to GEX, and every one is a sample the pipeline mapped Forward
+with the list the reads name.
 
 A block says which layouts were compared, and how often (`validated`, `validation`). A
 layout no held-out sample was called as, such as GEM-X v4 or 5′ v3, says it is unvalidated.

@@ -195,12 +195,12 @@ history is not part of it.
    empty under load, recorded as results.
    [The list](docs/pathologies/index.md#known-declared-and-not-yet-written-up).
 
-6. **The read classifier's VDJ call has never been set on labelled data.** On
-   the second held-out draw (2026-10-23), 8 samples the pipeline mapped to genes
-   were called VDJ. Five read as B-cell libraries, and three of those on a 3′
-   layout, which no 10x V(D)J kit is: gene-expression libraries from
-   plasma-cell-rich tissue, by the look of them. `VDJ_SHARE` stays as it is
-   until it is set on the design half and scored on samples not yet read
+6. **The read classifier's VDJ call on a 5′ library has no label to be set
+   against.** Since 0.4.1 a 3′ library is never VDJ, because every 10x V(D)J kit
+   is 5′. That moves 7 samples across the three draws to GEX, all mapped by the
+   pipeline as the reads now say. The VDJ calls left are 5′, and they look
+   enriched: few cDNA reads on housekeeping genes or chrM. But the pipeline's
+   record does not say which libraries were, so `VDJ_SHARE` stays provisional
    ([the comparison](docs/benchmarks/inspect-vs-starsolo-2026-10.md#classifier-040-on-a-fresh-held-out-draw-2026-10-23)).
 
 7. **Metadata may break the 3′ v2 / 5′ tie, but nothing does yet.** Decided on

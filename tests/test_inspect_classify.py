@@ -245,6 +245,20 @@ class TestDecide:
         again = decide(copy.deepcopy(made.evidence))
         assert again == made
 
+    def test_a_3p_library_is_never_vdj(self):
+        """ERS5345971: 3' v3, 42% immunoglobulin constant region, mapped as GEX by the pipeline."""
+        made = classify(library(V3_CODES, umi=12), LISTS, REFERENCES)
+        evidence = copy.deepcopy(made.evidence)
+        evidence["library"] = {**evidence["library"], "tcr_bcr_share": 0.42}
+        again = decide(evidence)
+        assert again.layout == "10x_3p_v3_family" and again.library_type == "GEX"
+
+    def test_a_5p_library_can_still_be_vdj(self):
+        made = classify(library(V2_CODES, umi=10, antisense=True), LISTS, REFERENCES)
+        evidence = copy.deepcopy(made.evidence)
+        evidence["library"] = {**evidence["library"], "tcr_bcr_share": 0.37}
+        assert decide(evidence).library_type == "VDJ"
+
     def test_strand_votes_are_the_strand_of_the_counts(self):
         made = classify(library(V3_CODES, umi=12), LISTS, REFERENCES)
         recorded = made.evidence["strand"]
