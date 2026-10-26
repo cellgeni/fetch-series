@@ -83,6 +83,14 @@ ranking becomes negotiable, and the rule above stops meaning anything.
   surveyed-none, and nothing in `graph.py` or `resolver.py` reads it. Promoting a link to a route
   means surveying it as a route, at `sample:3000`, with a `RouteFn` and a `RouteEvidence` block.
 
+## Disagree when an idea looks wrong
+
+The maintainer wants argument, not compliance. If a request contradicts the evidence or the
+governing rule, or would cost more than it buys, say so plainly, with the reason and the
+alternative, and let the maintainer decide. Agreeing with a weak idea to be agreeable is a
+failure here, and so is recommending one of your own without re-examining it once it is
+challenged.
+
 ## Layout
 
 ```
