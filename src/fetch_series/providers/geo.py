@@ -227,6 +227,11 @@ def _sample_text(block: str) -> dict[str, str]:
     return {name: " ".join(values) for name, values in collected.items()}
 
 
+def sample_text(record: str) -> dict[str, str]:
+    """The free-text fields of one sample's own record, as the SOFT family gives them."""
+    return _sample_text(record)
+
+
 async def gds_record(
     client: SurveyClient, accession: str, entry_type: str, timeout: float
 ) -> dict[str, object]:

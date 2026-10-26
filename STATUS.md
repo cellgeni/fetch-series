@@ -203,12 +203,13 @@ history is not part of it.
    record does not say which libraries were, so `VDJ_SHARE` stays provisional
    ([the comparison](docs/benchmarks/inspect-vs-starsolo-2026-10.md#classifier-040-on-a-fresh-held-out-draw-2026-10-23)).
 
-7. **Metadata may break the 3′ v2 / 5′ tie, but nothing does yet.** Decided on
-   2026-10-23 under the rule set before measuring
-   ([the decision](docs/decisions/when-metadata-may-break-a-tie.md)): offered
+7. **Metadata breaks the 3′ v2 / 5′ tie only where 9 of 94 abstentions let
+   it.** Built on 2026-10-26
+   ([the decision](docs/decisions/when-metadata-may-break-a-tie.md)): `fetch
+   inspect run` reads the run's metadata kit and offers `mapping_from_metadata`
    beside the read-derived block, only where the reads abstain and the metadata
-   names exactly one of the two. It would settle 9 of 94 abstentions. Building it
-   needs `fetch inspect run` to harvest metadata, which it does not.
+   names exactly one of the two. The other 85 abstentions have metadata naming
+   neither kit, or both, and still get no block.
 
 ### Deliberately dropped, with the reasons recorded
 
