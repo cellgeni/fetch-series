@@ -64,6 +64,7 @@ __all__ = [
     "INSDC",
     "PROBES_PATH",
     "PROBE_KEEP",
+    "PROMOTED_LINKS",
     "SPLITS_PATH",
     "Basis",
     "Catalogue",
@@ -428,6 +429,10 @@ def save_splits(
     path.write_text(json.dumps(payload, indent=1) + "\n")
 
 
+# Each graph.PROMOTED row as the (mechanism, source, target, route id) a
+# Catalogue takes, so any catalogue built from the declared nodes agrees with it.
+PROMOTED_LINKS = [(row.mechanism, row.source.value, row.target.value, row.id) for row in PROMOTED]
+
 CATALOGUE = Catalogue(
     NODES,
     MECHANISMS,
@@ -436,7 +441,7 @@ CATALOGUE = Catalogue(
     ten_x=TEN_X_PROBES,
     splits=load_splits(),
     link_splits=load_link_splits(),
-    promoted=[(row.mechanism, row.source.value, row.target.value, row.id) for row in PROMOTED],
+    promoted=PROMOTED_LINKS,
 )
 
 

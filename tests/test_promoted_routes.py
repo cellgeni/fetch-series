@@ -11,6 +11,7 @@ from fetch_series.graph import PROMOTED, REGISTRY
 from fetch_series.results import Outcome
 from fetch_series.routes import IMPLEMENTATIONS
 from fetch_series.routes.catalogue import (
+    EVERY_DIRECTION,
     NOT_PROMOTED,
     RouteFailed,
     answer,
@@ -54,7 +55,7 @@ def runinfo(monkeypatch):
 class TestCandidates:
     def test_only_directions_no_route_covers(self):
         covered = {(route.source, route.target) for route in REGISTRY}
-        found = candidates()
+        found = [c for c in candidates() if c.mechanism not in EVERY_DIRECTION]
         assert found and all((c.source, c.target) not in covered for c in found)
 
     def test_records_about_the_data_stay_links(self):
@@ -63,11 +64,15 @@ class TestCandidates:
     def test_ids_are_unique_and_follow_the_scheme(self):
         ids = [c.id for c in candidates()]
         assert len(ids) == len(set(ids))
-        assert "bioproject->sample:sra_be_runinfo" in ids
+        assert "run->study:sra_be_runinfo" in ids
 
     def test_a_route_from_a_shared_record_answers_for_any_archive(self):
-        (c,) = [c for c in candidates() if c.id == "bioproject->sample:sra_be_runinfo"]
+        (c,) = [c for c in candidates() if c.id == "biosample->sample:sra_be_runinfo"]
         assert c.source_archives == ()
+
+    def test_a_route_from_a_split_record_names_its_archives(self):
+        (c,) = [c for c in candidates() if c.id == "run->study:sra_be_runinfo"]
+        assert c.source_archives
 
 
 class TestAnswer:
@@ -119,16 +124,15 @@ class TestFanout:
         routes = [
             c
             for c in candidates()
-            if c.mechanism == "sra_be_runinfo" and c.source is EntityType.BIOPROJECT
+            if c.mechanism == "sra_be_runinfo" and c.source is EntityType.BIOSAMPLE
         ]
         fn = fanout("sra_be_runinfo", routes, {"ncbi_web": _Client()}, "c")
         with SurveyCache(tmp_path / "c.sqlite") as cache:
             await run_fanout(
-                [c.id for c in routes], ["PRJNA1", "PRJNA404"], fn, cache, "c", workers=1
+                [c.id for c in routes], ["SAMN1", "PRJNA404"], fn, cache, "c", workers=1
             )
             sample = {
-                r.accession: r for r in cache.results("c", "bioproject->sample:sra_be_runinfo")
+                r.accession: r for r in cache.results("c", "biosample->sample:sra_be_runinfo")
             }
-        assert sorted(runinfo) == ["PRJNA1", "PRJNA404"]
-        assert sample["PRJNA1"].results == ("ERS9", "SRS1")
-        assert sample["PRJNA404"].outcome is Outcome.EMPTY
+        assert sorted(runinfo) == ["PRJNA404", "SAMN1"]
+        assert sample["SAMN1"].results == ("ERS9", "SRS1")

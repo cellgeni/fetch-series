@@ -686,6 +686,23 @@ _NCBI: tuple[Mechanism, ...] = (
         note="The accessions are inside an XML string inside the JSON document summary.",
     ),
     Mechanism(
+        id="esearch_sra_runinfo",
+        name="ESearch sra, runinfo",
+        api=NCBI,
+        endpoint="esearch db=sra term={acc}, efetch db=sra rettype=runinfo by retstart",
+        citation_url=None,
+        basis=Basis.LIVE_ONLY,
+        # The maintainer's own notebook query: the bare accession, which NCBI
+        # matches in every field, where the efetch_direct route searches the
+        # project field alone ([GPRJ]).
+        inputs=nodes("bioproject"),
+        outputs=RUNINFO_OUTPUTS,
+        note=(
+            "ESearch on the bare accession, then every page of runinfo for what it matched. "
+            "Beside [GPRJ], which PRJNA66167's SRX135150 is missing from."
+        ),
+    ),
+    Mechanism(
         id="sdl",
         name="SDL",
         api="NCBI Storage Data Locator",

@@ -193,6 +193,11 @@ def compute(
         link_id = by_slug[stem]
         if only is not None and link_id not in only:
             continue
+        if link_id in measured:
+            # Promoted to a route since its link survey (graph.PROMOTED): the
+            # route's split measures it now. The link survey's export stays as
+            # the dated record of what it found then; it is not a second split.
+            continue
         results = read_export(path, corpus, link_unit(link_id))
         split = split_of(link_id, corpus, results, declared=declared, measured=measured)
         screened = _screened(path.parent, corpus, link_id)

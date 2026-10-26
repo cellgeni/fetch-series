@@ -274,6 +274,7 @@ def plan(
 _CALL_COST = {
     "elink_": 3,
     "efetch_sra": 2,
+    "esearch_sra_runinfo": 2,
     "biosample_record": 2,
     "gds_esummary": 2,
     "geo_acc": 1,

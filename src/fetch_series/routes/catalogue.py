@@ -41,6 +41,15 @@ from fetch_series.survey.runner import FanoutFn
 # Records about the data rather than levels of it: they stay catalogue links.
 NOT_PROMOTED = frozenset({EntityType.SUBMISSION, EntityType.ANALYSIS, EntityType.GEO_PLATFORM})
 
+# Mechanisms promoted in every direction they answer, covered or not, and why.
+# Anything else in a covered direction waits for its own measurement.
+EVERY_DIRECTION = {
+    "esearch_sra_runinfo": (
+        "the maintainer's notebook query, the bare accession, surveyed beside [GPRJ] "
+        "on request (2026-10-26)"
+    ),
+}
+
 
 def route_id(mechanism: str, source: EntityType, target: EntityType) -> str:
     """``bioproject->sample:sra_be_runinfo``: the scheme every route id follows."""
@@ -91,7 +100,7 @@ def candidates(
         target = catalogue.nodes[link.target].entity
         if source is None or target is None or {source, target} & NOT_PROMOTED:
             continue
-        if (source, target) in covered:
+        if (source, target) in covered and link.mechanism not in EVERY_DIRECTION:
             continue
         grouped.setdefault((link.mechanism, source, target), []).append(link)
     return [
@@ -261,6 +270,7 @@ def host_of(mechanism: str) -> str:
 
 
 __all__ = [
+    "EVERY_DIRECTION",
     "NOT_PROMOTED",
     "Candidate",
     "RouteFailed",
