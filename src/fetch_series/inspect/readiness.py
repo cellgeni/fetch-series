@@ -35,6 +35,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from fetch_series.assays.chemistry import ChemistryCall
 from fetch_series.inspect.checks import CDNA_READ_MIN
 from fetch_series.inspect.classify.layouts import BY_ID, TSO_PREFIX, Layout, Tail
 from fetch_series.inspect.fit import INDEX_READ_MAX, short_of_run
@@ -514,18 +515,101 @@ def convertible(
     return {"method": None, "convertible": None, "reason": f"no conversion known for {kind}"}
 
 
+# Where the reads cannot choose between 3' v2 and 5' v1/v2, the metadata may,
+# on the terms of docs/decisions/when-metadata-may-break-a-tie.md: only that
+# pair, only when the metadata names exactly one of the two, and offered beside
+# the read-derived answer, never merged into it. Measured on the pipeline's own
+# record (docs/benchmarks/metadata-vs-reads-2026-10.md, 2026-10-23).
+TIE = frozenset({"10x_3p_v2", "10x_5p_v1_v2"})
+TIE_VALIDATION = {
+    "ties_settled": 9,
+    "ties_as_the_pipeline_mapped": 9,
+    "strand_agrees_at_scale": 946,
+    "strand_compared_at_scale": 948,
+    "source": "docs/benchmarks/metadata-vs-reads-2026-10.md",
+}
+
+
+def from_metadata(
+    checks: dict[str, Any],
+    call: dict[str, Any],
+    fit: bool | None,
+    metadata: ChemistryCall | None,
+    *,
+    run: str | None = None,
+    whitelists: dict[str, str] | None = None,
+) -> dict[str, Any] | None:
+    """A mapping block for a read call tied between 3' v2 and 5', with the metadata's kit.
+
+    ``None`` unless the reads left exactly that tie and the metadata names one
+    of the two and not the other. The block's ``soloStrand`` is the kit's, and
+    says so: the read-derived block's rule, a strand only from the reads, is
+    why this one is separate.
+    """
+    if metadata is None or call.get("level") != "ambiguous":
+        return None
+    if set(call.get("candidates") or []) != TIE:
+        return None
+    named = [c for c in metadata.candidates if c in TIE]
+    if len(named) != 1:
+        return None
+    layout = BY_ID[named[0]]
+    measured = ((call.get("evidence") or {}).get("strand") or {}).get("strand")
+    if measured in SOLO_STRAND and measured != str(layout.strand):
+        # One strand vote, too few to decide, against the metadata's kit: no tie
+        # is broken against what the reads did measure.
+        return None
+    # The tied call places no UMI, so the geometry is laid out for the kit named.
+    chosen = {**call, "layout": layout.id, "level": "MEDIUM"}
+    shape = geometry(checks, chosen, run=run)
+    block = mapping(shape, chosen, fit, whitelists=whitelists)
+    if block is None:
+        return None
+    solo = dict(block["starsolo"])
+    solo["soloStrand"] = SOLO_STRAND[str(layout.strand)]
+    paired = _paired(layout, shape["barcode"], shape["reads"][shape["barcode"]["read"]], solo)
+    return {
+        **block,
+        "layout": layout.id,
+        "source": "metadata",
+        "grounds": [str(m) for m in metadata.matches],
+        "starsolo": solo,
+        "starsolo_args": starsolo_args(solo),
+        "starsolo_paired": paired,
+        "starsolo_paired_args": starsolo_args(paired) if paired else None,
+        "omitted": [w for w in block["omitted"] if not w.startswith("soloStrand")],
+        "validated": True,
+        "validation": TIE_VALIDATION,
+        "note": (
+            f"the reads could not choose between 3' v2 and 5' v1/v2; the metadata names "
+            f"{layout.id}, and soloStrand is that kit's. Where the reads abstained, the "
+            "metadata chose as the pipeline mapped in 9 of 9; at scale its strand agreed in "
+            "946 of 948, both errors one study's protocol applied to every sample"
+        ),
+    }
+
+
 def readiness(
     source: dict[str, Any],
     *,
     run: str | None = None,
     run_spot: float | None = None,
     whitelists: dict[str, str] | None = None,
+    metadata: ChemistryCall | None = None,
 ) -> dict[str, Any]:
     """Geometry, mapping and conversion for one report source."""
     shape = geometry(source["checks"], source["call"], run=run)
     return {
         "geometry": shape,
         "mapping": mapping(shape, source["call"], source["fit"], whitelists=whitelists),
+        "mapping_from_metadata": from_metadata(
+            source["checks"],
+            source["call"],
+            source["fit"],
+            metadata,
+            run=run,
+            whitelists=whitelists,
+        ),
         "convertible": convertible(
             source["kind"],
             source["checks"],
@@ -542,6 +626,7 @@ __all__ = [
     "SOLO_STRAND",
     "barcode_hit",
     "convertible",
+    "from_metadata",
     "geometry",
     "mapping",
     "readiness",

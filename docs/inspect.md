@@ -145,6 +145,12 @@ say the called kit needs:
   paired-end form the reprocessing pipeline runs it with (`--readFilesIn R1 R2
   --soloBarcodeMate 1 --clip5pNbases 39 0 --soloStrand Forward`). It is offered as that
   script's choice, beside the single-end block.
+- **A call the reads leave tied between 3′ v2 and 5′ v1/v2** gets no block. If the run's
+  metadata names exactly one of the two, it gets `mapping_from_metadata` beside the empty
+  block: laid out for that kit, with that kit's `soloStrand`, its `source` and `grounds`
+  said. Where the reads abstained, the metadata chose as the pipeline mapped in 9 of 9.
+  `--no-metadata` skips the two requests this costs
+  ([the decision](decisions/when-metadata-may-break-a-tie.md)).
 - **The whitelist** is exported from the checked cache as sorted text. Its sha256 is in the
   register (`export_sha256`), and an export that does not match it is refused.
 

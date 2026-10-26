@@ -7,8 +7,16 @@ from typing import Any
 
 import pytest
 
+from fetch_series.assays.chemistry import ChemistryCall
 from fetch_series.inspect.lists import BarcodeList, Entry, ListMismatch, export, pack, unpack
-from fetch_series.inspect.readiness import convertible, geometry, mapping, readiness, roles
+from fetch_series.inspect.readiness import (
+    convertible,
+    from_metadata,
+    geometry,
+    mapping,
+    readiness,
+    roles,
+)
 
 
 def facts(mode: int, *, source: str = "x", fmt: str = "fastq", hint=None, lo=None, hi=None):
@@ -285,7 +293,8 @@ def test_readiness_takes_a_report_source():
         "reason": "10x_3p_v3_family at HIGH",
     }
     made = readiness(source, run="SRR1")
-    assert set(made) == {"geometry", "mapping", "convertible"} and made["mapping"]
+    assert set(made) == {"geometry", "mapping", "mapping_from_metadata", "convertible"}
+    assert made["mapping"] and made["mapping_from_metadata"] is None
 
 
 class TestWhitelistExport:
@@ -384,3 +393,53 @@ class TestConvertibleLive:
         entry = await self._source(record, run_spot=119.0)
         assert entry["convertible"]["convertible"] is True
         assert entry["mapping"]["cellranger_chemistry"] == "SC5P-R2"
+
+
+class TestFromMetadata:
+    """docs/decisions/when-metadata-may-break-a-tie.md, as code."""
+
+    TIED = {
+        **a_call(None, barcode_list="tenx_v2", level="ambiguous", strand="unstranded"),
+        "candidates": ["10x_3p_v2", "10x_5p_v1_v2"],
+    }
+
+    def made(self, call, *candidates, files=None):
+        checks = {"files": files or [facts(26), facts(98)]}
+        return from_metadata(
+            checks, call, None, ChemistryCall(candidates=tuple(candidates)), run="SRR1"
+        )
+
+    def test_a_5p_kit_breaks_the_tie_with_its_strand(self):
+        made = self.made(self.TIED, "10x_5p_v1_v2")
+        assert made is not None and made["source"] == "metadata"
+        assert made["layout"] == "10x_5p_v1_v2" and made["starsolo"]["soloStrand"] == "Reverse"
+        assert made["cellranger_chemistry"] == "SC5P-R2"
+        assert not any(w.startswith("soloStrand") for w in made["omitted"])
+
+    def test_a_3p_kit_breaks_it_the_other_way(self):
+        made = self.made(self.TIED, "10x_3p_v2")
+        assert made is not None and made["starsolo"]["soloStrand"] == "Forward"
+
+    def test_a_long_5p_barcode_read_is_offered_paired(self):
+        made = self.made(self.TIED, "10x_5p_v1_v2", files=[facts(150), facts(150)])
+        assert made is not None and made["starsolo_paired"]["soloStrand"] == "Forward"
+
+    @pytest.mark.parametrize(
+        "candidates",
+        [(), ("10x_3p_v2", "10x_5p_v1_v2"), ("10x_3p_v3_family",)],
+        ids=["silent", "names both", "names neither"],
+    )
+    def test_metadata_that_does_not_name_one_of_the_pair_breaks_nothing(self, candidates):
+        assert self.made(self.TIED, *candidates) is None
+
+    def test_a_decided_call_is_never_overruled(self):
+        decided = a_call("10x_3p_v2", barcode_list="tenx_v2")
+        assert self.made(decided, "10x_5p_v1_v2") is None
+
+    def test_a_measured_strand_against_the_kit_breaks_nothing(self):
+        call = {**self.TIED, "evidence": {**self.TIED["evidence"], "strand": {"strand": "sense"}}}
+        assert self.made(call, "10x_5p_v1_v2") is None
+
+    def test_not_for_a_library_that_is_not_gene_expression(self):
+        call = {**self.TIED, "library_type": "VDJ"}
+        assert self.made(call, "10x_5p_v1_v2") is None

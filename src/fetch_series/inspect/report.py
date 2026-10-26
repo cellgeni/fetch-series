@@ -27,7 +27,9 @@ Keys (schema 2):
 * ``agreement``: whether the called sources agree, and which could not be called.
 
 Schema 2 added ``geometry``, ``mapping``, ``convertible``, ``qc``,
-``library`` and ``technology``; nothing of schema 1 was removed or changed meaning. No sequence is ever written.
+``library`` and ``technology``; nothing of schema 1 was removed or changed meaning. Since
+2026-10-26 a run's report may also carry ``metadata`` (its kit by the metadata, and where
+read) and each source ``mapping_from_metadata``, both additive. No sequence is ever written.
 """
 
 from __future__ import annotations
@@ -36,6 +38,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
+from fetch_series.assays.chemistry import ChemistryCall
 from fetch_series.files import FileKind, FileRecord, FileSet, candidates
 from fetch_series.files import classify as kind_of
 from fetch_series.inspect.agree import across_sources
@@ -78,6 +81,7 @@ def _source(
     references: dict[str, KmerIndex],
     run_spot: float | None = None,
     run: str | None = None,
+    metadata: ChemistryCall | None = None,
 ) -> tuple[dict[str, Any], Call]:
     checks = check_set(samples, records)
     call = classify(samples, lists, references)
@@ -92,7 +96,7 @@ def _source(
         "reason": verdict["reason"],
         "mates": verdict.get("mates"),
     }
-    entry.update(readiness(entry, run=run, run_spot=run_spot))
+    entry.update(readiness(entry, run=run, run_spot=run_spot, metadata=metadata))
     entry["technology"] = technology_of(entry["call"])
     entry["qc"] = qc(samples, entry["call"])
     entry["library"] = library(samples, entry["call"], references, tag_sets())
@@ -106,12 +110,16 @@ async def inspect_fileset(
     references: dict[str, KmerIndex],
     *,
     reads: int = DEFAULT_READS,
+    metadata: tuple[ChemistryCall | None, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Read every offer of one run, each distinct file once.
 
     An SRA object is held to the run's mean spot from runinfo (since rule fit-2), so
-    a run with one is looked up once.
+    a run with one is looked up once. ``metadata`` is the run's metadata chemistry
+    call and where it came from (``inspect.metadata``); it can only offer a block
+    beside a tied read call, never change one.
     """
+    chemistry, provenance = metadata or (None, {})
     read: dict[str, list[FileSample]] = {}
     sources = []
     calls: dict[str, Call] = {}
@@ -135,6 +143,7 @@ async def inspect_fileset(
             references,
             run_spot,
             fileset.run,
+            chemistry,
         )
         sources.append(entry)
         calls[f"{offer.source}:{offer.kind}"] = call
@@ -145,6 +154,7 @@ async def inspect_fileset(
         "classifier": VERSION,
         "fit_rule": RULE,
         "run_spot": run_spot,
+        "metadata": provenance or None,
         "sources": sources,
         "agreement": across_sources(calls),
     }
@@ -225,6 +235,18 @@ def params(report: dict[str, Any]) -> list[str]:
         lines.append(
             f"    {'validated' if block['validated'] else 'unvalidated':12s} {block['note']}"
         )
+    for source in report["sources"]:
+        tie = source.get("mapping_from_metadata")
+        if not tie:
+            continue
+        lines.append(f"  {source['source']} ({source['kind']}), by the metadata's kit:")
+        lines.append(f"    STARsolo     {tie['starsolo_args']}")
+        if tie.get("starsolo_paired_args"):
+            lines.append(f"    or paired    {tie['starsolo_paired_args']}")
+        if tie["cellranger_chemistry"]:
+            lines.append(f"    Cell Ranger  --chemistry {tie['cellranger_chemistry']}")
+        lines.append(f"    grounds      {'; '.join(tie['grounds'])}")
+        lines.append(f"    note         {tie['note']}")
     return lines
 
 

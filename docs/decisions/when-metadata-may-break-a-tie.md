@@ -4,8 +4,8 @@ title: When metadata may break a tie
 
 # When metadata may break a tie
 
-**Status:** decided 2026-10-23 and permitted by the rule set before measuring. It is not
-built, because `fetch inspect` does not harvest metadata today.
+**Status:** decided 2026-10-23 and permitted by the rule set before measuring. Built
+2026-10-26: `fetch inspect run` offers `mapping_from_metadata`.
 **Evidence:** [metadata against the reads and the pipeline](../benchmarks/metadata-vs-reads-2026-10.md)
 
 ## The question
@@ -63,16 +63,38 @@ Metadata may break the 3′ v2 / 5′ v1/v2 tie, and only that tie, on these ter
 What it buys is 9 of 94 abstentions. The other 85 have metadata that names neither kit, or
 both.
 
-## What building it needs
+## How it is built
 
-`fetch inspect run` reads files and harvests no metadata. Building this means two requests a
-study, as `scripts/metadata_vs_reads.py` makes them:
+**The harvest.** `fetch inspect run` reads the run's metadata the way the comparison read it
+(`inspect/metadata.py`), with two requests at most:
 
-- ENA's `read_run` report for the project;
-- GEO's SOFT family.
+- ENA's `read_run` report for the run, with the protocol fields and the sample alias;
+- where the alias is a GSM, GEO's record for that sample, whose free-text fields are the ones
+  the SOFT family gives.
 
-Their result would be passed to `readiness.mapping`. That is new network code on the inspect
-path, behind `redact_exception` like every other call. It is not built in this round.
+A failure is recorded in the report as why no call was made, redacted, and never stops the
+read report. `--no-metadata` skips the harvest.
+
+**The block.** `readiness.from_metadata` returns `None` unless every term above holds:
+
+- the read call is ambiguous between exactly 3′ v2 and 5′ v1/v2;
+- the metadata names one of the two and not the other;
+- the reads did not measure a strand against that kit;
+- the library is not typed as anything but gene expression;
+- the copy is not unfit.
+
+When it holds, the block is laid out for the named kit. Its `soloStrand` is the kit's, and
+the block says so, with:
+
+- `source: metadata`;
+- the phrases that matched, under `grounds`;
+- the measured agreement above.
+
+It sits beside `mapping` as `mapping_from_metadata`. `mapping` itself stays empty, and so does
+the fit verdict: metadata never makes a copy fit.
+
+**Run live.** SRR9141217's reads leave it tied, and its protocol names a 5′ kit. It gets
+`--soloStrand Reverse` and `SC5P-R2` from the metadata, and the pipeline mapped it Reverse.
 
 ## A model's baseline
 

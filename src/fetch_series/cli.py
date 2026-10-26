@@ -392,6 +392,13 @@ def inspect_run(
         Path | None, typer.Option("--json", help="Write the versioned JSON report here.")
     ] = None,
     no_sdl: Annotated[bool, typer.Option("--no-sdl", help="Skip NCBI SDL.")] = False,
+    metadata: Annotated[
+        bool,
+        typer.Option(
+            help="Read the run's metadata kit too (two requests), to offer a block where "
+            "the reads cannot choose between 3' v2 and 5'.",
+        ),
+    ] = True,
     show_params: Annotated[
         bool,
         typer.Option(
@@ -409,6 +416,7 @@ def inspect_run(
     """
     from fetch_series.inspect import lists as barcode_lists
     from fetch_series.inspect import references
+    from fetch_series.inspect.metadata import chemistry_of_run
     from fetch_series.inspect.readiness import with_whitelist
     from fetch_series.inspect.report import (
         SCHEMA_VERSION,
@@ -436,15 +444,26 @@ def inspect_run(
         parsed = resolve_input(targets[0])
         async with _client_for_one_query(6) as client:
             sets = await filesets_for(parsed, client, include_sdl=not no_sdl)
-            return [await inspect_fileset(s, client, held, refs, reads=reads) for s in sets]
+            return [
+                await inspect_fileset(
+                    s,
+                    client,
+                    held,
+                    refs,
+                    reads=reads,
+                    metadata=await chemistry_of_run(s.run, client) if metadata else None,
+                )
+                for s in sets
+            ]
 
     reports = asyncio.run(run_it())
     for report in reports:
         if show_params:
             for source in report["sources"]:
-                if source["mapping"]:
-                    entry = barcode_lists.REGISTER[source["mapping"]["whitelist"]["id"]]
-                    with_whitelist(source["mapping"], str(barcode_lists.exported(entry)))
+                for key in ("mapping", "mapping_from_metadata"):
+                    if source.get(key):
+                        entry = barcode_lists.REGISTER[source[key]["whitelist"]["id"]]
+                        with_whitelist(source[key], str(barcode_lists.exported(entry)))
         typer.echo(summary(report))
         if show_params:
             typer.echo("\n".join(params(report)) or "  no source called as 10x gene expression")
