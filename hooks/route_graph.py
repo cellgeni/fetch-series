@@ -41,6 +41,7 @@ from fetch_series.catalogue import (
     status,
 )
 from fetch_series.export.graph import route_graph
+from fetch_series.graph import PROMOTED, REGISTRY, Route
 from fetch_series.results import Outcome
 
 PAGE = "routes/graph.md"
@@ -151,6 +152,84 @@ def _catalogue_sections() -> dict[str, str]:
     )
 
 
+MATRIX_PAGE = "routes/index.md"
+MATRIX_MARKERS = ("<!-- route-count -->", "<!-- route-matrix -->")
+_FROM_MARKER = re.compile(r"<!-- promoted-routes:([a-z_]+) -->")
+
+
+def _n(value: int | None) -> str:
+    return "—" if value is None else f"{value:,}"
+
+
+def _short(corpus: str, width: int = 58) -> str:
+    """A long derived corpus name, cut where the matrix would wrap it."""
+    return corpus if len(corpus) <= width else corpus[:width] + "…"
+
+
+def _matrix_row(route: Route) -> str:
+    evidence = route.evidence
+    assert evidence is not None
+    failed = evidence.accessions_failed
+    return (
+        f"| `{route.source.value}` → `{route.target.value}` | `{route.id.split(':', 1)[1]}` "
+        f"| `{_cell(_short(evidence.corpus))}` | {_n(evidence.accessions_queried)} "
+        f"| {_n(evidence.unique_results)} | {f'**{failed}**' if failed else 0} |"
+    )
+
+
+def _matrix_sections() -> dict[str, str]:
+    """The route matrix, from REGISTRY: a hand-pasted one drifted from graph.py."""
+    routes = sorted(REGISTRY, key=lambda r: (r.source.value, r.target.value, r.id))
+    measured = [r for r in routes if r.evidence is not None]
+    promoted = len(PROMOTED)
+    count = (
+        f"**All {len(routes)} declared routes carry measured evidence.**"
+        if len(measured) == len(routes)
+        else f"**{len(measured)} of {len(routes)} declared routes carry measured evidence.**"
+    ) + (f" {promoted} of them are catalogue links surveyed as routes." if promoted else "")
+    rows = [
+        "| Direction | Route | Corpus | Queried | Results | Failed |",
+        "|---|---|---|---:|---:|---:|",
+        *(_matrix_row(r) for r in measured),
+    ]
+    return dict(zip(MATRIX_MARKERS, (count, "\n".join(rows)), strict=True))
+
+
+def _promoted_page(source: str) -> str:
+    """Every promoted route from one entity type, ranked per direction as the resolver tries them."""
+    rows = [row for row in PROMOTED if row.source.value == source]
+    if not rows:
+        return "*No catalogue link from here has been surveyed as a route yet.*"
+    out = []
+    for target in sorted({row.target for row in rows}, key=lambda t: t.value):
+        ranked = REGISTRY.ranked(rows[0].source, target)
+        out += [
+            f"### → {target.value}",
+            "",
+            "| Rank | Route | Corpus | Date | Queried | Resolved | Empty | Failed | Distinct "
+            "| Requests | Pathologies |",
+            "|---:|---|---|---|---:|---:|---:|---:|---:|---:|---|",
+        ]
+        for rank, route in enumerate(ranked, 1):
+            e = route.evidence
+            assert e is not None
+            empty = e.accessions_empty
+            resolved = (
+                e.accessions_queried - e.accessions_failed - empty if empty is not None else None
+            )
+            pathologies = ", ".join(
+                f"[{slug}](../pathologies/{slug}.md)" for slug in route.known_pathologies
+            )
+            out.append(
+                f"| {rank} | `{route.id}` | `{_cell(e.corpus)}` | {e.surveyed_on.isoformat()} "
+                f"| {_n(e.accessions_queried)} | {_n(resolved)} | {_n(empty)} "
+                f"| {e.accessions_failed:,} | {_n(e.unique_results)} | {route.cost.requests} "
+                f"| {pathologies or '—'} |"
+            )
+        out.append("")
+    return "\n".join(out)
+
+
 _WAVE_MARKER = re.compile(r"<!-- link-splits:wave=(\d+) -->")
 
 
@@ -195,6 +274,13 @@ def _wave_table(wave: int) -> str:
 
 def on_page_markdown(markdown: str, *, page: Page, config: MkDocsConfig, files: Files) -> str:
     markdown = _WAVE_MARKER.sub(lambda m: _wave_table(int(m.group(1))), markdown)
+    markdown = _FROM_MARKER.sub(lambda m: _promoted_page(m.group(1)), markdown)
+    if page.file.src_uri == MATRIX_PAGE:
+        for marker, text in _matrix_sections().items():
+            if marker not in markdown:
+                raise PluginError(f"{MATRIX_PAGE} no longer carries the {marker} marker.")
+            markdown = markdown.replace(marker, text)
+        return markdown
     if page.file.src_uri == CATALOGUE_PAGE:
         for placeholder, text in _catalogue_sections().items():
             if placeholder not in markdown:

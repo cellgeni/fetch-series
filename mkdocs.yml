@@ -128,6 +128,17 @@ nav:
       - To files:
           - Run → file: routes/run-to-file/index.md
           - ArrayExpress experiment → file: routes/ae-experiment-to-file/index.md
+      - Promoted from the catalogue:
+          - From BioProject: routes/from-bioproject.md
+          - From BioSample: routes/from-biosample.md
+          - From Study: routes/from-study.md
+          - From Sample: routes/from-sample.md
+          - From Experiment: routes/from-experiment.md
+          - From Run: routes/from-run.md
+          - From GEO series: routes/from-geo-series.md
+          - From GEO sample: routes/from-geo-sample.md
+          - From ArrayExpress experiment: routes/from-ae-experiment.md
+          - From BioStudies study: routes/from-biostudy.md
   - Evidence:
       - Benchmarks: benchmarks/index.md
       - Read classifier benchmark: benchmarks/inspect-2026-10.md
