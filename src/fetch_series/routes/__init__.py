@@ -16,7 +16,9 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from fetch_series.accession import EntityType
 from fetch_series.files import FileRecord, classify, from_ena_row, from_sdl_files, mate_of
+from fetch_series.graph import PROMOTED
 from fetch_series.providers import biostudies, ena_portal, geo, sdl, sra_be
 from fetch_series.providers.eutils import (
     efetch_pages,
@@ -578,3 +580,20 @@ IMPLEMENTATIONS: dict[str, RouteFn] = {
     "run->geo_sample:ena_alias": _ena_alias_route(ena_portal.GSM_IN_ALIAS),
     "run->ae_experiment:ena_alias": _ena_alias_route(ena_portal.AE_IN_ALIAS),
 }
+
+
+def _promoted(mechanism: str, source: EntityType, target: EntityType) -> RouteFn:
+    """A promoted catalogue route, answered by ``routes.catalogue``."""
+
+    async def fn(accession: str, client: SurveyClient, timeout: float) -> list[str]:
+        # Imported here, not above: catalogue.probe imports this package.
+        from fetch_series.routes.catalogue import answer_route
+
+        return await answer_route(mechanism, source, target, accession, client, timeout)
+
+    return fn
+
+
+IMPLEMENTATIONS.update(
+    {row.id: _promoted(row.mechanism, row.source, row.target) for row in PROMOTED}
+)

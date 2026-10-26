@@ -144,7 +144,11 @@ def _client_for_one_query(concurrency: int) -> SurveyClient:
     """
     api_key = default_api_key()
     rps = 8.0 if api_key else 2.5
-    return SurveyClient(limits=Limits(rps=rps, concurrency=concurrency), api_key=api_key)
+    # Memoised: several routes of one direction read one document -- a runinfo,
+    # a filereport, a SOFT file -- and one resolution should fetch it once.
+    return MemoClient(
+        limits=Limits(rps=rps, concurrency=concurrency), api_key=api_key, memoize=memoizable
+    )
 
 
 def _slug(route_id: str) -> str:
