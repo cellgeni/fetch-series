@@ -168,80 +168,76 @@
    ]
   },
   "bioproject->run:efetch_direct": {
-   "export": "data/query/results/bioproject2sra_direct_summary.csv",
-   "unparsed": [
-    "-"
-   ],
+   "export": "data/surveys/reprocessed-prj/bioproject-to-run_efetch_direct.csv.gz",
+   "unparsed": [],
    "excluded": {},
    "pairs": [
     {
      "source": "bioproject",
      "target": "run_ddbj",
      "queried": 12755,
-     "resolved": null,
-     "empty": null,
-     "failed": 14,
+     "resolved": 12732,
+     "empty": 23,
+     "failed": 0,
      "reached": 137,
-     "distinct": 2306
+     "distinct": 2308
     },
     {
      "source": "bioproject",
      "target": "run_ebi",
      "queried": 12755,
-     "resolved": null,
-     "empty": null,
-     "failed": 14,
+     "resolved": 12732,
+     "empty": 23,
+     "failed": 0,
      "reached": 501,
-     "distinct": 106778
+     "distinct": 213298
     },
     {
      "source": "bioproject",
      "target": "run_ncbi",
      "queried": 12755,
-     "resolved": null,
-     "empty": null,
-     "failed": 14,
-     "reached": 12103,
-     "distinct": 564073
+     "resolved": 12732,
+     "empty": 23,
+     "failed": 0,
+     "reached": 12094,
+     "distinct": 569370
     }
    ]
   },
   "bioproject->run:efetch_elink": {
-   "export": "data/query/results/bioproject2sra_summary.csv",
-   "unparsed": [
-    "-"
-   ],
+   "export": "data/surveys/reprocessed-prj/bioproject-to-run_efetch_elink.csv.gz",
+   "unparsed": [],
    "excluded": {},
    "pairs": [
     {
      "source": "bioproject",
      "target": "run_ddbj",
      "queried": 12755,
-     "resolved": null,
-     "empty": null,
-     "failed": 30,
+     "resolved": 12733,
+     "empty": 22,
+     "failed": 0,
      "reached": 137,
-     "distinct": 2306
+     "distinct": 2308
     },
     {
      "source": "bioproject",
      "target": "run_ebi",
      "queried": 12755,
-     "resolved": null,
-     "empty": null,
-     "failed": 30,
-     "reached": 500,
-     "distinct": 106818
+     "resolved": 12733,
+     "empty": 22,
+     "failed": 0,
+     "reached": 501,
+     "distinct": 213298
     },
     {
      "source": "bioproject",
      "target": "run_ncbi",
      "queried": 12755,
-     "resolved": null,
-     "empty": null,
-     "failed": 30,
-     "reached": 12088,
-     "distinct": 565062
+     "resolved": 12733,
+     "empty": 22,
+     "failed": 0,
+     "reached": 12095,
+     "distinct": 570980
     }
    ]
   },
@@ -283,80 +279,76 @@
    ]
   },
   "bioproject->run:sra_be_direct_cgi": {
-   "export": "data/query/results/bioproject2sra_direct_cgi_summary.csv",
-   "unparsed": [
-    "-"
-   ],
+   "export": "data/surveys/reprocessed-prj/bioproject-to-run_sra_be_direct_cgi.csv.gz",
+   "unparsed": [],
    "excluded": {},
    "pairs": [
     {
      "source": "bioproject",
      "target": "run_ddbj",
      "queried": 12755,
-     "resolved": null,
-     "empty": null,
-     "failed": 15,
+     "resolved": 12733,
+     "empty": 22,
+     "failed": 0,
      "reached": 137,
-     "distinct": 2306
+     "distinct": 2308
     },
     {
      "source": "bioproject",
      "target": "run_ebi",
      "queried": 12755,
-     "resolved": null,
-     "empty": null,
-     "failed": 15,
-     "reached": 500,
-     "distinct": 194089
+     "resolved": 12733,
+     "empty": 22,
+     "failed": 0,
+     "reached": 501,
+     "distinct": 213298
     },
     {
      "source": "bioproject",
      "target": "run_ncbi",
      "queried": 12755,
-     "resolved": null,
-     "empty": null,
-     "failed": 15,
-     "reached": 12103,
-     "distinct": 557882
+     "resolved": 12733,
+     "empty": 22,
+     "failed": 0,
+     "reached": 12095,
+     "distinct": 569329
     }
    ]
   },
   "bioproject->run:sra_be_elink": {
-   "export": "data/query/results/bioproject2sra_be_summary.csv",
-   "unparsed": [
-    "-"
-   ],
+   "export": "data/surveys/reprocessed-prj/bioproject-to-run_sra_be_elink.csv.gz",
+   "unparsed": [],
    "excluded": {},
    "pairs": [
     {
      "source": "bioproject",
      "target": "run_ddbj",
      "queried": 12755,
-     "resolved": null,
-     "empty": null,
-     "failed": 33,
+     "resolved": 12733,
+     "empty": 22,
+     "failed": 0,
      "reached": 137,
-     "distinct": 2306
+     "distinct": 2308
     },
     {
      "source": "bioproject",
      "target": "run_ebi",
      "queried": 12755,
-     "resolved": null,
-     "empty": null,
-     "failed": 33,
-     "reached": 500,
-     "distinct": 194085
+     "resolved": 12733,
+     "empty": 22,
+     "failed": 0,
+     "reached": 501,
+     "distinct": 213298
     },
     {
      "source": "bioproject",
      "target": "run_ncbi",
      "queried": 12755,
-     "resolved": null,
-     "empty": null,
-     "failed": 33,
-     "reached": 12085,
-     "distinct": 557941
+     "resolved": 12733,
+     "empty": 22,
+     "failed": 0,
+     "reached": 12095,
+     "distinct": 570050
     }
    ]
   },

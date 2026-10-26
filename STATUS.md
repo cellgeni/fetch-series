@@ -182,17 +182,17 @@ history is not part of it.
 
 ### Honest gaps
 
-5. **Three known archive behaviours have no pathology page.** They are declared
-   on the routes that exhibit them and listed in `PATHOLOGY_BACKLOG`, so
-   `--explain` names them and says *"not yet written up"* rather than offering a
-   path to a file that does not exist. Each is real and observed; what they lack
-   is the page contract — a curl reproducer, an affected-accession list, and a
-   regression test. The first of the eleven,
-   [`megalink-backend-flakiness`](docs/pathologies/megalink-backend-flakiness.md),
-   was written up on 2026-10-23, and writing it found that a backend message
-   inside an ELink link set still read as "no links". Five more were written up the
-   same day, and `elink-history-missing-querykey` and
-   `superseries-carries-no-bioproject` were retired: neither reproduces.
+5. **One known archive behaviour has no pathology page:**
+   `gprj-falls-through-to-all-fields`. It is declared on the routes that
+   exhibit it and listed in `PATHOLOGY_BACKLOG`, so `--explain` says *"not yet
+   written up"*. It needs a renamed or merged project to reproduce on, and none
+   has been found: every `[GPRJ]` search checked on 2026-10-23 was honoured as
+   written. Of the backlog's eleven, seven were written up on 2026-10-23 and
+   three retired as not reproducing. One of those, the sra-db-be timeout, was
+   replaced by a page on what large projects actually meet. Writing them found three silent losses
+   still in the code: a backend message inside an ELink link set read as "no
+   links"; one EFetch stopping at 10,000 runs; and sra-db-be answers cut off or
+   empty under load, recorded as results.
    [The list](docs/pathologies/index.md#known-declared-and-not-yet-written-up).
 
 6. **The read classifier's VDJ call has never been set on labelled data.** On

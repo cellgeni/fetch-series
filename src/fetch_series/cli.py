@@ -1014,7 +1014,8 @@ def survey_evidence(
     # EMPTY is a real answer about the archive, not a failure, so it counts
     # towards the denominator and not towards accessions_failed -- and is
     # recorded in its own field, because the 2026-05 scripts that lumped the two
-    # together left six routes whose split can never be recovered.
+    # together left routes whose split can never be recovered (two, since the
+    # BioProject -> run routes were re-surveyed on 2026-10-26).
     typer.echo(
         f"""        evidence=RouteEvidence(
             corpus="{corpus_name}",

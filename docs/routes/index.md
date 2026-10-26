@@ -46,11 +46,11 @@ failed counts, on [the route graph](graph.md).
 | `bioproject` → `experiment` | `ena_filereport` | `reprocessed-prj` | 12,755 | 481,315 | 0 |
 | `bioproject` → `geo_series` | `elink` | `reprocessed` | 12,114 | 15,180 | **1078** |
 | `bioproject` → `geo_series` | `gds_direct` | `reprocessed` | 12,114 | 15,179 | **1079** |
-| `bioproject` → `run` | `efetch_direct` | `reprocessed` | 12,755 | 673,157 | **14** |
-| `bioproject` → `run` | `efetch_elink` | `reprocessed` | 12,755 | 674,186 | **30** |
+| `bioproject` → `run` | `efetch_direct` | `reprocessed-prj` | 12,755 | 784,976 | 0 |
+| `bioproject` → `run` | `efetch_elink` | `reprocessed-prj` | 12,755 | 786,586 | 0 |
 | `bioproject` → `run` | `ena_filereport` | `reprocessed-prj` | 12,755 | 783,936 | 0 |
-| `bioproject` → `run` | `sra_be_direct_cgi` | `reprocessed` | 12,755 | 754,277 | **15** |
-| `bioproject` → `run` | `sra_be_elink` | `reprocessed` | 12,755 | 754,332 | **33** |
+| `bioproject` → `run` | `sra_be_direct_cgi` | `reprocessed-prj` | 12,755 | 784,935 | 0 |
+| `bioproject` → `run` | `sra_be_elink` | `reprocessed-prj` | 12,755 | 785,656 | 0 |
 | `bioproject` → `study` | `ena_filereport` | `reprocessed-prj` | 12,755 | 12,748 | 0 |
 | `biosample` → `run` | `ena_filereport` | `sample:3000@results-of:bioproject->biosample:ena_filerepo…` | 3,000 | 4,827 | 0 |
 | `experiment` → `biosample` | `ena_filereport` | `sample:3000@reprocessed-srx` | 3,000 | 2,893 | 0 |
@@ -95,12 +95,10 @@ exists:
   triage of a sample rather than of all of them, most of the 1,078–1,079
   BioProject → GEO series failures, which are re-created, withdrawn or private
   projects ([the triage](bioproject-to-geo-series/index.md#about-those-1078-failures)).
-- **NCBI routes failing on the request.** The 14–33 failures of the four NCBI
-  BioProject → run routes, whose declared pathologies include `sra-db-be` timing
-  out on very large projects and ELink's backend flakiness. These are 2026-05
-  script figures that were never re-censused through the harness
-  ([why](bioproject-to-run/index.md#why-the-ncbi-routes-were-not-re-censused)), so
-  they have not been separated into transient and permanent.
+- **NCBI routes failing on the request.** None left. The four NCBI BioProject → run routes
+  failed 14 to 33 projects in the 2026-05 scripts. Re-censused through the harness on
+  2026-10-24 to 26, every failure was a transport error that answered on retry, and none
+  remains ([the re-survey](bioproject-to-run/index.md#measured-behaviour)).
 
 Client-side losses do not appear in the table, because each one found was fixed
 and its route re-run:

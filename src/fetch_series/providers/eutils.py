@@ -260,6 +260,66 @@ async def efetch_text(
     return response.text
 
 
+# EFetch serves at most 10,000 records a request, with no error and no hint
+# that more exist: PRJEB14362 has 46,085 SRA experiments and one runinfo EFetch
+# over its history returns 9,939 runs. A page below that cap, by `retstart`.
+EFETCH_PAGE = 5_000
+
+
+async def efetch_pages(
+    client: SurveyClient,
+    db: str,
+    timeout: float,
+    *,
+    uids: list[str] | None = None,
+    webenv: str | None = None,
+    query_key: str | None = None,
+    count: int | None = None,
+    rettype: str = "runinfo",
+    retmode: str = "text",
+) -> list[str]:
+    """Every page of an EFetch, under its 10,000-record cap.
+
+    A UID list is fetched in slices of :data:`EFETCH_PAGE`. A history is
+    fetched by ``retstart`` up to ``count``, the number of records it holds --
+    which the caller knows from ESearch or from the UIDs it posted, and which
+    the response cannot be trusted to tell: a runinfo page holds runs, and an
+    experiment may have several or none.
+    """
+    if uids is not None:
+        return [
+            await efetch_text(
+                client,
+                db,
+                timeout,
+                uids=uids[start : start + EFETCH_PAGE],
+                rettype=rettype,
+                retmode=retmode,
+            )
+            for start in range(0, len(uids), EFETCH_PAGE)
+        ]
+    if webenv is None or query_key is None or count is None:
+        raise ValueError("a history EFetch needs webenv, query_key and the record count")
+    pages = []
+    for retstart in range(0, max(count, 1), EFETCH_PAGE):
+        response = await client.get(
+            f"{BASE}/efetch.fcgi",
+            params={
+                "db": db,
+                "WebEnv": webenv,
+                "query_key": query_key,
+                "retstart": retstart,
+                "retmax": EFETCH_PAGE,
+                "rettype": rettype,
+                "retmode": retmode,
+                "api_key": client.api_key,
+            },
+            timeout=timeout,
+        )
+        pages.append(response.text)
+    return pages
+
+
 # ESearch returns 20 UIDs when asked for no particular number. That default is
 # the same trap as ESummary's 500-UID ceiling and BioStudies' 25-item page: a
 # silent truncation that looks like a complete, successful answer.

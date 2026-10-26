@@ -41,18 +41,22 @@ here.
 
 ## What has been measured
 
-BioProject → runs, over 12,755 BioProjects (2026-05-12), counted at the unique-run level:
+BioProject → runs, over 12,755 BioProjects, counted at the unique-run level:
 
-| Route | Unique runs | Failed |
-|---|---|---|
-| ENA portal `filereport` | 784,026 | 14 |
-| SRA `sra-db-be` (direct CGI) | 754,277 | 15 |
-| SRA `sra-db-be` (via ELink) | 754,332 | 33 |
-| NCBI `efetch` runinfo (via ELink) | 674,186 | 30 |
-| NCBI `efetch` runinfo (direct `[GPRJ]`) | 673,157 | 14 |
+| Route | Unique runs | Failed | Surveyed |
+|---|---|---|---|
+| ENA portal `filereport` | 783,936 | 0 | 2026-09-15 |
+| NCBI `efetch` runinfo (via ELink) | 786,586 | 0 | 2026-10-26 |
+| SRA `sra-db-be` (via ELink) | 785,656 | 0 | 2026-10-26 |
+| NCBI `efetch` runinfo (direct `[GPRJ]`) | 784,976 | 0 | 2026-10-26 |
+| SRA `sra-db-be` (direct CGI) | 784,935 | 0 | 2026-10-26 |
 
-ENA holds 111,665 runs that `efetch` never returns; about 1,800 runs are missing
-from ENA. Both are set differences over the same 12,755 projects, not differences of totals. GEO series → experiment is covered under [Routes](routes/gse-to-experiment/index.md).
+All five agree to within 0.4%. Until 2026-10 this table said ENA held 111,665 runs `efetch`
+never returns. That gap was [one EFetch request stopping at 10,000
+records](pathologies/efetch-returns-fewer-runs-than-esearch-counts.md), and `sra-db-be`'s
+was [its history form stopping at 5,000 runs](pathologies/sra-be-history-caps-at-5000-runs.md).
+Worked around, the NCBI routes miss 162 to 1,270 of ENA's runs and hold 2,261 to 2,812 it
+does not, six weeks on from its census. GEO series → experiment is covered under [Routes](routes/gse-to-experiment/index.md).
 
 ### The five findings that changed what this tool does
 

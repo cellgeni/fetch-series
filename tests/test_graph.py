@@ -291,17 +291,14 @@ class TestSeededRegistry:
                 assert route.evidence.accessions_failed <= route.evidence.accessions_queried
 
     def test_evidence_records_the_empty_split(self):
-        """Every route separates EMPTY from FAILED, bar the six that never could.
+        """Every route separates EMPTY from FAILED, bar the two that never could.
 
-        Those six were surveyed by the 2026-05 scripts, which kept one boolean
-        per BioProject. The list is closed: a new route has to record the split,
+        Those two were surveyed by the 2026-05 scripts, which kept one boolean
+        per BioProject. The four BioProject -> run routes were too, until their
+        2026-10-26 re-survey. The list is closed: a new route has to record the split,
         and `fetch survey evidence` prints it.
         """
         never_recorded = {
-            "bioproject->run:sra_be_direct_cgi",
-            "bioproject->run:sra_be_elink",
-            "bioproject->run:efetch_direct",
-            "bioproject->run:efetch_elink",
             "bioproject->geo_series:elink",
             "bioproject->geo_series:gds_direct",
         }
@@ -329,18 +326,18 @@ class TestSeededRegistry:
     def test_bioproject_to_run_prefers_ena_on_the_evidence(self):
         """The measured ordering, which inverts what fetch10xmeta does today.
 
-        fetch10xmeta reaches for the NCBI routes first; the survey says ENA
-        returns 111,665 runs that efetch never does.
+        fetch10xmeta reaches for the NCBI routes first. Re-surveyed on
+        2026-10-26, all five routes sit in one yield band (783,936 to 786,586
+        runs) with no failures left, so cost decides: ENA's one request, then
+        the two-request direct routes, then the ELink ones, each pair by id.
         """
         ranked = REGISTRY.ranked(EntityType.BIOPROJECT, EntityType.RUN)
         assert [r.id for r in ranked] == [
             "bioproject->run:ena_filereport",
-            # Within each yield band the direct variant wins: same results, one
-            # fewer request, and no ELink hop to fail.
-            "bioproject->run:sra_be_direct_cgi",
-            "bioproject->run:sra_be_elink",
             "bioproject->run:efetch_direct",
+            "bioproject->run:sra_be_direct_cgi",
             "bioproject->run:efetch_elink",
+            "bioproject->run:sra_be_elink",
         ]
 
     def test_bioproject_to_geo_prefers_the_cheaper_of_two_equivalent_routes(self):

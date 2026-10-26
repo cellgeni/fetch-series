@@ -1,8 +1,9 @@
 """ENA portal API.
 
-The single most complete route measured so far: over 12,755 BioProjects it
-returned 784,026 unique runs, including 111,665 that NCBI's ``efetch`` never
-does, while only about 1,800 runs were missing from it.
+One request a project, and as complete as any NCBI route: over 12,755
+BioProjects it returned 783,936 unique runs (2026-09-15), within 0.4% of each
+of the four NCBI routes re-surveyed on 2026-10-26. The 111,665 runs it once
+appeared to hold over ``efetch`` were EFetch's 10,000-record cap.
 
 It also accepts almost any accession as the ``accession`` parameter -- project,
 study, sample, experiment, run -- which makes one endpoint serve a large part of

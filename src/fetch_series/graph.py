@@ -311,9 +311,6 @@ PATHOLOGY_BACKLOG: frozenset[str] = frozenset(
     {
         # NCBI E-utilities mechanics, all four observed in the 2026-05 logs.
         "gprj-falls-through-to-all-fields",
-        "efetch-returns-fewer-runs-than-esearch-counts",
-        # SRA backend CGI.
-        "sra-be-timeout-on-large-projects",
         # GEO record modelling.
         # EBI.
     }
@@ -339,9 +336,11 @@ ROUTES: list[Route] = [
                 "Census through the harness. 12,732 resolved, 23 empty, zero failures. "
                 "Reproduces the 2026-05 script figure of 784,026 unique runs to within "
                 "0.011% while eliminating all 14 of its failures -- the difference is "
-                "four months of archive drift, not disagreement. Still a near-superset "
-                "of every NCBI route: holds 111,665 runs efetch never returns, against "
-                "~1,800 missing from it. The 23 empties are withdrawn, private or "
+                "four months of archive drift, not disagreement. Against the NCBI routes "
+                "re-surveyed 2026-10-26 it is no longer a superset: they return 162 to "
+                "1,270 of its runs fewer and 2,261 to 2,812 it lacks, six weeks later. "
+                "The 111,665 runs it once held over efetch were EFetch's 10,000-record "
+                "cap. The 23 empties are withdrawn, private or "
                 "unreleased projects, and include the five whose GEO series also "
                 "resolved to nothing in the GSE census."
             ),
@@ -357,14 +356,22 @@ ROUTES: list[Route] = [
         kb_page="routes/bioproject-to-run/index.md",
         cost=RouteCost(requests=2, rate_limit_rps=NCBI_EUTILS_RPS),
         evidence=RouteEvidence(
-            corpus=REPROCESSED,
-            surveyed_on=SURVEY_DATE,
-            accessions_queried=_BIOPROJECTS,
-            accessions_failed=15,
-            unique_results=754_277,
-            notes="Returns ~80k more runs than efetch. Times out on very large projects.",
+            corpus="reprocessed-prj",
+            surveyed_on=date(2026, 10, 26),
+            accessions_queried=12_755,
+            accessions_failed=0,
+            accessions_empty=22,
+            unique_results=784_935,
+            notes=(
+                "Re-surveyed 2026-10-24..26 on code that pages EFetch, falls back from a capped"
+                " sra-db-be history to the project by accession, and fails a cut-off or empty "
+                "answer instead of recording it. 2 projects failed the first pass and answered "
+                "on retry. 1,262 ENA runs it does not return, 2,261 it returns that ENA's "
+                "2026-09-15 census did not hold. The 2026-05 script survey's 754,277 runs were "
+                "the history form's 5,000-run cap."
+            ),
         ),
-        known_pathologies=("sra-be-timeout-on-large-projects", "gprj-falls-through-to-all-fields"),
+        known_pathologies=("sra-be-history-caps-at-5000-runs", "gprj-falls-through-to-all-fields"),
     ),
     Route(
         id="bioproject->run:sra_be_elink",
@@ -375,14 +382,21 @@ ROUTES: list[Route] = [
         kb_page="routes/bioproject-to-run/index.md",
         cost=RouteCost(requests=3, rate_limit_rps=NCBI_EUTILS_RPS),
         evidence=RouteEvidence(
-            corpus=REPROCESSED,
-            surveyed_on=SURVEY_DATE,
-            accessions_queried=_BIOPROJECTS,
-            accessions_failed=33,
-            unique_results=754_332,
-            notes="Marginally more runs than the direct variant, at twice the failure rate.",
+            corpus="reprocessed-prj",
+            surveyed_on=date(2026, 10, 26),
+            accessions_queried=12_755,
+            accessions_failed=0,
+            accessions_empty=22,
+            unique_results=785_656,
+            notes=(
+                "Re-surveyed 2026-10-24..26 on code that pages EFetch, falls back from a capped"
+                " sra-db-be history to the project by accession, and fails a cut-off or empty "
+                "answer instead of recording it. 4 projects failed the first pass; PRJNA772116 "
+                "(73,888 runs) answered only on the fourth. 851 ENA runs it does not return, "
+                "2,571 the other way."
+            ),
         ),
-        known_pathologies=("sra-be-timeout-on-large-projects", "megalink-backend-flakiness"),
+        known_pathologies=("sra-be-history-caps-at-5000-runs", "megalink-backend-flakiness"),
     ),
     Route(
         id="bioproject->run:efetch_elink",
@@ -393,12 +407,20 @@ ROUTES: list[Route] = [
         kb_page="routes/bioproject-to-run/index.md",
         cost=RouteCost(requests=3, rate_limit_rps=NCBI_EUTILS_RPS),
         evidence=RouteEvidence(
-            corpus=REPROCESSED,
-            surveyed_on=SURVEY_DATE,
-            accessions_queried=_BIOPROJECTS,
-            accessions_failed=30,
-            unique_results=674_186,
-            notes="efetch returns fewer runs than esearch counted; cause not yet established.",
+            corpus="reprocessed-prj",
+            surveyed_on=date(2026, 10, 26),
+            accessions_queried=12_755,
+            accessions_failed=0,
+            accessions_empty=22,
+            unique_results=786_586,
+            notes=(
+                "Re-surveyed 2026-10-24..26 on code that pages EFetch, falls back from a capped"
+                " sra-db-be history to the project by accession, and fails a cut-off or empty "
+                "answer instead of recording it. 3 projects failed the first pass and answered "
+                "on retry; 54 more failed locally when this machine lost its network, and were "
+                "re-asked. Only 162 ENA runs it does not return: the 2026-05 figure of 111,665 "
+                "was one EFetch request stopping at 10,000 records."
+            ),
         ),
         known_pathologies=(
             "efetch-returns-fewer-runs-than-esearch-counts",
@@ -414,14 +436,25 @@ ROUTES: list[Route] = [
         kb_page="routes/bioproject-to-run/index.md",
         cost=RouteCost(requests=2, rate_limit_rps=NCBI_EUTILS_RPS),
         evidence=RouteEvidence(
-            corpus=REPROCESSED,
-            surveyed_on=SURVEY_DATE,
-            accessions_queried=_BIOPROJECTS,
-            accessions_failed=14,
-            unique_results=673_157,
-            notes="Lowest yield of the five. Low failure count, but it finds the least.",
+            corpus="reprocessed-prj",
+            surveyed_on=date(2026, 10, 26),
+            accessions_queried=12_755,
+            accessions_failed=0,
+            accessions_empty=23,
+            unique_results=784_976,
+            notes=(
+                "Re-surveyed 2026-10-24..26 on code that pages EFetch, falls back from a capped"
+                " sra-db-be history to the project by accession, and fails a cut-off or empty "
+                "answer instead of recording it. 2 projects failed the first pass and answered "
+                "on retry. 1,270 ENA runs it does not return; its ELink sibling finds 1,610 "
+                "runs it does not, through experiments [GPRJ] does not match (PRJNA66167: 5,499"
+                " runs against 5,910)."
+            ),
         ),
-        known_pathologies=("gprj-falls-through-to-all-fields",),
+        known_pathologies=(
+            "efetch-returns-fewer-runs-than-esearch-counts",
+            "gprj-falls-through-to-all-fields",
+        ),
     ),
     Route(
         id="bioproject->geo_series:elink",
