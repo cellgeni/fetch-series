@@ -30,7 +30,7 @@ from fetch_series.catalogue.probe import (
     answer_links,
     seeded_runs,
 )
-from fetch_series.providers import biostudies, eutils, geo, sra_be
+from fetch_series.providers import biostudies, ena_portal, eutils, geo, sra_be
 from fetch_series.results import Outcome, RouteResult
 from fetch_series.survey import corpora
 from fetch_series.survey.client import SurveyClient
@@ -74,14 +74,17 @@ def memoizable(method: str, url: str, params: Mapping[str, object]) -> bool:
     """The repeated requests a link survey answers from memory, and nothing else.
 
     sra-db-be runinfo (three mechanisms), an IDF or SDRF (three), a SOFT family
-    file (two), an SRA XML efetch by UID (two), a DDBJ entry (three). Each is a
-    stateless document fetch, so the second answer is the first answer. ESearch
-    and ELink are deliberately absent: they return a WebEnv, and a WebEnv
-    answered from memory names a session the server has since dropped.
+    file (two), an SRA XML efetch by UID (two), a DDBJ entry (three), and an ENA
+    ``filereport`` -- which the promoted routes from one source read once for
+    each target they answer, with the same fields. Each is a stateless document
+    fetch, so the second answer is the first answer. ESearch and ELink are
+    deliberately absent: they return a WebEnv, and a WebEnv answered from memory
+    names a session the server has since dropped.
     """
     if method == "GET":
         return (
             url == sra_be.RUNINFO
+            or url == ena_portal.FILEREPORT
             or (url.startswith(biostudies.FILES) and url.endswith((".sdrf.txt", ".idf.txt")))
             or (url.startswith(geo.FTP_BASE) and url.endswith("_family.soft.gz"))
             or url.startswith(DDBJ_ENTRY)

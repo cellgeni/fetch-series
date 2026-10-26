@@ -1217,4 +1217,50 @@ ROUTES: list[Route] = [
     ),
 ]
 
-REGISTRY = RouteRegistry(ROUTES)
+
+@dataclass(frozen=True, slots=True)
+class Promoted:
+    """A catalogue link surveyed as a route: one row of :data:`PROMOTED`.
+
+    Its request is a catalogue mechanism's (``routes.catalogue``), so the row
+    holds only what a declaration adds to it: who answers, what it costs, and the
+    evidence. The evidence is a route survey's at ``sample:3000`` -- never the
+    link survey's 300, and never a probe.
+    """
+
+    mechanism: str
+    source: EntityType
+    target: EntityType
+    provider: str
+    evidence: RouteEvidence
+    requests: int = 1
+    rate_limit_rps: float = NCBI_EUTILS_RPS
+    source_archives: tuple[Archive, ...] = ()
+    known_pathologies: tuple[str, ...] = ()
+    proves_data_exists: bool = False
+
+    @property
+    def id(self) -> str:
+        return f"{self.source.value}->{self.target.value}:{self.mechanism}"
+
+    def route(self) -> Route:
+        return Route(
+            id=self.id,
+            source=self.source,
+            target=self.target,
+            provider=self.provider,
+            summary=f"The catalogue mechanism {self.mechanism}, surveyed as a route.",
+            kb_page=f"routes/from-{self.source.value.replace('_', '-')}.md",
+            cost=RouteCost(requests=self.requests, rate_limit_rps=self.rate_limit_rps),
+            evidence=self.evidence,
+            known_pathologies=self.known_pathologies,
+            source_archives=self.source_archives,
+            proves_data_exists=self.proves_data_exists,
+        )
+
+
+# Catalogue links promoted to routes, each by its own route survey. Empty until
+# the first survey lands: a candidate with no evidence is not a route.
+PROMOTED: tuple[Promoted, ...] = ()
+
+REGISTRY = RouteRegistry([*ROUTES, *(row.route() for row in PROMOTED)])

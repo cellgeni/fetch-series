@@ -149,6 +149,12 @@ class TestMemoizable:
     def test_runinfo_is_remembered(self):
         assert memoizable("GET", sra_be.RUNINFO, {"acc": "SRR1"})
 
+    def test_a_filereport_is_remembered(self):
+        """Promoted routes from one source read one filereport, with the same fields."""
+        assert memoizable(
+            "GET", "https://www.ebi.ac.uk/ena/portal/api/filereport", {"accession": "SRR1"}
+        )
+
     def test_an_sra_xml_by_uid_is_remembered(self):
         assert memoizable("POST", f"{eutils.BASE}/efetch.fcgi", {"db": "sra", "id": "1,2"})
 
@@ -158,7 +164,7 @@ class TestMemoizable:
             ("POST", f"{eutils.BASE}/esearch.fcgi", {"db": "sra", "term": "SRR1"}),
             ("POST", f"{eutils.BASE}/efetch.fcgi", {"db": "sra", "WebEnv": "x", "id": "1"}),
             ("GET", f"{eutils.BASE}/elink.fcgi", {"db": "sra"}),
-            ("GET", "https://www.ebi.ac.uk/ena/portal/api/filereport", {"accession": "SRR1"}),
+            ("GET", "https://www.ebi.ac.uk/ena/portal/api/search", {"query": "x"}),
         ],
     )
     def test_session_state_is_never_remembered(self, method, url, params):
@@ -193,7 +199,7 @@ class TestMemoClient:
             MemoClient(Limits(rps=0), client=http, memoize=memoizable) as client,
         ):
             for _ in range(2):
-                await client.get("https://www.ebi.ac.uk/ena/portal/api/filereport")
+                await client.get("https://www.ebi.ac.uk/ena/portal/api/search")
         assert len(calls) == 2
 
     async def test_a_failure_is_not_remembered(self):
