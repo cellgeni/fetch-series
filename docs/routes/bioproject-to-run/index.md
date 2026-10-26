@@ -40,9 +40,14 @@ rows but only 754,277 distinct runs.
   `sra_be_direct_cgi`, 4 on `sra_be_elink`, 2 on `efetch_direct` and 3 on `efetch_elink`.
   Every retry was a transport error: read timeouts, dropped connections and 502s.
   PRJNA772116, with 73,888 runs, answered `sra_be_elink` only on its fourth pass.
-- **ELink and `[GPRJ]` find different experiments.** `efetch_elink` returns 1,610 runs
-  `efetch_direct` does not, and none the other way. PRJNA66167's `[GPRJ]` search finds 5,499
-  runs, where ELink and ENA find 5,910.
+- **ELink and `[GPRJ]` find different experiments, and each is wrong once.** `efetch_elink`
+  returns runs `efetch_direct` does not, and never the reverse:
+    - **1,100 of them, in 2 projects, belong to the project.** [`[GPRJ]` misses
+      them](../../pathologies/gprj-misses-experiments-of-the-project.md), as with PRJNA66167's
+      411.
+    - **607, in 22 projects, belong to a sibling under the same umbrella.** [ELink adds
+      them](../../pathologies/elink-returns-runs-of-sibling-projects.md), as with PRJNA1033389's
+      72. The resolver marks them UNCONFIRMED, because ENA does not hold them for the project.
 
 ### What the 2026-05 numbers were
 

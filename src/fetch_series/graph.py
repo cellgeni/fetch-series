@@ -307,14 +307,8 @@ NCBI_FTP_RPS = 3.0
 # backlog cannot grow silently and a written-up page cannot be forgotten here.
 # Each entry is real and observed; what it lacks is the pathology-page contract:
 # a curl reproducer, an affected-accession list, and a regression test.
-PATHOLOGY_BACKLOG: frozenset[str] = frozenset(
-    {
-        # NCBI E-utilities mechanics, all four observed in the 2026-05 logs.
-        "gprj-falls-through-to-all-fields",
-        # GEO record modelling.
-        # EBI.
-    }
-)
+# Empty since 2026-10-26: every declared slug has a page. A new one starts here.
+PATHOLOGY_BACKLOG: frozenset[str] = frozenset()
 
 ROUTES: list[Route] = [
     Route(
@@ -371,7 +365,10 @@ ROUTES: list[Route] = [
                 "the history form's 5,000-run cap."
             ),
         ),
-        known_pathologies=("sra-be-history-caps-at-5000-runs", "gprj-falls-through-to-all-fields"),
+        known_pathologies=(
+            "sra-be-history-caps-at-5000-runs",
+            "gprj-misses-experiments-of-the-project",
+        ),
     ),
     Route(
         id="bioproject->run:sra_be_elink",
@@ -396,7 +393,11 @@ ROUTES: list[Route] = [
                 "2,571 the other way."
             ),
         ),
-        known_pathologies=("sra-be-history-caps-at-5000-runs", "megalink-backend-flakiness"),
+        known_pathologies=(
+            "sra-be-history-caps-at-5000-runs",
+            "megalink-backend-flakiness",
+            "elink-returns-runs-of-sibling-projects",
+        ),
     ),
     Route(
         id="bioproject->run:efetch_elink",
@@ -425,6 +426,7 @@ ROUTES: list[Route] = [
         known_pathologies=(
             "efetch-returns-fewer-runs-than-esearch-counts",
             "megalink-backend-flakiness",
+            "elink-returns-runs-of-sibling-projects",
         ),
     ),
     Route(
@@ -453,7 +455,7 @@ ROUTES: list[Route] = [
         ),
         known_pathologies=(
             "efetch-returns-fewer-runs-than-esearch-counts",
-            "gprj-falls-through-to-all-fields",
+            "gprj-misses-experiments-of-the-project",
         ),
     ),
     Route(

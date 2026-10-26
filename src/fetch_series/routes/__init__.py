@@ -203,10 +203,11 @@ async def _bioproject_sra_history(
 ) -> tuple[str, str, int] | None:
     """Get an ESearch history over the SRA records of a BioProject.
 
-    Two ways in, and the survey says they differ. ``via_elink`` searches
-    db=bioproject and walks the link; the direct form searches db=sra for
-    ``[GPRJ]``, which is one request cheaper but unreliable for renamed or
-    merged projects -- the term falls through to ``[All Fields]``.
+    Two ways in, and the survey says they differ (2026-10-26). ``via_elink``
+    searches db=bioproject and walks the link, and also returns runs of the
+    project's siblings under an umbrella (PRJNA1033389 gets PRJNA1121326's).
+    The direct form searches db=sra for ``[GPRJ]``, one request cheaper, and
+    misses experiments the project holds (PRJNA66167's SRX135150).
     """
     if not via_elink:
         result = await esearch(client, db="sra", term=f"{accession}[GPRJ]", timeout=timeout)
