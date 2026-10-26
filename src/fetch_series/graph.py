@@ -576,7 +576,10 @@ ROUTES: list[Route] = [
                 "register no files at all."
             ),
         ),
-        known_pathologies=("ae-idf-missing-secondary-accession",),
+        known_pathologies=(
+            "ae-idf-missing-secondary-accession",
+            "biostudies-files-404s-registered-files",
+        ),
     ),
     Route(
         id="ae_experiment->biosample:sdrf",
@@ -586,7 +589,10 @@ ROUTES: list[Route] = [
         summary="Comment[BioSD_SAMPLE] column of the ArrayExpress SDRF file.",
         kb_page="routes/ae-experiment-to-biosample/sdrf.md",
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
-        known_pathologies=("biostudies-silent-25-item-default",),
+        known_pathologies=(
+            "biostudies-silent-25-item-default",
+            "biostudies-files-404s-registered-files",
+        ),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
             surveyed_on=date(2026, 9, 15),
@@ -1181,7 +1187,10 @@ ROUTES: list[Route] = [
         summary="Submitter fastq URIs from the ArrayExpress SDRF, guarded by BioStudies registration.",
         kb_page="routes/ae-experiment-to-file/index.md",
         cost=RouteCost(requests=2, rate_limit_rps=EBI_RPS, paginates=True),
-        known_pathologies=("ae-sdrf-points-at-decommissioned-mirror",),
+        known_pathologies=(
+            "ae-sdrf-points-at-decommissioned-mirror",
+            "biostudies-files-404s-registered-files",
+        ),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
             surveyed_on=date(2026, 9, 15),

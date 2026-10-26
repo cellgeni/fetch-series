@@ -155,6 +155,18 @@ class TestMemoizable:
             "GET", "https://www.ebi.ac.uk/ena/portal/api/filereport", {"accession": "SRR1"}
         )
 
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "https://www.ebi.ac.uk/biostudies/files/E-MTAB-1/E-MTAB-1.idf.txt",
+            "https://ftp.ebi.ac.uk/biostudies/fire/E-MTAB-/001/E-MTAB-1/Files/E-MTAB-1.sdrf.txt",
+            "https://www.ebi.ac.uk/biostudies/api/v1/studies/E-MTAB-1/info",
+        ],
+    )
+    def test_an_ae_document_is_remembered_wherever_it_is_read(self, url):
+        """Three mechanisms read one IDF or SDRF, through the mirror where the front door 404s."""
+        assert memoizable("GET", url, {})
+
     def test_an_sra_xml_by_uid_is_remembered(self):
         assert memoizable("POST", f"{eutils.BASE}/efetch.fcgi", {"db": "sra", "id": "1,2"})
 

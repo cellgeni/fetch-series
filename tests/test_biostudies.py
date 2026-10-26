@@ -9,10 +9,17 @@ from __future__ import annotations
 
 from typing import Any, ClassVar
 
+import httpx
+import pytest
+
+from fetch_series import core
 from fetch_series.providers.biostudies import (
+    fetch_idf,
     registered_names,
     sdrf_fastq_uris,
+    sdrf_raw_rows,
 )
+from fetch_series.survey.client import Limits, SurveyClient
 
 MIRROR = "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/experiment/MTAB/E-MTAB-9221"
 
@@ -87,3 +94,66 @@ class TestRegisteredNames:
         """An empty string in the registered set would match a URI ending in a
         slash and quietly re-admit it."""
         assert "" not in registered_names(self.ITEMS)
+
+
+class TestMirrorFallback:
+    """``/biostudies/files/`` answers 404 for files the study registers (E-MTAB-13459)."""
+
+    FIRE = "https://ftp.ebi.ac.uk/biostudies/fire/E-MTAB-/459/E-MTAB-13459"
+
+    def _handler(self, seen: list[str], *, front: int = 404, mirror: int = 200, link: Any = FIRE):
+        def handler(request: httpx.Request) -> httpx.Response:
+            url = str(request.url)
+            seen.append(url)
+            if url.startswith("https://www.ebi.ac.uk/biostudies/files/"):
+                return httpx.Response(front, text="Comment[SecondaryAccession]\tERP1\n")
+            if url.endswith("/info"):
+                return httpx.Response(200, json={"httpLink": link})
+            if url.startswith(self.FIRE):
+                return httpx.Response(mirror, text="Source Name\tComment[ENA_RUN]\nA\tERR1\n")
+            raise AssertionError(url)
+
+        return handler
+
+    @staticmethod
+    async def _call(handler, fn):
+        async with (
+            httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http,
+            SurveyClient(Limits(rps=0), client=http) as client,
+        ):
+            return await fn(client, "E-MTAB-13459", 10)
+
+    async def test_a_404_is_read_from_the_mirror_the_study_names(self):
+        seen: list[str] = []
+        rows = await self._call(self._handler(seen), sdrf_raw_rows)
+        assert rows == [["Source Name", "Comment[ENA_RUN]"], ["A", "ERR1"]]
+        assert seen[-1] == f"{self.FIRE}/Files/E-MTAB-13459.sdrf.txt"
+
+    async def test_the_front_door_is_asked_first(self):
+        seen: list[str] = []
+        text = await self._call(self._handler(seen, front=200), fetch_idf)
+        assert "ERP1" in text
+        assert len(seen) == 1
+
+    async def test_a_404_on_the_mirror_is_the_verdict(self):
+        with pytest.raises(httpx.HTTPStatusError) as caught:
+            await self._call(self._handler([], mirror=404), fetch_idf)
+        assert caught.value.response.status_code == 404
+
+    async def test_no_mirror_named_keeps_the_front_doors_404(self):
+        seen: list[str] = []
+        with pytest.raises(httpx.HTTPStatusError) as caught:
+            await self._call(self._handler(seen, link=None), fetch_idf)
+        assert str(caught.value.request.url).startswith("https://www.ebi.ac.uk/biostudies/files/")
+        assert not any(url.startswith(self.FIRE) for url in seen)
+
+    async def test_any_other_status_is_not_rerouted(self):
+        seen: list[str] = []
+        with pytest.raises(httpx.HTTPStatusError):
+            await self._call(self._handler(seen, front=500), fetch_idf)
+        assert not any(url.endswith("/info") for url in seen)
+
+    def test_the_sync_helper_falls_back_too(self, monkeypatch):
+        """``core.ae2secondary`` read the same front door, with the same 404."""
+        monkeypatch.setattr(core, "transport", httpx.MockTransport(self._handler([])))
+        assert core._study_file("E-MTAB-13459", "E-MTAB-13459.sdrf.txt").text.startswith("Source")

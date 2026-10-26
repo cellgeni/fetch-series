@@ -15,11 +15,17 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
+import httpx
+
 from fetch_series.accession import try_parse
 from fetch_series.survey.client import SurveyClient
 
 FILES = "https://www.ebi.ac.uk/biostudies/files"
 API = "https://www.ebi.ac.uk/biostudies/api/v1"
+# Where ``FILES`` redirects to, and where a study's ``info`` says its files are:
+# under ``/biostudies/fire/`` for most, ``/pub/databases/biostudies/`` for some
+# (E-MTAB-15118).
+MIRROR = "https://ftp.ebi.ac.uk/"
 
 # Accepts ERP/SRP/DRP and EGA study accessions.
 SECONDARY = re.compile(r"Comment\s*\[SecondaryAccession\]\s*((?:[SED]RP|EGA[SD])\w*\d+)")
@@ -30,18 +36,43 @@ SECONDARY = re.compile(r"Comment\s*\[SecondaryAccession\]\s*((?:[SED]RP|EGA[SD])
 PAGE_SIZE = 500
 
 
+async def study_file(
+    client: SurveyClient, accession: str, name: str, timeout: float
+) -> httpx.Response:
+    """A file the study registers: at ``FILES``, or where that 404s, on the mirror.
+
+    ``FILES`` answers a file it holds with a redirect to the FTP mirror, and
+    sometimes with a 404 instead. Six requests in a row for E-MTAB-13459's IDF
+    answered 404 on 2026-10-26, while its own file listing names it and the
+    mirror serves it; E-MTAB-15472's answered 404 twice and then redirected.
+    That failed 8 of 300 ArrayExpress studies on 2026-10-19 and 328 of 3,000 a
+    week later, every one of them a file the mirror holds. A 404 is not
+    retryable, so the study's ``info`` -- which names its mirror directory -- is
+    asked instead, and the mirror's answer, 404 or not, is the verdict.
+    """
+    try:
+        return await client.get(f"{FILES}/{accession}/{name}", timeout=timeout)
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code != 404:
+            raise
+        missing = exc
+    info = await client.get(f"{API}/studies/{accession}/info", timeout=timeout)
+    link = info.json().get("httpLink")
+    if not isinstance(link, str) or not link.startswith(MIRROR):
+        raise missing
+    return await client.get(f"{link}/Files/{name}", timeout=timeout)
+
+
 async def idf_secondary_accessions(
     client: SurveyClient, accession: str, timeout: float
 ) -> list[str]:
     """Secondary study accessions declared in a study's IDF file."""
-    response = await client.get(f"{FILES}/{accession}/{accession}.idf.txt", timeout=timeout)
-    return sorted(set(SECONDARY.findall(response.text)))
+    return sorted(set(SECONDARY.findall(await fetch_idf(client, accession, timeout))))
 
 
 async def fetch_idf(client: SurveyClient, accession: str, timeout: float) -> str:
     """A study's IDF file, as text."""
-    response = await client.get(f"{FILES}/{accession}/{accession}.idf.txt", timeout=timeout)
-    return response.text
+    return (await study_file(client, accession, f"{accession}.idf.txt", timeout)).text
 
 
 _IDF_COMMENT = re.compile(r"^Comment\s*\[([^\]]+)\]\t(.*)$", re.MULTILINE)
@@ -104,7 +135,7 @@ async def sdrf_raw_rows(client: SurveyClient, accession: str, timeout: float) ->
     exactly half the data. Anything that reads a column which may repeat must
     use this, not ``sdrf_rows``.
     """
-    response = await client.get(f"{FILES}/{accession}/{accession}.sdrf.txt", timeout=timeout)
+    response = await study_file(client, accession, f"{accession}.sdrf.txt", timeout)
     text = response.text.strip()
     if not text:
         return []
@@ -117,7 +148,7 @@ async def sdrf_rows(client: SurveyClient, accession: str, timeout: float) -> lis
     Convenient, and lossy for any column name that repeats -- see
     :func:`sdrf_raw_rows`.
     """
-    response = await client.get(f"{FILES}/{accession}/{accession}.sdrf.txt", timeout=timeout)
+    response = await study_file(client, accession, f"{accession}.sdrf.txt", timeout)
     text = response.text.strip()
     if not text:
         return []
