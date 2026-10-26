@@ -395,13 +395,16 @@ class TestConvertibleLive:
         assert entry["mapping"]["cellranger_chemistry"] == "SC5P-R2"
 
 
+TIED = {
+    **a_call(None, barcode_list="tenx_v2", level="ambiguous", strand="unstranded"),
+    "candidates": ["10x_3p_v2", "10x_5p_v1_v2"],
+}
+
+
 class TestFromMetadata:
     """docs/decisions/when-metadata-may-break-a-tie.md, as code."""
 
-    TIED = {
-        **a_call(None, barcode_list="tenx_v2", level="ambiguous", strand="unstranded"),
-        "candidates": ["10x_3p_v2", "10x_5p_v1_v2"],
-    }
+    TIED = TIED
 
     def made(self, call, *candidates, files=None):
         checks = {"files": files or [facts(26), facts(98)]}
