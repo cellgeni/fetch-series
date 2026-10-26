@@ -49,6 +49,24 @@ rows but only 754,277 distinct runs.
       them](../../pathologies/elink-returns-runs-of-sibling-projects.md), as with PRJNA1033389's
       72. The resolver marks them UNCONFIRMED, because ENA does not hold them for the project.
 
+### The bare accession, searched without a field
+
+The maintainer's notebook searches `db=sra` for `PRJNA940674` with no field, where
+`efetch_direct` asks for `PRJNA940674[GPRJ]`. Surveyed as a route on 2026-10-26 over the
+same 3,000 projects (`bioproject->run:esearch_sra_runinfo`):
+
+- **The same answer.** It returned 162,808 distinct runs, against `[GPRJ]`'s 162,854. The
+  differences in both directions are 14 and 60 runs, which is drift between two survey days.
+- **The same miss.** It returns PRJNA66167's same 5,499 runs, missing the 411 that `[GPRJ]`
+  misses. NCBI evidently reads a bare project accession as that field.
+- **No other projects' runs.** It returns none of the sibling runs ELink adds.
+
+It is therefore **not declared** as a route here, nor towards experiment, study or BioSample,
+where it would repeat `efetch_direct`'s request with a different spelling. Towards sample and
+GEO sample, where no route existed, it is one of the promoted routes
+([promoted from BioProject](../from-bioproject.md)). Its verdicts are exported under
+`data/surveys/sample_3000@reprocessed-prj/`.
+
 ### What the 2026-05 numbers were
 
 | Route | Unique runs, 2026-05-12 | Failed | What capped it |

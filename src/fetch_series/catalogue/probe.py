@@ -499,6 +499,28 @@ async def _esummary_sra(client: SurveyClient, accession: str, timeout: float) ->
     return found
 
 
+async def _esearch_runinfo(client: SurveyClient, accession: str, timeout: float) -> Found:
+    """The bare accession searched in db=sra, and runinfo for everything it matched.
+
+    Paged under EFetch's 10,000-record cap, and a page cut off mid-row is a
+    failure, never a shorter project (``sra_be.parse_runinfo``).
+    """
+    found = await eutils.esearch(client, db="sra", term=accession, timeout=timeout)
+    count = int(found.get("count") or 0)
+    if not count:
+        return {group: [] for group in RUNINFO_FIELDS}
+    pages = await eutils.efetch_pages(
+        client,
+        db="sra",
+        webenv=found["webenv"],
+        query_key=found["querykey"],
+        count=count,
+        timeout=timeout,
+    )
+    rows = [row for page in pages for row in sra_be.parse_runinfo(page)]
+    return {group: sra_be.column(rows, column) for group, column in RUNINFO_FIELDS.items()}
+
+
 def _sdl(**params: str) -> Fetcher:
     """SDL with extra request parameters: none, ``filetype=sralite``, or the originals."""
     originals = params.get("accept-alternate-locations") == "yes"
@@ -1084,6 +1106,7 @@ PROBERS: dict[str, Prober] = {
     "sra_be_runinfo_download": Prober("ncbi_web", _runinfo_download),
     "sra_be_runinfo_document": Prober("ncbi_web", _runinfo_document),
     "esummary_sra": Prober("ncbi_eutils", _esummary_sra),
+    "esearch_sra_runinfo": Prober("ncbi_eutils", _esearch_runinfo),
     "sdl": Prober("ncbi_web", _sdl(), retry=_sdl_retry),
     "sdl_lite": Prober("ncbi_web", _sdl(filetype="sralite"), retry=_sdl_retry),
     "sdl_original": Prober(

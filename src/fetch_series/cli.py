@@ -993,6 +993,114 @@ def survey_run(
             scratch.cleanup()
 
 
+@survey_app.command("promote")
+def survey_promote(
+    source: Annotated[
+        str | None, typer.Option(help="Only routes from this entity type, e.g. bioproject.")
+    ] = None,
+    mechanism: Annotated[str | None, typer.Option(help="Only this mechanism's routes.")] = None,
+    gate: Annotated[
+        bool, typer.Option("--gate", help="Over probe-families and hard-cases first.")
+    ] = False,
+    dry_run: Annotated[bool, typer.Option("--plan", help="Print units and sizes only.")] = False,
+    evidence: Annotated[
+        bool, typer.Option("--evidence", help="Print the PROMOTED rows the survey supports.")
+    ] = False,
+    retry_failed: Annotated[bool, typer.Option(help="Also re-ask stored failures.")] = False,
+    cache_path: Annotated[Path, typer.Option("--cache", help="SQLite store.")] = DEFAULT_CACHE_PATH,
+) -> None:
+    """Survey surveyed catalogue links as routes, at sample:3000 of their source.
+
+    The candidates are every surveyed link in a direction no declared route
+    covers (``routes.catalogue.candidates``). One request per accession answers
+    every route of a mechanism from one source. Gate first; a unit that failed
+    its gate is not drawn. --evidence prints the graph.PROMOTED rows to declare.
+    """
+    from fetch_series.routes.catalogue import candidates
+    from fetch_series.survey import promote
+
+    load_dotenv()
+    chosen = [
+        c
+        for c in candidates()
+        if (source is None or c.source.value == source)
+        and (mechanism is None or c.mechanism == mechanism)
+    ]
+    if not chosen:
+        typer.secho("No candidate route matches.", fg=typer.colors.RED, err=True)
+        raise typer.Exit(2)
+    units = promote.units_of(chosen)
+
+    with SurveyCache(cache_path) as cache:
+        if evidence:
+            # The rows to paste into graph.PROMOTED; anything held back says why.
+            for candidate in chosen:
+                row = promote.evidence_row(
+                    candidate, promote.standard_corpus(candidate.source), cache
+                )
+                if row is None:
+                    typer.echo(f"    # {candidate.id}: not surveyed")
+                elif not promote.answered(row):
+                    typer.echo(f"    # {candidate.id}: resolved nothing; stays a link")
+                else:
+                    typer.echo(promote.as_source(row))
+            return
+        if gate:
+            survey_plan = promote.plan(units, lambda unit: list(promote.GATES))
+        else:
+            gated = []
+            for unit in units:
+                verdict = promote.gate_passed(unit, cache)
+                if dry_run or verdict:
+                    gated.append(unit)
+                elif verdict is None:
+                    typer.secho(f"{unit.id}: not gated yet; run --gate first", err=True)
+                else:
+                    typer.secho(f"{unit.id}: failed its gate; not drawn", err=True)
+            survey_plan = promote.plan(gated, lambda unit: [promote.standard_corpus(unit.source)])
+        for unit, reason in survey_plan.skipped:
+            typer.secho(f"{unit.id}: skipped -- {reason}", fg=typer.colors.YELLOW, err=True)
+        if dry_run:
+            for job in survey_plan.jobs:
+                typer.echo(
+                    f"{job.unit.id:44s} {len(job.unit.routes):>2} routes "
+                    f"{len(job.accessions):>6} acc  {job.corpus}"
+                )
+            typer.echo(
+                f"{len(survey_plan.jobs)} unit-corpora, "
+                f"{sum(len(j.accessions) for j in survey_plan.jobs):,} requests before memory"
+            )
+            return
+
+        logfile = run_logfile("promote-survey")
+        configure_logging(level=logging.INFO, logfile=logfile)
+        typer.echo(f"{len(survey_plan.jobs)} unit-corpora -> {logfile}", err=True)
+
+        def report(job: promote.Job, run: FanoutRun) -> None:
+            for unit_id, counts in run.units.items():
+                typer.echo(
+                    f"{unit_id:52s} {job.corpus:44s} r={counts['resolved']} "
+                    f"e={counts['empty']} f={counts['failed']} d={counts['distinct']}"
+                )
+
+        api_key = default_api_key()
+
+        async def main() -> None:
+            limits = host_limits(has_api_key=bool(api_key))
+            async with contextlib.AsyncExitStack() as stack:
+                clients: dict[str, SurveyClient] = {}
+                for bucket, bucket_limits in limits.items():
+                    key = api_key if bucket == "ncbi_eutils" else None
+                    clients[bucket] = await stack.enter_async_context(
+                        MemoClient(bucket_limits, api_key=key, memoize=memoizable)
+                    )
+                await promote.run_jobs(
+                    survey_plan.jobs, clients, cache, retry_failed=retry_failed, on_done=report
+                )
+
+        asyncio.run(main())
+
+
 @survey_app.command("show")
 def survey_show(
     route_id: Annotated[str, typer.Option("--route")],

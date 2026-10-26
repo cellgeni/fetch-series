@@ -8,7 +8,15 @@ from pathlib import Path
 
 import pytest
 
-from fetch_series.catalogue import CATALOGUE, DRAWN, Catalogue, Probe, Status, load_splits
+from fetch_series.catalogue import (
+    CATALOGUE,
+    DRAWN,
+    PROMOTED_LINKS,
+    Catalogue,
+    Probe,
+    Status,
+    load_splits,
+)
 from fetch_series.catalogue.link_splits import (
     LINK_SPLITS_PATH,
     LinkSplit,
@@ -113,6 +121,7 @@ def _catalogue(*link_splits: LinkSplit) -> Catalogue:
         ten_x=TEN_X_PROBES,
         splits=load_splits(),
         link_splits=link_splits,
+        promoted=PROMOTED_LINKS,
     )
 
 
