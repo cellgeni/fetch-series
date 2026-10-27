@@ -1,7 +1,7 @@
 # Where fetch-series stands
 
-**2026-10-21** · [v0.1.0 released](https://github.com/cellgeni/fetch-series/releases/tag/v0.1.0),
-then the link surveys and `fetch inspect` on `main` · knowledge base published at
+**2026-10-27** · [v0.1.0 released](https://github.com/cellgeni/fetch-series/releases/tag/v0.1.0),
+then the link surveys, `fetch inspect` and the promoted routes on `main` · knowledge base published at
 [cellgeni.github.io/fetch-series](https://cellgeni.github.io/fetch-series/)
 
 A point-in-time overview. The evidence behind every number here lives in
@@ -31,17 +31,17 @@ Behind it:
 
 | | |
 |---|---|
-| Routes declared, implemented and **measured** | **40 / 40 / 40** |
+| Routes declared, implemented and **measured** | **214 / 214 / 214**: 40 written by hand, 174 promoted from the link catalogue, in 88 source → target directions ([the matrix](docs/routes/index.md)) |
 | Archives covered | GEO, SRA, ENA, ArrayExpress/BioStudies, DDBJ |
-| Link catalogue | **1,127** one-hop links between 39 nodes: 96 measured by a route's survey, **288 surveyed** by a link survey of their own (268 answering usably, 20 never), 480 confirmed by one live probe, 263 unconfirmed; none ranked ([the catalogue](docs/graph/catalogue.md), [link survey results](docs/graph/link-survey-results.md)) |
+| Link catalogue | **1,144** one-hop links between 39 nodes: **528 measured** by a route's survey (461 answering, 67 never), 555 surveyed by a link survey of their own (375 answering usably, 180 never), 31 confirmed by one live probe, 30 unconfirmed; none ranked. 127 more lines run out of the metadata documents, each the second half of the request that fetched the document ([the catalogue](docs/graph/catalogue.md), [link survey results](docs/graph/link-survey-results.md)) |
 | Read classifier | 10x kits from the first 100,000 reads: **0 errors in 66 held-out HIGH calls**, 0 in 28 MEDIUM ([benchmark](docs/benchmarks/inspect-2026-10.md)) |
 | Content survey | every run-to-reads link's files read for 1,400 runs ([results](docs/benchmarks/content-survey-2026-10.md)) |
 | Mapping block | classifier 0.4.0, set beside the reprocessing pipeline's own STARsolo runs on a fresh draw of 300 held-out samples: the pipeline's whitelist in **404 of 404** blocks, its strand in **386 of 386** that name one; 7 left ambiguous, down from 32 ([comparison](docs/benchmarks/inspect-vs-starsolo-2026-10.md)) |
 | Metadata kit call | names one kit for **964 of 5,465** samples the pipeline mapped; its list is the pipeline's for 900, its strand for 946 of 948; where it and the reads disagree, **the pipeline sides with the reads 20 of 20** ([comparison](docs/benchmarks/metadata-vs-reads-2026-10.md)) |
 | Other technologies | Parse, BD Rhapsody, inDrop and others named from their constants; **no non-10x run called 10x** on the held-out half ([benchmark](docs/benchmarks/technologies-2026-10.md)) |
-| Survey verdicts recorded and committed | **681,144** across 3,364 files in `data/surveys/` |
-| Offline tests | **893** collected by `uv run pytest` (plus integration, pathology and slow suites) |
-| Knowledge-base pages | every measured route, 9 pathologies, 6 upstream drafts |
+| Survey verdicts recorded and committed | **1,254,322** across 3,971 files in `data/surveys/` |
+| Offline tests | **1,226** collected by `uv run pytest` (plus integration, pathology and slow suites) |
+| Knowledge-base pages | every measured route (the promoted ones on one generated page per source type), 23 pathologies, 7 upstream drafts |
 
 The governing rule held throughout: **no fallback order, ranking or heuristic
 ships without a survey behind it and a KB page citing that survey.**
@@ -63,6 +63,7 @@ hand-written preference anywhere in the project.
 | **183/183** | runs whose ENA listing is one fastq are proven unusable by their reads; NCBI's Normalized object of the same run is fit for 142 runs with an unfit ENA fastq | [content survey](docs/benchmarks/content-survey-2026-10.md) |
 | **248/452** | objects DDBJ Search links for NCBI runs do not exist at DDBJ | [content survey](docs/benchmarks/content-survey-2026-10.md) |
 | **8,604/8,604** | agreement between GEO's own SRA relation and ENA's submitter alias — a route that works where GEO records no relation at all | [route](docs/routes/run-to-geo-sample/ena-alias.md) |
+| **326/328** | ArrayExpress IDFs BioStudies answered 404 for were on its own FTP mirror: 11% of studies on 2026-10-26, against 5 of 20,693 in September | [pathology](docs/pathologies/biostudies-files-404s-registered-files.md) |
 
 Four of the first five contradicted what this project's own code assumed before
 anyone counted. The umbrella finding forced a rule onto the front page —
@@ -95,6 +96,7 @@ only 6 recommended sets are a lone ENA fastq
 | **M6** | metadata layer: harvest, rule normalisation, ontology grounding | **tiers 0–2 complete** |
 | **M7** | link surveys: every unmeasured catalogue link over seeded draws | **complete** (six waves) |
 | **M8** | `fetch inspect`: reads, classifier, content survey, refusal path | **complete** |
+| **M9** | catalogue links promoted to routes: every direction a surveyed link answers | **complete**, 174 routes |
 
 **M3 parity:** 14 of 14 of the incumbent's own nf-test cases, 422 snapshot rows (400 distinct runs), no
 differences ([the record](docs/fetch10xmeta-parity.md)). Getting there required
@@ -210,6 +212,18 @@ history is not part of it.
    beside the read-derived block, only where the reads abstain and the metadata
    names exactly one of the two. The other 85 abstentions have metadata naming
    neither kit, or both, and still get no block.
+
+8. **A second route in a direction that already has one is not decided.** 176 surveyed
+   links answer in directions a measured route already covers, mostly re-reading the
+   runinfo or filereport answer the route reads. (The other 199 surveyed links no route
+   uses end at a submission, analysis, platform or document, which stay links by design.) The promoted-route surveys recorded what
+   they return. Which of them return what the measured route misses, and so earn a place,
+   is a decision still to be argued from those numbers. The bare-accession ESearch is one:
+   over 3,000 BioProjects it returned what `[GPRJ]` does (162,808 runs against 162,854).
+
+9. **Nine E-GEOD studies split their SDRF in two.** E-GEOD-29264 registers
+   `.hyb.sdrf.txt` and `.seq.sdrf.txt` and no `.sdrf.txt`, so the SDRF routes record it
+   FAILED: 9 of 3,000 on 2026-10-27. Reading the IDF's `SDRF File` line would find them.
 
 ### Deliberately dropped, with the reasons recorded
 
