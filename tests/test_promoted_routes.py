@@ -6,6 +6,7 @@ import pytest
 
 from fetch_series.accession import EntityType
 from fetch_series.cache import SurveyCache
+from fetch_series.catalogue import CATALOGUE
 from fetch_series.catalogue.probe import PROBERS, Prober, RecordAbsent
 from fetch_series.graph import PROMOTED, REGISTRY
 from fetch_series.results import Outcome
@@ -13,6 +14,7 @@ from fetch_series.routes import IMPLEMENTATIONS
 from fetch_series.routes.catalogue import (
     EVERY_DIRECTION,
     NOT_PROMOTED,
+    Candidate,
     RouteFailed,
     answer,
     answer_route,
@@ -56,23 +58,38 @@ class TestCandidates:
     def test_only_directions_no_route_covers(self):
         covered = {(route.source, route.target) for route in REGISTRY}
         found = [c for c in candidates() if c.mechanism not in EVERY_DIRECTION]
-        assert found and all((c.source, c.target) not in covered for c in found)
+        # Empty since 2026-10-27: every surveyed direction has a route.
+        assert all((c.source, c.target) not in covered for c in found)
 
     def test_records_about_the_data_stay_links(self):
         assert not any({c.source, c.target} & NOT_PROMOTED for c in candidates())
 
     def test_ids_are_unique_and_follow_the_scheme(self):
-        ids = [c.id for c in candidates()]
-        assert len(ids) == len(set(ids))
-        assert "run->study:sra_be_runinfo" in ids
+        found = candidates()
+        assert len({c.id for c in found}) == len(found)
+        assert all(c.id == f"{c.source.value}->{c.target.value}:{c.mechanism}" for c in found)
+
+    def test_a_promoted_direction_is_no_longer_a_candidate(self):
+        assert not {row.id for row in PROMOTED} & {c.id for c in candidates()}
 
     def test_a_route_from_a_shared_record_answers_for_any_archive(self):
-        (c,) = [c for c in candidates() if c.id == "biosample->sample:sra_be_runinfo"]
-        assert c.source_archives == ()
+        assert _candidate("sra_be_runinfo", EntityType.BIOSAMPLE, SAMPLE).source_archives == ()
 
     def test_a_route_from_a_split_record_names_its_archives(self):
-        (c,) = [c for c in candidates() if c.id == "run->study:sra_be_runinfo"]
-        assert c.source_archives
+        assert _candidate("sra_be_runinfo", EntityType.RUN, STUDY).source_archives
+
+
+def _candidate(mechanism: str, source: EntityType, target: EntityType) -> Candidate:
+    """A candidate as ``candidates`` builds one, whether or not it is promoted since."""
+    links = tuple(
+        link
+        for link in CATALOGUE.links
+        if link.mechanism == mechanism
+        and CATALOGUE.nodes[link.source].entity is source
+        and CATALOGUE.nodes[link.target].entity is target
+    )
+    assert links, f"the catalogue has no {mechanism} link from {source.value} to {target.value}"
+    return Candidate(mechanism, source, target, links)
 
 
 class TestAnswer:
@@ -122,9 +139,8 @@ class TestAsTheResolverCallsIt:
 class TestFanout:
     async def test_one_request_a_verdict_per_route(self, runinfo, tmp_path):
         routes = [
-            c
-            for c in candidates()
-            if c.mechanism == "sra_be_runinfo" and c.source is EntityType.BIOSAMPLE
+            _candidate("sra_be_runinfo", EntityType.BIOSAMPLE, target)
+            for target in (SAMPLE, STUDY, EntityType.EXPERIMENT)
         ]
         fn = fanout("sra_be_runinfo", routes, {"ncbi_web": _Client()}, "c")
         with SurveyCache(tmp_path / "c.sqlite") as cache:
