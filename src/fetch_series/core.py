@@ -9,6 +9,7 @@ import httpx
 from httpx_retries import Retry, RetryTransport
 
 from fetch_series.logging_utils import redact, redact_exception
+from fetch_series.providers import biostudies
 
 # Enable retry logic for HTTP requests to handle transient errors and rate limiting when accessing the NCBI E-utilities API
 retry = Retry(
@@ -317,6 +318,30 @@ def _study_file(series: str, name: str) -> httpx.Response:
     return _get(f"{link}/Files/{name}", follow_redirects=True, timeout=30)
 
 
+def _sdrf_text(series: str) -> str:
+    """A study's SDRF, or the several files its IDF names in its place (E-GEOD-29264).
+
+    The synchronous twin of ``providers.biostudies._sdrf_text``.
+    """
+    usual = f"{series}.sdrf.txt"
+    try:
+        return _study_file(series, usual).text
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code != 404:
+            raise
+        missing = exc
+    try:
+        idf = _study_file(series, f"{series}.idf.txt").text
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code != 404:
+            raise
+        raise missing from None
+    named = [name for name in biostudies.sdrf_files(idf) if name != usual]
+    if not named:
+        raise missing
+    return biostudies.join_sdrf([_study_file(series, name).text for name in named])
+
+
 def ae2secondary(series: str) -> list[str]:
     """
     Retrieves SecondaryAccession values associated with a given series from the EBI BioStudies database
@@ -365,9 +390,7 @@ def ae2biosamples(series: str) -> list[str]:
     Returns:
         List[str] | None: A list of biosample IDs associated with the series, or None if no biosamples are found
     """
-    response = _study_file(series, f"{series}.sdrf.txt")
-
-    reader = csv.DictReader(io.StringIO(response.text), delimiter="\t")
+    reader = csv.DictReader(io.StringIO(_sdrf_text(series)), delimiter="\t")
     # csv.DictReader fills missing trailing columns with None, so the key can be
     # present with a None value -- short rows are common in hand-edited SDRFs.
     biosamples = [
