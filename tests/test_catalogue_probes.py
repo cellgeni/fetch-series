@@ -157,7 +157,9 @@ class TestRecordedProbes:
         assert (
             dict(PROBES["run_ncbi->sra_lite:sra_be_runinfo_download"].checks)["verifiable"] is False
         )
-        assert PROBES["experiment_ncbi->fastq:ena_filereport_fastq"].confirmed
+        # Once a probe; measured since by experiment->file:ena_filereport_fastq.
+        fastq = CATALOGUE.split(CATALOGUE.link("experiment_ncbi->fastq:ena_filereport_fastq"))
+        assert fastq is not None and fastq.resolved > 0
 
 
 MEASURED_LINK = "bioproject->run_ncbi:ena_filereport"

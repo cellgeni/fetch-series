@@ -1,28 +1,6 @@
 {
  "probes": [
   {
-   "link": "ae_experiment->ae_experiment:biostudies_idf",
-   "accession": "E-MTAB-5061",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "E-MTAB-5060"
-   ],
-   "error": null
-  },
-  {
-   "link": "ae_experiment->ae_experiment:biostudies_study",
-   "accession": "E-MTAB-5061",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "E-MTAB-5060"
-   ],
-   "error": null
-  },
-  {
    "link": "ae_experiment->ae_sample:biostudies_sdrf",
    "accession": "E-MTAB-5061",
    "checked_on": "2026-10-16",
@@ -98,125 +76,6 @@
    "error": null
   },
   {
-   "link": "ae_experiment->bioproject:ena_xref_source",
-   "accession": "E-MTAB-5061",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJEB15401"
-   ],
-   "error": null
-  },
-  {
-   "link": "ae_experiment->biostudy:biostudies_search_all",
-   "accession": "E-MTAB-5061",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 83,
-   "found": [
-    "S-EPMC10331937",
-    "S-EPMC10436670",
-    "S-EPMC10439717",
-    "S-EPMC10498638",
-    "S-EPMC10629677",
-    "S-EPMC10759212",
-    "S-EPMC10791572",
-    "S-EPMC10810333",
-    "S-EPMC10836733",
-    "S-EPMC10884342",
-    "S-EPMC10889820",
-    "S-EPMC10891129"
-   ],
-   "error": null
-  },
-  {
-   "link": "ae_experiment->experiment_ebi:biostudies_sdrf_comments",
-   "accession": "E-MTAB-5061",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3514,
-   "found": [
-    "ERX1700346",
-    "ERX1700347",
-    "ERX1700348",
-    "ERX1700349",
-    "ERX1700350",
-    "ERX1700351",
-    "ERX1700352",
-    "ERX1700353",
-    "ERX1700354",
-    "ERX1700355",
-    "ERX1700356",
-    "ERX1700357"
-   ],
-   "error": null
-  },
-  {
-   "link": "ae_experiment->experiment_ncbi:biostudies_sdrf_comments",
-   "accession": "E-GEOD-60450",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SRX681985",
-    "SRX681986",
-    "SRX681987",
-    "SRX681988",
-    "SRX681989",
-    "SRX681990",
-    "SRX681991",
-    "SRX681992",
-    "SRX681993",
-    "SRX681994",
-    "SRX681995",
-    "SRX681996"
-   ],
-   "error": null
-  },
-  {
-   "link": "ae_experiment->geo_sample:biostudies_sdrf_comments",
-   "accession": "E-GEOD-60450",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "GSM1480291",
-    "GSM1480292",
-    "GSM1480293",
-    "GSM1480294",
-    "GSM1480295",
-    "GSM1480296",
-    "GSM1480297",
-    "GSM1480298",
-    "GSM1480299",
-    "GSM1480300",
-    "GSM1480301",
-    "GSM1480302"
-   ],
-   "error": null
-  },
-  {
-   "link": "ae_experiment->geo_series:biostudies_idf",
-   "accession": "E-GEOD-60450",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSE60450"
-   ],
-   "error": null
-  },
-  {
-   "link": "ae_experiment->geo_series:biostudies_study",
-   "accession": "E-GEOD-60450",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
    "link": "ae_experiment->metadata_ae:biostudies_idf",
    "accession": "E-MTAB-5061",
    "checked_on": "2026-10-16",
@@ -259,118 +118,6 @@
     ]
    ],
    "checked": "https://www.ebi.ac.uk/biostudies/files/E-MTAB-5061/E-MTAB-5061.sdrf.txt"
-  },
-  {
-   "link": "ae_experiment->run_ebi:biostudies_idf",
-   "accession": "E-MTAB-5061",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "ERR1630013",
-    "ERR1633526"
-   ],
-   "error": null
-  },
-  {
-   "link": "ae_experiment->run_ebi:biostudies_sdrf_comments",
-   "accession": "E-MTAB-5061",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3514,
-   "found": [
-    "ERR1630013",
-    "ERR1630014",
-    "ERR1630015",
-    "ERR1630016",
-    "ERR1630017",
-    "ERR1630018",
-    "ERR1630019",
-    "ERR1630020",
-    "ERR1630021",
-    "ERR1630022",
-    "ERR1630023",
-    "ERR1630024"
-   ],
-   "error": null
-  },
-  {
-   "link": "ae_experiment->run_ncbi:biostudies_idf",
-   "accession": "E-GEOD-60450",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "SRR1552444",
-    "SRR1552455"
-   ],
-   "error": null
-  },
-  {
-   "link": "ae_experiment->run_ncbi:biostudies_sdrf_comments",
-   "accession": "E-GEOD-60450",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SRR1552444",
-    "SRR1552445",
-    "SRR1552446",
-    "SRR1552447",
-    "SRR1552448",
-    "SRR1552449",
-    "SRR1552450",
-    "SRR1552451",
-    "SRR1552452",
-    "SRR1552453",
-    "SRR1552454",
-    "SRR1552455"
-   ],
-   "error": null
-  },
-  {
-   "link": "ae_experiment->sample_ebi:biostudies_sdrf_comments",
-   "accession": "E-MTAB-5061",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3514,
-   "found": [
-    "ERS1348470",
-    "ERS1348471",
-    "ERS1348472",
-    "ERS1348473",
-    "ERS1348474",
-    "ERS1348475",
-    "ERS1348476",
-    "ERS1348477",
-    "ERS1348478",
-    "ERS1348479",
-    "ERS1348480",
-    "ERS1348481"
-   ],
-   "error": null
-  },
-  {
-   "link": "ae_experiment->sample_ncbi:biostudies_sdrf_comments",
-   "accession": "E-GEOD-60450",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SRS685538",
-    "SRS685539",
-    "SRS685541",
-    "SRS685542",
-    "SRS685543",
-    "SRS685544",
-    "SRS685545",
-    "SRS685546",
-    "SRS685547",
-    "SRS685548",
-    "SRS685549",
-    "SRS685550"
-   ],
-   "error": null
   },
   {
    "link": "ae_experiment->study_ebi:biostudies_study",
@@ -2571,17 +2318,6 @@
    "error": null
   },
   {
-   "link": "biosample->ae_experiment:ena_filereport_aliases",
-   "accession": "SAMEA4437023",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "E-MTAB-5061"
-   ],
-   "error": null
-  },
-  {
    "link": "biosample->analysis_ddbj:ddbj_dblink",
    "accession": "SAMD00229074",
    "checked_on": "2026-10-16",
@@ -2653,104 +2389,6 @@
    "error": null
   },
   {
-   "link": "biosample->bam:ena_filereport_bam",
-   "accession": "SAMN36028297",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "biosample->bam:ena_filereport_submitted",
-   "accession": "SAMEA6979313",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265292/UPN2_S2_L001.bam",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265293/UPN2_S2_L002.bam"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR4265292: 1 file"
-  },
-  {
-   "link": "biosample->bam:sdl",
-   "accession": "SAMN36028297",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "biosample->bam:sdl_original",
-   "accession": "SAMN36028297",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "biosample->bioproject:biosample_record",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->bioproject:ddbj_dblink",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->bioproject:elink_biosample_bioproject",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->bioproject:ena_filereport",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
    "link": "biosample->bioproject:ena_filereport_analysis",
    "accession": "SAMEA7629265",
    "checked_on": "2026-10-16",
@@ -2764,127 +2402,6 @@
    "error": null
   },
   {
-   "link": "biosample->bioproject:ena_search_sample",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->bioproject:esummary_sra",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->bioproject:sra_be_runinfo",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->cram:ena_filereport_submitted",
-   "accession": "SAMEA5140102",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 28,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13854946/27680_3#1.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13854947/27680_3#2.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13854948/27680_3#3.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13854949/27680_3#4.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13854974/27680_4#1.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13854975/27680_4#2.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13854976/27680_4#3.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13854977/27680_4#4.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13855002/27680_5#1.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13855003/27680_5#2.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13855004/27680_5#3.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13855005/27680_5#4.cram"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR13855116: 1 file"
-  },
-  {
-   "link": "biosample->cram:sdl",
-   "accession": "SAMN36028297",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "biosample->cram:sdl_original",
-   "accession": "SAMN36028297",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "biosample->experiment_ddbj:ddbj_dblink",
-   "accession": "SAMD00229074",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRX221998"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->experiment_ddbj:elink_biosample_sra",
-   "accession": "SAMD00229074",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRX221998"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->experiment_ddbj:ena_filereport",
-   "accession": "SAMD00229074",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRX221998"
-   ],
-   "error": null
-  },
-  {
    "link": "biosample->experiment_ddbj:ena_links",
    "accession": "SAMD00229074",
    "checked_on": "2026-10-16",
@@ -2892,61 +2409,6 @@
    "found_count": 1,
    "found": [
     "DRX221998"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->experiment_ddbj:esummary_sra",
-   "accession": "SAMD00229074",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRX221998"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->experiment_ddbj:sra_be_runinfo",
-   "accession": "SAMD00229074",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRX221998"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->experiment_ebi:ddbj_dblink",
-   "accession": "SAMEA4437023",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERX1700348"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->experiment_ebi:elink_biosample_sra",
-   "accession": "SAMEA4437023",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERX1700348"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->experiment_ebi:ena_filereport",
-   "accession": "SAMEA4437023",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERX1700348"
    ],
    "error": null
   },
@@ -2978,61 +2440,6 @@
    "error": null
   },
   {
-   "link": "biosample->experiment_ebi:esummary_sra",
-   "accession": "SAMEA4437023",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERX1700348"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->experiment_ebi:sra_be_runinfo",
-   "accession": "SAMEA4437023",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERX1700348"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->experiment_ncbi:ddbj_dblink",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRX681985"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->experiment_ncbi:elink_biosample_sra",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRX681985"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->experiment_ncbi:ena_filereport",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRX681985"
-   ],
-   "error": null
-  },
-  {
    "link": "biosample->experiment_ncbi:ena_links",
    "accession": "SAMN02991530",
    "checked_on": "2026-10-16",
@@ -3044,197 +2451,12 @@
    "error": null
   },
   {
-   "link": "biosample->experiment_ncbi:esummary_sra",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRX681985"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->experiment_ncbi:sra_be_runinfo",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRX681985"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->fastq:ena_filereport_fastq",
-   "accession": "SAMN36028297",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR250/025/SRR25056225/SRR25056225_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR250/025/SRR25056225/SRR25056225_2.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 2 files"
-  },
-  {
-   "link": "biosample->fastq:ena_filereport_submitted",
-   "accession": "SAMEA112953830",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262882/SC01_S2_R1_001.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262882/SC01_S2_R2_001.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR11262882: 2 files"
-  },
-  {
-   "link": "biosample->fastq:sdl",
-   "accession": "SAMN11258191",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787106/51P-10X_R1.fq.gz",
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787106/51P-10X_R2.fq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR8787106: 2 files"
-  },
-  {
-   "link": "biosample->fastq:sdl_original",
-   "accession": "SAMN36028297",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "TSF2_S35_L002_R1_001.fastq.gz",
-    "TSF2_S35_L002_R2_001.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     false
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 2 files"
-  },
-  {
-   "link": "biosample->geo_sample:biosample_record",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSM1480291"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->geo_sample:elink_biosample_gds",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSM1480291"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->geo_sample:ena_filereport_aliases",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSM1480291"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->geo_sample:sra_be_runinfo",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSM1480291"
-   ],
-   "error": null
-  },
-  {
    "link": "biosample->geo_series:ddbj_dblink",
    "accession": "SAMN02991530",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "biosample->geo_series:ena_filereport_aliases",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSE60450"
-   ],
    "error": null
   },
   {
@@ -3436,127 +2658,6 @@
    "error": null
   },
   {
-   "link": "biosample->sample_ddbj:biosample_record",
-   "accession": "SAMD00229074",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRS151759"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ddbj:biosamples_record",
-   "accession": "SAMD00229074",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRS151759"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ddbj:ddbj_dblink",
-   "accession": "SAMD00229074",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRS151759"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ddbj:ena_filereport",
-   "accession": "SAMD00229074",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRS151759"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ddbj:ena_search_sample",
-   "accession": "SAMD00229074",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRS151759"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ddbj:esummary_sra",
-   "accession": "SAMD00229074",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRS151759"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ddbj:sra_be_runinfo",
-   "accession": "SAMD00229074",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRS151759"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ebi:biosample_record",
-   "accession": "SAMEA4437023",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERS1348472"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ebi:biosamples_record",
-   "accession": "SAMEA4437023",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERS1348472"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ebi:ddbj_dblink",
-   "accession": "SAMEA4437023",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERS1348472"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ebi:ena_filereport",
-   "accession": "SAMEA4437023",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERS1348472"
-   ],
-   "error": null
-  },
-  {
    "link": "biosample->sample_ebi:ena_filereport_analysis",
    "accession": "SAMEA7629265",
    "checked_on": "2026-10-16",
@@ -3579,116 +2680,6 @@
    "error": null
   },
   {
-   "link": "biosample->sample_ebi:ena_search_sample",
-   "accession": "SAMEA4437023",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERS1348472"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ebi:esummary_sra",
-   "accession": "SAMEA4437023",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERS1348472"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ebi:sra_be_runinfo",
-   "accession": "SAMEA4437023",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERS1348472"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ncbi:biosample_record",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ncbi:biosamples_record",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ncbi:ddbj_dblink",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ncbi:ena_filereport",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ncbi:ena_search_sample",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ncbi:esummary_sra",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->sample_ncbi:sra_be_runinfo",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
    "link": "biosample->sra_lite:ena_filereport_sra",
    "accession": "SAMN36028297",
    "checked_on": "2026-10-16",
@@ -3696,32 +2687,6 @@
    "found_count": 0,
    "found": [],
    "error": null
-  },
-  {
-   "link": "biosample->sra_lite:sdl_lite",
-   "accession": "SAMN36028297",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos13/sra-pub-zq-1307/SRR025/25056/SRR25056225/SRR25056225.lite.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 1 file"
   },
   {
    "link": "biosample->sra_lite:sra_be_runinfo_download",
@@ -3759,32 +2724,6 @@
    "error": null
   },
   {
-   "link": "biosample->sra_normalized:sdl",
-   "accession": "SAMN36028297",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/SRR25056225/SRR25056225"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 1 file"
-  },
-  {
    "link": "biosample->study_ddbj:ddbj_dblink",
    "accession": "SAMD00229074",
    "checked_on": "2026-10-16",
@@ -3794,56 +2733,12 @@
    "error": null
   },
   {
-   "link": "biosample->study_ddbj:ena_filereport",
-   "accession": "SAMD00229074",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRP006494"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->study_ddbj:esummary_sra",
-   "accession": "SAMD00229074",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRP006494"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->study_ddbj:sra_be_runinfo",
-   "accession": "SAMD00229074",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRP006494"
-   ],
-   "error": null
-  },
-  {
    "link": "biosample->study_ebi:ddbj_dblink",
    "accession": "SAMEA4437023",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "biosample->study_ebi:ena_filereport",
-   "accession": "SAMEA4437023",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERP017126"
-   ],
    "error": null
   },
   {
@@ -3860,67 +2755,12 @@
    "error": null
   },
   {
-   "link": "biosample->study_ebi:esummary_sra",
-   "accession": "SAMEA4437023",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERP017126"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->study_ebi:sra_be_runinfo",
-   "accession": "SAMEA4437023",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERP017126"
-   ],
-   "error": null
-  },
-  {
    "link": "biosample->study_ncbi:ddbj_dblink",
    "accession": "SAMN02991530",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "biosample->study_ncbi:ena_filereport",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->study_ncbi:esummary_sra",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
-   "link": "biosample->study_ncbi:sra_be_runinfo",
-   "accession": "SAMN02991530",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
    "error": null
   },
   {
@@ -4091,169 +2931,12 @@
    "error": null
   },
   {
-   "link": "biostudy->ae_experiment:biostudies_study",
-   "accession": "S-EPMC9302581",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 5,
-   "found": [
-    "E-GEOD-100058",
-    "E-GEOD-130148",
-    "E-MTAB-5060",
-    "E-MTAB-5061",
-    "E-MTAB-6429"
-   ],
-   "error": null
-  },
-  {
-   "link": "biostudy->bioproject:biostudies_study",
-   "accession": "S-EPMC9302581",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJEB15401"
-   ],
-   "error": null
-  },
-  {
-   "link": "biostudy->geo_series:biostudies_study",
-   "accession": "S-EPMC9302581",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSE100058"
-   ],
-   "error": null
-  },
-  {
-   "link": "biostudy->study_ddbj:biostudies_study",
-   "accession": "S-EPMC9302581",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "biostudy->study_ebi:biostudies_study",
-   "accession": "S-EPMC9302581",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERP017126"
-   ],
-   "error": null
-  },
-  {
-   "link": "biostudy->study_ncbi:biostudies_study",
-   "accession": "S-EPMC9302581",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
    "link": "experiment_ddbj->analysis_ddbj:ddbj_dblink",
    "accession": "DRX221998",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->bam:ena_filereport_bam",
-   "accession": "DRX334693",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->bam:ena_filereport_submitted",
-   "accession": "DRX334693",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->bam:sdl",
-   "accession": "DRX334693",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->bam:sdl_original",
-   "accession": "DRX334693",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->bioproject:ddbj_dblink",
-   "accession": "DRX221998",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJDB9974"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->bioproject:elink_sra_bioproject",
-   "accession": "DRX221998",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJDB9974"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->bioproject:ena_filereport",
-   "accession": "DRX221998",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJDB9974"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->bioproject:esummary_sra",
-   "accession": "DRX221998",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJDB9974"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->bioproject:sra_be_runinfo",
-   "accession": "DRX221998",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJDB9974"
-   ],
    "error": null
   },
   {
@@ -4298,87 +2981,6 @@
    "found": [
     "SAMD00229074"
    ],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->cram:ena_filereport_submitted",
-   "accession": "DRX334693",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->cram:sdl",
-   "accession": "DRX334693",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->cram:sdl_original",
-   "accession": "DRX334693",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->fastq:ena_filereport_fastq",
-   "accession": "DRX334693",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR345/DRR345778/DRR345778_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR345/DRR345778/DRR345778_2.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "DRR345778: 2 files"
-  },
-  {
-   "link": "experiment_ddbj->fastq:ena_filereport_submitted",
-   "accession": "DRX334693",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->fastq:sdl",
-   "accession": "DRX334693",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->fastq:sdl_original",
-   "accession": "DRX334693",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
    "error": null
   },
   {
@@ -4558,76 +3160,6 @@
    "error": null
   },
   {
-   "link": "experiment_ddbj->sample_ddbj:ddbj_dblink",
-   "accession": "DRX221998",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRS151759"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->sample_ddbj:ena_filereport",
-   "accession": "DRX221998",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRS151759"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->sample_ddbj:esummary_sra",
-   "accession": "DRX221998",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRS151759"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->sample_ddbj:sra_be_runinfo",
-   "accession": "DRX221998",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRS151759"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->sra_lite:efetch_sra_files",
-   "accession": "DRX334693",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos9/sra-pub-zq-924/DRR000/345/DRR345778/DRR345778.lite.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "DRR345778: 1 file"
-  },
-  {
    "link": "experiment_ddbj->sra_lite:ena_filereport_sra",
    "accession": "DRX334693",
    "checked_on": "2026-10-16",
@@ -4635,32 +3167,6 @@
    "found_count": 0,
    "found": [],
    "error": null
-  },
-  {
-   "link": "experiment_ddbj->sra_lite:sdl_lite",
-   "accession": "DRX334693",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos9/sra-pub-zq-924/DRR000/345/DRR345778/DRR345778.lite.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "DRR345778: 1 file"
   },
   {
    "link": "experiment_ddbj->sra_lite:sra_be_runinfo_download",
@@ -4689,108 +3195,12 @@
    "checked": "DRR345778: 1 file"
   },
   {
-   "link": "experiment_ddbj->sra_normalized:efetch_sra_files",
-   "accession": "DRX334693",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/DRR345778/DRR345778"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "DRR345778: 1 file"
-  },
-  {
    "link": "experiment_ddbj->sra_normalized:ena_filereport_sra",
    "accession": "DRX334693",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->sra_normalized:sdl",
-   "accession": "DRX334693",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/DRR345778/DRR345778"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "DRR345778: 1 file"
-  },
-  {
-   "link": "experiment_ddbj->study_ddbj:ddbj_dblink",
-   "accession": "DRX221998",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRP006494"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->study_ddbj:ena_filereport",
-   "accession": "DRX221998",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRP006494"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->study_ddbj:esummary_sra",
-   "accession": "DRX221998",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRP006494"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ddbj->study_ddbj:sra_be_runinfo",
-   "accession": "DRX221998",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRP006494"
-   ],
    "error": null
   },
   {
@@ -4838,150 +3248,12 @@
    "error": null
   },
   {
-   "link": "experiment_ebi->ae_experiment:ena_filereport_aliases",
-   "accession": "ERX1700348",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "E-MTAB-5061"
-   ],
-   "error": null
-  },
-  {
    "link": "experiment_ebi->analysis_ebi:ddbj_dblink",
    "accession": "ERX1700348",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->bam:ena_filereport_bam",
-   "accession": "ERX4219953",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->bam:ena_filereport_submitted",
-   "accession": "ERX4219953",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265292/UPN2_S2_L001.bam",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265293/UPN2_S2_L002.bam"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR4265292: 1 file"
-  },
-  {
-   "link": "experiment_ebi->bam:sdl",
-   "accession": "ERX4219953",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->bam:sdl_original",
-   "accession": "ERX4219953",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "UPN2_S2_L001.bam",
-    "UPN2_S2_L002.bam"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     false
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR4265292: 1 file"
-  },
-  {
-   "link": "experiment_ebi->bioproject:ddbj_dblink",
-   "accession": "ERX1700348",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJEB15401"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->bioproject:elink_sra_bioproject",
-   "accession": "ERX1700348",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJEB15401"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->bioproject:ena_filereport",
-   "accession": "ERX1700348",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJEB15401"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->bioproject:esummary_sra",
-   "accession": "ERX1700348",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJEB15401"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->bioproject:sra_be_runinfo",
-   "accession": "ERX1700348",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJEB15401"
-   ],
    "error": null
   },
   {
@@ -5026,157 +3298,6 @@
    "found": [
     "SAMEA4437023"
    ],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->cram:ena_filereport_submitted",
-   "accession": "ERX13257882",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13855116/27865_1#3.cram"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR13855116: 1 file"
-  },
-  {
-   "link": "experiment_ebi->cram:sdl",
-   "accession": "ERX13257882",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-pub-src-2.s3.amazonaws.com/ERR13855116/27865_1_3.cram.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR13855116: 1 file"
-  },
-  {
-   "link": "experiment_ebi->cram:sdl_original",
-   "accession": "ERX4219953",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->fastq:ena_filereport_fastq",
-   "accession": "ERX10670380",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR112/082/ERR11262882/ERR11262882_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR112/082/ERR11262882/ERR11262882_2.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR11262882: 2 files"
-  },
-  {
-   "link": "experiment_ebi->fastq:ena_filereport_submitted",
-   "accession": "ERX10670380",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262882/SC01_S2_R1_001.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262882/SC01_S2_R2_001.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR11262882: 2 files"
-  },
-  {
-   "link": "experiment_ebi->fastq:sdl",
-   "accession": "ERX10670380",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://sra-pub-src-2.s3.amazonaws.com/ERR11262882/SC01_S2_R1_001.fastq.gz.1",
-    "https://sra-pub-src-2.s3.amazonaws.com/ERR11262882/SC01_S2_R2_001.fastq.gz.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR11262882: 2 files"
-  },
-  {
-   "link": "experiment_ebi->fastq:sdl_original",
-   "accession": "ERX4219953",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
    "error": null
   },
   {
@@ -5356,77 +3477,6 @@
    "error": null
   },
   {
-   "link": "experiment_ebi->sample_ebi:ddbj_dblink",
-   "accession": "ERX1700348",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERS1348472"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->sample_ebi:ena_filereport",
-   "accession": "ERX1700348",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERS1348472"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->sample_ebi:esummary_sra",
-   "accession": "ERX1700348",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERS1348472"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->sample_ebi:sra_be_runinfo",
-   "accession": "ERX1700348",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERS1348472"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->sra_lite:efetch_sra_files",
-   "accession": "ERX4219953",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos9/sra-pub-zq-924/ERR004/4265/ERR4265292/ERR4265292.lite.1",
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos9/sra-pub-zq-924/ERR004/4265/ERR4265293/ERR4265293.lite.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     false
-    ]
-   ],
-   "checked": "ERR4265292: 1 file"
-  },
-  {
    "link": "experiment_ebi->sra_lite:ena_filereport_sra",
    "accession": "ERX4219953",
    "checked_on": "2026-10-16",
@@ -5434,33 +3484,6 @@
    "found_count": 0,
    "found": [],
    "error": null
-  },
-  {
-   "link": "experiment_ebi->sra_lite:sdl_lite",
-   "accession": "ERX4219953",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos9/sra-pub-zq-924/ERR004/4265/ERR4265292/ERR4265292.lite.1",
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos9/sra-pub-zq-924/ERR004/4265/ERR4265293/ERR4265293.lite.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     false
-    ]
-   ],
-   "checked": "ERR4265292: 1 file"
   },
   {
    "link": "experiment_ebi->sra_lite:sra_be_runinfo_download",
@@ -5490,110 +3513,12 @@
    "checked": "ERR4265292: 1 file"
   },
   {
-   "link": "experiment_ebi->sra_normalized:efetch_sra_files",
-   "accession": "ERX4219953",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/ERR4265292/ERR4265292",
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/ERR4265293/ERR4265293"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     false
-    ]
-   ],
-   "checked": "ERR4265292: 1 file"
-  },
-  {
    "link": "experiment_ebi->sra_normalized:ena_filereport_sra",
    "accession": "ERX4219953",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->sra_normalized:sdl",
-   "accession": "ERX4219953",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/ERR4265292/ERR4265292",
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/ERR4265293/ERR4265293"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     false
-    ]
-   ],
-   "checked": "ERR4265292: 1 file"
-  },
-  {
-   "link": "experiment_ebi->study_ebi:ddbj_dblink",
-   "accession": "ERX1700348",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERP017126"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->study_ebi:ena_filereport",
-   "accession": "ERX1700348",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERP017126"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->study_ebi:esummary_sra",
-   "accession": "ERX1700348",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERP017126"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ebi->study_ebi:sra_be_runinfo",
-   "accession": "ERX1700348",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERP017126"
-   ],
    "error": null
   },
   {
@@ -5641,112 +3566,12 @@
    "error": null
   },
   {
-   "link": "experiment_ncbi->ae_experiment:ena_filereport_aliases",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
    "link": "experiment_ncbi->analysis_ncbi:ddbj_dblink",
    "accession": "SRX681985",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->bam:ena_filereport_bam",
-   "accession": "SRX20810436",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->bam:ena_filereport_submitted",
-   "accession": "SRX20810436",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->bam:sdl",
-   "accession": "SRX20810436",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->bam:sdl_original",
-   "accession": "SRX20810436",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->bioproject:ddbj_dblink",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->bioproject:elink_sra_bioproject",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->bioproject:ena_filereport",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->bioproject:esummary_sra",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->bioproject:sra_be_runinfo",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
    "error": null
   },
   {
@@ -5794,184 +3619,12 @@
    "error": null
   },
   {
-   "link": "experiment_ncbi->cram:ena_filereport_submitted",
-   "accession": "SRX20810436",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->cram:sdl",
-   "accession": "SRX20810436",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->cram:sdl_original",
-   "accession": "SRX20810436",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->fastq:ena_filereport_fastq",
-   "accession": "SRX20810436",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR250/025/SRR25056225/SRR25056225_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR250/025/SRR25056225/SRR25056225_2.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 2 files"
-  },
-  {
-   "link": "experiment_ncbi->fastq:ena_filereport_submitted",
-   "accession": "SRX20810436",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->fastq:sdl",
-   "accession": "SRX5576940",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787106/51P-10X_R1.fq.gz",
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787106/51P-10X_R2.fq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR8787106: 2 files"
-  },
-  {
-   "link": "experiment_ncbi->fastq:sdl_original",
-   "accession": "SRX20810436",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "TSF2_S35_L002_R1_001.fastq.gz",
-    "TSF2_S35_L002_R2_001.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     false
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 2 files"
-  },
-  {
-   "link": "experiment_ncbi->geo_sample:elink_sra_gds",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSM1480291"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->geo_sample:ena_filereport_aliases",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSM1480291"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->geo_sample:sra_be_runinfo",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSM1480291"
-   ],
-   "error": null
-  },
-  {
    "link": "experiment_ncbi->geo_series:ddbj_dblink",
    "accession": "SRX681985",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->geo_series:elink_sra_gds",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSE60450"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->geo_series:ena_filereport_aliases",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSE60450"
-   ],
    "error": null
   },
   {
@@ -6140,76 +3793,6 @@
    "error": null
   },
   {
-   "link": "experiment_ncbi->sample_ncbi:ddbj_dblink",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->sample_ncbi:ena_filereport",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->sample_ncbi:esummary_sra",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->sample_ncbi:sra_be_runinfo",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->sra_lite:efetch_sra_files",
-   "accession": "SRX20810436",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos13/sra-pub-zq-1307/SRR025/25056/SRR25056225/SRR25056225.lite.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 1 file"
-  },
-  {
    "link": "experiment_ncbi->sra_lite:ena_filereport_sra",
    "accession": "SRX20810436",
    "checked_on": "2026-10-16",
@@ -6217,32 +3800,6 @@
    "found_count": 0,
    "found": [],
    "error": null
-  },
-  {
-   "link": "experiment_ncbi->sra_lite:sdl_lite",
-   "accession": "SRX20810436",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos13/sra-pub-zq-1307/SRR025/25056/SRR25056225/SRR25056225.lite.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 1 file"
   },
   {
    "link": "experiment_ncbi->sra_lite:sra_be_runinfo_download",
@@ -6271,108 +3828,12 @@
    "checked": "SRR25056225: 1 file"
   },
   {
-   "link": "experiment_ncbi->sra_normalized:efetch_sra_files",
-   "accession": "SRX20810436",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/SRR25056225/SRR25056225"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 1 file"
-  },
-  {
    "link": "experiment_ncbi->sra_normalized:ena_filereport_sra",
    "accession": "SRX20810436",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->sra_normalized:sdl",
-   "accession": "SRX20810436",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/SRR25056225/SRR25056225"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 1 file"
-  },
-  {
-   "link": "experiment_ncbi->study_ncbi:ddbj_dblink",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->study_ncbi:ena_filereport",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->study_ncbi:esummary_sra",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
-   "link": "experiment_ncbi->study_ncbi:sra_be_runinfo",
-   "accession": "SRX681985",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
    "error": null
   },
   {
@@ -6486,52 +3947,12 @@
    "error": null
   },
   {
-   "link": "geo_sample->bam:sdl",
-   "accession": "GSM7518069",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "geo_sample->bam:sdl_original",
-   "accession": "GSM7518069",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
    "link": "geo_sample->bioproject:elink_gds_bioproject",
    "accession": "GSM1480291",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "geo_sample->bioproject:esummary_sra",
-   "accession": "GSM1480291",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "geo_sample->bioproject:sra_be_runinfo",
-   "accession": "GSM1480291",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
    "error": null
   },
   {
@@ -6565,24 +3986,6 @@
    "found": [
     "SAMN02991530"
    ],
-   "error": null
-  },
-  {
-   "link": "geo_sample->cram:sdl",
-   "accession": "GSM7518069",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "geo_sample->cram:sdl_original",
-   "accession": "GSM7518069",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
    "error": null
   },
   {
@@ -6628,60 +4031,6 @@
     "SRX681985"
    ],
    "error": null
-  },
-  {
-   "link": "geo_sample->fastq:sdl",
-   "accession": "GSM3687447",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787106/51P-10X_R1.fq.gz",
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787106/51P-10X_R2.fq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR8787106: 8 files"
-  },
-  {
-   "link": "geo_sample->fastq:sdl_original",
-   "accession": "GSM7518069",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "TSF2_S35_L002_R1_001.fastq.gz",
-    "TSF2_S35_L002_R2_001.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     false
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 2 files"
   },
   {
    "link": "geo_sample->geo_platform:gds_esummary_sample",
@@ -6761,76 +4110,6 @@
    "checked": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM1480291&targ=self&form=text&view=brief"
   },
   {
-   "link": "geo_sample->run_ncbi:esummary_sra",
-   "accession": "GSM1480291",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRR1552444"
-   ],
-   "error": null
-  },
-  {
-   "link": "geo_sample->run_ncbi:sra_be_runinfo",
-   "accession": "GSM1480291",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRR1552444"
-   ],
-   "error": null
-  },
-  {
-   "link": "geo_sample->sample_ncbi:esummary_sra",
-   "accession": "GSM1480291",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
-   "link": "geo_sample->sample_ncbi:sra_be_runinfo",
-   "accession": "GSM1480291",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
-   "link": "geo_sample->sra_lite:sdl_lite",
-   "accession": "GSM7518069",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos13/sra-pub-zq-1307/SRR025/25056/SRR25056225/SRR25056225.lite.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 1 file"
-  },
-  {
    "link": "geo_sample->sra_lite:sra_be_runinfo_download",
    "accession": "GSM7518069",
    "checked_on": "2026-10-16",
@@ -6855,54 +4134,6 @@
     ]
    ],
    "checked": "SRR25056225: 1 file"
-  },
-  {
-   "link": "geo_sample->sra_normalized:sdl",
-   "accession": "GSM7518069",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/SRR25056225/SRR25056225"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 1 file"
-  },
-  {
-   "link": "geo_sample->study_ncbi:esummary_sra",
-   "accession": "GSM1480291",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
-   "link": "geo_sample->study_ncbi:sra_be_runinfo",
-   "accession": "GSM1480291",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
   },
   {
    "link": "geo_sample->submission_ncbi:esummary_sra",
@@ -6938,24 +4169,6 @@
   {
    "link": "geo_series->analysis_ncbi:ddbj_dblink",
    "accession": "GSE60450",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "geo_series->bam:sdl",
-   "accession": "GSE236084",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "geo_series->bam:sdl_original",
-   "accession": "GSE236084",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
@@ -7047,68 +4260,6 @@
    "error": null
   },
   {
-   "link": "geo_series->biosample:geo_soft_family_relations",
-   "accession": "GSE60450",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SAMN02991530",
-    "SAMN02991531",
-    "SAMN02991532",
-    "SAMN02991533",
-    "SAMN02991534",
-    "SAMN02991535",
-    "SAMN02991536",
-    "SAMN02991537",
-    "SAMN02991538",
-    "SAMN02991539",
-    "SAMN02991540",
-    "SAMN02991541"
-   ],
-   "error": null
-  },
-  {
-   "link": "geo_series->biosample:sra_be_runinfo",
-   "accession": "GSE60450",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SAMN02991530",
-    "SAMN02991531",
-    "SAMN02991532",
-    "SAMN02991533",
-    "SAMN02991534",
-    "SAMN02991535",
-    "SAMN02991536",
-    "SAMN02991537",
-    "SAMN02991538",
-    "SAMN02991539",
-    "SAMN02991540",
-    "SAMN02991541"
-   ],
-   "error": null
-  },
-  {
-   "link": "geo_series->cram:sdl",
-   "accession": "GSE236084",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "geo_series->cram:sdl_original",
-   "accession": "GSE236084",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
    "link": "geo_series->experiment_ncbi:ddbj_dblink",
    "accession": "GSE60450",
    "checked_on": "2026-10-16",
@@ -7138,78 +4289,6 @@
     "SRX681996"
    ],
    "error": null
-  },
-  {
-   "link": "geo_series->fastq:sdl",
-   "accession": "GSE120926",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 36,
-   "found": [
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787105/50P-10X_R1.fq.gz",
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787105/50P-10X_R2.fq.gz",
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787106/51P-10X_R1.fq.gz",
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787106/51P-10X_R2.fq.gz",
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787107/58P-10X_R1.fq.gz",
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787107/58P-10X_R2.fq.gz",
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787108/59P-10X_R1.fq.gz",
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787108/59P-10X_R2.fq.gz",
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787109/60P-10X_R1.fq.gz",
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787109/60P-10X_R2.fq.gz",
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787110/62P-10X_R1.fq.gz",
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787110/62P-10X_R2.fq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR8787106: 2 files"
-  },
-  {
-   "link": "geo_series->fastq:sdl_original",
-   "accession": "GSE236084",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 10,
-   "found": [
-    "CM1_S30_L002_R1_001.fastq.gz",
-    "CM1_S30_L002_R2_001.fastq.gz",
-    "CM2_S34_L002_R1_001.fastq.gz",
-    "CM2_S34_L002_R2_001.fastq.gz",
-    "TSF1a_S32_L002_R1_001.fastq.gz",
-    "TSF1a_S32_L002_R2_001.fastq.gz",
-    "TSF1b_S33_L002_R1_001.fastq.gz",
-    "TSF1b_S33_L002_R2_001.fastq.gz",
-    "TSF2_S35_L002_R1_001.fastq.gz",
-    "TSF2_S35_L002_R2_001.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     false
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 2 files"
   },
   {
    "link": "geo_series->geo_platform:gds_esummary_series",
@@ -7285,32 +4364,6 @@
     "GSM1480300",
     "GSM1480301",
     "GSM1480302"
-   ],
-   "error": null
-  },
-  {
-   "link": "geo_series->geo_series:geo_acc_series",
-   "accession": "GSE236087",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3,
-   "found": [
-    "GSE236084",
-    "GSE236086",
-    "GSE277634"
-   ],
-   "error": null
-  },
-  {
-   "link": "geo_series->geo_series:geo_soft_family_relations",
-   "accession": "GSE236087",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3,
-   "found": [
-    "GSE236084",
-    "GSE236086",
-    "GSE277634"
    ],
    "error": null
   },
@@ -7499,58 +4552,6 @@
    "error": null
   },
   {
-   "link": "geo_series->sample_ncbi:sra_be_runinfo",
-   "accession": "GSE60450",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SRS685538",
-    "SRS685539",
-    "SRS685541",
-    "SRS685542",
-    "SRS685543",
-    "SRS685544",
-    "SRS685545",
-    "SRS685546",
-    "SRS685547",
-    "SRS685548",
-    "SRS685549",
-    "SRS685550"
-   ],
-   "error": null
-  },
-  {
-   "link": "geo_series->sra_lite:sdl_lite",
-   "accession": "GSE236084",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 5,
-   "found": [
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos13/sra-pub-zq-1307/SRR025/25056/SRR25056225/SRR25056225.lite.1",
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos13/sra-pub-zq-1307/SRR025/25056/SRR25056226/SRR25056226.lite.1",
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos13/sra-pub-zq-1307/SRR025/25056/SRR25056227/SRR25056227.lite.1",
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos13/sra-pub-zq-1307/SRR025/25056/SRR25056228/SRR25056228.lite.1",
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos13/sra-pub-zq-1307/SRR025/25056/SRR25056229/SRR25056229.lite.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 1 file"
-  },
-  {
    "link": "geo_series->sra_lite:sra_be_runinfo_download",
    "accession": "GSE236084",
    "checked_on": "2026-10-16",
@@ -7581,36 +4582,6 @@
    "checked": "SRR25056225: 1 file"
   },
   {
-   "link": "geo_series->sra_normalized:sdl",
-   "accession": "GSE236084",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 5,
-   "found": [
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/SRR25056225/SRR25056225",
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/SRR25056226/SRR25056226",
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/SRR25056227/SRR25056227",
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/SRR25056228/SRR25056228",
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/SRR25056229/SRR25056229"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 1 file"
-  },
-  {
    "link": "geo_series->study_ncbi:ddbj_dblink",
    "accession": "GSE60450",
    "checked_on": "2026-10-16",
@@ -7620,67 +4591,12 @@
    "error": null
   },
   {
-   "link": "geo_series->study_ncbi:ena_search_study",
-   "accession": "GSE60450",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
    "link": "geo_series->study_ncbi:ena_xref_source",
    "accession": "GSE60450",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "geo_series->study_ncbi:gds_esummary_series",
-   "accession": "GSE60450",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
-   "link": "geo_series->study_ncbi:geo_acc_series",
-   "accession": "GSE60450",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
-   "link": "geo_series->study_ncbi:geo_soft_family_relations",
-   "accession": "GSE60450",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
-   "link": "geo_series->study_ncbi:sra_be_runinfo",
-   "accession": "GSE60450",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
    "error": null
   },
   {
@@ -7728,50 +4644,6 @@
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "run_ddbj->bioproject:ddbj_dblink",
-   "accession": "DRR231743",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJDB9974"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ddbj->bioproject:ena_filereport",
-   "accession": "DRR231743",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJDB9974"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ddbj->bioproject:esummary_sra",
-   "accession": "DRR231743",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJDB9974"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ddbj->bioproject:sra_be_runinfo",
-   "accession": "DRR231743",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJDB9974"
-   ],
    "error": null
   },
   {
@@ -8018,50 +4890,6 @@
    "checked": "https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/runinfo?acc=DRR231743"
   },
   {
-   "link": "run_ddbj->sample_ddbj:ddbj_dblink",
-   "accession": "DRR231743",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRS151759"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ddbj->sample_ddbj:ena_filereport",
-   "accession": "DRR231743",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRS151759"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ddbj->sample_ddbj:esummary_sra",
-   "accession": "DRR231743",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRS151759"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ddbj->sample_ddbj:sra_be_runinfo",
-   "accession": "DRR231743",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRS151759"
-   ],
-   "error": null
-  },
-  {
    "link": "run_ddbj->sra_lite:efetch_sra_files",
    "accession": "DRR345778",
    "checked_on": "2026-10-16",
@@ -8192,50 +5020,6 @@
    "checked": "DRR345778: 1 file"
   },
   {
-   "link": "run_ddbj->study_ddbj:ddbj_dblink",
-   "accession": "DRR231743",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRP006494"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ddbj->study_ddbj:ena_filereport",
-   "accession": "DRR231743",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRP006494"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ddbj->study_ddbj:esummary_sra",
-   "accession": "DRR231743",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRP006494"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ddbj->study_ddbj:sra_be_runinfo",
-   "accession": "DRR231743",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRP006494"
-   ],
-   "error": null
-  },
-  {
    "link": "run_ddbj->submission_ddbj:ddbj_dblink",
    "accession": "DRR231743",
    "checked_on": "2026-10-16",
@@ -8322,50 +5106,6 @@
     ]
    ],
    "checked": "ERR4265292: 1 file"
-  },
-  {
-   "link": "run_ebi->bioproject:ddbj_dblink",
-   "accession": "ERR1630015",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJEB15401"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ebi->bioproject:ena_filereport",
-   "accession": "ERR1630015",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJEB15401"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ebi->bioproject:esummary_sra",
-   "accession": "ERR1630015",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJEB15401"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ebi->bioproject:sra_be_runinfo",
-   "accession": "ERR1630015",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJEB15401"
-   ],
-   "error": null
   },
   {
    "link": "run_ebi->biosample:ddbj_dblink",
@@ -8584,50 +5324,6 @@
    "checked": "https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/runinfo?acc=ERR1630015"
   },
   {
-   "link": "run_ebi->sample_ebi:ddbj_dblink",
-   "accession": "ERR1630015",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERS1348472"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ebi->sample_ebi:ena_filereport",
-   "accession": "ERR1630015",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERS1348472"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ebi->sample_ebi:esummary_sra",
-   "accession": "ERR1630015",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERS1348472"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ebi->sample_ebi:sra_be_runinfo",
-   "accession": "ERR1630015",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERS1348472"
-   ],
-   "error": null
-  },
-  {
    "link": "run_ebi->sra_lite:efetch_sra_files",
    "accession": "ERR4265292",
    "checked_on": "2026-10-16",
@@ -8760,50 +5456,6 @@
    "checked": "ERR4265292: 1 file"
   },
   {
-   "link": "run_ebi->study_ebi:ddbj_dblink",
-   "accession": "ERR1630015",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERP017126"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ebi->study_ebi:ena_filereport",
-   "accession": "ERR1630015",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERP017126"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ebi->study_ebi:esummary_sra",
-   "accession": "ERR1630015",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERP017126"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ebi->study_ebi:sra_be_runinfo",
-   "accession": "ERR1630015",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERP017126"
-   ],
-   "error": null
-  },
-  {
    "link": "run_ebi->submission_ebi:ddbj_dblink",
    "accession": "ERR1630015",
    "checked_on": "2026-10-16",
@@ -8881,50 +5533,6 @@
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "run_ncbi->bioproject:ddbj_dblink",
-   "accession": "SRR1552444",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ncbi->bioproject:ena_filereport",
-   "accession": "SRR1552444",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ncbi->bioproject:esummary_sra",
-   "accession": "SRR1552444",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ncbi->bioproject:sra_be_runinfo",
-   "accession": "SRR1552444",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
    "error": null
   },
   {
@@ -9047,17 +5655,6 @@
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "run_ncbi->geo_series:ena_filereport_aliases",
-   "accession": "SRR1552444",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSE60450"
-   ],
    "error": null
   },
   {
@@ -9193,50 +5790,6 @@
    "checked": "https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/runinfo?acc=SRR1552444"
   },
   {
-   "link": "run_ncbi->sample_ncbi:ddbj_dblink",
-   "accession": "SRR1552444",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ncbi->sample_ncbi:ena_filereport",
-   "accession": "SRR1552444",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ncbi->sample_ncbi:esummary_sra",
-   "accession": "SRR1552444",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ncbi->sample_ncbi:sra_be_runinfo",
-   "accession": "SRR1552444",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRS685538"
-   ],
-   "error": null
-  },
-  {
    "link": "run_ncbi->sra_lite:efetch_sra_files",
    "accession": "SRR25056225",
    "checked_on": "2026-10-16",
@@ -9367,50 +5920,6 @@
    "checked": "SRR25056225: 1 file"
   },
   {
-   "link": "run_ncbi->study_ncbi:ddbj_dblink",
-   "accession": "SRR1552444",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ncbi->study_ncbi:ena_filereport",
-   "accession": "SRR1552444",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ncbi->study_ncbi:esummary_sra",
-   "accession": "SRR1552444",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
-   "link": "run_ncbi->study_ncbi:sra_be_runinfo",
-   "accession": "SRR1552444",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
    "link": "run_ncbi->submission_ncbi:ddbj_dblink",
    "accession": "SRR1552444",
    "checked_on": "2026-10-16",
@@ -9464,279 +5973,8 @@
    "error": null
   },
   {
-   "link": "sample_ddbj->bam:ena_filereport_bam",
-   "accession": "DRS227633",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->bam:ena_filereport_submitted",
-   "accession": "DRS227633",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->bam:sdl",
-   "accession": "DRS227633",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->bam:sdl_original",
-   "accession": "DRS227633",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
    "link": "sample_ddbj->bioproject:ddbj_dblink",
    "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->bioproject:ena_filereport",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJDB9974"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->bioproject:ena_search_sample",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJDB9974"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->bioproject:esummary_sra",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJDB9974"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->bioproject:sra_be_runinfo",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJDB9974"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->biosample:biosamples_filter",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMD00229074"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->biosample:ddbj_dblink",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMD00229074"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->biosample:ena_filereport",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMD00229074"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->biosample:ena_search_sample",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMD00229074"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->biosample:esummary_sra",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMD00229074"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->biosample:sra_be_runinfo",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMD00229074"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->cram:ena_filereport_submitted",
-   "accession": "DRS227633",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->cram:sdl",
-   "accession": "DRS227633",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->cram:sdl_original",
-   "accession": "DRS227633",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->experiment_ddbj:ddbj_dblink",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRX221998"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->experiment_ddbj:ena_filereport",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRX221998"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->experiment_ddbj:esummary_sra",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRX221998"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->experiment_ddbj:sra_be_runinfo",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRX221998"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->fastq:ena_filereport_fastq",
-   "accession": "DRS227633",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR345/DRR345778/DRR345778_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR345/DRR345778/DRR345778_2.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "DRR345778: 2 files"
-  },
-  {
-   "link": "sample_ddbj->fastq:ena_filereport_submitted",
-   "accession": "DRS227633",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->fastq:sdl",
-   "accession": "DRS227633",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->fastq:sdl_original",
-   "accession": "DRS227633",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
@@ -9786,32 +6024,6 @@
    "error": null
   },
   {
-   "link": "sample_ddbj->sra_lite:sdl_lite",
-   "accession": "DRS227633",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos9/sra-pub-zq-924/DRR000/345/DRR345778/DRR345778.lite.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "DRR345778: 1 file"
-  },
-  {
    "link": "sample_ddbj->sra_lite:sra_be_runinfo_download",
    "accession": "DRS227633",
    "checked_on": "2026-10-16",
@@ -9844,76 +6056,6 @@
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->sra_normalized:sdl",
-   "accession": "DRS227633",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/DRR345778/DRR345778"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "DRR345778: 1 file"
-  },
-  {
-   "link": "sample_ddbj->study_ddbj:ddbj_dblink",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRP006494"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->study_ddbj:ena_filereport",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRP006494"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->study_ddbj:esummary_sra",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRP006494"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ddbj->study_ddbj:sra_be_runinfo",
-   "accession": "DRS151759",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "DRP006494"
-   ],
    "error": null
   },
   {
@@ -9970,17 +6112,6 @@
    "error": null
   },
   {
-   "link": "sample_ebi->ae_experiment:ena_filereport_aliases",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "E-MTAB-5061"
-   ],
-   "error": null
-  },
-  {
    "link": "sample_ebi->analysis_ebi:ddbj_dblink",
    "accession": "ERS1348472",
    "checked_on": "2026-10-16",
@@ -10012,95 +6143,12 @@
    "error": null
   },
   {
-   "link": "sample_ebi->bam:ena_filereport_bam",
-   "accession": "ERS4689152",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->bam:ena_filereport_submitted",
-   "accession": "ERS4689152",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265292/UPN2_S2_L001.bam",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265293/UPN2_S2_L002.bam"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR4265292: 1 file"
-  },
-  {
-   "link": "sample_ebi->bam:sdl",
-   "accession": "ERS4689152",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->bam:sdl_original",
-   "accession": "ERS4689152",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "UPN2_S2_L001.bam",
-    "UPN2_S2_L002.bam"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     false
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR4265292: 1 file"
-  },
-  {
    "link": "sample_ebi->bioproject:ddbj_dblink",
    "accession": "ERS1348472",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->bioproject:ena_filereport",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJEB15401"
-   ],
    "error": null
   },
   {
@@ -10113,72 +6161,6 @@
     "PRJEB41970",
     "PRJEB42001",
     "PRJEB44468"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->bioproject:ena_search_sample",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJEB15401"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->bioproject:esummary_sra",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJEB15401"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->bioproject:sra_be_runinfo",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJEB15401"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->biosample:biosamples_filter",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMEA4437023"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->biosample:ddbj_dblink",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMEA4437023"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->biosample:ena_filereport",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMEA4437023"
    ],
    "error": null
   },
@@ -10205,137 +6187,6 @@
    "error": null
   },
   {
-   "link": "sample_ebi->biosample:ena_search_sample",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMEA4437023"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->biosample:esummary_sra",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMEA4437023"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->biosample:sra_be_runinfo",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMEA4437023"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->cram:ena_filereport_submitted",
-   "accession": "ERS2924467",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 28,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13854946/27680_3#1.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13854947/27680_3#2.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13854948/27680_3#3.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13854949/27680_3#4.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13854974/27680_4#1.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13854975/27680_4#2.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13854976/27680_4#3.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13854977/27680_4#4.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13855002/27680_5#1.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13855003/27680_5#2.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13855004/27680_5#3.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR138/ERR13855005/27680_5#4.cram"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR13855116: 1 file"
-  },
-  {
-   "link": "sample_ebi->cram:sdl",
-   "accession": "ERS2924467",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 5,
-   "found": [
-    "https://sra-pub-src-1.s3.amazonaws.com/ERR13854975/27680_4_2.cram.1",
-    "https://sra-pub-src-1.s3.amazonaws.com/ERR13855088/27680_8_3.cram.1",
-    "https://sra-pub-src-2.s3.amazonaws.com/ERR13854947/27680_3_2.cram.1",
-    "https://sra-pub-src-2.s3.amazonaws.com/ERR13855004/27680_5_3.cram.1",
-    "https://sra-pub-src-2.s3.amazonaws.com/ERR13855116/27865_1_3.cram.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR13855116: 1 file"
-  },
-  {
-   "link": "sample_ebi->cram:sdl_original",
-   "accession": "ERS4689152",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->experiment_ebi:ddbj_dblink",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERX1700348"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->experiment_ebi:ena_filereport",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERX1700348"
-   ],
-   "error": null
-  },
-  {
    "link": "sample_ebi->experiment_ebi:ena_filereport_analysis",
    "accession": "ERS5620409",
    "checked_on": "2026-10-16",
@@ -10349,118 +6200,6 @@
     "ERX5463421",
     "ERX5463422"
    ],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->experiment_ebi:esummary_sra",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERX1700348"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->experiment_ebi:sra_be_runinfo",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERX1700348"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->fastq:ena_filereport_fastq",
-   "accession": "ERS14949401",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR112/082/ERR11262882/ERR11262882_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR112/082/ERR11262882/ERR11262882_2.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR11262882: 2 files"
-  },
-  {
-   "link": "sample_ebi->fastq:ena_filereport_submitted",
-   "accession": "ERS14949401",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262882/SC01_S2_R1_001.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262882/SC01_S2_R2_001.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR11262882: 2 files"
-  },
-  {
-   "link": "sample_ebi->fastq:sdl",
-   "accession": "ERS14949401",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://sra-pub-src-2.s3.amazonaws.com/ERR11262882/SC01_S2_R1_001.fastq.gz.1",
-    "https://sra-pub-src-2.s3.amazonaws.com/ERR11262882/SC01_S2_R2_001.fastq.gz.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR11262882: 2 files"
-  },
-  {
-   "link": "sample_ebi->fastq:sdl_original",
-   "accession": "ERS4689152",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
    "error": null
   },
   {
@@ -10528,33 +6267,6 @@
    "error": null
   },
   {
-   "link": "sample_ebi->sra_lite:sdl_lite",
-   "accession": "ERS4689152",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos9/sra-pub-zq-924/ERR004/4265/ERR4265292/ERR4265292.lite.1",
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos9/sra-pub-zq-924/ERR004/4265/ERR4265293/ERR4265293.lite.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     false
-    ]
-   ],
-   "checked": "ERR4265292: 1 file"
-  },
-  {
    "link": "sample_ebi->sra_lite:sra_be_runinfo_download",
    "accession": "ERS4689152",
    "checked_on": "2026-10-16",
@@ -10591,55 +6303,6 @@
    "error": null
   },
   {
-   "link": "sample_ebi->sra_normalized:sdl",
-   "accession": "ERS4689152",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/ERR4265292/ERR4265292",
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/ERR4265293/ERR4265293"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     false
-    ]
-   ],
-   "checked": "ERR4265292: 1 file"
-  },
-  {
-   "link": "sample_ebi->study_ebi:ddbj_dblink",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERP017126"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->study_ebi:ena_filereport",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERP017126"
-   ],
-   "error": null
-  },
-  {
    "link": "sample_ebi->study_ebi:ena_filereport_analysis",
    "accession": "ERS5620409",
    "checked_on": "2026-10-16",
@@ -10649,28 +6312,6 @@
     "ERP125825",
     "ERP125860",
     "ERP128521"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->study_ebi:esummary_sra",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERP017126"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ebi->study_ebi:sra_be_runinfo",
-   "accession": "ERS1348472",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "ERP017126"
    ],
    "error": null
   },
@@ -10742,53 +6383,8 @@
    "error": null
   },
   {
-   "link": "sample_ncbi->ae_experiment:ena_filereport_aliases",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
    "link": "sample_ncbi->analysis_ncbi:ddbj_dblink",
    "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->bam:ena_filereport_bam",
-   "accession": "SRS18093899",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->bam:ena_filereport_submitted",
-   "accession": "SRS18093899",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->bam:sdl",
-   "accession": "SRS18093899",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->bam:sdl_original",
-   "accession": "SRS18093899",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
@@ -10805,316 +6401,12 @@
    "error": null
   },
   {
-   "link": "sample_ncbi->bioproject:ena_filereport",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->bioproject:ena_search_sample",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->bioproject:esummary_sra",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->bioproject:sra_be_runinfo",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "PRJNA258286"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->biosample:biosamples_filter",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMN02991530"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->biosample:ddbj_dblink",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMN02991530"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->biosample:ena_filereport",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMN02991530"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->biosample:ena_search_sample",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMN02991530"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->biosample:esummary_sra",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMN02991530"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->biosample:sra_be_runinfo",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMN02991530"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->cram:ena_filereport_submitted",
-   "accession": "SRS18093899",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->cram:sdl",
-   "accession": "SRS18093899",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->cram:sdl_original",
-   "accession": "SRS18093899",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->experiment_ncbi:ddbj_dblink",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRX681985"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->experiment_ncbi:ena_filereport",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRX681985"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->experiment_ncbi:esummary_sra",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRX681985"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->experiment_ncbi:sra_be_runinfo",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRX681985"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->fastq:ena_filereport_fastq",
-   "accession": "SRS18093899",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR250/025/SRR25056225/SRR25056225_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR250/025/SRR25056225/SRR25056225_2.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 2 files"
-  },
-  {
-   "link": "sample_ncbi->fastq:ena_filereport_submitted",
-   "accession": "SRS18093899",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->fastq:sdl",
-   "accession": "SRS4538947",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787106/51P-10X_R1.fq.gz",
-    "https://sra-pub-src-2.s3.amazonaws.com/SRR8787106/51P-10X_R2.fq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR8787106: 2 files"
-  },
-  {
-   "link": "sample_ncbi->fastq:sdl_original",
-   "accession": "SRS18093899",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 2,
-   "found": [
-    "TSF2_S35_L002_R1_001.fastq.gz",
-    "TSF2_S35_L002_R2_001.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     false
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 2 files"
-  },
-  {
-   "link": "sample_ncbi->geo_sample:ena_filereport_aliases",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSM1480291"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->geo_sample:sra_be_runinfo",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSM1480291"
-   ],
-   "error": null
-  },
-  {
    "link": "sample_ncbi->geo_series:ddbj_dblink",
    "accession": "SRS685538",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->geo_series:ena_filereport_aliases",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSE60450"
-   ],
    "error": null
   },
   {
@@ -11160,32 +6452,6 @@
    "error": null
   },
   {
-   "link": "sample_ncbi->sra_lite:sdl_lite",
-   "accession": "SRS18093899",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos13/sra-pub-zq-1307/SRR025/25056/SRR25056225/SRR25056225.lite.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 1 file"
-  },
-  {
    "link": "sample_ncbi->sra_lite:sra_be_runinfo_download",
    "accession": "SRS18093899",
    "checked_on": "2026-10-16",
@@ -11218,76 +6484,6 @@
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->sra_normalized:sdl",
-   "accession": "SRS18093899",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-pub-run-odp.s3.amazonaws.com/sra/SRR25056225/SRR25056225"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 1 file"
-  },
-  {
-   "link": "sample_ncbi->study_ncbi:ddbj_dblink",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->study_ncbi:ena_filereport",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->study_ncbi:esummary_sra",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
-   "error": null
-  },
-  {
-   "link": "sample_ncbi->study_ncbi:sra_be_runinfo",
-   "accession": "SRS685538",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRP045534"
-   ],
    "error": null
   },
   {
@@ -11346,24 +6542,6 @@
   {
    "link": "study_ddbj->analysis_ddbj:ddbj_dblink",
    "accession": "DRP006494",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "study_ddbj->bam:ena_filereport_bam",
-   "accession": "DRP008169",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "study_ddbj->bam:ena_filereport_submitted",
-   "accession": "DRP008169",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
@@ -11442,90 +6620,6 @@
    "error": null
   },
   {
-   "link": "study_ddbj->biosample:ena_filereport",
-   "accession": "DRP006494",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 14,
-   "found": [
-    "SAMD00229074",
-    "SAMD00229075",
-    "SAMD00229076",
-    "SAMD00229077",
-    "SAMD00229078",
-    "SAMD00229079",
-    "SAMD00229080",
-    "SAMD00229081",
-    "SAMD00229082",
-    "SAMD00229083",
-    "SAMD00229084",
-    "SAMD00229085"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ddbj->biosample:esummary_sra",
-   "accession": "DRP006494",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 14,
-   "found": [
-    "SAMD00229074",
-    "SAMD00229075",
-    "SAMD00229076",
-    "SAMD00229077",
-    "SAMD00229078",
-    "SAMD00229079",
-    "SAMD00229080",
-    "SAMD00229081",
-    "SAMD00229082",
-    "SAMD00229083",
-    "SAMD00229084",
-    "SAMD00229085"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ddbj->biosample:sra_be_runinfo",
-   "accession": "DRP006494",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 14,
-   "found": [
-    "SAMD00229074",
-    "SAMD00229075",
-    "SAMD00229076",
-    "SAMD00229077",
-    "SAMD00229078",
-    "SAMD00229079",
-    "SAMD00229080",
-    "SAMD00229081",
-    "SAMD00229082",
-    "SAMD00229083",
-    "SAMD00229084",
-    "SAMD00229085"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ddbj->biostudy:biostudies_search_all",
-   "accession": "DRP006494",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "study_ddbj->cram:ena_filereport_submitted",
-   "accession": "DRP008169",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
    "link": "study_ddbj->cram:sdl",
    "accession": "DRP008169",
    "checked_on": "2026-10-16",
@@ -11536,140 +6630,6 @@
   },
   {
    "link": "study_ddbj->cram:sdl_original",
-   "accession": "DRP008169",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "study_ddbj->experiment_ddbj:ddbj_dblink",
-   "accession": "DRP006494",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 14,
-   "found": [
-    "DRX221998",
-    "DRX221999",
-    "DRX222000",
-    "DRX222001",
-    "DRX222002",
-    "DRX222003",
-    "DRX222004",
-    "DRX222005",
-    "DRX222006",
-    "DRX222007",
-    "DRX222008",
-    "DRX222009"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ddbj->experiment_ddbj:ena_filereport",
-   "accession": "DRP006494",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 14,
-   "found": [
-    "DRX221998",
-    "DRX221999",
-    "DRX222000",
-    "DRX222001",
-    "DRX222002",
-    "DRX222003",
-    "DRX222004",
-    "DRX222005",
-    "DRX222006",
-    "DRX222007",
-    "DRX222008",
-    "DRX222009"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ddbj->experiment_ddbj:esummary_sra",
-   "accession": "DRP006494",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 14,
-   "found": [
-    "DRX221998",
-    "DRX221999",
-    "DRX222000",
-    "DRX222001",
-    "DRX222002",
-    "DRX222003",
-    "DRX222004",
-    "DRX222005",
-    "DRX222006",
-    "DRX222007",
-    "DRX222008",
-    "DRX222009"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ddbj->experiment_ddbj:sra_be_runinfo",
-   "accession": "DRP006494",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 14,
-   "found": [
-    "DRX221998",
-    "DRX221999",
-    "DRX222000",
-    "DRX222001",
-    "DRX222002",
-    "DRX222003",
-    "DRX222004",
-    "DRX222005",
-    "DRX222006",
-    "DRX222007",
-    "DRX222008",
-    "DRX222009"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ddbj->fastq:ena_filereport_fastq",
-   "accession": "DRP008169",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 16,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR345/DRR345771/DRR345771.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR345/DRR345772/DRR345772.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR345/DRR345773/DRR345773.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR345/DRR345774/DRR345774.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR345/DRR345775/DRR345775.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR345/DRR345776/DRR345776.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR345/DRR345777/DRR345777_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR345/DRR345777/DRR345777_2.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR345/DRR345778/DRR345778_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR345/DRR345778/DRR345778_2.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR345/DRR345779/DRR345779_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR345/DRR345779/DRR345779_2.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "DRR345778: 2 files"
-  },
-  {
-   "link": "study_ddbj->fastq:ena_filereport_submitted",
    "accession": "DRP008169",
    "checked_on": "2026-10-16",
    "outcome": "empty",
@@ -11758,94 +6718,6 @@
     "DRR231752",
     "DRR231753",
     "DRR231754"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ddbj->sample_ddbj:ddbj_dblink",
-   "accession": "DRP006494",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 14,
-   "found": [
-    "DRS151759",
-    "DRS151760",
-    "DRS151761",
-    "DRS151762",
-    "DRS151763",
-    "DRS151764",
-    "DRS151765",
-    "DRS151766",
-    "DRS151767",
-    "DRS151768",
-    "DRS151769",
-    "DRS151770"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ddbj->sample_ddbj:ena_filereport",
-   "accession": "DRP006494",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 14,
-   "found": [
-    "DRS151759",
-    "DRS151760",
-    "DRS151761",
-    "DRS151762",
-    "DRS151763",
-    "DRS151764",
-    "DRS151765",
-    "DRS151766",
-    "DRS151767",
-    "DRS151768",
-    "DRS151769",
-    "DRS151770"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ddbj->sample_ddbj:esummary_sra",
-   "accession": "DRP006494",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 14,
-   "found": [
-    "DRS151759",
-    "DRS151760",
-    "DRS151761",
-    "DRS151762",
-    "DRS151763",
-    "DRS151764",
-    "DRS151765",
-    "DRS151766",
-    "DRS151767",
-    "DRS151768",
-    "DRS151769",
-    "DRS151770"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ddbj->sample_ddbj:sra_be_runinfo",
-   "accession": "DRP006494",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 14,
-   "found": [
-    "DRS151759",
-    "DRS151760",
-    "DRS151761",
-    "DRS151762",
-    "DRS151763",
-    "DRS151764",
-    "DRS151765",
-    "DRS151766",
-    "DRS151767",
-    "DRS151768",
-    "DRS151769",
-    "DRS151770"
    ],
    "error": null
   },
@@ -12077,52 +6949,6 @@
    "error": null
   },
   {
-   "link": "study_ebi->bam:ena_filereport_bam",
-   "accession": "ERP122394",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "study_ebi->bam:ena_filereport_submitted",
-   "accession": "ERP122394",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 20,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265292/UPN2_S2_L001.bam",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265293/UPN2_S2_L002.bam",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265294/UPN3_S3_L001.bam",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265295/UPN3_S3_L002.bam",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265296/UPN5_S5_L001.bam",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265297/UPN5_S5_L002.bam",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265298/UPN4_S4_L001.bam",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265299/UPN4_S4_L002.bam",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265300/UPN4_j10_S2_L001.bam",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265301/UPN4_j10_S2_L002.bam",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265302/UPN1_S1_L001.bam",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR426/ERR4265303/UPN1_S1_L002.bam"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR4265292: 1 file"
-  },
-  {
    "link": "study_ebi->bam:sdl",
    "accession": "ERP122394",
    "checked_on": "2026-10-16",
@@ -12233,28 +7059,6 @@
    "error": null
   },
   {
-   "link": "study_ebi->biosample:ena_filereport",
-   "accession": "ERP017126",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3514,
-   "found": [
-    "SAMEA4437021",
-    "SAMEA4437022",
-    "SAMEA4437023",
-    "SAMEA4437024",
-    "SAMEA4437025",
-    "SAMEA4437026",
-    "SAMEA4437027",
-    "SAMEA4437028",
-    "SAMEA4437029",
-    "SAMEA4437030",
-    "SAMEA4437031",
-    "SAMEA4437032"
-   ],
-   "error": null
-  },
-  {
    "link": "study_ebi->biosample:ena_filereport_analysis",
    "accession": "ERP128521",
    "checked_on": "2026-10-16",
@@ -12277,101 +7081,6 @@
    "error": null
   },
   {
-   "link": "study_ebi->biosample:esummary_sra",
-   "accession": "ERP017126",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3514,
-   "found": [
-    "SAMEA4437021",
-    "SAMEA4437022",
-    "SAMEA4437023",
-    "SAMEA4437024",
-    "SAMEA4437025",
-    "SAMEA4437026",
-    "SAMEA4437027",
-    "SAMEA4437028",
-    "SAMEA4437029",
-    "SAMEA4437030",
-    "SAMEA4437031",
-    "SAMEA4437032"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ebi->biosample:sra_be_runinfo",
-   "accession": "ERP017126",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3514,
-   "found": [
-    "SAMEA4437021",
-    "SAMEA4437022",
-    "SAMEA4437023",
-    "SAMEA4437024",
-    "SAMEA4437025",
-    "SAMEA4437026",
-    "SAMEA4437027",
-    "SAMEA4437028",
-    "SAMEA4437029",
-    "SAMEA4437030",
-    "SAMEA4437031",
-    "SAMEA4437032"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ebi->biostudy:biostudies_search_all",
-   "accession": "ERP017126",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 4,
-   "found": [
-    "S-EPMC7398125",
-    "S-EPMC8860442",
-    "S-EPMC9302581",
-    "S-EPMC9355985"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ebi->cram:ena_filereport_submitted",
-   "accession": "ERP110462",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 4971,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR120/ERR12030568/28266_7#1.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR120/ERR12030569/28266_7#2.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR120/ERR12030570/28266_7#3.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR120/ERR12030571/28266_7#4.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR120/ERR12030572/28266_8#1.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR120/ERR12030573/28266_8#2.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR120/ERR12030574/28266_8#3.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR120/ERR12030575/28266_8#4.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR120/ERR12030576/28439_1#1.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR120/ERR12030577/28439_1#2.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR120/ERR12030578/28439_1#3.cram",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR120/ERR12030579/28439_1#4.cram"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR13855116: 1 file"
-  },
-  {
    "link": "study_ebi->cram:sdl",
    "accession": "ERP122394",
    "checked_on": "2026-10-16",
@@ -12387,50 +7096,6 @@
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "study_ebi->experiment_ebi:ddbj_dblink",
-   "accession": "ERP017126",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3514,
-   "found": [
-    "ERX1700346",
-    "ERX1700347",
-    "ERX1700348",
-    "ERX1700349",
-    "ERX1700350",
-    "ERX1700351",
-    "ERX1700352",
-    "ERX1700353",
-    "ERX1700354",
-    "ERX1700355",
-    "ERX1700356",
-    "ERX1700357"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ebi->experiment_ebi:ena_filereport",
-   "accession": "ERP017126",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3514,
-   "found": [
-    "ERX1700346",
-    "ERX1700347",
-    "ERX1700348",
-    "ERX1700349",
-    "ERX1700350",
-    "ERX1700351",
-    "ERX1700352",
-    "ERX1700353",
-    "ERX1700354",
-    "ERX1700355",
-    "ERX1700356",
-    "ERX1700357"
-   ],
    "error": null
   },
   {
@@ -12454,124 +7119,6 @@
     "ERX5463410"
    ],
    "error": null
-  },
-  {
-   "link": "study_ebi->experiment_ebi:esummary_sra",
-   "accession": "ERP017126",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3514,
-   "found": [
-    "ERX1700346",
-    "ERX1700347",
-    "ERX1700348",
-    "ERX1700349",
-    "ERX1700350",
-    "ERX1700351",
-    "ERX1700352",
-    "ERX1700353",
-    "ERX1700354",
-    "ERX1700355",
-    "ERX1700356",
-    "ERX1700357"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ebi->experiment_ebi:sra_be_runinfo",
-   "accession": "ERP017126",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3514,
-   "found": [
-    "ERX1700346",
-    "ERX1700347",
-    "ERX1700348",
-    "ERX1700349",
-    "ERX1700350",
-    "ERX1700351",
-    "ERX1700352",
-    "ERX1700353",
-    "ERX1700354",
-    "ERX1700355",
-    "ERX1700356",
-    "ERX1700357"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ebi->fastq:ena_filereport_fastq",
-   "accession": "ERP146619",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 22,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR112/078/ERR11262878/ERR11262878_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR112/078/ERR11262878/ERR11262878_2.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR112/079/ERR11262879/ERR11262879_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR112/079/ERR11262879/ERR11262879_2.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR112/080/ERR11262880/ERR11262880_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR112/080/ERR11262880/ERR11262880_2.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR112/081/ERR11262881/ERR11262881_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR112/081/ERR11262881/ERR11262881_2.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR112/082/ERR11262882/ERR11262882_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR112/082/ERR11262882/ERR11262882_2.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR112/083/ERR11262883/ERR11262883_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR112/083/ERR11262883/ERR11262883_2.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR11262882: 2 files"
-  },
-  {
-   "link": "study_ebi->fastq:ena_filereport_submitted",
-   "accession": "ERP146619",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 22,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262878/EP00_S1_R1_001.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262878/EP00_S1_R2_001.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262879/EP01_S1_R1_001.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262879/EP01_S1_R2_001.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262880/EP07_S4_R1_001.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262880/EP07_S4_R2_001.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262881/SC00_S2_R1_001.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262881/SC00_S2_R2_001.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262882/SC01_S2_R1_001.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262882/SC01_S2_R2_001.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262883/SC07_S5_R1_001.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/run/ERR112/ERR11262883/SC07_S5_R2_001.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "ERR11262882: 2 files"
   },
   {
    "link": "study_ebi->fastq:sdl",
@@ -12704,50 +7251,6 @@
    "error": null
   },
   {
-   "link": "study_ebi->sample_ebi:ddbj_dblink",
-   "accession": "ERP017126",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3514,
-   "found": [
-    "ERS1348470",
-    "ERS1348471",
-    "ERS1348472",
-    "ERS1348473",
-    "ERS1348474",
-    "ERS1348475",
-    "ERS1348476",
-    "ERS1348477",
-    "ERS1348478",
-    "ERS1348479",
-    "ERS1348480",
-    "ERS1348481"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ebi->sample_ebi:ena_filereport",
-   "accession": "ERP017126",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3514,
-   "found": [
-    "ERS1348470",
-    "ERS1348471",
-    "ERS1348472",
-    "ERS1348473",
-    "ERS1348474",
-    "ERS1348475",
-    "ERS1348476",
-    "ERS1348477",
-    "ERS1348478",
-    "ERS1348479",
-    "ERS1348480",
-    "ERS1348481"
-   ],
-   "error": null
-  },
-  {
    "link": "study_ebi->sample_ebi:ena_filereport_analysis",
    "accession": "ERP128521",
    "checked_on": "2026-10-16",
@@ -12766,50 +7269,6 @@
     "ERS5620410",
     "ERS5620411",
     "ERS5620412"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ebi->sample_ebi:esummary_sra",
-   "accession": "ERP017126",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3514,
-   "found": [
-    "ERS1348470",
-    "ERS1348471",
-    "ERS1348472",
-    "ERS1348473",
-    "ERS1348474",
-    "ERS1348475",
-    "ERS1348476",
-    "ERS1348477",
-    "ERS1348478",
-    "ERS1348479",
-    "ERS1348480",
-    "ERS1348481"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ebi->sample_ebi:sra_be_runinfo",
-   "accession": "ERP017126",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3514,
-   "found": [
-    "ERS1348470",
-    "ERS1348471",
-    "ERS1348472",
-    "ERS1348473",
-    "ERS1348474",
-    "ERS1348475",
-    "ERS1348476",
-    "ERS1348477",
-    "ERS1348478",
-    "ERS1348479",
-    "ERS1348480",
-    "ERS1348481"
    ],
    "error": null
   },
@@ -13025,24 +7484,6 @@
    "error": null
   },
   {
-   "link": "study_ncbi->bam:ena_filereport_bam",
-   "accession": "SRP446371",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->bam:ena_filereport_submitted",
-   "accession": "SRP446371",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
    "link": "study_ncbi->bam:sdl",
    "accession": "SRP446371",
    "checked_on": "2026-10-16",
@@ -13114,90 +7555,6 @@
    "error": null
   },
   {
-   "link": "study_ncbi->biosample:ena_filereport",
-   "accession": "SRP045534",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SAMN02991530",
-    "SAMN02991531",
-    "SAMN02991532",
-    "SAMN02991533",
-    "SAMN02991534",
-    "SAMN02991535",
-    "SAMN02991536",
-    "SAMN02991537",
-    "SAMN02991538",
-    "SAMN02991539",
-    "SAMN02991540",
-    "SAMN02991541"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->biosample:esummary_sra",
-   "accession": "SRP045534",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SAMN02991530",
-    "SAMN02991531",
-    "SAMN02991532",
-    "SAMN02991533",
-    "SAMN02991534",
-    "SAMN02991535",
-    "SAMN02991536",
-    "SAMN02991537",
-    "SAMN02991538",
-    "SAMN02991539",
-    "SAMN02991540",
-    "SAMN02991541"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->biosample:sra_be_runinfo",
-   "accession": "SRP045534",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SAMN02991530",
-    "SAMN02991531",
-    "SAMN02991532",
-    "SAMN02991533",
-    "SAMN02991534",
-    "SAMN02991535",
-    "SAMN02991536",
-    "SAMN02991537",
-    "SAMN02991538",
-    "SAMN02991539",
-    "SAMN02991540",
-    "SAMN02991541"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->biostudy:biostudies_search_all",
-   "accession": "SRP045534",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->cram:ena_filereport_submitted",
-   "accession": "SRP446371",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
    "link": "study_ncbi->cram:sdl",
    "accession": "SRP446371",
    "checked_on": "2026-10-16",
@@ -13208,138 +7565,6 @@
   },
   {
    "link": "study_ncbi->cram:sdl_original",
-   "accession": "SRP446371",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->experiment_ncbi:ddbj_dblink",
-   "accession": "SRP045534",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SRX681985",
-    "SRX681986",
-    "SRX681987",
-    "SRX681988",
-    "SRX681989",
-    "SRX681990",
-    "SRX681991",
-    "SRX681992",
-    "SRX681993",
-    "SRX681994",
-    "SRX681995",
-    "SRX681996"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->experiment_ncbi:ena_filereport",
-   "accession": "SRP045534",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SRX681985",
-    "SRX681986",
-    "SRX681987",
-    "SRX681988",
-    "SRX681989",
-    "SRX681990",
-    "SRX681991",
-    "SRX681992",
-    "SRX681993",
-    "SRX681994",
-    "SRX681995",
-    "SRX681996"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->experiment_ncbi:esummary_sra",
-   "accession": "SRP045534",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SRX681985",
-    "SRX681986",
-    "SRX681987",
-    "SRX681988",
-    "SRX681989",
-    "SRX681990",
-    "SRX681991",
-    "SRX681992",
-    "SRX681993",
-    "SRX681994",
-    "SRX681995",
-    "SRX681996"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->experiment_ncbi:sra_be_runinfo",
-   "accession": "SRP045534",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SRX681985",
-    "SRX681986",
-    "SRX681987",
-    "SRX681988",
-    "SRX681989",
-    "SRX681990",
-    "SRX681991",
-    "SRX681992",
-    "SRX681993",
-    "SRX681994",
-    "SRX681995",
-    "SRX681996"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->fastq:ena_filereport_fastq",
-   "accession": "SRP446371",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 10,
-   "found": [
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR250/025/SRR25056225/SRR25056225_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR250/025/SRR25056225/SRR25056225_2.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR250/026/SRR25056226/SRR25056226_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR250/026/SRR25056226/SRR25056226_2.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR250/027/SRR25056227/SRR25056227_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR250/027/SRR25056227/SRR25056227_2.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR250/028/SRR25056228/SRR25056228_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR250/028/SRR25056228/SRR25056228_2.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR250/029/SRR25056229/SRR25056229_1.fastq.gz",
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR250/029/SRR25056229/SRR25056229_2.fastq.gz"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 2 files"
-  },
-  {
-   "link": "study_ncbi->fastq:ena_filereport_submitted",
    "accession": "SRP446371",
    "checked_on": "2026-10-16",
    "outcome": "empty",
@@ -13392,78 +7617,12 @@
    "checked": "SRR25056225: 2 files"
   },
   {
-   "link": "study_ncbi->geo_sample:ena_filereport_aliases",
-   "accession": "SRP045534",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "GSM1480291",
-    "GSM1480292",
-    "GSM1480293",
-    "GSM1480294",
-    "GSM1480295",
-    "GSM1480296",
-    "GSM1480297",
-    "GSM1480298",
-    "GSM1480299",
-    "GSM1480300",
-    "GSM1480301",
-    "GSM1480302"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->geo_sample:sra_be_runinfo",
-   "accession": "SRP045534",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "GSM1480291",
-    "GSM1480292",
-    "GSM1480293",
-    "GSM1480294",
-    "GSM1480295",
-    "GSM1480296",
-    "GSM1480297",
-    "GSM1480298",
-    "GSM1480299",
-    "GSM1480300",
-    "GSM1480301",
-    "GSM1480302"
-   ],
-   "error": null
-  },
-  {
    "link": "study_ncbi->geo_series:ddbj_dblink",
    "accession": "SRP045534",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
    "found": [],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->geo_series:ena_filereport_aliases",
-   "accession": "SRP045534",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSE60450"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->geo_series:ena_search_study",
-   "accession": "SRP045534",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "GSE60450"
-   ],
    "error": null
   },
   {
@@ -13538,94 +7697,6 @@
     "SRR1552453",
     "SRR1552454",
     "SRR1552455"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->sample_ncbi:ddbj_dblink",
-   "accession": "SRP045534",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SRS685538",
-    "SRS685539",
-    "SRS685541",
-    "SRS685542",
-    "SRS685543",
-    "SRS685544",
-    "SRS685545",
-    "SRS685546",
-    "SRS685547",
-    "SRS685548",
-    "SRS685549",
-    "SRS685550"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->sample_ncbi:ena_filereport",
-   "accession": "SRP045534",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SRS685538",
-    "SRS685539",
-    "SRS685541",
-    "SRS685542",
-    "SRS685543",
-    "SRS685544",
-    "SRS685545",
-    "SRS685546",
-    "SRS685547",
-    "SRS685548",
-    "SRS685549",
-    "SRS685550"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->sample_ncbi:esummary_sra",
-   "accession": "SRP045534",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SRS685538",
-    "SRS685539",
-    "SRS685541",
-    "SRS685542",
-    "SRS685543",
-    "SRS685544",
-    "SRS685545",
-    "SRS685546",
-    "SRS685547",
-    "SRS685548",
-    "SRS685549",
-    "SRS685550"
-   ],
-   "error": null
-  },
-  {
-   "link": "study_ncbi->sample_ncbi:sra_be_runinfo",
-   "accession": "SRP045534",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SRS685538",
-    "SRS685539",
-    "SRS685541",
-    "SRS685542",
-    "SRS685543",
-    "SRS685544",
-    "SRS685545",
-    "SRS685546",
-    "SRS685547",
-    "SRS685548",
-    "SRS685549",
-    "SRS685550"
    ],
    "error": null
   },
