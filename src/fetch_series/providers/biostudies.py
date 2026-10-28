@@ -86,6 +86,10 @@ def idf_rows(text: str) -> list[tuple[str, list[str]]]:
     was 16 of the 3,000 IDFs in sample:3000@arrayexpress-ena, and 87 of the 551
     once counted as declaring no ENA study (2026-10-28).
 
+    Every cell is stripped, the tag too. E-MTAB-6185 writes
+    ``Comment [RelatedExperiment] \\tE-MTAB-6186``, with a space before the tab,
+    and a pattern wanting the tab straight after ``]`` skipped the row.
+
     A cell is unquoted only where one quote opens it and another closes it.
     The file is split into lines before cells, so a stray quote in a
     description cannot run on into the rows after it.

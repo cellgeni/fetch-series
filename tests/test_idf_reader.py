@@ -103,6 +103,18 @@ class TestQuotedCells:
         assert idf_values(text, "Experiment Description") == ['"We sequenced 4 lines']
 
 
+class TestSpaceBeforeTheTab:
+    def test_a_tag_followed_by_a_space_is_read(self):
+        """E-MTAB-6185's related experiments sat behind ``] \\t`` and were never read."""
+        text = (
+            "Comment [RelatedExperiment] \tE-MTAB-6186\tE-MTAB-6194\tE-MTAB-6195\n"
+            "Comment[SecondaryAccession]\tERP105727\n"
+        )
+        comments = idf_comments(text)
+        assert comments["RelatedExperiment"] == ["E-MTAB-6186", "E-MTAB-6194", "E-MTAB-6195"]
+        assert idf_secondary(text) == ["ERP105727"]
+
+
 class TestTheLegacyHelper:
     def test_core_reads_through_the_same_reader(self, monkeypatch):
         """``core.ae2secondary`` read the first cell only, and only ERP or EGA."""

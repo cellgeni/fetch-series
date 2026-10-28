@@ -559,21 +559,25 @@ ROUTES: list[Route] = [
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         evidence=RouteEvidence(
             corpus="arrayexpress-ena",
-            surveyed_on=date(2026, 9, 15),
+            surveyed_on=date(2026, 10, 28),
             accessions_queried=20_693,
-            accessions_failed=5,
-            accessions_empty=551,
-            unique_results=20_138,
+            accessions_failed=6,
+            accessions_empty=12,
+            unique_results=20_686,
             notes=(
-                "20,137 resolved, 551 empty. The corpus is every ArrayExpress "
-                "study BioStudies records an ENA link for, so those 551 are a "
-                "measurable recall failure rather than an unknown: the link "
-                "exists and the IDF does not declare it. The BioSample fallback "
-                "recovers some of them; E-MTAB-6505 resolves that way. Replaces "
-                "a 2026-03 figure of 7,179/457 whose population was never "
-                "recorded. The 5 failures are studies whose IDF is a genuine "
-                "404: the record and the search index carry them, and they "
-                "register no files at all."
+                "20,675 resolved, 12 empty. The corpus is every ArrayExpress "
+                "study BioStudies records an ENA link for, so an empty is a "
+                "measurable recall failure rather than an unknown. Re-surveyed "
+                "once the IDF reader read every cell, quoted or not: on "
+                "2026-09-15 it read the first cell only, where an E-GEOD import "
+                "names its GEO series, and nothing from a quoted IDF, and found "
+                "20,137 resolved, 551 empty, 20,138 distinct. 540 of the 551 now "
+                "resolve; over the 551 alone (arrayexpress-no-secondary) 541 do. "
+                "10 empties name no SecondaryAccession and give the study as a "
+                "RelatedExperiment (E-MTAB-13231). E-GEOD-35315 resolved over the "
+                "551 the same afternoon; E-MTAB-11257's IDF is served as an empty "
+                "directory listing. Of 6 failures, 5 are studies that register no "
+                "files, and E-MTAB-17542 is no longer accessible."
             ),
         ),
         known_pathologies=(
@@ -4406,12 +4410,18 @@ PROMOTED: tuple[Promoted, ...] = (
         known_pathologies=("biostudies-files-404s-registered-files",),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
-            surveyed_on=date(2026, 10, 27),
+            surveyed_on=date(2026, 10, 28),
             accessions_queried=3_000,
             accessions_failed=2,
-            accessions_empty=2_716,
-            unique_results=472,
-            notes="282 resolved, 2,716 empty. A catalogue mechanism surveyed as a route.",
+            accessions_empty=2_713,
+            unique_results=481,
+            notes=(
+                "285 resolved, 2,713 empty. A catalogue mechanism surveyed as a route. "
+                "Re-surveyed once the IDF reader read every cell, quoted or not: on "
+                "2026-10-27 it was 282 resolved and 472 distinct. The 3 it gained are "
+                "E-MTAB-8121, which quotes its cells, and E-MTAB-6185 and E-MTAB-6219, "
+                "whose tag has a space before its tab. Every earlier answer is unchanged."
+            ),
         ),
     ),
     Promoted(
@@ -4520,12 +4530,16 @@ PROMOTED: tuple[Promoted, ...] = (
         known_pathologies=("biostudies-files-404s-registered-files",),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
-            surveyed_on=date(2026, 10, 27),
+            surveyed_on=date(2026, 10, 28),
             accessions_queried=3_000,
             accessions_failed=2,
             accessions_empty=1_446,
             unique_results=1_552,
-            notes="1,552 resolved, 1,446 empty. A catalogue mechanism surveyed as a route.",
+            notes=(
+                "1,552 resolved, 1,446 empty. A catalogue mechanism surveyed as a route. "
+                "Re-surveyed once the IDF reader read every cell, quoted or not: every "
+                "verdict is as on 2026-10-27. No quoted IDF names a GEO series."
+            ),
         ),
     ),
     Promoted(
@@ -4564,16 +4578,18 @@ PROMOTED: tuple[Promoted, ...] = (
             surveyed_on=date(2026, 10, 28),
             accessions_queried=3_000,
             accessions_failed=13,
-            accessions_empty=320,
-            unique_results=111_829,
+            accessions_empty=314,
+            unique_results=112_005,
             notes=(
-                "2,667 resolved, 320 empty. A catalogue mechanism surveyed as a route. "
+                "2,673 resolved, 314 empty. A catalogue mechanism surveyed as a route. "
                 "Re-surveyed once its reader expanded each range: on 2026-10-27 it read a "
                 "range's two ends, and returned exactly two runs for 2,159 studies and "
                 "16,873 runs in all. Of 13 failures, 11 are ranges reported as unreadable "
                 "(9 descend, 2 span over 50,000 accessions) and 2 are studies that register "
-                "no files. 4 of the empties resolved on 2026-10-27: BioStudies served their "
-                "IDFs cut off at 4,096 bytes, before the field (E-GEOD-58432)."
+                "no files. Surveyed again the same afternoon, once the IDF reader read "
+                "quoted cells: 2,667 resolved and 111,829 distinct that morning. The 6 it "
+                "gained are 2 quoted IDFs (E-ERAD-203, E-MTAB-8121) and the 4 BioStudies "
+                "had served cut off at 4,096 bytes that morning, whole again (E-GEOD-58432)."
             ),
         ),
     ),
