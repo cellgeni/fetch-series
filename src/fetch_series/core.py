@@ -2,7 +2,6 @@ import csv
 import io
 import logging
 import os
-import re
 from typing import Any, Literal
 
 import httpx
@@ -354,9 +353,9 @@ def ae2secondary(series: str) -> list[str]:
     # Get SecondaryAccession values from idf file
     response = _study_file(series, f"{series}.idf.txt")
 
-    # Check if there are SecondaryAccession values in the idf file
-    pattern = re.compile(r"Comment\s*\[SecondaryAccession\]\s*((?:ERP|EGA\w)\d+)")
-    secondary = re.findall(pattern, response.text)
+    # Every cell of every SecondaryAccession row, quoted or not: an E-GEOD import
+    # names its SRA study in the second cell (E-GEOD-10571: GSE10571, SRP003805).
+    secondary = biostudies.idf_secondary(response.text)
 
     # Try to get secondary accesssions from ENA if not found in idf file
     if not secondary:
