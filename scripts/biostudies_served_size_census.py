@@ -12,18 +12,23 @@ On 2026-10-28 BioStudies served some IDFs cut off at exactly 4,096 bytes, mid-li
 with HTTP 200: E-GEOD-58432's is registered at 4,171 bytes, and its
 ``Comment[SequenceDataURI]`` stopped at ``http://www.ebi.ac.uk/``. Nothing in a cut
 file says it was cut. This measures how often that happens and what it would cost.
+That afternoon it served E-MTAB-11257's IDF as an Apache listing of the file's own
+path, 837 bytes with HTTP 200, which every IDF reader read as naming nothing; the
+census flags a body like that in ``directory_index``.
 
 ``census``: per study, the registered size of every IDF and SDRF -- one listing
 request, filtered server-side to ``.txt`` names -- and what
 ``biostudies.served_file`` is served for each: the request every route's reader
-makes, before ``study_file`` checks it for a cut. With its Content-Length, ETag
-and Last-Modified. For an IDF it also records where the
+makes, before ``study_file`` checks it. With its Content-Length, ETag,
+Last-Modified and Content-Type, and whether it is a directory listing. For an IDF
+it also records where the
 last line of each field a route reads ends, so what a cut at a given length would
 lose is a measurement. A body that differs from its registered size is kept under
 ``served/``. Resumable by study.
 
-``recheck``: every file served short, long, at exactly 4,096 bytes or not at all,
-asked again one at a time, with its legacy ArrayExpress copy.
+``recheck``: every file served short, long, as a directory listing, at exactly
+4,096 bytes or not at all, asked again one at a time, with its legacy ArrayExpress
+copy.
 
 ``throttle``: every IDF the census reached asked for again through the same
 reader at a chosen concurrency, and every 403 asked again one at a time.
@@ -76,6 +81,8 @@ COLUMNS = (
     "etag",
     "last_modified",
     "final_host",
+    "content_type",
+    "directory_index",
     "ends_newline",
     *(f"{field}_end" for field in FIELDS),
     "error",
@@ -89,6 +96,7 @@ RECHECK = (
     "status",
     "served_bytes",
     "etag",
+    "directory_index",
     "legacy_status",
     "legacy_bytes",
     "legacy_etag",
@@ -191,6 +199,8 @@ async def served(client: SurveyClient, study: str, name: str) -> tuple[dict[str,
         etag=response.headers.get("etag", ""),
         last_modified=response.headers.get("last-modified", ""),
         final_host=response.url.host,
+        content_type=response.headers.get("content-type", ""),
+        directory_index=int(biostudies.is_directory_index(body)),
         ends_newline=int(body.endswith(b"\n")),
     )
     return row, body
@@ -232,14 +242,25 @@ async def census(args: argparse.Namespace) -> None:
                 rows.append(row)
             return rows
 
-        for start in range(0, len(studies), 24):
-            batch = await asyncio.gather(*(one(s) for s in studies[start : start + 24]))
-            with path.open("a", newline="") as handle:
-                writer = csv.DictWriter(handle, COLUMNS, restval="")
-                for rows in batch:
-                    writer.writerows(rows)
-                    tally.update(verdict(row) for row in rows)
-            print(f"{start + len(batch)}/{len(studies)} {dict(tally)}", file=sys.stderr, flush=True)
+        # One worker per connection, each taking the next study as it finishes
+        # one. Batches of 24 made every study wait for the slowest: one 60 s
+        # ReadTimeout (E-MTAB-15102's SDRF) held the other 23, which would have
+        # made a census of arrayexpress-ena's 20,693 studies an 11-hour run.
+        pending = iter(studies)
+        finished = 0
+
+        async def worker() -> None:
+            nonlocal finished
+            for study in pending:
+                rows = await one(study)
+                with path.open("a", newline="") as handle:
+                    csv.DictWriter(handle, COLUMNS, restval="").writerows(rows)
+                tally.update(verdict(row) for row in rows)
+                finished += 1
+                if finished % 100 == 0 or finished == len(studies):
+                    print(f"{finished}/{len(studies)} {dict(tally)}", file=sys.stderr, flush=True)
+
+        await asyncio.gather(*(worker() for _ in range(args.concurrency)))
 
 
 def verdict(row: dict[str, object]) -> str:
@@ -248,6 +269,10 @@ def verdict(row: dict[str, object]) -> str:
         return "error"
     if str(row.get("status")) != "200":
         return f"http_{row.get('status')}"
+    # Before size: E-MTAB-11257's IDF was served as an 837-byte listing, which
+    # would read as "short", and an unregistered file can be one too.
+    if str(row.get("directory_index")) == "1":
+        return "listing"
     if row.get("registered_bytes") in ("", None):
         return "unregistered"
     served_bytes, size = int(str(row["served_bytes"])), int(str(row["registered_bytes"]))
@@ -285,6 +310,7 @@ async def recheck(args: argparse.Namespace) -> None:
                     "status": again.get("status", ""),
                     "served_bytes": again.get("served_bytes", ""),
                     "etag": again.get("etag", ""),
+                    "directory_index": again.get("directory_index", ""),
                     "error": again.get("error", ""),
                     "fetched_at": again["fetched_at"],
                 }
@@ -351,6 +377,25 @@ def report(args: argparse.Namespace) -> None:
     print(f"fetched {min(r['fetched_at'] for r in rows)} .. {max(r['fetched_at'] for r in rows)}")
     for kind in ("idf", "sdrf"):
         print(kind, dict(Counter(verdict(r) for r in rows if r["kind"] == kind)))
+    listings = [r for r in rows if r.get("directory_index") == "1"]
+    print(
+        f"directory listings {len(listings):,} of {len(rows):,} files",
+        Counter(r["kind"] for r in listings),
+        [(r["study"], r["name"], r["served_bytes"], r["fetched_at"]) for r in listings],
+    )
+    # Whether a listing lasts: what each was served when asked again one at a time.
+    again_path = args.out / "recheck.csv"
+    if listings and again_path.exists():
+        with again_path.open() as handle:
+            again = {(r["study"], r["name"]): r for r in csv.DictReader(handle)}
+        for r in listings:
+            a = again.get((r["study"], r["name"]), {})
+            print(
+                f"  {r['name']}: asked again {a.get('fetched_at', '-')}, status "
+                f"{a.get('status', '-')}, {a.get('served_bytes', '-')} bytes, listing "
+                f"{a.get('directory_index', '-')}; registered {r['registered_bytes']}, "
+                f"legacy {a.get('legacy_bytes', '-')}"
+            )
     print(
         "served at exactly",
         CUT,
