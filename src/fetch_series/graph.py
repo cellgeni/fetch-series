@@ -592,16 +592,18 @@ ROUTES: list[Route] = [
         known_pathologies=(
             "biostudies-silent-25-item-default",
             "biostudies-files-404s-registered-files",
+            "ae-sdrf-split-across-files",
         ),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
-            accessions_failed=11,
-            accessions_empty=1_768,
+            accessions_failed=2,
+            accessions_empty=1_777,
             unique_results=63_153,
             notes=(
-                "1,221 resolved, 1,768 empty. Split entirely by provenance: "
+                "1,221 resolved, 1,777 empty, the 9 studies whose SDRF is split re-asked "
+                "2026-10-27. Split entirely by provenance: "
                 "1,210 of 1,398 E-MTAB studies (87%) name BioSamples, and 0 of "
                 "1,550 E-GEOD imports do. Adding the 450 E-GEOD studies in "
                 "arrayexpress-no-secondary makes it 0 of 2,000."
@@ -1190,18 +1192,20 @@ ROUTES: list[Route] = [
         known_pathologies=(
             "ae-sdrf-points-at-decommissioned-mirror",
             "biostudies-files-404s-registered-files",
+            "ae-sdrf-split-across-files",
         ),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
             surveyed_on=date(2026, 9, 15),
             accessions_queried=3_000,
-            accessions_failed=11,
-            accessions_empty=673,
-            unique_results=197_089,
+            accessions_failed=2,
+            accessions_empty=674,
+            unique_results=197_194,
             notes=(
-                "2,316 resolved, 673 empty. 1,385 of 1,398 E-MTAB studies (99%) "
-                "name fastq URIs, against 879 of 1,550 E-GEOD imports (57%). "
-                "Median 16 files per resolved study, mean 86."
+                "2,324 resolved, 674 empty, the 9 studies whose SDRF is split re-asked "
+                "2026-10-27. 1,385 of 1,398 E-MTAB studies (99%) name fastq URIs, "
+                "against 887 of 1,550 E-GEOD imports (57%). "
+                "Median 16 files per resolved study, mean 85."
             ),
         ),
     ),
@@ -1275,9 +1279,10 @@ class Promoted:
 # A mechanism that failed its gate is not drawn and stays a link: SDL from a
 # project or study (a 504 every time), and ena_links from a BioSample. The
 # ArrayExpress IDF and SDRF rows were surveyed before the mirror fallback
-# (#77) and their failures retried after it; of 11 SDRF failures left, 9 are
+# (#77) and their failures retried after it. Of 11 SDRF failures left, 9 were
 # E-GEOD studies whose SDRF is split in two (E-GEOD-29264.hyb.sdrf.txt and
-# .seq.sdrf.txt) and 2 register no files at all.
+# .seq.sdrf.txt), retried again once those were read (2026-10-27), and 2
+# register no files at all.
 # The bare-term search (esearch_sra_runinfo) is declared only where it is a
 # candidate like any other; in BioProject -> run, experiment, study and
 # BioSample it returned what efetch_direct's [GPRJ] does (162,808 runs against
@@ -4474,15 +4479,15 @@ PROMOTED: tuple[Promoted, ...] = (
         requests=1,
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
-        known_pathologies=("biostudies-files-404s-registered-files",),
+        known_pathologies=("biostudies-files-404s-registered-files", "ae-sdrf-split-across-files"),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
             surveyed_on=date(2026, 10, 27),
             accessions_queried=3_000,
-            accessions_failed=11,
+            accessions_failed=2,
             accessions_empty=7,
-            unique_results=128_287,
-            notes="2,982 resolved, 7 empty. A catalogue mechanism surveyed as a route.",
+            unique_results=128_366,
+            notes="2,991 resolved, 7 empty. A catalogue mechanism surveyed as a route.",
         ),
     ),
     Promoted(
@@ -4493,15 +4498,15 @@ PROMOTED: tuple[Promoted, ...] = (
         requests=1,
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
-        known_pathologies=("biostudies-files-404s-registered-files",),
+        known_pathologies=("biostudies-files-404s-registered-files", "ae-sdrf-split-across-files"),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
             surveyed_on=date(2026, 10, 27),
             accessions_queried=3_000,
-            accessions_failed=11,
+            accessions_failed=2,
             accessions_empty=1_448,
-            unique_results=25_104,
-            notes="1,541 resolved, 1,448 empty. A catalogue mechanism surveyed as a route.",
+            unique_results=25_289,
+            notes="1,550 resolved, 1,448 empty. A catalogue mechanism surveyed as a route.",
         ),
     ),
     Promoted(
@@ -4580,15 +4585,15 @@ PROMOTED: tuple[Promoted, ...] = (
         requests=1,
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
-        known_pathologies=("biostudies-files-404s-registered-files",),
+        known_pathologies=("biostudies-files-404s-registered-files", "ae-sdrf-split-across-files"),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
             surveyed_on=date(2026, 10, 27),
             accessions_queried=3_000,
-            accessions_failed=11,
+            accessions_failed=2,
             accessions_empty=233,
-            unique_results=144_745,
-            notes="2,756 resolved, 233 empty. A catalogue mechanism surveyed as a route.",
+            unique_results=144_858,
+            notes="2,765 resolved, 233 empty. A catalogue mechanism surveyed as a route.",
         ),
     ),
     Promoted(
@@ -4599,15 +4604,15 @@ PROMOTED: tuple[Promoted, ...] = (
         requests=1,
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
-        known_pathologies=("biostudies-files-404s-registered-files",),
+        known_pathologies=("biostudies-files-404s-registered-files", "ae-sdrf-split-across-files"),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
             surveyed_on=date(2026, 10, 27),
             accessions_queried=3_000,
-            accessions_failed=11,
-            accessions_empty=760,
-            unique_results=98_529,
-            notes="2,229 resolved, 760 empty. A catalogue mechanism surveyed as a route.",
+            accessions_failed=2,
+            accessions_empty=767,
+            unique_results=98_546,
+            notes="2,231 resolved, 767 empty. A catalogue mechanism surveyed as a route.",
         ),
     ),
 )

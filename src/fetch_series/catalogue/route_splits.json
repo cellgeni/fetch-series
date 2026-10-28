@@ -62,8 +62,8 @@
      "target": "biosample",
      "queried": 3000,
      "resolved": 1221,
-     "empty": 1768,
-     "failed": 11,
+     "empty": 1777,
+     "failed": 2,
      "reached": 1221,
      "distinct": 63153
     }
@@ -95,9 +95,9 @@
      "source": "ae_experiment",
      "target": "experiment_ebi",
      "queried": 3000,
-     "resolved": 2982,
+     "resolved": 2991,
      "empty": 7,
-     "failed": 11,
+     "failed": 2,
      "reached": 1406,
      "distinct": 83287
     },
@@ -105,11 +105,11 @@
      "source": "ae_experiment",
      "target": "experiment_ncbi",
      "queried": 3000,
-     "resolved": 2982,
+     "resolved": 2991,
      "empty": 7,
-     "failed": 11,
-     "reached": 1577,
-     "distinct": 45000
+     "failed": 2,
+     "reached": 1586,
+     "distinct": 45079
     }
    ]
   },
@@ -122,11 +122,11 @@
      "source": "ae_experiment",
      "target": "fastq",
      "queried": 3000,
-     "resolved": 2316,
-     "empty": 673,
-     "failed": 11,
-     "reached": 2316,
-     "distinct": 197089
+     "resolved": 2324,
+     "empty": 674,
+     "failed": 2,
+     "reached": 2324,
+     "distinct": 197194
     }
    ]
   },
@@ -139,11 +139,11 @@
      "source": "ae_experiment",
      "target": "geo_sample",
      "queried": 3000,
-     "resolved": 1541,
+     "resolved": 1550,
      "empty": 1448,
-     "failed": 11,
-     "reached": 1541,
-     "distinct": 25104
+     "failed": 2,
+     "reached": 1550,
+     "distinct": 25289
     }
    ]
   },
@@ -217,9 +217,9 @@
      "source": "ae_experiment",
      "target": "run_ebi",
      "queried": 3000,
-     "resolved": 2756,
+     "resolved": 2765,
      "empty": 233,
-     "failed": 11,
+     "failed": 2,
      "reached": 1406,
      "distinct": 97960
     },
@@ -227,11 +227,11 @@
      "source": "ae_experiment",
      "target": "run_ncbi",
      "queried": 3000,
-     "resolved": 2756,
+     "resolved": 2765,
      "empty": 233,
-     "failed": 11,
-     "reached": 1351,
-     "distinct": 46785
+     "failed": 2,
+     "reached": 1360,
+     "distinct": 46898
     }
    ]
   },
@@ -244,9 +244,9 @@
      "source": "ae_experiment",
      "target": "sample_ebi",
      "queried": 3000,
-     "resolved": 2229,
-     "empty": 760,
-     "failed": 11,
+     "resolved": 2231,
+     "empty": 767,
+     "failed": 2,
      "reached": 1400,
      "distinct": 73311
     },
@@ -254,11 +254,11 @@
      "source": "ae_experiment",
      "target": "sample_ncbi",
      "queried": 3000,
-     "resolved": 2229,
-     "empty": 760,
-     "failed": 11,
-     "reached": 830,
-     "distinct": 25218
+     "resolved": 2231,
+     "empty": 767,
+     "failed": 2,
+     "reached": 832,
+     "distinct": 25235
     }
    ]
   },

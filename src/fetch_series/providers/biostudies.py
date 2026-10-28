@@ -207,6 +207,139 @@ def sdrf_values(
     return {column: sorted(values) for column, values in found.items()}
 
 
+_SDRF_FILE = re.compile(r"^SDRF\s*File\t(.*)$", re.MULTILINE | re.IGNORECASE)
+
+
+def sdrf_files(idf_text: str) -> list[str]:
+    """The SDRF files an IDF names, in order.
+
+    Almost always one, ``<accession>.sdrf.txt``. E-GEOD-29264 names two,
+    ``E-GEOD-29264.hyb.sdrf.txt`` and ``E-GEOD-29264.seq.sdrf.txt``, and holds no
+    file by the usual name.
+    """
+    found: list[str] = []
+    for match in _SDRF_FILE.finditer(idf_text):
+        found.extend(value.strip() for value in match.group(1).split("\t") if value.strip())
+    return list(dict.fromkeys(found))
+
+
+def _sdrf_table(text: str) -> list[list[str]]:
+    text = text.strip()
+    if not text:
+        return []
+    return [line.split("\t") for line in text.splitlines()]
+
+
+_TERM_COLUMNS = ("termsourceref", "termaccessionnumber")
+
+
+def _alignment_keys(header: list[str]) -> list[str]:
+    """Each column's identity, for matching it with its twin in another SDRF file.
+
+    A repeated name is told apart by its order of occurrence, so the second
+    ``Comment[FASTQ_URI]`` of one file matches the second of another. A
+    qualifier -- ``Unit[...]``, ``Term Source REF``, ``Term Accession Number`` --
+    is instead counted within the column it qualifies, as
+    :func:`_bind_term_columns` reads it, because counted on its own it drifts:
+    the sixth ``Term Source REF`` of E-GEOD-29264's hyb file qualifies its array
+    design, and the sixth of its seq file a protocol.
+    """
+    keys: list[str] = []
+    seen: dict[str, int] = {}
+    anchor = scope = ""
+    for name in header:
+        key = _column_key(name)
+        if key in _TERM_COLUMNS:
+            owner = scope
+        elif key.startswith("unit["):
+            owner = anchor
+        else:
+            anchor = scope = f"{key}#{seen.get(key, 0)}"
+            seen[key] = seen.get(key, 0) + 1
+            keys.append(anchor)
+            continue
+        qualified = f"{owner}/{key}"
+        identity = f"{qualified}#{seen.get(qualified, 0)}"
+        seen[qualified] = seen.get(qualified, 0) + 1
+        if key.startswith("unit["):
+            # A unit claims the term columns after it, as it does when bound.
+            scope = identity
+        keys.append(identity)
+    return keys
+
+
+def merge_sdrf_tables(tables: list[list[list[str]]]) -> list[list[str]]:
+    """Several SDRF files of one study as one table, columns aligned by identity.
+
+    E-GEOD-29264 splits its SDRF by technology, ``.hyb`` for the arrays and
+    ``.seq`` for the sequencing. The two share their first 14 columns and then
+    diverge: only the seq file has ``Comment[ENA_RUN]`` and ``Comment[FASTQ_URI]``.
+    Columns are matched by :func:`_alignment_keys`. One that only some files
+    have is placed after the column it follows in its own file, so a qualifier
+    stays beside what it qualifies, and its cells are empty in the other files'
+    rows. Where every header is the same, this appends the rows.
+    """
+    names: dict[str, str] = {}
+    order: list[str] = []
+    for table in tables:
+        if not table:
+            continue
+        at = -1
+        for key, name in zip(_alignment_keys(table[0]), table[0], strict=True):
+            if key in names:
+                at = order.index(key)
+            else:
+                names[key] = name
+                at += 1
+                order.insert(at, key)
+    if not order:
+        return []
+    merged = [[names[key] for key in order]]
+    for table in tables:
+        if not table:
+            continue
+        where = {key: index for index, key in enumerate(_alignment_keys(table[0]))}
+        for row in table[1:]:
+            merged.append(
+                [
+                    row[index] if (index := where.get(key)) is not None and index < len(row) else ""
+                    for key in order
+                ]
+            )
+    return merged
+
+
+def join_sdrf(texts: list[str]) -> str:
+    """SDRF files of one study as one tab-separated text: :func:`merge_sdrf_tables`."""
+    return "\n".join("\t".join(row) for row in merge_sdrf_tables([_sdrf_table(t) for t in texts]))
+
+
+async def _sdrf_text(client: SurveyClient, accession: str, timeout: float) -> str:
+    """A study's SDRF as text, whether it is one file or the several its IDF names.
+
+    ``<accession>.sdrf.txt`` is asked for first, and only its 404 sends the
+    request to the IDF. An IDF naming nothing else, or itself missing, leaves
+    that 404 as the verdict: the study registers no SDRF.
+    """
+    usual = f"{accession}.sdrf.txt"
+    try:
+        return (await study_file(client, accession, usual, timeout)).text
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code != 404:
+            raise
+        missing = exc
+    try:
+        idf = await fetch_idf(client, accession, timeout)
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code != 404:
+            raise
+        raise missing from None
+    named = [name for name in sdrf_files(idf) if name != usual]
+    if not named:
+        raise missing
+    return join_sdrf([(await study_file(client, accession, name, timeout)).text for name in named])
+
+
 async def sdrf_raw_rows(client: SurveyClient, accession: str, timeout: float) -> list[list[str]]:
     """The SDRF as raw field lists, header included.
 
@@ -216,12 +349,11 @@ async def sdrf_raw_rows(client: SurveyClient, accession: str, timeout: float) ->
     silently returned one URI per run instead of two, which for paired reads is
     exactly half the data. Anything that reads a column which may repeat must
     use this, not ``sdrf_rows``.
+
+    A study whose IDF splits its SDRF across files (E-GEOD-29264) is read as one
+    table: :func:`merge_sdrf_tables`.
     """
-    response = await study_file(client, accession, f"{accession}.sdrf.txt", timeout)
-    text = response.text.strip()
-    if not text:
-        return []
-    return [line.split("\t") for line in text.splitlines()]
+    return _sdrf_table(await _sdrf_text(client, accession, timeout))
 
 
 async def sdrf_rows(client: SurveyClient, accession: str, timeout: float) -> list[dict[str, Any]]:
@@ -230,8 +362,7 @@ async def sdrf_rows(client: SurveyClient, accession: str, timeout: float) -> lis
     Convenient, and lossy for any column name that repeats -- see
     :func:`sdrf_raw_rows`.
     """
-    response = await study_file(client, accession, f"{accession}.sdrf.txt", timeout)
-    text = response.text.strip()
+    text = (await _sdrf_text(client, accession, timeout)).strip()
     if not text:
         return []
     return list(csv.DictReader(io.StringIO(text), delimiter="\t"))

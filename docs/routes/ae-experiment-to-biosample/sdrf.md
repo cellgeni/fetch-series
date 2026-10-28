@@ -21,13 +21,15 @@ ArrayExpress entry point.
 ## Measured
 
 **Corpus:** `sample:3000@arrayexpress-ena`, a seeded draw from the 20,693
-studies BioStudies records an ENA link for. **Surveyed:** 2026-09-15.
+studies BioStudies records an ENA link for. **Surveyed:** 2026-09-15; the nine
+studies whose SDRF is [split across two files](../../pathologies/ae-sdrf-split-across-files.md)
+re-asked on 2026-10-27, once the route read both. All nine are `E-GEOD` and now answer empty.
 
 | | |
 |---|---|
 | Resolved | 1,221 (40.7%) |
-| Empty | 1,768 |
-| Failed | 11 |
+| Empty | 1,777 |
+| Failed | 2 |
 | Unique BioSamples | 63,153 |
 
 A 41% rate looks poor until it is split by where the study came from:

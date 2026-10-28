@@ -15,9 +15,14 @@ import pytest
 from fetch_series import core
 from fetch_series.providers.biostudies import (
     fetch_idf,
+    merge_sdrf_tables,
     registered_names,
+    sdrf_characteristics,
     sdrf_fastq_uris,
+    sdrf_files,
     sdrf_raw_rows,
+    sdrf_rows,
+    sdrf_values,
 )
 from fetch_series.survey.client import Limits, SurveyClient
 
@@ -157,3 +162,155 @@ class TestMirrorFallback:
         """``core.ae2secondary`` read the same front door, with the same 404."""
         monkeypatch.setattr(core, "transport", httpx.MockTransport(self._handler([])))
         assert core._study_file("E-MTAB-13459", "E-MTAB-13459.sdrf.txt").text.startswith("Source")
+
+
+class TestSplitSdrf:
+    """E-GEOD-29264 has no ``<acc>.sdrf.txt``: its IDF names a hyb and a seq SDRF."""
+
+    STUDY = "E-GEOD-29264"
+    IDF = (
+        "Investigation Title\tCircadian ChIP\n"
+        "SDRF File\tE-GEOD-29264.hyb.sdrf.txt\tE-GEOD-29264.seq.sdrf.txt\t\n"
+    )
+    HYB = (
+        "Source Name\tCharacteristics [organism]\tTerm Source REF\tProtocol REF\tTerm Source REF\t"
+        "Array Design REF\tTerm Source REF\tArray Data File\n"
+        "GSM1 1\tSynechococcus\tEFO\tP-1\tArrayExpress\tA-1\tArrayExpress\ta.CEL\n"
+    )
+    SEQ = (
+        "Source Name\tCharacteristics [organism]\tTerm Source REF\tProtocol REF\tTerm Source REF\t"
+        "Protocol REF\tTerm Source REF\tComment [ENA_RUN]\tComment [FASTQ_URI]\tComment [FASTQ_URI]\n"
+        "GSM2 1\tSynechococcus\tEFO\tP-1\tArrayExpress\tP-2\tArrayExpress\tSRR1\tr1.fq.gz\tr2.fq.gz\n"
+    )
+
+    def test_the_idf_names_every_file(self):
+        assert sdrf_files(self.IDF) == [
+            "E-GEOD-29264.hyb.sdrf.txt",
+            "E-GEOD-29264.seq.sdrf.txt",
+        ]
+
+    def test_an_idf_naming_none_names_none(self):
+        assert sdrf_files("Investigation Title\tx\n") == []
+
+    def test_identical_headers_append_rows(self):
+        table = [["Source Name", "Comment[ENA_RUN]"], ["A", "ERR1"]]
+        other = [["Source Name", "Comment[ENA_RUN]"], ["B", "ERR2"]]
+        assert merge_sdrf_tables([table, other]) == [
+            ["Source Name", "Comment[ENA_RUN]"],
+            ["A", "ERR1"],
+            ["B", "ERR2"],
+        ]
+
+    def test_different_headers_align_by_name_and_keep_both_mates(self):
+        merged = merge_sdrf_tables(
+            [[line.split("\t") for line in t.splitlines()] for t in (self.HYB, self.SEQ)]
+        )
+        header, hyb, seq = merged
+        assert header.count("Comment [FASTQ_URI]") == 2
+        assert sdrf_values(merged, ("Comment[FASTQ_URI]",))["Comment[FASTQ_URI]"] == [
+            "r1.fq.gz",
+            "r2.fq.gz",
+        ]
+        assert hyb[header.index("Array Data File")] == "a.CEL"
+        assert seq[header.index("Array Data File")] == ""
+        assert seq[header.index("Comment [ENA_RUN]")] == "SRR1"
+        assert hyb[header.index("Comment [ENA_RUN]")] == ""
+
+    def test_a_qualifier_stays_beside_what_it_qualifies(self):
+        """Counted on its own, the third Term Source REF is the array design's in
+        one file and a protocol's in the other. Counted within its column, the
+        seq file's second protocol and its term source go in together."""
+        header, *_ = merge_sdrf_tables(
+            [[line.split("\t") for line in t.splitlines()] for t in (self.HYB, self.SEQ)]
+        )
+        design = header.index("Array Design REF")
+        assert header[design + 1] == "Term Source REF"
+        protocols = [i for i, name in enumerate(header) if name == "Protocol REF"]
+        assert len(protocols) == 2
+        assert all(header[i + 1] == "Term Source REF" for i in protocols)
+
+    def test_a_unit_keeps_its_term_columns(self):
+        """E-MTAB-10553: the term columns after a Unit qualify the unit. The
+        second file's term source qualifies the age, so it goes before the unit,
+        where binding gives it to the age and not to the unit."""
+        one = [
+            ["Source Name", "Characteristics[age]", "Unit[time unit]", "Term Source REF"],
+            ["A", "84", "year", "UO"],
+        ]
+        two = [["Source Name", "Characteristics[age]", "Term Source REF"], ["B", "3", "EFO"]]
+        merged = merge_sdrf_tables([one, two])
+        assert merged == [
+            [
+                "Source Name",
+                "Characteristics[age]",
+                "Term Source REF",
+                "Unit[time unit]",
+                "Term Source REF",
+            ],
+            ["A", "84", "", "year", "UO"],
+            ["B", "3", "EFO", "", ""],
+        ]
+        found = sdrf_characteristics(merged)
+        assert found["A"][0].term_source is None
+        assert found["B"][0].term_source == "EFO"
+
+    def _handler(self, seen: list[str], *, idf: str | None = IDF, missing: str = ""):
+        files = {
+            f"{self.STUDY}.idf.txt": idf,
+            f"{self.STUDY}.hyb.sdrf.txt": self.HYB,
+            f"{self.STUDY}.seq.sdrf.txt": self.SEQ,
+            missing: None,
+        }
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            url = str(request.url)
+            seen.append(url)
+            if url.endswith("/info"):
+                return httpx.Response(200, json={})
+            text = files.get(url.rsplit("/", 1)[-1])
+            if text is None:
+                return httpx.Response(404, text="")
+            return httpx.Response(200, text=text)
+
+        return handler
+
+    @classmethod
+    async def _call(cls, handler, fn):
+        async with (
+            httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http,
+            SurveyClient(Limits(rps=0), client=http) as client,
+        ):
+            return await fn(client, cls.STUDY, 10)
+
+    async def test_a_404_reads_the_files_the_idf_names(self):
+        seen: list[str] = []
+        rows = await self._call(self._handler(seen), sdrf_raw_rows)
+        assert len(rows) == 3
+        assert sdrf_values(rows, ("Comment[ENA_RUN]",))["Comment[ENA_RUN]"] == ["SRR1"]
+        assert seen[0].endswith(f"/{self.STUDY}.sdrf.txt")
+        assert seen[-1].endswith(".seq.sdrf.txt")
+
+    async def test_the_dict_reader_gets_them_too(self):
+        rows = await self._call(self._handler([]), sdrf_rows)
+        assert [row["Source Name"] for row in rows] == ["GSM1 1", "GSM2 1"]
+
+    async def test_an_idf_naming_only_the_usual_file_keeps_its_404(self):
+        idf = f"SDRF File\t{self.STUDY}.sdrf.txt\n"
+        with pytest.raises(httpx.HTTPStatusError) as caught:
+            await self._call(self._handler([], idf=idf), sdrf_raw_rows)
+        assert str(caught.value.request.url).endswith(f"/{self.STUDY}.sdrf.txt")
+
+    async def test_a_missing_idf_keeps_the_sdrfs_404(self):
+        with pytest.raises(httpx.HTTPStatusError) as caught:
+            await self._call(self._handler([], idf=None), sdrf_raw_rows)
+        assert str(caught.value.request.url).endswith(f"/{self.STUDY}.sdrf.txt")
+
+    async def test_a_named_file_that_is_missing_fails_the_study(self):
+        """Half a study read as all of it would be a silent loss."""
+        with pytest.raises(httpx.HTTPStatusError) as caught:
+            await self._call(self._handler([], missing=f"{self.STUDY}.seq.sdrf.txt"), sdrf_raw_rows)
+        assert str(caught.value.request.url).endswith(".seq.sdrf.txt")
+
+    def test_the_sync_helper_reads_them_too(self, monkeypatch):
+        monkeypatch.setattr(core, "transport", httpx.MockTransport(self._handler([])))
+        assert "SRR1" in core._sdrf_text(self.STUDY)
