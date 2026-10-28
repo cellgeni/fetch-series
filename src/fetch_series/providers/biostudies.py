@@ -92,6 +92,88 @@ def idf_comments(text: str) -> dict[str, list[str]]:
     return found
 
 
+# The widest range ``sequence_data`` expands. Over sample:3000@arrayexpress-ena
+# (2026-10-28) the widest range an SDRF agreed with run for run was 2,688
+# accessions (E-MTAB-9402), and the largest study 18,879 runs (E-MTAB-5214, in
+# no range at all). The two wider ranges were first-and-last pairs:
+# E-MTAB-4556's ERR1313817-ERR1432629 spans 118,813 accessions for 2 runs,
+# E-MTAB-4846's 373,571 for 7. Past the bound a range is reported, never cut
+# short: its first 50,000 accessions would be as wrong as its two ends. The
+# bound guards against the absurd only; E-MTAB-5101's 32 cover 16 runs.
+SEQUENCE_DATA_MAX_RANGE = 50_000
+
+_PREFIXED = re.compile(r"([A-Z]+)(\d+)")
+
+
+@dataclass(frozen=True, slots=True)
+class SequenceData:
+    """What an IDF's ``Comment[SequenceDataURI]`` names, and what it could not read.
+
+    ``unread`` holds each part that is not an accession or a range of them, with
+    the reason: a caller reports those rather than answering without them.
+    """
+
+    accessions: list[str]
+    unread: list[str]
+
+
+def _expand(part: str) -> list[str] | str:
+    """``SRR208051-SRR208059`` as its nine accessions, or why it is not a range."""
+    start, _, end = part.partition("-")
+    first, last = try_parse(start), try_parse(end)
+    if first is None or last is None or first.entity != last.entity:
+        return "not a range of one kind of accession"
+    low, high = _PREFIXED.fullmatch(first.value), _PREFIXED.fullmatch(last.value)
+    if low is None or high is None or low.group(1) != high.group(1):
+        return "its ends have different prefixes"
+    # Width as well as value: E-GEOD-47691 writes SRR1204762-SRR886300, its
+    # runs' first and last in string order, which is no range of numbers.
+    width, lowest, highest = len(low.group(2)), int(low.group(2)), int(high.group(2))
+    if highest < lowest or len(high.group(2)) < width:
+        return "it descends"
+    if highest - lowest + 1 > SEQUENCE_DATA_MAX_RANGE:
+        return f"it spans {highest - lowest + 1:,} accessions"
+    return [f"{low.group(1)}{n:0{width}d}" for n in range(lowest, highest + 1)]
+
+
+def sequence_data(values: list[str]) -> SequenceData:
+    """The accessions ``Comment[SequenceDataURI]`` names, each range expanded.
+
+    The field is an ENA browser link over a comma-separated list of ranges, one
+    run written as a range of one: E-GEOD-29264 writes
+    ``http://www.ebi.ac.uk/ena/data/view/SRR208051-SRR208059``, nine runs, and
+    reading the accessions in the text found its two ends. A range is expanded
+    only where both ends are accessions of one kind with one prefix and it
+    ascends. It names experiments in E-TABM-722 and a study in E-ERAD-324; those
+    are read as what they are, and the caller keeps what it asked for.
+
+    A range is the first and last of a group of runs, not a list of them
+    (docs/pathologies/ae-idf-run-range-is-not-a-run-list.md), so an expanded
+    one can name runs the experiment does not describe. Nothing in the text
+    tells those ranges apart from the rest.
+    """
+    accessions: list[str] = []
+    unread: list[str] = []
+    for value in values:
+        for part in value.rpartition("/")[2].split(","):
+            part = part.strip()
+            if not part:
+                continue
+            if "-" not in part:
+                parsed = try_parse(part)
+                if parsed is None:
+                    unread.append(f"{part}: not an accession")
+                else:
+                    accessions.append(parsed.value)
+                continue
+            expanded = _expand(part)
+            if isinstance(expanded, str):
+                unread.append(f"{part}: {expanded}")
+            else:
+                accessions.extend(expanded)
+    return SequenceData(list(dict.fromkeys(accessions)), unread)
+
+
 def _column_key(name: str) -> str:
     """``Comment [ENA_RUN]`` and ``Comment[ENA_RUN]`` are one column; both spellings occur."""
     return re.sub(r"\s+", "", name).lower()

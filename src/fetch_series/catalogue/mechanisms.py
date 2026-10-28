@@ -1055,7 +1055,7 @@ _BIOSTUDIES: tuple[Mechanism, ...] = (
             **fields({"study": "Comment[SecondaryAccession] (ERP/SRP)"}),
             "geo_series": "Comment[SecondaryAccession] (GSE, on an E-GEOD import)",
             "ae_experiment": "Comment[RelatedExperiment]",
-            **fields({"run": "Comment[SequenceDataURI], a run range"}),
+            **fields({"run": "Comment[SequenceDataURI], ranges of runs, each expanded"}),
             "metadata_ae": "the IDF",
         },
         self_link=True,
