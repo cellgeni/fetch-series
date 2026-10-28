@@ -93,11 +93,26 @@ class TestRetryClassification:
             httpx.HTTPStatusError("e", request=response.request, response=response)
         )
 
-    def test_a_403_from_enas_file_server_is_a_throttle(self):
-        """81 of 4,466 listed fastqs answered 403 under load; 80 answered 200 a moment later."""
-        url = "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR406/002/ERR4065012/ERR4065012_2.fastq.gz"
+    @pytest.mark.parametrize(
+        "url",
+        [
+            # 81 of 4,466 listed fastqs answered 403 under load; 80 answered 200 a moment later.
+            "https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR406/002/ERR4065012/ERR4065012_2.fastq.gz",
+            # 155 of 6,018 IDFs and SDRFs answered 403 under load; all 155 answered later.
+            "https://ftp.ebi.ac.uk/biostudies/fire/E-MTAB-/937/E-MTAB-937/Files/E-MTAB-937.sdrf.txt",
+        ],
+    )
+    def test_a_403_from_ebis_file_servers_is_a_throttle(self, url):
         response = httpx.Response(403, request=httpx.Request("GET", url))
         assert is_retryable(httpx.HTTPStatusError("e", request=response.request, response=response))
+
+    def test_a_403_from_biostudies_itself_is_an_answer(self):
+        """The mirror throttles; the API in front of it has not been seen to."""
+        url = "https://www.ebi.ac.uk/biostudies/api/v1/studies/E-MTAB-937/info"
+        response = httpx.Response(403, request=httpx.Request("GET", url))
+        assert not is_retryable(
+            httpx.HTTPStatusError("e", request=response.request, response=response)
+        )
 
     def test_value_errors_are_not_retryable(self):
         assert not is_retryable(ValueError("bad input"))
