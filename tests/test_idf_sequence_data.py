@@ -101,7 +101,7 @@ class TestSequenceData:
         assert found.accessions[0] == "ERX000498" and len(found.accessions) == 9
 
     def test_a_link_naming_nothing_is_nothing(self):
-        """E-GEOD-58432's field is http://www.ebi.ac.uk/ and nothing after it."""
+        """E-GEOD-58432's field as BioStudies served it, cut off at 4,096 bytes."""
         found = sequence_data(["http://www.ebi.ac.uk/"])
         assert found.accessions == [] and found.unread == []
 

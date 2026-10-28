@@ -4550,15 +4550,26 @@ PROMOTED: tuple[Promoted, ...] = (
         requests=1,
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
-        known_pathologies=("biostudies-files-404s-registered-files",),
+        known_pathologies=(
+            "ae-idf-run-range-is-not-a-run-list",
+            "biostudies-files-404s-registered-files",
+        ),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
-            surveyed_on=date(2026, 10, 27),
+            surveyed_on=date(2026, 10, 28),
             accessions_queried=3_000,
-            accessions_failed=2,
-            accessions_empty=316,
-            unique_results=16_873,
-            notes="2,682 resolved, 316 empty. A catalogue mechanism surveyed as a route.",
+            accessions_failed=13,
+            accessions_empty=320,
+            unique_results=111_829,
+            notes=(
+                "2,667 resolved, 320 empty. A catalogue mechanism surveyed as a route. "
+                "Re-surveyed once its reader expanded each range: on 2026-10-27 it read a "
+                "range's two ends, and returned exactly two runs for 2,159 studies and "
+                "16,873 runs in all. Of 13 failures, 11 are ranges reported as unreadable "
+                "(9 descend, 2 span over 50,000 accessions) and 2 are studies that register "
+                "no files. 4 of the empties resolved on 2026-10-27: BioStudies served their "
+                "IDFs cut off at 4,096 bytes, before the field (E-GEOD-58432)."
+            ),
         ),
     ),
     Promoted(

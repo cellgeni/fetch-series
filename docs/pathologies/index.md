@@ -36,6 +36,7 @@ good news — the archive fixed something.
 | [`[GPRJ]` misses experiments its project holds](gprj-misses-experiments-of-the-project.md) | NCBI | PRJNA66167's SRX135150 names the project in every record and is not under `PRJNA66167[GPRJ]`: 1,100 runs in 2 projects |
 | [ELink gives a BioProject its siblings' runs](elink-returns-runs-of-sibling-projects.md) | NCBI | PRJNA1033389's 8 runs come back as 80, with 72 from projects under the same umbrella: 607 runs in 22 projects |
 | [BioStudies answers 404 for a file it holds](biostudies-files-404s-registered-files.md) | EBI | E-MTAB-13459's IDF answers 404 at its address and 200 on the mirror: 328 of 3,000 ArrayExpress IDFs on 2026-10-26 |
+| [An IDF's run range is not a list of the experiment's runs](ae-idf-run-range-is-not-a-run-list.md) | EBI | E-MTAB-4556's `ERR1313817-ERR1432629` spans 118,813 accessions for the 2 runs its SDRF lists; 19 of 2,654 ranges name runs their SDRF does not |
 
 ## Known, declared, and not yet written up
 

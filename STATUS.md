@@ -40,8 +40,8 @@ Behind it:
 | Metadata kit call | names one kit for **964 of 5,465** samples the pipeline mapped; its list is the pipeline's for 900, its strand for 946 of 948; where it and the reads disagree, **the pipeline sides with the reads 20 of 20** ([comparison](docs/benchmarks/metadata-vs-reads-2026-10.md)) |
 | Other technologies | Parse, BD Rhapsody, inDrop and others named from their constants; **no non-10x run called 10x** on the held-out half ([benchmark](docs/benchmarks/technologies-2026-10.md)) |
 | Survey verdicts recorded and committed | **1,254,322** across 3,971 files in `data/surveys/` |
-| Offline tests | **1,226** collected by `uv run pytest` (plus integration, pathology and slow suites) |
-| Knowledge-base pages | every measured route (the promoted ones on one generated page per source type), 23 pathologies, 7 upstream drafts |
+| Offline tests | **1,244** collected by `uv run pytest` (plus integration, pathology and slow suites) |
+| Knowledge-base pages | every measured route (the promoted ones on one generated page per source type), 24 pathologies, 7 upstream drafts |
 
 The governing rule held throughout: **no fallback order, ranking or heuristic
 ships without a survey behind it and a KB page citing that survey.**
@@ -64,6 +64,7 @@ hand-written preference anywhere in the project.
 | **248/452** | objects DDBJ Search links for NCBI runs do not exist at DDBJ | [content survey](docs/benchmarks/content-survey-2026-10.md) |
 | **8,604/8,604** | agreement between GEO's own SRA relation and ENA's submitter alias — a route that works where GEO records no relation at all | [route](docs/routes/run-to-geo-sample/ena-alias.md) |
 | **326/328** | ArrayExpress IDFs BioStudies answered 404 for were on its own FTP mirror: 11% of studies on 2026-10-26, against 5 of 20,693 in September | [pathology](docs/pathologies/biostudies-files-404s-registered-files.md) |
+| **2,159** | ArrayExpress studies answered with exactly two runs by the IDF route, which read each run range's two ends: 16,873 runs where the expanded ranges hold 111,829. The bug was ours; that a range is a first and last, not a list, is the archive's | [route](docs/routes/from-ae-experiment.md#the-idf-names-runs-in-ranges) |
 
 Four of the first five contradicted what this project's own code assumed before
 anyone counted. The umbrella finding forced a rule onto the front page —
