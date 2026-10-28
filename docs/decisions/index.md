@@ -26,6 +26,7 @@ and is hardest to reconstruct from code.
 | [Why fetch-series reads the reads itself](why-fetch-series-reads-the-reads-itself.md) | SRR29534765 and ERR4265292: which copy of a library is usable is a property of the copy | in force |
 | [What a read sample can prove](what-a-read-sample-can-prove.md) | refusal needs positive evidence; the first reads are a stratum; 0/66 held-out HIGH calls wrong | in force |
 | [When metadata may break a tie](when-metadata-may-break-a-tie.md) | 7 of 7 design ties, 2 of 2 held-out, settled as the pipeline mapped them; the reads win all 20 disagreements | in force since 2026-10-26 |
+| [When a second route earns its place](when-a-second-route-earns-its-place.md) | rule set 2026-10-27 before measuring: it adds values or sole resolutions for 0.1% of a shared draw | measurement pending |
 
 ## Decisions recorded elsewhere
 

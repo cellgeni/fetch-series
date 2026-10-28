@@ -19,7 +19,9 @@ study_ncbi`` of that mechanism, from an ERR ``run_ebi -> study_ebi``.
 Which routes are candidates is the catalogue's to say (:func:`candidates`): a
 surveyed link in a direction no declared route covers. A direction that
 already has a measured route gets no second one here; whether a second earns its
-place is a question for its own measurement.
+place is a question for its own measurement, and ``candidates(covered=True)``
+names the routes that measurement is of
+(docs/decisions/when-a-second-route-earns-its-place.md).
 """
 
 from __future__ import annotations
@@ -83,13 +85,18 @@ def candidates(
     registry: RouteRegistry = REGISTRY,
     *,
     probes: Mapping[str, Probe] | None = None,
+    covered: bool = False,
 ) -> list[Candidate]:
     """Every surveyed or probed link no route covers, in a direction no route covers.
+
+    With ``covered``, the opposite half: the links no route covers in directions
+    a declared route already does. Those are second routes, and a second route
+    is declared only once it adds what the direction's routes do not.
 
     Grouped by (mechanism, source entity, target entity): one route each.
     """
     known = probes if probes is not None else load_probes()
-    covered = {(route.source, route.target) for route in registry}
+    directions = {(route.source, route.target) for route in registry}
     grouped: dict[tuple[str, EntityType, EntityType], list[Link]] = {}
     for link in catalogue.links:
         if link.route_id is not None:
@@ -100,7 +107,10 @@ def candidates(
         target = catalogue.nodes[link.target].entity
         if source is None or target is None or {source, target} & NOT_PROMOTED:
             continue
-        if (source, target) in covered and link.mechanism not in EVERY_DIRECTION:
+        if covered:
+            if (source, target) not in directions:
+                continue
+        elif (source, target) in directions and link.mechanism not in EVERY_DIRECTION:
             continue
         grouped.setdefault((link.mechanism, source, target), []).append(link)
     return [

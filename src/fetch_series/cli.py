@@ -4,16 +4,17 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import csv
 import json
 import logging
 import os
 import re
 import tempfile
 from collections import Counter
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from importlib.metadata import version
 from pathlib import Path
-from typing import Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any
 
 import typer
 from dotenv import load_dotenv
@@ -88,8 +89,11 @@ from fetch_series.survey import Limits, SurveyClient, corpora, run_route
 from fetch_series.survey.client import MemoClient
 from fetch_series.survey.export import ExportConflict, write_export
 from fetch_series.survey.export import slug as export_slug
-from fetch_series.survey.runner import FanoutRun, run_fanout, shuffled
+from fetch_series.survey.runner import FanoutRun, SurveyRun, run_fanout, shuffled
 from fetch_series.units import parse_unit, screen_unit
+
+if TYPE_CHECKING:
+    from fetch_series.routes.catalogue import Candidate
 
 app = typer.Typer(
     help="Resolve public sequencing accessions over documented, benchmarked routes.",
@@ -1007,6 +1011,30 @@ def survey_promote(
         bool, typer.Option("--evidence", help="Print the PROMOTED rows the survey supports.")
     ] = False,
     retry_failed: Annotated[bool, typer.Option(help="Also re-ask stored failures.")] = False,
+    covered: Annotated[
+        bool,
+        typer.Option(
+            "--covered",
+            help="Second routes: candidates in directions a declared route already covers.",
+        ),
+    ] = False,
+    fresh_days: Annotated[
+        int | None,
+        typer.Option(
+            help="With --covered: a declared route's verdict on the draw older than this "
+            "many days is asked again, beside the candidates."
+        ),
+    ] = None,
+    compare: Annotated[
+        bool,
+        typer.Option(
+            "--compare",
+            help="Offline: what each route of a direction adds that its others do not.",
+        ),
+    ] = False,
+    out: Annotated[
+        Path | None, typer.Option(help="With --compare: write one row per route to this CSV.")
+    ] = None,
     cache_path: Annotated[Path, typer.Option("--cache", help="SQLite store.")] = DEFAULT_CACHE_PATH,
 ) -> None:
     """Survey surveyed catalogue links as routes, at sample:3000 of their source.
@@ -1015,14 +1043,24 @@ def survey_promote(
     covers (``routes.catalogue.candidates``). One request per accession answers
     every route of a mechanism from one source. Gate first; a unit that failed
     its gate is not drawn. --evidence prints the graph.PROMOTED rows to declare.
+
+    --covered takes the other half: candidates in directions a route already
+    covers. Each is compared with its direction's routes on the same draw, so
+    the declared routes that hold no verdict on the draw are surveyed on it in
+    the same run. --compare reports, per direction, what each route adds
+    (``survey.directions``; docs/decisions/when-a-second-route-earns-its-place.md).
     """
     from fetch_series.routes.catalogue import candidates
     from fetch_series.survey import promote
 
     load_dotenv()
+    if compare:
+        with SurveyCache(cache_path) as cache:
+            _compare_directions(cache, candidates(covered=True), source, out)
+        return
     chosen = [
         c
-        for c in candidates()
+        for c in candidates(covered=covered)
         if (source is None or c.source.value == source)
         and (mechanism is None or c.mechanism == mechanism)
     ]
@@ -1030,6 +1068,7 @@ def survey_promote(
         typer.secho("No candidate route matches.", fg=typer.colors.RED, err=True)
         raise typer.Exit(2)
     units = promote.units_of(chosen)
+    route_jobs: list[promote.RouteJob] = []
 
     with SurveyCache(cache_path) as cache:
         if evidence:
@@ -1046,7 +1085,15 @@ def survey_promote(
                     typer.echo(promote.as_source(row))
             return
         if gate:
-            survey_plan = promote.plan(units, lambda unit: list(promote.GATES))
+            ungated = []
+            for unit in units:
+                if elsewhere := promote.failed_elsewhere(unit, cache):
+                    typer.secho(
+                        f"{unit.id}: failed its gate as {elsewhere[0]}; not gated again", err=True
+                    )
+                else:
+                    ungated.append(unit)
+            survey_plan = promote.plan(ungated, lambda unit: list(promote.GATES))
         else:
             gated = []
             for unit in units:
@@ -1058,6 +1105,13 @@ def survey_promote(
                 else:
                     typer.secho(f"{unit.id}: failed its gate; not drawn", err=True)
             survey_plan = promote.plan(gated, lambda unit: [promote.standard_corpus(unit.source)])
+            if covered:
+                since = (
+                    datetime.now(UTC) - timedelta(days=fresh_days)
+                    if fresh_days is not None
+                    else None
+                )
+                route_jobs = promote.declared_jobs(promote.directions_of(gated), cache, since=since)
         for unit, reason in survey_plan.skipped:
             typer.secho(f"{unit.id}: skipped -- {reason}", fg=typer.colors.YELLOW, err=True)
         if dry_run:
@@ -1070,6 +1124,17 @@ def survey_promote(
                 f"{len(survey_plan.jobs)} unit-corpora, "
                 f"{sum(len(j.accessions) for j in survey_plan.jobs):,} requests before memory"
             )
+            for route_job in route_jobs:
+                typer.echo(
+                    f"declared {route_job.route.id:52s} {len(route_job.accessions):>6} acc  "
+                    f"{route_job.corpus}"
+                )
+            if route_jobs:
+                typer.echo(
+                    f"{len(route_jobs)} declared routes owed verdicts on the draw, "
+                    f"{sum(len(j.accessions) * j.route.cost.requests for j in route_jobs):,} "
+                    "requests"
+                )
             return
 
         logfile = run_logfile("promote-survey")
@@ -1083,6 +1148,12 @@ def survey_promote(
                     f"e={counts['empty']} f={counts['failed']} d={counts['distinct']}"
                 )
 
+        def report_route(job: promote.RouteJob, run: SurveyRun) -> None:
+            typer.echo(
+                f"{job.route.id:52s} {job.corpus:44s} r={run.resolved} "
+                f"e={run.empty} f={run.failed} d={run.unique_results}"
+            )
+
         api_key = default_api_key()
 
         async def main() -> None:
@@ -1094,11 +1165,98 @@ def survey_promote(
                     clients[bucket] = await stack.enter_async_context(
                         MemoClient(bucket_limits, api_key=key, memoize=memoizable)
                     )
-                await promote.run_jobs(
-                    survey_plan.jobs, clients, cache, retry_failed=retry_failed, on_done=report
+                await asyncio.gather(
+                    promote.run_jobs(
+                        survey_plan.jobs, clients, cache, retry_failed=retry_failed, on_done=report
+                    ),
+                    promote.run_route_jobs(route_jobs, clients, cache, on_done=report_route),
                 )
 
         asyncio.run(main())
+
+
+def _compare_directions(
+    cache: SurveyCache, pool: list[Candidate], source: str | None, out: Path | None
+) -> None:
+    """Every direction with two routes or more on its draw: what each adds over the rest."""
+    from fetch_series.survey import directions, promote
+
+    pairs = {(r.source, r.target) for r in REGISTRY} | {(c.source, c.target) for c in pool}
+    loaded: dict[str, tuple[str, ...]] = {}
+    rows: list[list[object]] = []
+    for s, t in sorted(pairs, key=lambda d: (d[0].value, d[1].value)):
+        if source is not None and s.value != source:
+            continue
+        try:
+            corpus = promote.standard_corpus(s)
+        except KeyError:
+            continue  # no population to draw from: nothing was surveyed on a draw
+        if corpus not in loaded:
+            loaded[corpus] = corpora.load(corpus).of_type(s)
+        accessions = loaded[corpus]
+        declared = [r.id for r in REGISTRY.ranked(s, t)]
+        route_ids = declared + [c.id for c in pool if (c.source, c.target) == (s, t)]
+        verdicts = {
+            route_id: found
+            for route_id in route_ids
+            if (found := directions.draw_verdicts(route_id, corpus, accessions, cache))
+        }
+        if len(verdicts) < 2:
+            continue
+        direction = directions.compare(s, t, corpus, accessions, verdicts, declared=declared)
+        for line in directions.report(direction):
+            typer.echo(line)
+        for unsurveyed in sorted(set(route_ids) - set(verdicts)):
+            typer.echo(f"  not on the draw: {unsurveyed}")
+        typer.echo("")
+        for share in direction.routes:
+            rows.append(
+                [
+                    s.value,
+                    t.value,
+                    corpus,
+                    direction.compared,
+                    direction.agree,
+                    share.route_id,
+                    "declared" if share.declared else "candidate",
+                    share.resolved,
+                    share.empty,
+                    share.failed,
+                    share.distinct,
+                    share.adds_values,
+                    share.added_values,
+                    share.sole,
+                    share.earns(direction.compared),
+                    share.first,
+                    share.last,
+                ]
+            )
+    if out is not None:
+        with out.open("w", newline="") as handle:
+            writer = csv.writer(handle)
+            writer.writerow(
+                [
+                    "source",
+                    "target",
+                    "corpus",
+                    "compared",
+                    "agree",
+                    "route",
+                    "kind",
+                    "resolved",
+                    "empty",
+                    "failed",
+                    "distinct",
+                    "adds_values",
+                    "added_values",
+                    "sole",
+                    "earns",
+                    "first",
+                    "last",
+                ]
+            )
+            writer.writerows(rows)
+        typer.echo(f"wrote {len(rows)} rows to {out}", err=True)
 
 
 @survey_app.command("show")
