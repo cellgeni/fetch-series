@@ -37,6 +37,7 @@ good news — the archive fixed something.
 | [ELink gives a BioProject its siblings' runs](elink-returns-runs-of-sibling-projects.md) | NCBI | PRJNA1033389's 8 runs come back as 80, with 72 from projects under the same umbrella: 607 runs in 22 projects |
 | [BioStudies answers 404 for a file it holds](biostudies-files-404s-registered-files.md) | EBI | E-MTAB-13459's IDF answers 404 at its address and 200 on the mirror: 328 of 3,000 ArrayExpress IDFs on 2026-10-26 |
 | [An SDRF split across two files](ae-sdrf-split-across-files.md) | EBI | E-GEOD-29264 has no `.sdrf.txt`; its IDF names a hyb and a seq SDRF. Every SDRF route failed 9 of 3,000 studies. Not a fault in the archive |
+| [BioStudies serves a file cut off at 4,096 bytes](biostudies-serves-a-file-cut-at-4096-bytes.md) | EBI | E-MTAB-9791's SDRF, registered at 30,836 bytes, is served as its first 4,096 with HTTP 200 and a matching Content-Length: 4 of its 24 runs, read as all of them |
 
 ## Known, declared, and not yet written up
 

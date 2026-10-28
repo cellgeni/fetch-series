@@ -24,7 +24,7 @@ from fetch_series.providers.biostudies import (
     sdrf_rows,
     sdrf_values,
 )
-from fetch_series.survey.client import Limits, SurveyClient
+from fetch_series.survey.client import Limits, MalformedResponseError, SurveyClient, is_retryable
 
 MIRROR = "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/experiment/MTAB/E-MTAB-9221"
 
@@ -314,3 +314,72 @@ class TestSplitSdrf:
     def test_the_sync_helper_reads_them_too(self, monkeypatch):
         monkeypatch.setattr(core, "transport", httpx.MockTransport(self._handler([])))
         assert "SRR1" in core._sdrf_text(self.STUDY)
+
+
+class TestCutAt4096:
+    """E-MTAB-9791's SDRF, registered at 30,836 bytes, was served as its first 4,096.
+
+    HTTP 200, mid-row, with a Content-Length and an ETag that agreed with the
+    cut (2026-10-28). Only a body of exactly that length asks for the registered
+    size, so every other read costs what it did.
+    """
+
+    STUDY = "E-MTAB-9791"
+    NAME = f"{STUDY}.sdrf.txt"
+    HEADER = "Source Name\tComment[ENA_RUN]\n"
+
+    def _handler(self, seen: list[str], *, served: int, registered: int | None):
+        body = (self.HEADER + "A\tERR1\n" * served)[:served]
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            url = str(request.url)
+            seen.append(url)
+            if url.startswith("https://www.ebi.ac.uk/biostudies/files/"):
+                return httpx.Response(200, text=body)
+            if "/files?" in url:
+                assert request.url.params["search"] == self.NAME
+                items = [] if registered is None else [{"path": self.NAME, "Size": registered}]
+                return httpx.Response(200, json={"items": items, "pagination": {"total": 2}})
+            raise AssertionError(url)
+
+        return handler
+
+    @classmethod
+    async def _call(cls, handler):
+        async with (
+            httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http,
+            SurveyClient(Limits(rps=0), client=http) as client,
+        ):
+            return await sdrf_raw_rows(client, cls.STUDY, 10)
+
+    async def test_a_cut_fails_the_read_and_can_be_retried(self):
+        with pytest.raises(MalformedResponseError, match="served 4,096 of its 30,836") as caught:
+            await self._call(self._handler([], served=4096, registered=30_836))
+        assert is_retryable(caught.value)
+
+    async def test_a_file_that_is_4096_bytes_is_read(self):
+        """E-MTAB-7492's IDF is 4,096 bytes registered, served and in the legacy copy."""
+        seen: list[str] = []
+        rows = await self._call(self._handler(seen, served=4096, registered=4096))
+        assert rows[0] == ["Source Name", "Comment[ENA_RUN]"]
+        assert any("/files?" in url for url in seen)
+
+    async def test_any_other_length_costs_no_request(self):
+        """E-MTAB-11506's IDF is served whole at 6,326 bytes and registered at 6,747.
+
+        A later version than the size BioStudies registers. Comparing every body
+        with its registered size would fail it.
+        """
+        seen: list[str] = []
+        await self._call(self._handler(seen, served=6326, registered=6747))
+        assert not any("/files?" in url for url in seen)
+
+    async def test_a_file_the_study_does_not_list_is_read(self):
+        rows = await self._call(self._handler([], served=4096, registered=None))
+        assert rows
+
+    def test_the_sync_helper_checks_too(self, monkeypatch):
+        handler = self._handler([], served=4096, registered=30_836)
+        monkeypatch.setattr(core, "transport", httpx.MockTransport(handler))
+        with pytest.raises(MalformedResponseError):
+            core._sdrf_text(self.STUDY)

@@ -299,10 +299,11 @@ def _study_file(series: str, name: str) -> httpx.Response:
     """A file a BioStudies study registers, from the mirror where the front door 404s.
 
     The synchronous twin of ``providers.biostudies.study_file``, which explains
-    the 404 (E-MTAB-13459's IDF).
+    the 404 (E-MTAB-13459's IDF) and the check for a file cut off at 4,096 bytes
+    (E-MTAB-9791's SDRF).
     """
     try:
-        return _get(
+        response = _get(
             f"https://www.ebi.ac.uk/biostudies/files/{series}/{name}",
             follow_redirects=True,
             timeout=30,
@@ -310,12 +311,20 @@ def _study_file(series: str, name: str) -> httpx.Response:
     except httpx.HTTPStatusError as exc:
         if exc.response.status_code != 404:
             raise
-        missing = exc
-    info = _get(f"https://www.ebi.ac.uk/biostudies/api/v1/studies/{series}/info", timeout=30)
-    link = info.json().get("httpLink")
-    if not isinstance(link, str) or not link.startswith("https://ftp.ebi.ac.uk/"):
-        raise missing
-    return _get(f"{link}/Files/{name}", follow_redirects=True, timeout=30)
+        info = _get(f"https://www.ebi.ac.uk/biostudies/api/v1/studies/{series}/info", timeout=30)
+        link = info.json().get("httpLink")
+        if not isinstance(link, str) or not link.startswith("https://ftp.ebi.ac.uk/"):
+            raise
+        response = _get(f"{link}/Files/{name}", follow_redirects=True, timeout=30)
+    if len(response.content) == biostudies.CUT_LENGTH:
+        listing = _get(
+            f"https://www.ebi.ac.uk/biostudies/api/v1/studies/{series}/files",
+            params={"search": name, "limit": biostudies.PAGE_SIZE},
+            timeout=30,
+        )
+        registered = biostudies.size_in_listing(listing.json(), name)
+        biostudies.check_not_cut(series, name, response.content, registered)
+    return response
 
 
 def _sdrf_text(series: str) -> str:
