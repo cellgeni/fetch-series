@@ -102,7 +102,7 @@ class TestRegisteredNames:
 
 
 class TestMirrorFallback:
-    """``/biostudies/files/`` answers 404 for files the study registers (E-MTAB-13459)."""
+    """``/biostudies/files/`` answered 404 for files the study registers (E-MTAB-13459, 2026-10-26)."""
 
     FIRE = "https://ftp.ebi.ac.uk/biostudies/fire/E-MTAB-/459/E-MTAB-13459"
 
@@ -151,6 +151,35 @@ class TestMirrorFallback:
             await self._call(self._handler(seen, link=None), fetch_idf)
         assert str(caught.value.request.url).startswith("https://www.ebi.ac.uk/biostudies/files/")
         assert not any(url.startswith(self.FIRE) for url in seen)
+
+    async def test_a_redirect_to_a_404_costs_two_more_requests(self):
+        """By 2026-10-27 the front door redirected every name, one the study does
+        not register included (E-MTAB-14460's IDF), and the mirror answered 404.
+        The fallback then asks ``info`` and the same address again: the whole of
+        what keeping it costs."""
+        seen: list[str] = []
+        rest = self._handler(seen, mirror=404)
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            url = str(request.url)
+            if url.startswith("https://www.ebi.ac.uk/biostudies/files/"):
+                seen.append(url)
+                name = url.rsplit("/", 1)[-1]
+                return httpx.Response(302, headers={"location": f"{self.FIRE}/Files/{name}"})
+            return rest(request)
+
+        async with (
+            httpx.AsyncClient(
+                transport=httpx.MockTransport(handler), follow_redirects=True
+            ) as http,
+            SurveyClient(Limits(rps=0), client=http) as client,
+        ):
+            with pytest.raises(httpx.HTTPStatusError) as caught:
+                await fetch_idf(client, "E-MTAB-13459", 10)
+        assert caught.value.response.status_code == 404
+        assert len(seen) == 4
+        assert seen[2].endswith("/info")
+        assert seen[1] == seen[3] == f"{self.FIRE}/Files/E-MTAB-13459.idf.txt"
 
     async def test_any_other_status_is_not_rerouted(self):
         seen: list[str] = []

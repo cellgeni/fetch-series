@@ -315,9 +315,8 @@ PATHOLOGIES: dict[str, tuple[str, ...]] = {
     "esummary_sra": ("esummary-500-uid-limit", "esummary-sra-buries-accessions-in-expxml"),
     "sra_be_runinfo": ("sra-be-history-caps-at-5000-runs",),
     "esearch_sra_runinfo": ("efetch-returns-fewer-runs-than-esearch-counts",),
-    "biostudies_idf": ("biostudies-files-404s-registered-files",),
     **{
-        mechanism: ("biostudies-files-404s-registered-files", "ae-sdrf-split-across-files")
+        mechanism: ("ae-sdrf-split-across-files",)
         for mechanism in ("biostudies_sdrf", "biostudies_sdrf_comments")
     },
 }

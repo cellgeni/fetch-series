@@ -576,10 +576,7 @@ ROUTES: list[Route] = [
                 "register no files at all."
             ),
         ),
-        known_pathologies=(
-            "ae-idf-missing-secondary-accession",
-            "biostudies-files-404s-registered-files",
-        ),
+        known_pathologies=("ae-idf-missing-secondary-accession",),
     ),
     Route(
         id="ae_experiment->biosample:sdrf",
@@ -591,7 +588,6 @@ ROUTES: list[Route] = [
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         known_pathologies=(
             "biostudies-silent-25-item-default",
-            "biostudies-files-404s-registered-files",
             "ae-sdrf-split-across-files",
         ),
         evidence=RouteEvidence(
@@ -1191,7 +1187,6 @@ ROUTES: list[Route] = [
         cost=RouteCost(requests=2, rate_limit_rps=EBI_RPS, paginates=True),
         known_pathologies=(
             "ae-sdrf-points-at-decommissioned-mirror",
-            "biostudies-files-404s-registered-files",
             "ae-sdrf-split-across-files",
         ),
         evidence=RouteEvidence(
@@ -4403,7 +4398,7 @@ PROMOTED: tuple[Promoted, ...] = (
         requests=1,
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
-        known_pathologies=("biostudies-files-404s-registered-files",),
+        known_pathologies=(),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
             surveyed_on=date(2026, 10, 27),
@@ -4479,7 +4474,7 @@ PROMOTED: tuple[Promoted, ...] = (
         requests=1,
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
-        known_pathologies=("biostudies-files-404s-registered-files", "ae-sdrf-split-across-files"),
+        known_pathologies=("ae-sdrf-split-across-files",),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
             surveyed_on=date(2026, 10, 27),
@@ -4498,7 +4493,7 @@ PROMOTED: tuple[Promoted, ...] = (
         requests=1,
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
-        known_pathologies=("biostudies-files-404s-registered-files", "ae-sdrf-split-across-files"),
+        known_pathologies=("ae-sdrf-split-across-files",),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
             surveyed_on=date(2026, 10, 27),
@@ -4517,7 +4512,7 @@ PROMOTED: tuple[Promoted, ...] = (
         requests=1,
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
-        known_pathologies=("biostudies-files-404s-registered-files",),
+        known_pathologies=(),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
             surveyed_on=date(2026, 10, 27),
@@ -4555,7 +4550,7 @@ PROMOTED: tuple[Promoted, ...] = (
         requests=1,
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
-        known_pathologies=("biostudies-files-404s-registered-files",),
+        known_pathologies=(),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
             surveyed_on=date(2026, 10, 27),
@@ -4574,7 +4569,7 @@ PROMOTED: tuple[Promoted, ...] = (
         requests=1,
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
-        known_pathologies=("biostudies-files-404s-registered-files", "ae-sdrf-split-across-files"),
+        known_pathologies=("ae-sdrf-split-across-files",),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
             surveyed_on=date(2026, 10, 27),
@@ -4593,7 +4588,7 @@ PROMOTED: tuple[Promoted, ...] = (
         requests=1,
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
-        known_pathologies=("biostudies-files-404s-registered-files", "ae-sdrf-split-across-files"),
+        known_pathologies=("ae-sdrf-split-across-files",),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
             surveyed_on=date(2026, 10, 27),

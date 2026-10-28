@@ -48,7 +48,7 @@ again: 57 studies.
 - **55** split their SDRF. Every one is an `E-GEOD` import, from `E-GEOD-12646` to
   `E-GEOD-34626`. Every one names exactly two files, `.hyb.sdrf.txt` and `.seq.sdrf.txt`.
 - **2**, `E-MTAB-14460` and `E-MTAB-15118`, register no files at all
-  ([the other 404](biostudies-files-404s-registered-files.md#what-it-is-not)).
+  ([the other 404](../routes/ae-experiment-to-study/index.md#five-studies-exist-without-existing)).
 
 So no SDRF read recorded in this project has failed for any other reason.
 
@@ -69,8 +69,9 @@ curl -sL https://www.ebi.ac.uk/biostudies/files/E-GEOD-29264/E-GEOD-29264.seq.sd
   here. The IDF names two SDRFs, the study's file list registers those two, and the mirror
   serves them. The assumption of one SDRF named after the study was this project's. It held
   for 2,989 of the draw's 3,000 studies, which is why nothing questioned it.
-- **Not [the 404 for a file the study holds](biostudies-files-404s-registered-files.md).** There,
-  the mirror has the file. Here nobody has it, because it does not exist.
+- **Not the 404 BioStudies once gave for a file the study holds**,
+  [retired on 2026-10-28](index.md#retired-declared-once-not-reproduced). There, the mirror had
+  the file. Here nobody has it, because it does not exist.
 - **Not lossy to merge.** The two files describe one study, so the routes read them as one
   table. Columns are aligned by name. A repeated name is matched by its order of occurrence, so
   both `Comment[FASTQ_URI]` columns of a paired study survive. A `Term Source REF` or `Unit` is

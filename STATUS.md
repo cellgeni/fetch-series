@@ -63,7 +63,7 @@ hand-written preference anywhere in the project.
 | **183/183** | runs whose ENA listing is one fastq are proven unusable by their reads; NCBI's Normalized object of the same run is fit for 142 runs with an unfit ENA fastq | [content survey](docs/benchmarks/content-survey-2026-10.md) |
 | **248/452** | objects DDBJ Search links for NCBI runs do not exist at DDBJ | [content survey](docs/benchmarks/content-survey-2026-10.md) |
 | **8,604/8,604** | agreement between GEO's own SRA relation and ENA's submitter alias — a route that works where GEO records no relation at all | [route](docs/routes/run-to-geo-sample/ena-alias.md) |
-| **326/328** | ArrayExpress IDFs BioStudies answered 404 for were on its own FTP mirror: 11% of studies on 2026-10-26, against 5 of 20,693 in September | [pathology](docs/pathologies/biostudies-files-404s-registered-files.md) |
+| **326/328** | ArrayExpress IDFs BioStudies answered 404 for were on its own FTP mirror: 11% of studies on 2026-10-26, against 5 of 20,693 in September. Retired 2026-10-28: the address answered none of 6,000 that way, and now redirects even names no study registers | [retired](docs/pathologies/index.md#retired-declared-once-not-reproduced) |
 | **55/57** | ArrayExpress studies that failed an SDRF read in any survey split it into a hyb and a seq file, which the IDF names; the other 2 register no files at all | [pathology](docs/pathologies/ae-sdrf-split-across-files.md) |
 
 Four of the first five contradicted what this project's own code assumed before
