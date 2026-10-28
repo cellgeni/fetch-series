@@ -40,8 +40,11 @@ T = TypeVar("T")
 RETRYABLE_STATUS = frozenset({408, 429, 500, 502, 503, 504})
 # ENA's file server answers 403 under concurrent load and 200 a moment later:
 # 81 of 4,466 listed fastqs answered 403 in the 2026-10-23 listing census, and
-# 80 of them 200 on a re-check one at a time. Elsewhere a 403 is an answer.
-THROTTLES_WITH_403 = frozenset({"ftp.sra.ebi.ac.uk"})
+# 80 of them 200 on a re-check one at a time. BioStudies' mirror does the same:
+# 155 of 6,018 IDF and SDRF requests answered 403 in the 2026-10-28 served-size
+# census, and every one answered when asked again one at a time: 150 the first
+# time, the other 5 the second. Elsewhere a 403 is an answer.
+THROTTLES_WITH_403 = frozenset({"ftp.sra.ebi.ac.uk", "ftp.ebi.ac.uk"})
 
 
 class MalformedResponseError(Exception):
