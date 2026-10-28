@@ -36,6 +36,7 @@ good news — the archive fixed something.
 | [`[GPRJ]` misses experiments its project holds](gprj-misses-experiments-of-the-project.md) | NCBI | PRJNA66167's SRX135150 names the project in every record and is not under `PRJNA66167[GPRJ]`: 1,100 runs in 2 projects |
 | [ELink gives a BioProject its siblings' runs](elink-returns-runs-of-sibling-projects.md) | NCBI | PRJNA1033389's 8 runs come back as 80, with 72 from projects under the same umbrella: 607 runs in 22 projects |
 | [BioStudies answers 404 for a file it holds](biostudies-files-404s-registered-files.md) | EBI | E-MTAB-13459's IDF answers 404 at its address and 200 on the mirror: 328 of 3,000 ArrayExpress IDFs on 2026-10-26 |
+| [An SDRF split across two files](ae-sdrf-split-across-files.md) | EBI | E-GEOD-29264 has no `.sdrf.txt`; its IDF names a hyb and a seq SDRF. Every SDRF route failed 9 of 3,000 studies. Not a fault in the archive |
 
 ## Known, declared, and not yet written up
 
