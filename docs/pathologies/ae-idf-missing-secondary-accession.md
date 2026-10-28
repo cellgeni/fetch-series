@@ -17,16 +17,18 @@ partly worked around by a fallback; reproduced 2026-10-28
 `Comment[SecondaryAccession]` row at all, among the ArrayExpress studies whose BioStudies record
 carries an ENA link. `Comment[SecondaryAccession]` is the IDF field that names the ENA study.
 
-The route's survey of the 20,693 records 12 empties. The other two are not this pathology:
+The route's survey of the 20,693 records 11 empties. The other one is not this pathology:
 
 - **E-GEOD-35315** resolved to SRP010570 over the 551 the same afternoon, and its IDF reads whole
   again since. Its row sits near the end of the file, where
   [an IDF served cut off at 4,096 bytes](../routes/from-ae-experiment.md#an-idf-served-cut-off-at-4096-bytes)
   loses it.
-- **E-MTAB-11257's IDF is served as an empty directory listing**: an Apache `Index of
-  /biostudies/fire/E-MTAB-/257/E-MTAB-11257/Files/E-MTAB-11257.idf.txt` page, 837 bytes, with
-  HTTP 200. The legacy ArrayExpress copy is 4,480 bytes and names ERP133806, which the route
-  found on 2026-09-15.
+
+It recorded 12 until E-MTAB-11257 was asked again. That study's IDF was served as
+[an empty directory listing](biostudies-serves-a-directory-listing-for-a-file.md): an Apache
+`Index of /biostudies/fire/E-MTAB-/257/E-MTAB-11257/Files/E-MTAB-11257.idf.txt` page, 837 bytes,
+with HTTP 200. The legacy ArrayExpress copy is 4,480 bytes and names ERP133806. A listing now
+fails the read, and asked again at 21:34 UTC the IDF was whole and resolved to ERP133806.
 
 The other 10 empties are exactly the 10 the reader left empty over the 551 that afternoon. Read
 again after the survey, none of the 10 was served at 4,096 bytes.
@@ -102,7 +104,8 @@ Checked on 2026-10-28.
 - **Not the IDFs that answer 404.** Those studies register no files at all, and are counted as
   failures, not empties.
 - **Not an IDF served wrong.** A file cut at 4,096 bytes, or served as a directory listing, also
-  reads as naming no study. Those are E-GEOD-35315 and E-MTAB-11257 above, and are not counted.
+  reads as naming no study. E-GEOD-35315 and E-MTAB-11257 above were of that kind, and are not
+  counted. A directory listing now fails the read rather than reading as empty.
 
 ## Workaround
 

@@ -66,7 +66,7 @@ hand-written preference anywhere in the project.
 | **326/328** | ArrayExpress IDFs BioStudies answered 404 for were on its own FTP mirror: 11% of studies on 2026-10-26, against 5 of 20,693 in September | [pathology](docs/pathologies/biostudies-files-404s-registered-files.md) |
 | **55/57** | ArrayExpress studies that failed an SDRF read in any survey split it into a hyb and a seq file, which the IDF names; the other 2 register no files at all | [pathology](docs/pathologies/ae-sdrf-split-across-files.md) |
 | **2,159** | ArrayExpress studies answered with exactly two runs by the IDF route, which read each run range's two ends: 16,873 runs where the expanded ranges hold 111,829. The bug was ours; that a range is a first and last, not a list, is the archive's | [route](docs/routes/from-ae-experiment.md#the-idf-names-runs-in-ranges) |
-| **540/551** | ArrayExpress studies counted as naming no ENA study in their IDF did name one, in a second cell or a quoted row this project's reader skipped: `idf_secondary` resolves 20,675 of 20,693, not 20,137. The archive's part is 10 studies that give the study as a related experiment | [pathology](docs/pathologies/ae-idf-missing-secondary-accession.md) |
+| **540/551** | ArrayExpress studies counted as naming no ENA study in their IDF did name one, in a second cell or a quoted row this project's reader skipped: `idf_secondary` resolves 20,676 of 20,693, not 20,137. The archive's part is 10 studies that give the study as a related experiment | [pathology](docs/pathologies/ae-idf-missing-secondary-accession.md) |
 
 Four of the first five contradicted what this project's own code assumed before
 anyone counted. The umbrella finding forced a rule onto the front page —

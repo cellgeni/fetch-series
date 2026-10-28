@@ -24,10 +24,10 @@ for each of these, so a study whose IDF declares no secondary accession is a
 
 | | 2026-09-15 | 2026-10-28 | |
 |---|---:|---:|---|
-| Resolved | 20,137 | **20,675** | 99.9% |
-| No secondary accession declared | 551 | **12** | |
+| Resolved | 20,137 | **20,676** | 99.9% |
+| No secondary accession declared | 551 | **11** | |
 | Failed | 5 | 6 | |
-| Distinct studies found | 20,138 | 20,686 | |
+| Distinct studies found | 20,138 | 20,687 | |
 
 The 2026-09-15 survey read the first cell of the row, and nothing from an IDF that quotes its
 cells. An E-GEOD import puts its GEO series in the first cell and its SRA study in the second
@@ -40,7 +40,7 @@ counted as declaring nothing are re-read on [the pathology page](../../pathologi
 
 | Prefix | What it is | Total | Resolved 2026-09-15 | Resolved 2026-10-28 |
 |---|---|---:|---:|---:|
-| `E-MTAB` | native ArrayExpress submissions | 9,802 | 9,777 | 9,785 |
+| `E-MTAB` | native ArrayExpress submissions | 9,802 | 9,777 | 9,786 |
 | `E-GEOD` | ArrayExpress's imports of GEO series | 10,597 | 10,147 | **10,596** |
 | `E-ERAD` | the Sanger ERAD collection | 274 | 193 | **274** |
 | others | SYBR, GEUV, TABM | 20 | 20 | 20 |
@@ -52,20 +52,25 @@ trusted. It was two spellings of one field, and the reader handled one of them.
 Seven studies also gained a study from a later cell: E-MTAB-4045's row names SRP021098,
 SRP041709 and SRP041710, where the first cell alone gave SRP041709.
 
-### What the 12 empties are
+### What the 11 empties are
 
 - **10 name no `Comment[SecondaryAccession]`**, all `E-MTAB`. Each names the study as a
   `Comment[RelatedExperiment]` instead. That is [the pathology](../../pathologies/ae-idf-missing-secondary-accession.md).
 - **E-GEOD-35315** resolved to SRP010570 over `arrayexpress-no-secondary` the same afternoon, and
   reads whole since. Its row is near the end of the file, where an
   [IDF served cut off at 4,096 bytes](../from-ae-experiment.md#an-idf-served-cut-off-at-4096-bytes)
-  loses it.
-- **E-MTAB-11257's IDF is served as an empty directory listing**: HTTP 200, an Apache `Index of`
-  page, 837 bytes. The route reads that as an IDF that names nothing. The legacy ArrayExpress copy
-  names ERP133806, which the route found on 2026-09-15.
+  loses it. What was served at 15:15 UTC was not kept, so whether it was cut, a directory listing
+  or something else is not known.
 
-The last two are the archive serving the file wrong, and the route cannot tell either from an IDF
+E-GEOD-35315 is the archive serving the file wrong, and the route cannot tell that from an IDF
 that names no study.
+
+**E-MTAB-11257 was a twelfth until it was asked again.** The route recorded it EMPTY at 16:00
+UTC, and at 17:32 UTC its IDF was served as
+[an empty directory listing](../../pathologies/biostudies-serves-a-directory-listing-for-a-file.md):
+HTTP 200, an Apache `Index of` page of 837 bytes, which reads as an IDF that names nothing. A
+listing now fails the read instead. Re-asked at 21:34 UTC, the IDF was served whole and named
+ERP133806, which the route also found on 2026-09-15.
 
 ### Six studies exist without existing
 
