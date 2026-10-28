@@ -44,12 +44,23 @@ PAGE_SIZE = 500
 # docs/pathologies/biostudies-serves-a-file-cut-at-4096-bytes.md
 CUT_LENGTH = 4096
 
+# Apache's title for a directory listing. On 2026-10-28 the mirror answered
+# E-MTAB-11257's IDF with HTTP 200 and 837 bytes of "Index of /biostudies/fire/
+# E-MTAB-/257/E-MTAB-11257/Files/E-MTAB-11257.idf.txt": an empty listing at the
+# file's own path, where the legacy ArrayExpress copy is a 4,480-byte IDF naming
+# ERP133806. Every IDF reader read it as an IDF that names nothing.
+DIRECTORY_INDEX = re.compile(rb"<title>\s*Index of /", re.IGNORECASE)
+
 
 async def study_file(
     client: SurveyClient, accession: str, name: str, timeout: float
 ) -> httpx.Response:
-    """A file the study registers, as :func:`served_file` serves it, unless it was cut."""
+    """A file the study registers, as :func:`served_file` serves it.
+
+    Unless what was served is a directory listing, or the file cut off.
+    """
     response = await served_file(client, accession, name, timeout)
+    check_not_directory(accession, name, response.content)
     return await _not_cut(client, accession, name, response, timeout)
 
 
@@ -104,6 +115,25 @@ async def _not_cut(
         registered = await registered_size(client, accession, name, timeout)
         check_not_cut(accession, name, response.content, registered)
     return response
+
+
+def is_directory_index(body: bytes) -> bool:
+    """Whether ``body`` is a web server's listing of a directory rather than a file."""
+    return DIRECTORY_INDEX.search(body[:1024]) is not None
+
+
+def check_not_directory(accession: str, name: str, body: bytes) -> None:
+    """Raise if ``body`` is a directory listing served in place of the file.
+
+    E-MTAB-11257's IDF was one on 2026-10-28 (``DIRECTORY_INDEX``). An HTML page
+    has no IDF or SDRF rows, so a reader handed one answers that the study
+    names nothing: ``idf_secondary`` recorded EMPTY where the IDF names
+    ERP133806. Costs no request.
+    """
+    if is_directory_index(body):
+        raise MalformedResponseError(
+            f"{accession}/{name}: served a {len(body):,}-byte directory listing, not the file"
+        )
 
 
 async def registered_size(

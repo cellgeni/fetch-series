@@ -15,6 +15,8 @@ import pytest
 from fetch_series import core
 from fetch_series.providers.biostudies import (
     fetch_idf,
+    idf_secondary_accessions,
+    is_directory_index,
     merge_sdrf_tables,
     registered_names,
     sdrf_characteristics,
@@ -383,3 +385,82 @@ class TestCutAt4096:
         monkeypatch.setattr(core, "transport", httpx.MockTransport(handler))
         with pytest.raises(MalformedResponseError):
             core._sdrf_text(self.STUDY)
+
+
+class TestDirectoryListing:
+    """E-MTAB-11257's IDF was served as an Apache listing of its own path.
+
+    HTTP 200 and 837 bytes on 2026-10-28, where the file is a 4,480-byte IDF
+    naming ERP133806. ``idf_secondary`` read it as an IDF naming no study and
+    recorded EMPTY. The listing below is the one Apache writes for an empty
+    directory at that path, and it is 837 bytes, as the one served was.
+    """
+
+    STUDY = "E-MTAB-11257"
+    NAME = f"{STUDY}.idf.txt"
+    PATH = f"/biostudies/fire/E-MTAB-/257/{STUDY}/Files/{NAME}"
+    LISTING = (
+        '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">\n'
+        "<html>\n"
+        " <head>\n"
+        f"  <title>Index of {PATH}</title>\n"
+        " </head>\n"
+        " <body>\n"
+        f"<h1>Index of {PATH}</h1>\n"
+        "  <table>\n"
+        '   <tr><th valign="top"><img src="/icons/blank.gif" alt="[ICO]"></th>'
+        '<th><a href="?C=N;O=D">Name</a></th><th><a href="?C=M;O=A">Last modified</a></th>'
+        '<th><a href="?C=S;O=A">Size</a></th><th><a href="?C=D;O=A">Description</a></th></tr>\n'
+        '   <tr><th colspan="5"><hr></th></tr>\n'
+        '<tr><td valign="top"><img src="/icons/back.gif" alt="[PARENTDIR]"></td>'
+        f'<td><a href="/biostudies/fire/E-MTAB-/257/{STUDY}/Files/">Parent Directory</a></td>'
+        '<td>&nbsp;</td><td align="right">  - </td><td>&nbsp;</td></tr>\n'
+        '   <tr><th colspan="5"><hr></th></tr>\n'
+        "</table>\n"
+        "</body></html>\n"
+    )
+    IDF = "MAGE-TAB Version\t1.1\nComment[SecondaryAccession]\tERP133806\n"
+
+    def _handler(self, body: str, seen: list[str] | None = None):
+        def handler(request: httpx.Request) -> httpx.Response:
+            if seen is not None:
+                seen.append(str(request.url))
+            assert (
+                str(request.url)
+                == f"https://www.ebi.ac.uk/biostudies/files/{self.STUDY}/{self.NAME}"
+            )
+            return httpx.Response(200, text=body)
+
+        return handler
+
+    @classmethod
+    async def _call(cls, handler):
+        async with (
+            httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http,
+            SurveyClient(Limits(rps=0), client=http) as client,
+        ):
+            return await idf_secondary_accessions(client, cls.STUDY, 10)
+
+    def test_the_listing_is_the_size_that_was_served(self):
+        assert len(self.LISTING.encode()) == 837
+
+    async def test_a_listing_fails_the_read(self):
+        with pytest.raises(MalformedResponseError, match="837-byte directory listing") as caught:
+            await self._call(self._handler(self.LISTING))
+        assert is_retryable(caught.value)
+
+    async def test_the_file_is_read_and_costs_no_extra_request(self):
+        seen: list[str] = []
+        assert await self._call(self._handler(self.IDF, seen)) == ["ERP133806"]
+        assert len(seen) == 1
+
+    def test_prose_about_an_index_is_not_a_listing(self):
+        """An IDF may say "index"; only Apache's page title marks a listing."""
+        idf = "Investigation Title\tIndex of / single-cell atlas <title>\n"
+        assert not is_directory_index(idf.encode())
+        assert is_directory_index(self.LISTING.encode())
+
+    def test_the_sync_helper_checks_too(self, monkeypatch):
+        monkeypatch.setattr(core, "transport", httpx.MockTransport(self._handler(self.LISTING)))
+        with pytest.raises(MalformedResponseError, match="directory listing"):
+            core.ae2secondary(self.STUDY)

@@ -584,6 +584,7 @@ ROUTES: list[Route] = [
             "ae-idf-missing-secondary-accession",
             "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
+            "biostudies-serves-a-directory-listing-for-a-file",
         ),
     ),
     Route(
@@ -598,6 +599,7 @@ ROUTES: list[Route] = [
             "biostudies-silent-25-item-default",
             "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
+            "biostudies-serves-a-directory-listing-for-a-file",
             "ae-sdrf-split-across-files",
         ),
         evidence=RouteEvidence(
@@ -1199,6 +1201,7 @@ ROUTES: list[Route] = [
             "ae-sdrf-points-at-decommissioned-mirror",
             "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
+            "biostudies-serves-a-directory-listing-for-a-file",
             "ae-sdrf-split-across-files",
         ),
         evidence=RouteEvidence(
@@ -4413,6 +4416,7 @@ PROMOTED: tuple[Promoted, ...] = (
         known_pathologies=(
             "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
+            "biostudies-serves-a-directory-listing-for-a-file",
         ),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
@@ -4498,6 +4502,7 @@ PROMOTED: tuple[Promoted, ...] = (
         known_pathologies=(
             "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
+            "biostudies-serves-a-directory-listing-for-a-file",
             "ae-sdrf-split-across-files",
         ),
         evidence=RouteEvidence(
@@ -4521,6 +4526,7 @@ PROMOTED: tuple[Promoted, ...] = (
         known_pathologies=(
             "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
+            "biostudies-serves-a-directory-listing-for-a-file",
             "ae-sdrf-split-across-files",
         ),
         evidence=RouteEvidence(
@@ -4544,6 +4550,7 @@ PROMOTED: tuple[Promoted, ...] = (
         known_pathologies=(
             "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
+            "biostudies-serves-a-directory-listing-for-a-file",
         ),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
@@ -4590,6 +4597,7 @@ PROMOTED: tuple[Promoted, ...] = (
             "ae-idf-run-range-is-not-a-run-list",
             "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
+            "biostudies-serves-a-directory-listing-for-a-file",
         ),
         evidence=RouteEvidence(
             corpus="sample:3000@arrayexpress-ena",
@@ -4622,6 +4630,7 @@ PROMOTED: tuple[Promoted, ...] = (
         known_pathologies=(
             "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
+            "biostudies-serves-a-directory-listing-for-a-file",
             "ae-sdrf-split-across-files",
         ),
         evidence=RouteEvidence(
@@ -4645,6 +4654,7 @@ PROMOTED: tuple[Promoted, ...] = (
         known_pathologies=(
             "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
+            "biostudies-serves-a-directory-listing-for-a-file",
             "ae-sdrf-split-across-files",
         ),
         evidence=RouteEvidence(

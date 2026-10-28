@@ -318,11 +318,13 @@ PATHOLOGIES: dict[str, tuple[str, ...]] = {
     "biostudies_idf": (
         "biostudies-files-404s-registered-files",
         "biostudies-serves-a-file-cut-at-4096-bytes",
+        "biostudies-serves-a-directory-listing-for-a-file",
     ),
     **{
         mechanism: (
             "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
+            "biostudies-serves-a-directory-listing-for-a-file",
             "ae-sdrf-split-across-files",
         )
         for mechanism in ("biostudies_sdrf", "biostudies_sdrf_comments")

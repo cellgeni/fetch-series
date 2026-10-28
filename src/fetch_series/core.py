@@ -298,8 +298,9 @@ def _study_file(series: str, name: str) -> httpx.Response:
     """A file a BioStudies study registers, from the mirror where the front door 404s.
 
     The synchronous twin of ``providers.biostudies.study_file``, which explains
-    the 404 (E-MTAB-13459's IDF) and the check for a file cut off at 4,096 bytes
-    (E-MTAB-9791's SDRF).
+    the 404 (E-MTAB-13459's IDF), the check for a directory listing served in
+    place of the file (E-MTAB-11257's IDF) and the check for a file cut off at
+    4,096 bytes (E-MTAB-9791's SDRF).
     """
     try:
         response = _get(
@@ -315,6 +316,7 @@ def _study_file(series: str, name: str) -> httpx.Response:
         if not isinstance(link, str) or not link.startswith("https://ftp.ebi.ac.uk/"):
             raise
         response = _get(f"{link}/Files/{name}", follow_redirects=True, timeout=30)
+    biostudies.check_not_directory(series, name, response.content)
     if len(response.content) == biostudies.CUT_LENGTH:
         listing = _get(
             f"https://www.ebi.ac.uk/biostudies/api/v1/studies/{series}/files",
