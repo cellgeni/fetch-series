@@ -105,12 +105,16 @@ class Answer:
 
     ``files`` carries the published size and md5 of every file named, so the
     files can be checked rather than merely listed; ``documents`` the metadata
-    documents fetched, by node.
+    documents fetched, by node. ``unread`` holds what the answer said that could
+    not be read, by node or group, with the reason: a link into one fails,
+    naming it, rather than answering from the rest. E-GEOD-47691's IDF writes
+    its runs as SRR1204762-SRR886300, which descends.
     """
 
     values: Found
     files: list[FileRecord] = field(default_factory=list)
     documents: dict[str, Document] = field(default_factory=dict)
+    unread: Found = field(default_factory=dict)
 
 
 Fetcher = Callable[[SurveyClient, str, float], Awaitable["Found | Answer"]]
@@ -128,8 +132,10 @@ class RecordAbsent(LookupError):
 
 
 # Any accession the registry knows, found anywhere in a value: a relation
-# line's URL, an alias with a suffix (`GSM1480291_r1`), a run range
-# (`ERR1630013-ERR1633526`). The registry's patterns are mutually exclusive, so
+# line's URL, an alias with a suffix (`GSM1480291_r1`). Not a range: this finds
+# the two ends of E-GEOD-29264's SRR208051-SRR208059 and none of the seven
+# between, so a fetcher whose field holds ranges expands them first
+# (`biostudies.sequence_data`). The registry's patterns are mutually exclusive, so
 # one alternation of them finds each token once. Bounded on both sides by
 # anything but a letter or digit, as ena_portal's alias patterns are: a
 # submitter name that merely starts with an accession is not one.
@@ -841,16 +847,18 @@ async def _gds_platform(client: SurveyClient, accession: str, timeout: float) ->
 async def _idf(client: SurveyClient, accession: str, timeout: float) -> Answer:
     comments = biostudies.idf_comments(await biostudies.fetch_idf(client, accession, timeout))
     secondary = comments.get("SecondaryAccession", [])
+    sequence_data = biostudies.sequence_data(comments.get("SequenceDataURI", []))
     url = f"{biostudies.FILES}/{accession}/{accession}.idf.txt"
     return Answer(
         {
             "study": secondary,
             "geo_series": secondary,
             "ae_experiment": comments.get("RelatedExperiment", []),
-            "run": comments.get("SequenceDataURI", []),
+            "run": sequence_data.accessions,
             "metadata_ae": [url],
         },
         documents={"metadata_ae": Document(url, bool(comments))},
+        unread={"run": sequence_data.unread} if sequence_data.unread else {},
     )
 
 
@@ -1428,6 +1436,14 @@ async def answer_links(
     findings = []
     for link in links:
         node = catalogue.nodes[link.target]
+        unread = lookup(answer.unread, node)
+        if unread:
+            # An answer read in part looks like a whole one: E-GEOD-47691's
+            # other range alone is 5 of its 22 runs. Only this link fails; the
+            # same IDF's study and series are read as they were.
+            message = redact(f"UnreadableValue: {'; '.join(unread)}")[:300]
+            findings.append(Finding(link.id, accession, Outcome.FAILED, error=message))
+            continue
         values = normalise(node, lookup(answer.values, node))
         if link.source == link.target:
             # A self link names a different record of the same kind -- a
