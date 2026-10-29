@@ -173,6 +173,8 @@ nav:
           - BioStudies answers 404 for a file it holds: pathologies/biostudies-files-404s-registered-files.md
           - An SDRF split across two files: pathologies/ae-sdrf-split-across-files.md
           - An IDF's run range is not a run list: pathologies/ae-idf-run-range-is-not-a-run-list.md
+          - BioStudies serves a file cut at 4,096 bytes: pathologies/biostudies-serves-a-file-cut-at-4096-bytes.md
+          - BioStudies serves a directory listing for a file: pathologies/biostudies-serves-a-directory-listing-for-a-file.md
       - Upstream reports:
           - Overview: upstream/index.md
           - NCBI ELink gds to sra: upstream/ncbi-elink-gds-sra.md

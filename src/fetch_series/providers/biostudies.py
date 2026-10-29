@@ -18,7 +18,7 @@ from typing import Any
 import httpx
 
 from fetch_series.accession import try_parse
-from fetch_series.survey.client import SurveyClient
+from fetch_series.survey.client import MalformedResponseError, ServedDirectoryError, SurveyClient
 
 FILES = "https://www.ebi.ac.uk/biostudies/files"
 API = "https://www.ebi.ac.uk/biostudies/api/v1"
@@ -36,8 +36,37 @@ SECONDARY_STUDY = re.compile(r"(?:[SED]RP|EGA[SD])\w*\d+")
 # registered fastq files unregistered.
 PAGE_SIZE = 500
 
+# The length every cut copy the mirror has served was cut to. On 2026-10-28 it
+# served E-MTAB-9791's SDRF, registered at 30,836 bytes, as its first 4,096,
+# mid-row, with HTTP 200 and a Content-Length and ETag that agreed with the cut;
+# four IDFs that morning the same way (E-GEOD-58432's, registered at 4,171).
+# Nothing in the body says it was cut.
+# docs/pathologies/biostudies-serves-a-file-cut-at-4096-bytes.md
+CUT_LENGTH = 4096
+
+# Apache's title for a directory listing. The mirror answers E-MTAB-11257's IDF,
+# at some hours, with a 301 to the same path with a slash and HTTP 200 and 837
+# bytes of "Index of /biostudies/fire/E-MTAB-/257/E-MTAB-11257/Files/
+# E-MTAB-11257.idf.txt": an empty directory where the file is a 4,480-byte IDF
+# naming ERP133806, which it serves at other hours (2026-10-28 and 29). Every IDF
+# reader read the listing as an IDF that names nothing.
+# docs/pathologies/biostudies-serves-a-directory-listing-for-a-file.md
+DIRECTORY_INDEX = re.compile(rb"<title>\s*Index of /", re.IGNORECASE)
+
 
 async def study_file(
+    client: SurveyClient, accession: str, name: str, timeout: float
+) -> httpx.Response:
+    """A file the study registers, as :func:`served_file` serves it.
+
+    Unless what was served is a directory listing, or the file cut off.
+    """
+    response = await served_file(client, accession, name, timeout)
+    check_not_directory(accession, name, response.content)
+    return await _not_cut(client, accession, name, response, timeout)
+
+
+async def served_file(
     client: SurveyClient, accession: str, name: str, timeout: float
 ) -> httpx.Response:
     """A file the study registers: at ``FILES``, or where that 404s, on the mirror.
@@ -50,6 +79,10 @@ async def study_file(
     week later, every one of them a file the mirror holds. A 404 is not
     retryable, so the study's ``info`` -- which names its mirror directory -- is
     asked instead, and the mirror's answer, 404 or not, is the verdict.
+
+    Unchecked: this is what the archive serves, which is what
+    ``scripts/biostudies_served_size_census.py`` measures. Readers use
+    :func:`study_file`.
     """
     try:
         return await client.get(f"{FILES}/{accession}/{name}", timeout=timeout)
@@ -62,6 +95,82 @@ async def study_file(
     if not isinstance(link, str) or not link.startswith(MIRROR):
         raise missing
     return await client.get(f"{link}/Files/{name}", timeout=timeout)
+
+
+async def _not_cut(
+    client: SurveyClient, accession: str, name: str, response: httpx.Response, timeout: float
+) -> httpx.Response:
+    """``response``, unless it is a file served cut off at ``CUT_LENGTH`` bytes.
+
+    Only a body of exactly that length costs a request, to the study's file
+    listing: 5 of the 5,796 IDFs and SDRFs of ``sample:3000@arrayexpress-ena``
+    served on 2026-10-28, of which one was cut and four are 4,096-byte files.
+    Comparing every body with its registered size would cost a request per read
+    and fail two whole IDFs whose registered size is stale (E-MTAB-11506's is
+    served as a later version than the size BioStudies registers for it).
+
+    A cut is retryable: E-MTAB-15453's IDF was cut at 08:27 UTC and whole by
+    09:00. One that persists fails the read rather than answering from part of
+    a file.
+    """
+    if len(response.content) == CUT_LENGTH:
+        registered = await registered_size(client, accession, name, timeout)
+        check_not_cut(accession, name, response.content, registered)
+    return response
+
+
+def is_directory_index(body: bytes) -> bool:
+    """Whether ``body`` is a web server's listing of a directory rather than a file."""
+    return DIRECTORY_INDEX.search(body[:1024]) is not None
+
+
+def check_not_directory(accession: str, name: str, body: bytes) -> None:
+    """Raise if ``body`` is a directory listing served in place of the file.
+
+    E-MTAB-11257's IDF is one at some hours (``DIRECTORY_INDEX``). An HTML page
+    has no IDF or SDRF rows, so a reader handed one answers that the study
+    names nothing: ``idf_secondary`` recorded EMPTY where the IDF names
+    ERP133806. Costs no request. Not retryable: a listing outlasts any retry
+    (:class:`~fetch_series.survey.client.ServedDirectoryError`).
+    """
+    if is_directory_index(body):
+        raise ServedDirectoryError(
+            f"{accession}/{name}: served a directory listing of {len(body):,} bytes, not the file"
+        )
+
+
+async def registered_size(
+    client: SurveyClient, accession: str, name: str, timeout: float
+) -> int | None:
+    """The size BioStudies registers for one of a study's files, or None if it lists none.
+
+    The listing's ``search`` filters server-side, so one file costs one request
+    however many the study registers.
+    """
+    response = await client.get(
+        f"{API}/studies/{accession}/files",
+        params={"search": name, "limit": PAGE_SIZE},
+        timeout=timeout,
+    )
+    return size_in_listing(response.json(), name)
+
+
+def size_in_listing(payload: Any, name: str) -> int | None:
+    """The ``Size`` a file listing gives ``name``, or None if it lists no such file."""
+    items = (payload.get("items") or []) if isinstance(payload, dict) else payload
+    for item in items if isinstance(items, list) else []:
+        size = item.get("Size")
+        if name in (item.get("path"), item.get("Name")) and isinstance(size, int):
+            return size
+    return None
+
+
+def check_not_cut(accession: str, name: str, body: bytes, registered: int | None) -> None:
+    """Raise if ``body`` is a file cut off at ``CUT_LENGTH`` bytes; :func:`_not_cut`."""
+    if len(body) == CUT_LENGTH and registered is not None and registered > CUT_LENGTH:
+        raise MalformedResponseError(
+            f"{accession}/{name}: served {CUT_LENGTH:,} of its {registered:,} registered bytes"
+        )
 
 
 async def idf_secondary_accessions(

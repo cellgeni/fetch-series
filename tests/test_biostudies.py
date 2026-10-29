@@ -15,6 +15,8 @@ import pytest
 from fetch_series import core
 from fetch_series.providers.biostudies import (
     fetch_idf,
+    idf_secondary_accessions,
+    is_directory_index,
     merge_sdrf_tables,
     registered_names,
     sdrf_characteristics,
@@ -24,7 +26,13 @@ from fetch_series.providers.biostudies import (
     sdrf_rows,
     sdrf_values,
 )
-from fetch_series.survey.client import Limits, SurveyClient
+from fetch_series.survey.client import (
+    Limits,
+    MalformedResponseError,
+    ServedDirectoryError,
+    SurveyClient,
+    is_retryable,
+)
 
 MIRROR = "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/experiment/MTAB/E-MTAB-9221"
 
@@ -314,3 +322,154 @@ class TestSplitSdrf:
     def test_the_sync_helper_reads_them_too(self, monkeypatch):
         monkeypatch.setattr(core, "transport", httpx.MockTransport(self._handler([])))
         assert "SRR1" in core._sdrf_text(self.STUDY)
+
+
+class TestCutAt4096:
+    """E-MTAB-9791's SDRF, registered at 30,836 bytes, was served as its first 4,096.
+
+    HTTP 200, mid-row, with a Content-Length and an ETag that agreed with the
+    cut (2026-10-28). Only a body of exactly that length asks for the registered
+    size, so every other read costs what it did.
+    """
+
+    STUDY = "E-MTAB-9791"
+    NAME = f"{STUDY}.sdrf.txt"
+    HEADER = "Source Name\tComment[ENA_RUN]\n"
+
+    def _handler(self, seen: list[str], *, served: int, registered: int | None):
+        body = (self.HEADER + "A\tERR1\n" * served)[:served]
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            url = str(request.url)
+            seen.append(url)
+            if url.startswith("https://www.ebi.ac.uk/biostudies/files/"):
+                return httpx.Response(200, text=body)
+            if "/files?" in url:
+                assert request.url.params["search"] == self.NAME
+                items = [] if registered is None else [{"path": self.NAME, "Size": registered}]
+                return httpx.Response(200, json={"items": items, "pagination": {"total": 2}})
+            raise AssertionError(url)
+
+        return handler
+
+    @classmethod
+    async def _call(cls, handler):
+        async with (
+            httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http,
+            SurveyClient(Limits(rps=0), client=http) as client,
+        ):
+            return await sdrf_raw_rows(client, cls.STUDY, 10)
+
+    async def test_a_cut_fails_the_read_and_can_be_retried(self):
+        with pytest.raises(MalformedResponseError, match="served 4,096 of its 30,836") as caught:
+            await self._call(self._handler([], served=4096, registered=30_836))
+        assert is_retryable(caught.value)
+
+    async def test_a_file_that_is_4096_bytes_is_read(self):
+        """E-MTAB-7492's IDF is 4,096 bytes registered, served and in the legacy copy."""
+        seen: list[str] = []
+        rows = await self._call(self._handler(seen, served=4096, registered=4096))
+        assert rows[0] == ["Source Name", "Comment[ENA_RUN]"]
+        assert any("/files?" in url for url in seen)
+
+    async def test_any_other_length_costs_no_request(self):
+        """E-MTAB-11506's IDF is served whole at 6,326 bytes and registered at 6,747.
+
+        A later version than the size BioStudies registers. Comparing every body
+        with its registered size would fail it.
+        """
+        seen: list[str] = []
+        await self._call(self._handler(seen, served=6326, registered=6747))
+        assert not any("/files?" in url for url in seen)
+
+    async def test_a_file_the_study_does_not_list_is_read(self):
+        rows = await self._call(self._handler([], served=4096, registered=None))
+        assert rows
+
+    def test_the_sync_helper_checks_too(self, monkeypatch):
+        handler = self._handler([], served=4096, registered=30_836)
+        monkeypatch.setattr(core, "transport", httpx.MockTransport(handler))
+        with pytest.raises(MalformedResponseError):
+            core._sdrf_text(self.STUDY)
+
+
+class TestDirectoryListing:
+    """E-MTAB-11257's IDF was served as an Apache listing of its own path.
+
+    HTTP 200 and 837 bytes on 2026-10-28, where the file is a 4,480-byte IDF
+    naming ERP133806. ``idf_secondary`` read it as an IDF naming no study and
+    recorded EMPTY. The listing below is the one Apache writes for an empty
+    directory at that path, and it is 837 bytes, as the one served was.
+    """
+
+    STUDY = "E-MTAB-11257"
+    NAME = f"{STUDY}.idf.txt"
+    PATH = f"/biostudies/fire/E-MTAB-/257/{STUDY}/Files/{NAME}"
+    LISTING = (
+        '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">\n'
+        "<html>\n"
+        " <head>\n"
+        f"  <title>Index of {PATH}</title>\n"
+        " </head>\n"
+        " <body>\n"
+        f"<h1>Index of {PATH}</h1>\n"
+        "  <table>\n"
+        '   <tr><th valign="top"><img src="/icons/blank.gif" alt="[ICO]"></th>'
+        '<th><a href="?C=N;O=D">Name</a></th><th><a href="?C=M;O=A">Last modified</a></th>'
+        '<th><a href="?C=S;O=A">Size</a></th><th><a href="?C=D;O=A">Description</a></th></tr>\n'
+        '   <tr><th colspan="5"><hr></th></tr>\n'
+        '<tr><td valign="top"><img src="/icons/back.gif" alt="[PARENTDIR]"></td>'
+        f'<td><a href="/biostudies/fire/E-MTAB-/257/{STUDY}/Files/">Parent Directory</a></td>'
+        '<td>&nbsp;</td><td align="right">  - </td><td>&nbsp;</td></tr>\n'
+        '   <tr><th colspan="5"><hr></th></tr>\n'
+        "</table>\n"
+        "</body></html>\n"
+    )
+    IDF = "MAGE-TAB Version\t1.1\nComment[SecondaryAccession]\tERP133806\n"
+
+    def _handler(self, body: str, seen: list[str] | None = None):
+        def handler(request: httpx.Request) -> httpx.Response:
+            if seen is not None:
+                seen.append(str(request.url))
+            assert (
+                str(request.url)
+                == f"https://www.ebi.ac.uk/biostudies/files/{self.STUDY}/{self.NAME}"
+            )
+            return httpx.Response(200, text=body)
+
+        return handler
+
+    @classmethod
+    async def _call(cls, handler):
+        async with (
+            httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http,
+            SurveyClient(Limits(rps=0), client=http) as client,
+        ):
+            return await idf_secondary_accessions(client, cls.STUDY, 10)
+
+    def test_the_listing_is_the_size_that_was_served(self):
+        assert len(self.LISTING.encode()) == 837
+
+    async def test_a_listing_fails_the_read_and_is_not_retried(self):
+        """It answered every one of 96 requests from 00:33 to 01:25 UTC; a retry waits 15 s."""
+        seen: list[str] = []
+        with pytest.raises(ServedDirectoryError, match="directory listing of 837 bytes") as caught:
+            await self._call(self._handler(self.LISTING, seen))
+        assert not is_retryable(caught.value)
+        assert len(seen) == 1
+
+    async def test_the_file_is_read_and_costs_no_extra_request(self):
+        seen: list[str] = []
+        assert await self._call(self._handler(self.IDF, seen)) == ["ERP133806"]
+        assert len(seen) == 1
+
+    def test_prose_about_an_index_is_not_a_listing(self):
+        """An IDF may say "index"; only Apache's page title marks a listing."""
+        idf = "Investigation Title\tIndex of / single-cell atlas <title>\n"
+        assert not is_directory_index(idf.encode())
+        assert is_directory_index(self.LISTING.encode())
+
+    def test_the_sync_helper_checks_too(self, monkeypatch):
+        monkeypatch.setattr(core, "transport", httpx.MockTransport(self._handler(self.LISTING)))
+        with pytest.raises(ServedDirectoryError, match="directory listing"):
+            core.ae2secondary(self.STUDY)

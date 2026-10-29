@@ -40,8 +40,11 @@ T = TypeVar("T")
 RETRYABLE_STATUS = frozenset({408, 429, 500, 502, 503, 504})
 # ENA's file server answers 403 under concurrent load and 200 a moment later:
 # 81 of 4,466 listed fastqs answered 403 in the 2026-10-23 listing census, and
-# 80 of them 200 on a re-check one at a time. Elsewhere a 403 is an answer.
-THROTTLES_WITH_403 = frozenset({"ftp.sra.ebi.ac.uk"})
+# 80 of them 200 on a re-check one at a time. BioStudies' mirror does the same:
+# 155 of 6,018 IDF and SDRF requests answered 403 in the 2026-10-28 served-size
+# census, and every one answered when asked again one at a time: 150 the first
+# time, the other 5 the second. Elsewhere a 403 is an answer.
+THROTTLES_WITH_403 = frozenset({"ftp.sra.ebi.ac.uk", "ftp.ebi.ac.uk"})
 
 
 class MalformedResponseError(Exception):
@@ -51,6 +54,19 @@ class MalformedResponseError(Exception):
     has no ``result`` key -- "Too many UIDs in request" is the common one. Those
     are retryable in the sense that the request can be reissued differently, and
     must never surface as a ``KeyError`` from deep inside a parser.
+    """
+
+
+class ServedDirectoryError(Exception):
+    """An archive answered a file's address with a listing of a directory there.
+
+    Deliberately not a :class:`MalformedResponseError`, because it is not worth
+    another attempt. BioStudies' mirror redirected E-MTAB-11257's IDF to the
+    same path with a slash and listed an empty directory, on every one of 96
+    requests from 00:33 to 01:25 UTC on 2026-10-29, where a retry waits 15 seconds in
+    all. It served the file at other hours, so the read fails and a later
+    ``--retry-failed`` asks again; four retries in a row would ask the same
+    server the same question.
     """
 
 
