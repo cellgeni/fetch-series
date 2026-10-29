@@ -586,7 +586,6 @@ ROUTES: list[Route] = [
         ),
         known_pathologies=(
             "ae-idf-missing-secondary-accession",
-            "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
             "biostudies-serves-a-directory-listing-for-a-file",
         ),
@@ -601,7 +600,6 @@ ROUTES: list[Route] = [
         cost=RouteCost(requests=1, rate_limit_rps=EBI_RPS),
         known_pathologies=(
             "biostudies-silent-25-item-default",
-            "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
             "biostudies-serves-a-directory-listing-for-a-file",
             "ae-sdrf-split-across-files",
@@ -1203,7 +1201,6 @@ ROUTES: list[Route] = [
         cost=RouteCost(requests=2, rate_limit_rps=EBI_RPS, paginates=True),
         known_pathologies=(
             "ae-sdrf-points-at-decommissioned-mirror",
-            "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
             "biostudies-serves-a-directory-listing-for-a-file",
             "ae-sdrf-split-across-files",
@@ -4418,7 +4415,6 @@ PROMOTED: tuple[Promoted, ...] = (
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
         known_pathologies=(
-            "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
             "biostudies-serves-a-directory-listing-for-a-file",
         ),
@@ -4504,7 +4500,6 @@ PROMOTED: tuple[Promoted, ...] = (
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
         known_pathologies=(
-            "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
             "biostudies-serves-a-directory-listing-for-a-file",
             "ae-sdrf-split-across-files",
@@ -4528,7 +4523,6 @@ PROMOTED: tuple[Promoted, ...] = (
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
         known_pathologies=(
-            "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
             "biostudies-serves-a-directory-listing-for-a-file",
             "ae-sdrf-split-across-files",
@@ -4552,7 +4546,6 @@ PROMOTED: tuple[Promoted, ...] = (
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
         known_pathologies=(
-            "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
             "biostudies-serves-a-directory-listing-for-a-file",
         ),
@@ -4599,7 +4592,6 @@ PROMOTED: tuple[Promoted, ...] = (
         source_archives=(Archive.ARRAYEXPRESS,),
         known_pathologies=(
             "ae-idf-run-range-is-not-a-run-list",
-            "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
             "biostudies-serves-a-directory-listing-for-a-file",
         ),
@@ -4632,7 +4624,6 @@ PROMOTED: tuple[Promoted, ...] = (
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
         known_pathologies=(
-            "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
             "biostudies-serves-a-directory-listing-for-a-file",
             "ae-sdrf-split-across-files",
@@ -4656,7 +4647,6 @@ PROMOTED: tuple[Promoted, ...] = (
         rate_limit_rps=15.0,
         source_archives=(Archive.ARRAYEXPRESS,),
         known_pathologies=(
-            "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
             "biostudies-serves-a-directory-listing-for-a-file",
             "ae-sdrf-split-across-files",

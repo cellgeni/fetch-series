@@ -71,14 +71,21 @@ async def served_file(
 ) -> httpx.Response:
     """A file the study registers: at ``FILES``, or where that 404s, on the mirror.
 
-    ``FILES`` answers a file it holds with a redirect to the FTP mirror, and
-    sometimes with a 404 instead. Six requests in a row for E-MTAB-13459's IDF
-    answered 404 on 2026-10-26, while its own file listing names it and the
-    mirror serves it; E-MTAB-15472's answered 404 twice and then redirected.
-    That failed 8 of 300 ArrayExpress studies on 2026-10-19 and 328 of 3,000 a
-    week later, every one of them a file the mirror holds. A 404 is not
-    retryable, so the study's ``info`` -- which names its mirror directory -- is
-    asked instead, and the mirror's answer, 404 or not, is the verdict.
+    ``FILES`` answers with a redirect to the FTP mirror. Until 2026-10-26 it
+    sometimes answered 404 instead, for a file the study registers and the
+    mirror serves: six requests in a row for E-MTAB-13459's IDF, and 326 of the
+    IDFs of 3,000 ArrayExpress studies that day. A 404 is not retryable, so the
+    study's ``info`` -- which names its mirror directory -- is asked instead, and
+    the mirror's answer, 404 or not, is the verdict.
+
+    By 2026-10-28 ``FILES`` answered 404 for nothing. It redirected all 6,000 of
+    those studies' IDFs and SDRFs, the 13 names they do not register included,
+    which the mirror answers 404; and that night 41,504 of the 41,506 of all of
+    ``arrayexpress-ena``, the other two a 403 for a study not accessible. The
+    fallback stays: it costs two requests, only for a name the mirror does not
+    hold, and it is what reads a registered file if the front door answers 404
+    for one again. Retired in docs/pathologies/index.md, with the census in
+    ``data/benchmarks/biostudies-front-door/2026-10-28``.
 
     Unchecked: this is what the archive serves, which is what
     ``scripts/biostudies_served_size_census.py`` measures. Readers use

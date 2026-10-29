@@ -316,13 +316,11 @@ PATHOLOGIES: dict[str, tuple[str, ...]] = {
     "sra_be_runinfo": ("sra-be-history-caps-at-5000-runs",),
     "esearch_sra_runinfo": ("efetch-returns-fewer-runs-than-esearch-counts",),
     "biostudies_idf": (
-        "biostudies-files-404s-registered-files",
         "biostudies-serves-a-file-cut-at-4096-bytes",
         "biostudies-serves-a-directory-listing-for-a-file",
     ),
     **{
         mechanism: (
-            "biostudies-files-404s-registered-files",
             "biostudies-serves-a-file-cut-at-4096-bytes",
             "biostudies-serves-a-directory-listing-for-a-file",
             "ae-sdrf-split-across-files",

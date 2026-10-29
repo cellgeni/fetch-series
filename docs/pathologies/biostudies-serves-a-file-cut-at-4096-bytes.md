@@ -174,8 +174,9 @@ answers 30,836 once E-MTAB-9791 is too.
   census's SDRFs were cut on every request made one at a time, two seconds apart. Load shows up
   as [a 403](#the-403s-around-it), and of the 1,854 403s the two censuses met, the only one that
   came back cut when asked again was E-GEOD-43366's.
-- **Not [the 404 for a file the study holds](biostudies-files-404s-registered-files.md).** That
-  answers nothing. This answers part of the file.
+- **Not the 404 BioStudies once gave for a file the study holds**,
+  [retired on 2026-10-28](index.md#retired-declared-once-not-reproduced). That answered nothing.
+  This answers part of the file.
 
 ## The 403s around it
 

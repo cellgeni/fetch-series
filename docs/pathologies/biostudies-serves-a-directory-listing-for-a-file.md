@@ -124,8 +124,9 @@ Which of the two it answers depends on the hour.
 - **Not [a file cut off at 4,096 bytes](biostudies-serves-a-file-cut-at-4096-bytes.md).** A cut
   is the first 4,096 bytes of the file itself, and only a body of that length is checked against
   the registered size. A listing is not the file at all, and is 837 bytes.
-- **Not [the 404 for a file the study holds](biostudies-files-404s-registered-files.md).** That
-  answers nothing, and the mirror is asked instead. Here the mirror is what answers wrongly.
+- **Not the 404 BioStudies once gave for a file the study holds**,
+  [retired on 2026-10-28](index.md#retired-declared-once-not-reproduced). That answered nothing,
+  and the mirror was asked instead. Here the mirror is what answers wrongly.
 - **Not [ENA's empty directories](ena-serves-a-listed-fastq-wrongly.md), though it is their
   shape exactly.** ENA's file server answers two listed fastqs with a 301 to the path with a
   slash, and an empty listing there. That is a different server, and those two were directories on

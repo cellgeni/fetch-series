@@ -34,6 +34,7 @@ The only changes made to them since are the ones that stop them doing harm if ru
 | `archive_state_monitor.sh` | re-runs the tier-one corpus and the pathology suite, and diffs against the last snapshot |
 | `parity_fetch10xmeta.py` | compares `fetch links` against fetch10xmeta's nf-test snapshots (the M3 parity contract) |
 | `verify_file_links.py` | checks, over a sample, that the file links the tool hands out actually work |
+| `biostudies_front_door_census.py` | what BioStudies' file address answers for each ArrayExpress IDF and SDRF, without the mirror fallback, against what the study registers |
 | `route_graph_layout.py` | searches node positions for the route-graph page so the layout can be reproduced |
 | `benchmark_inspect.py`, `benchmark_inspect_report.py` | the read classifier benchmark: labels, calls and the held-out report |
 | `inspect_survey_report.py` | the content survey's tables, from its committed `screen_*` exports |
