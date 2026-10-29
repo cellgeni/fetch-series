@@ -18,7 +18,7 @@ from typing import Any
 import httpx
 
 from fetch_series.accession import try_parse
-from fetch_series.survey.client import MalformedResponseError, SurveyClient
+from fetch_series.survey.client import MalformedResponseError, ServedDirectoryError, SurveyClient
 
 FILES = "https://www.ebi.ac.uk/biostudies/files"
 API = "https://www.ebi.ac.uk/biostudies/api/v1"
@@ -44,11 +44,13 @@ PAGE_SIZE = 500
 # docs/pathologies/biostudies-serves-a-file-cut-at-4096-bytes.md
 CUT_LENGTH = 4096
 
-# Apache's title for a directory listing. On 2026-10-28 the mirror answered
-# E-MTAB-11257's IDF with HTTP 200 and 837 bytes of "Index of /biostudies/fire/
-# E-MTAB-/257/E-MTAB-11257/Files/E-MTAB-11257.idf.txt": an empty listing at the
-# file's own path, where the legacy ArrayExpress copy is a 4,480-byte IDF naming
-# ERP133806. Every IDF reader read it as an IDF that names nothing.
+# Apache's title for a directory listing. The mirror answers E-MTAB-11257's IDF,
+# at some hours, with a 301 to the same path with a slash and HTTP 200 and 837
+# bytes of "Index of /biostudies/fire/E-MTAB-/257/E-MTAB-11257/Files/
+# E-MTAB-11257.idf.txt": an empty directory where the file is a 4,480-byte IDF
+# naming ERP133806, which it serves at other hours (2026-10-28 and 29). Every IDF
+# reader read the listing as an IDF that names nothing.
+# docs/pathologies/biostudies-serves-a-directory-listing-for-a-file.md
 DIRECTORY_INDEX = re.compile(rb"<title>\s*Index of /", re.IGNORECASE)
 
 
@@ -125,14 +127,15 @@ def is_directory_index(body: bytes) -> bool:
 def check_not_directory(accession: str, name: str, body: bytes) -> None:
     """Raise if ``body`` is a directory listing served in place of the file.
 
-    E-MTAB-11257's IDF was one on 2026-10-28 (``DIRECTORY_INDEX``). An HTML page
+    E-MTAB-11257's IDF is one at some hours (``DIRECTORY_INDEX``). An HTML page
     has no IDF or SDRF rows, so a reader handed one answers that the study
     names nothing: ``idf_secondary`` recorded EMPTY where the IDF names
-    ERP133806. Costs no request.
+    ERP133806. Costs no request. Not retryable: a listing outlasts any retry
+    (:class:`~fetch_series.survey.client.ServedDirectoryError`).
     """
     if is_directory_index(body):
-        raise MalformedResponseError(
-            f"{accession}/{name}: served a {len(body):,}-byte directory listing, not the file"
+        raise ServedDirectoryError(
+            f"{accession}/{name}: served a directory listing of {len(body):,} bytes, not the file"
         )
 
 

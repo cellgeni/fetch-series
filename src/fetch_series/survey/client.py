@@ -57,6 +57,19 @@ class MalformedResponseError(Exception):
     """
 
 
+class ServedDirectoryError(Exception):
+    """An archive answered a file's address with a listing of a directory there.
+
+    Deliberately not a :class:`MalformedResponseError`, because it is not worth
+    another attempt. BioStudies' mirror redirected E-MTAB-11257's IDF to the
+    same path with a slash and listed an empty directory, on every one of 96
+    requests from 00:33 to 01:25 UTC on 2026-10-29, where a retry waits 15 seconds in
+    all. It served the file at other hours, so the read fails and a later
+    ``--retry-failed`` asks again; four retries in a row would ask the same
+    server the same question.
+    """
+
+
 def is_retryable(exc: BaseException) -> bool:
     """Whether an exception is worth another attempt.
 

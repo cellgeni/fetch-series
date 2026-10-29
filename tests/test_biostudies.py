@@ -26,7 +26,13 @@ from fetch_series.providers.biostudies import (
     sdrf_rows,
     sdrf_values,
 )
-from fetch_series.survey.client import Limits, MalformedResponseError, SurveyClient, is_retryable
+from fetch_series.survey.client import (
+    Limits,
+    MalformedResponseError,
+    ServedDirectoryError,
+    SurveyClient,
+    is_retryable,
+)
 
 MIRROR = "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/experiment/MTAB/E-MTAB-9221"
 
@@ -444,10 +450,13 @@ class TestDirectoryListing:
     def test_the_listing_is_the_size_that_was_served(self):
         assert len(self.LISTING.encode()) == 837
 
-    async def test_a_listing_fails_the_read(self):
-        with pytest.raises(MalformedResponseError, match="837-byte directory listing") as caught:
-            await self._call(self._handler(self.LISTING))
-        assert is_retryable(caught.value)
+    async def test_a_listing_fails_the_read_and_is_not_retried(self):
+        """It answered every one of 96 requests from 00:33 to 01:25 UTC; a retry waits 15 s."""
+        seen: list[str] = []
+        with pytest.raises(ServedDirectoryError, match="directory listing of 837 bytes") as caught:
+            await self._call(self._handler(self.LISTING, seen))
+        assert not is_retryable(caught.value)
+        assert len(seen) == 1
 
     async def test_the_file_is_read_and_costs_no_extra_request(self):
         seen: list[str] = []
@@ -462,5 +471,5 @@ class TestDirectoryListing:
 
     def test_the_sync_helper_checks_too(self, monkeypatch):
         monkeypatch.setattr(core, "transport", httpx.MockTransport(self._handler(self.LISTING)))
-        with pytest.raises(MalformedResponseError, match="directory listing"):
+        with pytest.raises(ServedDirectoryError, match="directory listing"):
             core.ae2secondary(self.STUDY)
