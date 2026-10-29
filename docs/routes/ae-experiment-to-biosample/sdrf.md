@@ -54,10 +54,12 @@ behind `E-GEOD-63923`) resolves through
 [the SOFT family file](../gse-to-geo-sample/soft-family.md) at 99.9%.
 
 **Where it applies, the chain it feeds is complete.** Over the 23 studies in
-`arrayexpress-no-secondary` it rescued, the 756 BioSamples it named all resolved:
+`arrayexpress-no-secondary` it found BioSamples for, the 756 BioSamples it named all resolved:
 756 of 756 to 1,547 runs through
 [BioSample → run](../biosample-to-run/ena-filereport.md), with nothing empty and
-nothing failed.
+nothing failed. 21 of those 23 turned out to declare their study in the IDF after all, in a cell
+the IDF reader did not read until 2026-10-28. As a fallback for an IDF that names no study, the
+route adds 2 studies of 10 ([the route page](../ae-experiment-to-study/index.md#how-much-the-fallback-recovers-2-of-10)).
 
 ## Parsing
 

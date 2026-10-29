@@ -48,7 +48,7 @@ again: 57 studies.
 - **55** split their SDRF. Every one is an `E-GEOD` import, from `E-GEOD-12646` to
   `E-GEOD-34626`. Every one names exactly two files, `.hyb.sdrf.txt` and `.seq.sdrf.txt`.
 - **2**, `E-MTAB-14460` and `E-MTAB-15118`, register no files at all
-  ([the other 404](../routes/ae-experiment-to-study/index.md#five-studies-exist-without-existing)).
+  ([the other 404](../routes/ae-experiment-to-study/index.md#six-studies-exist-without-existing)).
 
 So no SDRF read recorded in this project has failed for any other reason.
 

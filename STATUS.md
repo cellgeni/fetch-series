@@ -39,9 +39,9 @@ Behind it:
 | Mapping block | classifier 0.4.0, set beside the reprocessing pipeline's own STARsolo runs on a fresh draw of 300 held-out samples: the pipeline's whitelist in **404 of 404** blocks, its strand in **386 of 386** that name one; 7 left ambiguous, down from 32 ([comparison](docs/benchmarks/inspect-vs-starsolo-2026-10.md)) |
 | Metadata kit call | names one kit for **964 of 5,465** samples the pipeline mapped; its list is the pipeline's for 900, its strand for 946 of 948; where it and the reads disagree, **the pipeline sides with the reads 20 of 20** ([comparison](docs/benchmarks/metadata-vs-reads-2026-10.md)) |
 | Other technologies | Parse, BD Rhapsody, inDrop and others named from their constants; **no non-10x run called 10x** on the held-out half ([benchmark](docs/benchmarks/technologies-2026-10.md)) |
-| Survey verdicts recorded and committed | **1,254,322** across 3,971 files in `data/surveys/` |
-| Offline tests | **1,238** collected by `uv run pytest` (plus integration, pathology and slow suites) |
-| Knowledge-base pages | every measured route (the promoted ones on one generated page per source type), 24 pathologies, 7 upstream drafts |
+| Survey verdicts recorded and committed | **1,254,873** across 3,972 files in `data/surveys/` |
+| Offline tests | **1,294** collected by `uv run pytest` (plus integration, pathology and slow suites) |
+| Knowledge-base pages | every measured route (the promoted ones on one generated page per source type), 25 pathologies, 7 upstream drafts |
 
 The governing rule held throughout: **no fallback order, ranking or heuristic
 ships without a survey behind it and a KB page citing that survey.**
@@ -63,8 +63,10 @@ hand-written preference anywhere in the project.
 | **183/183** | runs whose ENA listing is one fastq are proven unusable by their reads; NCBI's Normalized object of the same run is fit for 142 runs with an unfit ENA fastq | [content survey](docs/benchmarks/content-survey-2026-10.md) |
 | **248/452** | objects DDBJ Search links for NCBI runs do not exist at DDBJ | [content survey](docs/benchmarks/content-survey-2026-10.md) |
 | **8,604/8,604** | agreement between GEO's own SRA relation and ENA's submitter alias — a route that works where GEO records no relation at all | [route](docs/routes/run-to-geo-sample/ena-alias.md) |
-| **326/328** | ArrayExpress IDFs BioStudies answered 404 for were on its own FTP mirror: 11% of studies on 2026-10-26, against 5 of 20,693 in September. Retired 2026-10-28: the address answered none of 6,000 that way, and now redirects even names no study registers | [retired](docs/pathologies/index.md#retired-declared-once-not-reproduced) |
+| **326/328** | ArrayExpress IDFs BioStudies answered 404 for were on its own FTP mirror: 11% of studies on 2026-10-26, against 5 of 20,693 in September. Retired 2026-10-28: the address answered none of 41,506 that way over all of `arrayexpress-ena`, and now redirects even names no study registers | [retired](docs/pathologies/index.md#retired-declared-once-not-reproduced) |
 | **55/57** | ArrayExpress studies that failed an SDRF read in any survey split it into a hyb and a seq file, which the IDF names; the other 2 register no files at all | [pathology](docs/pathologies/ae-sdrf-split-across-files.md) |
+| **2,159** | ArrayExpress studies answered with exactly two runs by the IDF route, which read each run range's two ends: 16,873 runs where the expanded ranges hold 111,829. The bug was ours; that a range is a first and last, not a list, is the archive's | [route](docs/routes/from-ae-experiment.md#the-idf-names-runs-in-ranges) |
+| **540/551** | ArrayExpress studies counted as naming no ENA study in their IDF did name one, in a second cell or a quoted row this project's reader skipped: `idf_secondary` resolves 20,676 of 20,693, not 20,137. The archive's part is 10 studies that give the study as a related experiment | [pathology](docs/pathologies/ae-idf-missing-secondary-accession.md) |
 
 Four of the first five contradicted what this project's own code assumed before
 anyone counted. The umbrella finding forced a rule onto the front page —

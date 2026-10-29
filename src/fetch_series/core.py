@@ -2,7 +2,6 @@ import csv
 import io
 import logging
 import os
-import re
 from typing import Any, Literal
 
 import httpx
@@ -299,10 +298,12 @@ def _study_file(series: str, name: str) -> httpx.Response:
     """A file a BioStudies study registers, from the mirror where the front door 404s.
 
     The synchronous twin of ``providers.biostudies.study_file``, which explains
-    the 404 (E-MTAB-13459's IDF).
+    the 404 (E-MTAB-13459's IDF), the check for a directory listing served in
+    place of the file (E-MTAB-11257's IDF) and the check for a file cut off at
+    4,096 bytes (E-MTAB-9791's SDRF).
     """
     try:
-        return _get(
+        response = _get(
             f"https://www.ebi.ac.uk/biostudies/files/{series}/{name}",
             follow_redirects=True,
             timeout=30,
@@ -310,12 +311,21 @@ def _study_file(series: str, name: str) -> httpx.Response:
     except httpx.HTTPStatusError as exc:
         if exc.response.status_code != 404:
             raise
-        missing = exc
-    info = _get(f"https://www.ebi.ac.uk/biostudies/api/v1/studies/{series}/info", timeout=30)
-    link = info.json().get("httpLink")
-    if not isinstance(link, str) or not link.startswith("https://ftp.ebi.ac.uk/"):
-        raise missing
-    return _get(f"{link}/Files/{name}", follow_redirects=True, timeout=30)
+        info = _get(f"https://www.ebi.ac.uk/biostudies/api/v1/studies/{series}/info", timeout=30)
+        link = info.json().get("httpLink")
+        if not isinstance(link, str) or not link.startswith("https://ftp.ebi.ac.uk/"):
+            raise
+        response = _get(f"{link}/Files/{name}", follow_redirects=True, timeout=30)
+    biostudies.check_not_directory(series, name, response.content)
+    if len(response.content) == biostudies.CUT_LENGTH:
+        listing = _get(
+            f"https://www.ebi.ac.uk/biostudies/api/v1/studies/{series}/files",
+            params={"search": name, "limit": biostudies.PAGE_SIZE},
+            timeout=30,
+        )
+        registered = biostudies.size_in_listing(listing.json(), name)
+        biostudies.check_not_cut(series, name, response.content, registered)
+    return response
 
 
 def _sdrf_text(series: str) -> str:
@@ -354,9 +364,9 @@ def ae2secondary(series: str) -> list[str]:
     # Get SecondaryAccession values from idf file
     response = _study_file(series, f"{series}.idf.txt")
 
-    # Check if there are SecondaryAccession values in the idf file
-    pattern = re.compile(r"Comment\s*\[SecondaryAccession\]\s*((?:ERP|EGA\w)\d+)")
-    secondary = re.findall(pattern, response.text)
+    # Every cell of every SecondaryAccession row, quoted or not: an E-GEOD import
+    # names its SRA study in the second cell (E-GEOD-10571: GSE10571, SRP003805).
+    secondary = biostudies.idf_secondary(response.text)
 
     # Try to get secondary accesssions from ENA if not found in idf file
     if not secondary:

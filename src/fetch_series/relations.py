@@ -70,8 +70,12 @@ async def _relations_from_arrayexpress(
     ENA's filereport rejects an ArrayExpress accession outright -- it names the
     eight accession shapes it takes and E-MTAB is not among them -- so the study
     has to be found first. The IDF's ``Comment[SecondaryAccession]`` is the
-    direct route; E-MTAB-6505 declares none and is reachable only through the
-    BioSamples its SDRF names, which is why the fallback is not optional.
+    direct route, and read in every cell, quoted or not, it names a study for
+    20,677 of the 20,693 studies BioStudies links to ENA (2026-10-28).
+    E-MTAB-6505 declares none and is reachable only through the BioSamples its
+    SDRF names, which is why the fallback is not optional. It is narrow: of the
+    10 studies in ``arrayexpress-no-secondary`` whose IDF names no study, the
+    SDRF names BioSamples for 2 (E-MTAB-13232, E-MTAB-15116).
     """
     keys: list[str] = []
     try:

@@ -20,7 +20,7 @@ Tiered, and the tiers answer different questions.
 | `geo-sample-<n>` | n | Seeded stratified draw from all 275,238 GEO series | Prevalence across GEO as a whole |
 | `reprocessed-<srr\|srs\|srx\|sample>` | 104k–263k | The run, sample, experiment and GEO-sample columns of the same table | Prevalence at the level the file layer works on |
 | `arrayexpress-ena` | 20,693 | Every ArrayExpress study BioStudies records an ENA link for, enumerated once and committed | Recall, where the link is known to exist from outside the route |
-| `arrayexpress-no-secondary` | 551 | The studies whose IDF declares no secondary accession, from the census above | What a fallback recovers, over exactly the population it exists for |
+| `arrayexpress-no-secondary` | 551 | The studies the census above found no secondary accession in, on 2026-09-15. Read in every cell, quoted or not, 541 declare one (2026-10-28) | What the old reader missed; what a fallback recovers, over the 10 it still exists for |
 | `sample:<n>@<corpus>` | n | A seeded draw from any corpus | Prevalence where a full census costs more than the answer is worth |
 | `results-of:<route>@<corpus>` | varies | Everything a recorded survey returned | The next question, over the population the last answer produced |
 | `node:<node>[/<archive>]@<corpus>` | varies | One catalogue node's accessions within a corpus, optionally one issuing archive's | A link survey's population; filtered *before* any draw |

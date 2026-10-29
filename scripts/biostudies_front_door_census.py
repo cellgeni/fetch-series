@@ -9,10 +9,10 @@ Usage::
 
 On 2026-10-26 ``biostudies.FILES`` answered 404 for 326 IDFs that 3,000
 ArrayExpress studies register, and the readers have read such a file from the
-FTP mirror since (docs/pathologies/biostudies-files-404s-registered-files.md).
-That fallback hides the 404 from everything downstream, including the census of
-served sizes: a file read through it ends on the same host as one the front
-door redirected. This asks the front door alone.
+FTP mirror since. That fallback hides the 404 from everything downstream,
+including the census of served sizes: a file read through it ends on the same
+host as one the front door redirected. This asks the front door alone. Its
+census of 2026-10-28 retired the behaviour (docs/pathologies/index.md).
 
 ``census``: per study, the names its file listing registers, and one GET for
 ``<study>.idf.txt`` and one for ``<study>.sdrf.txt`` at ``FILES`` with

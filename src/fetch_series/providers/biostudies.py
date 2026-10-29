@@ -18,7 +18,7 @@ from typing import Any
 import httpx
 
 from fetch_series.accession import try_parse
-from fetch_series.survey.client import SurveyClient
+from fetch_series.survey.client import ServedCutError, ServedDirectoryError, SurveyClient
 
 FILES = "https://www.ebi.ac.uk/biostudies/files"
 API = "https://www.ebi.ac.uk/biostudies/api/v1"
@@ -27,16 +27,46 @@ API = "https://www.ebi.ac.uk/biostudies/api/v1"
 # (E-MTAB-15118).
 MIRROR = "https://ftp.ebi.ac.uk/"
 
-# Accepts ERP/SRP/DRP and EGA study accessions.
-SECONDARY = re.compile(r"Comment\s*\[SecondaryAccession\]\s*((?:[SED]RP|EGA[SD])\w*\d+)")
+# The study accessions a Comment[SecondaryAccession] cell can hold: ERP/SRP/DRP
+# and EGA. On an E-GEOD import the same row holds the GEO series, which is not one.
+SECONDARY_STUDY = re.compile(r"(?:[SED]RP|EGA[SD])\w*\d+")
 
 # BioStudies pages silently: with no explicit limit it returns the first 25 of
 # however many there are, which would have declared 15 of E-MTAB-9221's 40
 # registered fastq files unregistered.
 PAGE_SIZE = 500
 
+# The length every cut copy the mirror has served was cut to. On 2026-10-28 it
+# served E-MTAB-9791's SDRF, registered at 30,836 bytes, as its first 4,096,
+# mid-row, with HTTP 200 and a Content-Length and ETag that agreed with the cut;
+# four IDFs that morning the same way (E-GEOD-58432's, registered at 4,171).
+# Nothing in the body says it was cut.
+# docs/pathologies/biostudies-serves-a-file-cut-at-4096-bytes.md
+CUT_LENGTH = 4096
+
+# Apache's title for a directory listing. The mirror answers E-MTAB-11257's IDF,
+# at some hours, with a 301 to the same path with a slash and HTTP 200 and 837
+# bytes of "Index of /biostudies/fire/E-MTAB-/257/E-MTAB-11257/Files/
+# E-MTAB-11257.idf.txt": an empty directory where the file is a 4,480-byte IDF
+# naming ERP133806, which it serves at other hours (2026-10-28 and 29). Every IDF
+# reader read the listing as an IDF that names nothing.
+# docs/pathologies/biostudies-serves-a-directory-listing-for-a-file.md
+DIRECTORY_INDEX = re.compile(rb"<title>\s*Index of /", re.IGNORECASE)
+
 
 async def study_file(
+    client: SurveyClient, accession: str, name: str, timeout: float
+) -> httpx.Response:
+    """A file the study registers, as :func:`served_file` serves it.
+
+    Unless what was served is a directory listing, or the file cut off.
+    """
+    response = await served_file(client, accession, name, timeout)
+    check_not_directory(accession, name, response.content)
+    return await _not_cut(client, accession, name, response, timeout)
+
+
+async def served_file(
     client: SurveyClient, accession: str, name: str, timeout: float
 ) -> httpx.Response:
     """A file the study registers: at ``FILES``, or where that 404s, on the mirror.
@@ -48,13 +78,18 @@ async def study_file(
     study's ``info`` -- which names its mirror directory -- is asked instead, and
     the mirror's answer, 404 or not, is the verdict.
 
-    By 2026-10-28 ``FILES`` answered 404 for nothing: it redirected all 6,000 of
-    those studies' IDFs and SDRFs, and the 13 names they do not register as
-    well, which the mirror answers 404. The fallback stays: it costs two
-    requests, only for a name the mirror does not hold, and it is what reads a
-    registered file if the front door answers 404 for one again. Retired in
-    docs/pathologies/index.md, with the census in
+    By 2026-10-28 ``FILES`` answered 404 for nothing. It redirected all 6,000 of
+    those studies' IDFs and SDRFs, the 13 names they do not register included,
+    which the mirror answers 404; and that night 41,504 of the 41,506 of all of
+    ``arrayexpress-ena``, the other two a 403 for a study not accessible. The
+    fallback stays: it costs two requests, only for a name the mirror does not
+    hold, and it is what reads a registered file if the front door answers 404
+    for one again. Retired in docs/pathologies/index.md, with the census in
     ``data/benchmarks/biostudies-front-door/2026-10-28``.
+
+    Unchecked: this is what the archive serves, which is what
+    ``scripts/biostudies_served_size_census.py`` measures. Readers use
+    :func:`study_file`.
     """
     try:
         return await client.get(f"{FILES}/{accession}/{name}", timeout=timeout)
@@ -69,11 +104,87 @@ async def study_file(
     return await client.get(f"{link}/Files/{name}", timeout=timeout)
 
 
+async def _not_cut(
+    client: SurveyClient, accession: str, name: str, response: httpx.Response, timeout: float
+) -> httpx.Response:
+    """``response``, unless it is a file served cut off at ``CUT_LENGTH`` bytes.
+
+    Only a body of exactly that length costs a request, to the study's file
+    listing: 16 of the 39,647 IDFs and SDRFs of ``arrayexpress-ena`` served on
+    2026-10-28 and 29, of which 5 were cut and 11 are 4,096-byte files.
+    Comparing every body with its registered size would cost a request per read
+    and fail three whole IDFs whose registered size is stale (E-MTAB-11506's is
+    served as a later version than the size BioStudies registers for it).
+
+    A cut fails the read rather than answering from part of a file, and is not
+    retried: it lasts far longer than a retry waits
+    (:class:`~fetch_series.survey.client.ServedCutError`).
+    """
+    if len(response.content) == CUT_LENGTH:
+        registered = await registered_size(client, accession, name, timeout)
+        check_not_cut(accession, name, response.content, registered)
+    return response
+
+
+def is_directory_index(body: bytes) -> bool:
+    """Whether ``body`` is a web server's listing of a directory rather than a file."""
+    return DIRECTORY_INDEX.search(body[:1024]) is not None
+
+
+def check_not_directory(accession: str, name: str, body: bytes) -> None:
+    """Raise if ``body`` is a directory listing served in place of the file.
+
+    E-MTAB-11257's IDF is one at some hours (``DIRECTORY_INDEX``). An HTML page
+    has no IDF or SDRF rows, so a reader handed one answers that the study
+    names nothing: ``idf_secondary`` recorded EMPTY where the IDF names
+    ERP133806. Costs no request. Not retryable: a listing outlasts any retry
+    (:class:`~fetch_series.survey.client.ServedDirectoryError`).
+    """
+    if is_directory_index(body):
+        raise ServedDirectoryError(
+            f"{accession}/{name}: served a directory listing of {len(body):,} bytes, not the file"
+        )
+
+
+async def registered_size(
+    client: SurveyClient, accession: str, name: str, timeout: float
+) -> int | None:
+    """The size BioStudies registers for one of a study's files, or None if it lists none.
+
+    The listing's ``search`` filters server-side, so one file costs one request
+    however many the study registers.
+    """
+    response = await client.get(
+        f"{API}/studies/{accession}/files",
+        params={"search": name, "limit": PAGE_SIZE},
+        timeout=timeout,
+    )
+    return size_in_listing(response.json(), name)
+
+
+def size_in_listing(payload: Any, name: str) -> int | None:
+    """The ``Size`` a file listing gives ``name``, or None if it lists no such file."""
+    items = (payload.get("items") or []) if isinstance(payload, dict) else payload
+    for item in items if isinstance(items, list) else []:
+        size = item.get("Size")
+        if name in (item.get("path"), item.get("Name")) and isinstance(size, int):
+            return size
+    return None
+
+
+def check_not_cut(accession: str, name: str, body: bytes, registered: int | None) -> None:
+    """Raise if ``body`` is a file cut off at ``CUT_LENGTH`` bytes; :func:`_not_cut`."""
+    if len(body) == CUT_LENGTH and registered is not None and registered > CUT_LENGTH:
+        raise ServedCutError(
+            f"{accession}/{name}: served {CUT_LENGTH:,} of its {registered:,} registered bytes"
+        )
+
+
 async def idf_secondary_accessions(
     client: SurveyClient, accession: str, timeout: float
 ) -> list[str]:
     """Secondary study accessions declared in a study's IDF file."""
-    return sorted(set(SECONDARY.findall(await fetch_idf(client, accession, timeout))))
+    return idf_secondary(await fetch_idf(client, accession, timeout))
 
 
 async def fetch_idf(client: SurveyClient, accession: str, timeout: float) -> str:
@@ -81,7 +192,48 @@ async def fetch_idf(client: SurveyClient, accession: str, timeout: float) -> str
     return (await study_file(client, accession, f"{accession}.idf.txt", timeout)).text
 
 
-_IDF_COMMENT = re.compile(r"^Comment\s*\[([^\]]+)\]\t(.*)$", re.MULTILINE)
+def idf_rows(text: str) -> list[tuple[str, list[str]]]:
+    """An IDF as rows: each row's tag, and its non-empty cells in order.
+
+    Every IDF reader goes through this one. ArrayExpress writes two dialects.
+    Most IDFs leave cells bare. Some quote every cell and put a space in the
+    tag: E-ERAD-129 writes ``"Comment [SecondaryAccession]"\\t"ERP002094"``. A
+    reader anchored on a bare ``Comment[`` found nothing in such a file. That
+    was 16 of the 3,000 IDFs in sample:3000@arrayexpress-ena, and 87 of the 551
+    once counted as declaring no ENA study (2026-10-28).
+
+    Every cell is stripped, the tag too. E-MTAB-6185 writes
+    ``Comment [RelatedExperiment] \\tE-MTAB-6186``, with a space before the tab,
+    and a pattern wanting the tab straight after ``]`` skipped the row.
+
+    A cell is unquoted only where one quote opens it and another closes it.
+    The file is split into lines before cells, so a stray quote in a
+    description cannot run on into the rows after it.
+    """
+    rows: list[tuple[str, list[str]]] = []
+    for line in text.splitlines():
+        tag, *cells = (_unquote(cell) for cell in line.split("\t"))
+        if tag:
+            rows.append((tag, [cell for cell in cells if cell]))
+    return rows
+
+
+def _unquote(cell: str) -> str:
+    cell = cell.strip()
+    if len(cell) >= 2 and cell[0] == cell[-1] == '"':
+        return cell[1:-1].replace('""', '"').strip()
+    return cell
+
+
+def idf_values(text: str, tag: str) -> list[str]:
+    """Every value of every IDF row tagged ``tag``, in order; ``SDRF File`` matches ``SDRFFile``."""
+    key = _column_key(tag)
+    return [
+        value for name, values in idf_rows(text) if _column_key(name) == key for value in values
+    ]
+
+
+_IDF_COMMENT = re.compile(r"Comment\s*\[([^\]]+)\]")
 
 
 def idf_comments(text: str) -> dict[str, list[str]]:
@@ -89,13 +241,108 @@ def idf_comments(text: str) -> dict[str, list[str]]:
 
     A name can repeat: E-GEOD-60450 declares ``Comment[SecondaryAccession]``
     twice, once for GSE60450 and once for SRP045534, so the rows are collected
-    rather than overwritten.
+    rather than overwritten. Every cell of a row is a value, not just the first:
+    E-GEOD-10571 declares both in one row, ``GSE10571\\tSRP003805``.
     """
     found: dict[str, list[str]] = {}
-    for match in _IDF_COMMENT.finditer(text):
-        values = [value.strip() for value in match.group(2).split("\t") if value.strip()]
-        found.setdefault(match.group(1).strip(), []).extend(values)
+    for tag, values in idf_rows(text):
+        if match := _IDF_COMMENT.fullmatch(tag):
+            found.setdefault(match.group(1).strip(), []).extend(values)
     return found
+
+
+def idf_secondary(text: str) -> list[str]:
+    """The study accessions in an IDF's ``Comment[SecondaryAccession]`` rows, from every cell.
+
+    An E-GEOD import writes the GEO series first and the SRA study second, in
+    one row: ``GSE10571\\tSRP003805``. A reader of the first cell alone found no
+    study in 453 of the 551 IDFs it had counted as declaring none
+    (docs/pathologies/ae-idf-missing-secondary-accession.md).
+    """
+    values = idf_comments(text).get("SecondaryAccession", [])
+    return sorted({value for value in values if SECONDARY_STUDY.fullmatch(value)})
+
+
+# The widest range ``sequence_data`` expands. Over sample:3000@arrayexpress-ena
+# (2026-10-28) the widest range an SDRF agreed with run for run was 2,688
+# accessions (E-MTAB-9402), and the largest study 18,879 runs (E-MTAB-5214, in
+# no range at all). The two wider ranges were first-and-last pairs:
+# E-MTAB-4556's ERR1313817-ERR1432629 spans 118,813 accessions for 2 runs,
+# E-MTAB-4846's 373,571 for 7. Past the bound a range is reported, never cut
+# short: its first 50,000 accessions would be as wrong as its two ends. The
+# bound guards against the absurd only; E-MTAB-5101's 32 cover 16 runs.
+SEQUENCE_DATA_MAX_RANGE = 50_000
+
+_PREFIXED = re.compile(r"([A-Z]+)(\d+)")
+
+
+@dataclass(frozen=True, slots=True)
+class SequenceData:
+    """What an IDF's ``Comment[SequenceDataURI]`` names, and what it could not read.
+
+    ``unread`` holds each part that is not an accession or a range of them, with
+    the reason: a caller reports those rather than answering without them.
+    """
+
+    accessions: list[str]
+    unread: list[str]
+
+
+def _expand(part: str) -> list[str] | str:
+    """``SRR208051-SRR208059`` as its nine accessions, or why it is not a range."""
+    start, _, end = part.partition("-")
+    first, last = try_parse(start), try_parse(end)
+    if first is None or last is None or first.entity != last.entity:
+        return "not a range of one kind of accession"
+    low, high = _PREFIXED.fullmatch(first.value), _PREFIXED.fullmatch(last.value)
+    if low is None or high is None or low.group(1) != high.group(1):
+        return "its ends have different prefixes"
+    # Width as well as value: E-GEOD-47691 writes SRR1204762-SRR886300, its
+    # runs' first and last in string order, which is no range of numbers.
+    width, lowest, highest = len(low.group(2)), int(low.group(2)), int(high.group(2))
+    if highest < lowest or len(high.group(2)) < width:
+        return "it descends"
+    if highest - lowest + 1 > SEQUENCE_DATA_MAX_RANGE:
+        return f"it spans {highest - lowest + 1:,} accessions"
+    return [f"{low.group(1)}{n:0{width}d}" for n in range(lowest, highest + 1)]
+
+
+def sequence_data(values: list[str]) -> SequenceData:
+    """The accessions ``Comment[SequenceDataURI]`` names, each range expanded.
+
+    The field is an ENA browser link over a comma-separated list of ranges, one
+    run written as a range of one: E-GEOD-29264 writes
+    ``http://www.ebi.ac.uk/ena/data/view/SRR208051-SRR208059``, nine runs, and
+    reading the accessions in the text found its two ends. A range is expanded
+    only where both ends are accessions of one kind with one prefix and it
+    ascends. It names experiments in E-TABM-722 and a study in E-ERAD-324; those
+    are read as what they are, and the caller keeps what it asked for.
+
+    A range is the first and last of a group of runs, not a list of them
+    (docs/pathologies/ae-idf-run-range-is-not-a-run-list.md), so an expanded
+    one can name runs the experiment does not describe. Nothing in the text
+    tells those ranges apart from the rest.
+    """
+    accessions: list[str] = []
+    unread: list[str] = []
+    for value in values:
+        for part in value.rpartition("/")[2].split(","):
+            part = part.strip()
+            if not part:
+                continue
+            if "-" not in part:
+                parsed = try_parse(part)
+                if parsed is None:
+                    unread.append(f"{part}: not an accession")
+                else:
+                    accessions.append(parsed.value)
+                continue
+            expanded = _expand(part)
+            if isinstance(expanded, str):
+                unread.append(f"{part}: {expanded}")
+            else:
+                accessions.extend(expanded)
+    return SequenceData(list(dict.fromkeys(accessions)), unread)
 
 
 def _column_key(name: str) -> str:
@@ -131,20 +378,14 @@ def sdrf_values(
     return {column: sorted(values) for column, values in found.items()}
 
 
-_SDRF_FILE = re.compile(r"^SDRF\s*File\t(.*)$", re.MULTILINE | re.IGNORECASE)
-
-
 def sdrf_files(idf_text: str) -> list[str]:
     """The SDRF files an IDF names, in order.
 
     Almost always one, ``<accession>.sdrf.txt``. E-GEOD-29264 names two,
     ``E-GEOD-29264.hyb.sdrf.txt`` and ``E-GEOD-29264.seq.sdrf.txt``, and holds no
-    file by the usual name.
+    file by the usual name. A quoted IDF names its file as ``"SDRF File"`` (E-ERAD-129).
     """
-    found: list[str] = []
-    for match in _SDRF_FILE.finditer(idf_text):
-        found.extend(value.strip() for value in match.group(1).split("\t") if value.strip())
-    return list(dict.fromkeys(found))
+    return list(dict.fromkeys(idf_values(idf_text, "SDRF File")))
 
 
 def _sdrf_table(text: str) -> list[list[str]]:
