@@ -17,21 +17,23 @@ partly worked around by a fallback; reproduced 2026-10-28
 `Comment[SecondaryAccession]` row at all, among the ArrayExpress studies whose BioStudies record
 carries an ENA link. `Comment[SecondaryAccession]` is the IDF field that names the ENA study.
 
-The route's survey of the 20,693 records 11 empties. The other one is not this pathology:
+The route's survey of the 20,693 records 10 empties, and they are these 10. It recorded 12 until
+two studies were asked again. Each was an IDF served wrong, read by a survey whose reader checked
+for neither fault, and each now fails the read instead:
 
-- **E-GEOD-35315** resolved to SRP010570 over the 551 the same afternoon, and its IDF reads whole
-  again since. Its row sits near the end of the file, where
-  [an IDF served cut off at 4,096 bytes](../routes/from-ae-experiment.md#an-idf-served-cut-off-at-4096-bytes)
-  loses it.
+- **E-MTAB-11257**'s IDF was served as
+  [an empty directory listing](biostudies-serves-a-directory-listing-for-a-file.md): an Apache
+  `Index of /biostudies/fire/E-MTAB-/257/E-MTAB-11257/Files/E-MTAB-11257.idf.txt` page, 837
+  bytes, with HTTP 200. The legacy ArrayExpress copy is 4,480 bytes and names ERP133806. Asked
+  again at 21:34 UTC, the IDF was whole and resolved to ERP133806.
+- **E-GEOD-35315** resolved to SRP010570 over the 551 at 13:25 UTC and was recorded EMPTY at
+  15:15. Its row ends at byte 5,121 of a 5,395-byte IDF, where
+  [a copy cut off at 4,096 bytes](biostudies-serves-a-file-cut-at-4096-bytes.md) loses it. What
+  was served at 15:15 was not kept. Asked again at 10:45 UTC on 2026-10-29, it was whole and
+  resolved to SRP010570.
 
-It recorded 12 until E-MTAB-11257 was asked again. That study's IDF was served as
-[an empty directory listing](biostudies-serves-a-directory-listing-for-a-file.md): an Apache
-`Index of /biostudies/fire/E-MTAB-/257/E-MTAB-11257/Files/E-MTAB-11257.idf.txt` page, 837 bytes,
-with HTTP 200. The legacy ArrayExpress copy is 4,480 bytes and names ERP133806. A listing now
-fails the read, and asked again at 21:34 UTC the IDF was whole and resolved to ERP133806.
-
-The other 10 empties are exactly the 10 the reader left empty over the 551 that afternoon. Read
-again after the survey, none of the 10 was served at 4,096 bytes.
+The 10 are exactly the 10 the reader left empty over the 551 that afternoon. Read again after the
+survey, none of the 10 was served at 4,096 bytes.
 
 ## Until 2026-10-28 this page said 551, and 540 of those were this project's reader
 
@@ -105,7 +107,7 @@ Checked on 2026-10-28.
   failures, not empties.
 - **Not an IDF served wrong.** A file cut at 4,096 bytes, or served as a directory listing, also
   reads as naming no study. E-GEOD-35315 and E-MTAB-11257 above were of that kind, and are not
-  counted. A directory listing now fails the read rather than reading as empty.
+  counted. A cut and a directory listing now fail the read rather than reading as empty.
 
 ## Workaround
 

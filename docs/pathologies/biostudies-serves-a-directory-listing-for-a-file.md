@@ -80,7 +80,9 @@ files it was served, E-MTAB-11257's IDF included.
 - **The re-survey kept no bodies**, so it is known only through what a listing does to its
   verdict. A listing reads as EMPTY, and 12 IDFs read so. Ten name no study, and read the same
   again afterwards. E-MTAB-11257's was the listing. E-GEOD-35315's resolved that afternoon,
-  and what it was served at 15:15 was not kept.
+  and what it was served at 15:15 was not kept: a listing or
+  [a cut](biostudies-serves-a-file-cut-at-4096-bytes.md) would each lose its row. Asked again at
+  10:45 UTC on 2026-10-29, it resolved.
 - **The second census** flags a listing whatever its size (`directory_index`), and records each
   body's `Content-Type`. All 39,647 bodies were `text/plain`.
   `scripts/biostudies_served_size_census.py` wrote it to
