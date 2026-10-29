@@ -37,4 +37,4 @@ The only changes made to them since are the ones that stop them doing harm if ru
 | `route_graph_layout.py` | searches node positions for the route-graph page so the layout can be reproduced |
 | `benchmark_inspect.py`, `benchmark_inspect_report.py` | the read classifier benchmark: labels, calls and the held-out report |
 | `inspect_survey_report.py` | the content survey's tables, from its committed `screen_*` exports |
-| `biostudies_served_size_census.py` | what BioStudies serves for each ArrayExpress IDF and SDRF against the size it registers, and its 403s under load |
+| `biostudies_served_size_census.py` | what BioStudies serves for each ArrayExpress IDF and SDRF against the size it registers, whether it serves a directory listing instead, and its 403s under load |

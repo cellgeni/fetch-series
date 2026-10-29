@@ -28,7 +28,7 @@ lose is a measurement. A body that differs from its registered size is kept unde
 
 ``recheck``: every file served short, long, as a directory listing, at exactly
 4,096 bytes or not at all, asked again one at a time, with its legacy ArrayExpress
-copy.
+copy unless it was refused or dropped the first time and is whole now.
 
 ``throttle``: every IDF the census reached asked for again through the same
 reader at a chosen concurrency, and every 403 asked again one at a time.
@@ -314,6 +314,15 @@ async def recheck(args: argparse.Namespace) -> None:
                     "error": again.get("error", ""),
                     "fetched_at": again["fetched_at"],
                 }
+                # A file refused or dropped under load that is now whole has
+                # nothing to compare: 1,793 of the 1,812 files the census of
+                # arrayexpress-ena asked about again, and the legacy copy
+                # would have doubled a one-at-a-time recheck to two hours.
+                now_whole = verdict({**again, "registered_bytes": row["registered_bytes"]})
+                if verdict(row) in ("http_403", "error") and now_whole == "whole":
+                    writer.writerow(out)
+                    handle.flush()
+                    continue
                 try:
                     legacy = await client.get(legacy_url(study, name), timeout=60)
                     out.update(
