@@ -45,15 +45,38 @@ runs. Each of the 2,667 answers holds every run its 2026-10-27 answer held.
   cut off at 4,096 bytes, before the field ([below](#an-idf-served-cut-off-at-4096-bytes)).
 - The order `ranked()` gives this direction is unchanged: it ranks on how many studies resolve, and
   the two-ends reading resolved as many as the expanded one.
-- **The IDF reader still misses quoted rows.** 16 of the 3,000 IDFs quote every cell
-  (`"Comment [SequenceDataURI]"`, E-ERAD-355), and `biostudies.idf_comments` reads nothing from
-  them. Two of the 16 name runs, which this route records as empty. The same gap reaches every link
-  the IDF answers, so it is left for a fix that re-measures them all together.
+- **Quoted IDFs were not read until a second fix the same day.** 16 of the 3,000 IDFs quote every
+  cell (`"Comment [SequenceDataURI]"`, E-ERAD-355), and `biostudies.idf_comments` read nothing from
+  them. See [below](#quoted-idfs-read-since-2026-10-28).
 
 A range is the first and last of a group of runs, not a list of them, so the expanded ranges also
 name runs the experiment does not describe: 327 runs in 19 of the 2,654 studies whose SDRF could be
 compared, and never another submitter's. That is the archive's, and is
 [a pathology](../pathologies/ae-idf-run-range-is-not-a-run-list.md) the route declares.
+
+### Quoted IDFs, read since 2026-10-28
+
+Some IDFs quote every cell and put a space in the tag: E-ERAD-129 writes
+`"Comment [SecondaryAccession]"	"ERP002094"`. `biostudies.idf_comments` anchored on a bare
+`Comment[` and read nothing at all from them. It now reads through `biostudies.idf_rows`, which takes
+both dialects and every cell of a row, and strips each one. That reader serves every route that
+reads an IDF. The same
+fix took the study out of the second cell of an E-GEOD row, and rewrote
+[a pathology this project's reader had made](../pathologies/ae-idf-missing-secondary-accession.md).
+
+All three routes here were surveyed again over the same 3,000 on 2026-10-28, 14:06–14:50 UTC. Each
+route's 403s from `ftp.ebi.ac.uk`, throttling while another job read the same host, were asked
+again one at a time until none was left.
+
+| Route | Resolved | Empty | Failed | Distinct | What changed |
+|---|---:|---:|---:|---:|---|
+| `->run` | 2,667 → **2,673** | 320 → 314 | 13 | 111,829 → **112,005** | E-ERAD-203 and E-MTAB-8121, quoted; and the 4 IDFs cut at 4,096 bytes that morning, served whole |
+| `->geo_series` | 1,552 | 1,446 | 2 | 1,552 | nothing: no quoted IDF names a GEO series |
+| `->ae_experiment` | 282 → **285** | 2,716 → 2,713 | 2 | 472 → **481** | E-MTAB-8121, quoted; E-MTAB-6185 and E-MTAB-6219, whose tag has a space before its tab: `Comment [RelatedExperiment] ` |
+
+Every answer the earlier survey gave is unchanged. The other 14 quoted IDFs name a study in the
+field, not runs: E-ERAD-355's is ERP009144, the study its `SecondaryAccession` names. The route
+reads it as what it is and does not return it. `ranked()` is unchanged in all three directions.
 
 ### An IDF served cut off at 4,096 bytes
 

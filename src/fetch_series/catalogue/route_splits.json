@@ -10,11 +10,11 @@
      "source": "ae_experiment",
      "target": "ae_experiment",
      "queried": 3000,
-     "resolved": 282,
-     "empty": 2716,
+     "resolved": 285,
+     "empty": 2713,
      "failed": 2,
-     "reached": 282,
-     "distinct": 472
+     "reached": 285,
+     "distinct": 481
     }
    ]
   },
@@ -190,21 +190,21 @@
      "source": "ae_experiment",
      "target": "run_ebi",
      "queried": 3000,
-     "resolved": 2667,
-     "empty": 320,
+     "resolved": 2673,
+     "empty": 314,
      "failed": 13,
-     "reached": 1356,
-     "distinct": 85179
+     "reached": 1360,
+     "distinct": 85283
     },
     {
      "source": "ae_experiment",
      "target": "run_ncbi",
      "queried": 3000,
-     "resolved": 2667,
-     "empty": 320,
+     "resolved": 2673,
+     "empty": 314,
      "failed": 13,
-     "reached": 1311,
-     "distinct": 26650
+     "reached": 1313,
+     "distinct": 26722
     }
    ]
   },
@@ -271,21 +271,21 @@
      "source": "ae_experiment",
      "target": "study_ebi",
      "queried": 20693,
-     "resolved": 20137,
-     "empty": 551,
-     "failed": 5,
-     "reached": 9775,
-     "distinct": 9763
+     "resolved": 20675,
+     "empty": 12,
+     "failed": 6,
+     "reached": 9860,
+     "distinct": 9854
     },
     {
      "source": "ae_experiment",
      "target": "study_ncbi",
      "queried": 20693,
-     "resolved": 20137,
-     "empty": 551,
-     "failed": 5,
-     "reached": 10362,
-     "distinct": 10374
+     "resolved": 20675,
+     "empty": 12,
+     "failed": 6,
+     "reached": 10815,
+     "distinct": 10831
     }
    ]
   },

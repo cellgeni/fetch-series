@@ -77,7 +77,7 @@ column GEO has no equivalent of and one it does.
 
 **Both failures are a 404 on the SDRF itself, and neither is transient.** They
 are `E-MTAB-14460` and `E-MTAB-15118`, the two of the
-[five studies that register no files at all](../ae-experiment-to-study/index.md#five-studies-exist-without-existing)
+[five studies that register no files at all](../ae-experiment-to-study/index.md#six-studies-exist-without-existing)
 that this draw happened to include. There were 11 until 2026-10-27. The other nine are `E-GEOD`
 imports (`E-GEOD-15593` and eight more) whose SDRF is
 [split across two files](../../pathologies/ae-sdrf-split-across-files.md), `.hyb.sdrf.txt` and

@@ -27,8 +27,9 @@ API = "https://www.ebi.ac.uk/biostudies/api/v1"
 # (E-MTAB-15118).
 MIRROR = "https://ftp.ebi.ac.uk/"
 
-# Accepts ERP/SRP/DRP and EGA study accessions.
-SECONDARY = re.compile(r"Comment\s*\[SecondaryAccession\]\s*((?:[SED]RP|EGA[SD])\w*\d+)")
+# The study accessions a Comment[SecondaryAccession] cell can hold: ERP/SRP/DRP
+# and EGA. On an E-GEOD import the same row holds the GEO series, which is not one.
+SECONDARY_STUDY = re.compile(r"(?:[SED]RP|EGA[SD])\w*\d+")
 
 # BioStudies pages silently: with no explicit limit it returns the first 25 of
 # however many there are, which would have declared 15 of E-MTAB-9221's 40
@@ -67,7 +68,7 @@ async def idf_secondary_accessions(
     client: SurveyClient, accession: str, timeout: float
 ) -> list[str]:
     """Secondary study accessions declared in a study's IDF file."""
-    return sorted(set(SECONDARY.findall(await fetch_idf(client, accession, timeout))))
+    return idf_secondary(await fetch_idf(client, accession, timeout))
 
 
 async def fetch_idf(client: SurveyClient, accession: str, timeout: float) -> str:
@@ -75,7 +76,48 @@ async def fetch_idf(client: SurveyClient, accession: str, timeout: float) -> str
     return (await study_file(client, accession, f"{accession}.idf.txt", timeout)).text
 
 
-_IDF_COMMENT = re.compile(r"^Comment\s*\[([^\]]+)\]\t(.*)$", re.MULTILINE)
+def idf_rows(text: str) -> list[tuple[str, list[str]]]:
+    """An IDF as rows: each row's tag, and its non-empty cells in order.
+
+    Every IDF reader goes through this one. ArrayExpress writes two dialects.
+    Most IDFs leave cells bare. Some quote every cell and put a space in the
+    tag: E-ERAD-129 writes ``"Comment [SecondaryAccession]"\\t"ERP002094"``. A
+    reader anchored on a bare ``Comment[`` found nothing in such a file. That
+    was 16 of the 3,000 IDFs in sample:3000@arrayexpress-ena, and 87 of the 551
+    once counted as declaring no ENA study (2026-10-28).
+
+    Every cell is stripped, the tag too. E-MTAB-6185 writes
+    ``Comment [RelatedExperiment] \\tE-MTAB-6186``, with a space before the tab,
+    and a pattern wanting the tab straight after ``]`` skipped the row.
+
+    A cell is unquoted only where one quote opens it and another closes it.
+    The file is split into lines before cells, so a stray quote in a
+    description cannot run on into the rows after it.
+    """
+    rows: list[tuple[str, list[str]]] = []
+    for line in text.splitlines():
+        tag, *cells = (_unquote(cell) for cell in line.split("\t"))
+        if tag:
+            rows.append((tag, [cell for cell in cells if cell]))
+    return rows
+
+
+def _unquote(cell: str) -> str:
+    cell = cell.strip()
+    if len(cell) >= 2 and cell[0] == cell[-1] == '"':
+        return cell[1:-1].replace('""', '"').strip()
+    return cell
+
+
+def idf_values(text: str, tag: str) -> list[str]:
+    """Every value of every IDF row tagged ``tag``, in order; ``SDRF File`` matches ``SDRFFile``."""
+    key = _column_key(tag)
+    return [
+        value for name, values in idf_rows(text) if _column_key(name) == key for value in values
+    ]
+
+
+_IDF_COMMENT = re.compile(r"Comment\s*\[([^\]]+)\]")
 
 
 def idf_comments(text: str) -> dict[str, list[str]]:
@@ -83,13 +125,26 @@ def idf_comments(text: str) -> dict[str, list[str]]:
 
     A name can repeat: E-GEOD-60450 declares ``Comment[SecondaryAccession]``
     twice, once for GSE60450 and once for SRP045534, so the rows are collected
-    rather than overwritten.
+    rather than overwritten. Every cell of a row is a value, not just the first:
+    E-GEOD-10571 declares both in one row, ``GSE10571\\tSRP003805``.
     """
     found: dict[str, list[str]] = {}
-    for match in _IDF_COMMENT.finditer(text):
-        values = [value.strip() for value in match.group(2).split("\t") if value.strip()]
-        found.setdefault(match.group(1).strip(), []).extend(values)
+    for tag, values in idf_rows(text):
+        if match := _IDF_COMMENT.fullmatch(tag):
+            found.setdefault(match.group(1).strip(), []).extend(values)
     return found
+
+
+def idf_secondary(text: str) -> list[str]:
+    """The study accessions in an IDF's ``Comment[SecondaryAccession]`` rows, from every cell.
+
+    An E-GEOD import writes the GEO series first and the SRA study second, in
+    one row: ``GSE10571\\tSRP003805``. A reader of the first cell alone found no
+    study in 453 of the 551 IDFs it had counted as declaring none
+    (docs/pathologies/ae-idf-missing-secondary-accession.md).
+    """
+    values = idf_comments(text).get("SecondaryAccession", [])
+    return sorted({value for value in values if SECONDARY_STUDY.fullmatch(value)})
 
 
 # The widest range ``sequence_data`` expands. Over sample:3000@arrayexpress-ena
@@ -207,20 +262,14 @@ def sdrf_values(
     return {column: sorted(values) for column, values in found.items()}
 
 
-_SDRF_FILE = re.compile(r"^SDRF\s*File\t(.*)$", re.MULTILINE | re.IGNORECASE)
-
-
 def sdrf_files(idf_text: str) -> list[str]:
     """The SDRF files an IDF names, in order.
 
     Almost always one, ``<accession>.sdrf.txt``. E-GEOD-29264 names two,
     ``E-GEOD-29264.hyb.sdrf.txt`` and ``E-GEOD-29264.seq.sdrf.txt``, and holds no
-    file by the usual name.
+    file by the usual name. A quoted IDF names its file as ``"SDRF File"`` (E-ERAD-129).
     """
-    found: list[str] = []
-    for match in _SDRF_FILE.finditer(idf_text):
-        found.extend(value.strip() for value in match.group(1).split("\t") if value.strip())
-    return list(dict.fromkeys(found))
+    return list(dict.fromkeys(idf_values(idf_text, "SDRF File")))
 
 
 def _sdrf_table(text: str) -> list[list[str]]:

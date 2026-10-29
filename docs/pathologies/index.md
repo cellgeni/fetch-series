@@ -28,7 +28,7 @@ good news — the archive fixed something.
 | [ENA lists a fastq it does not serve](ena-serves-a-listed-fastq-wrongly.md) | EBI | 2 of 4,466 listed fastqs are empty directories behind a 301, listed with a size and an md5 |
 | [ESummary refuses more than 500 UIDs](esummary-500-uid-limit.md) | NCBI | The refusal arrives inside an HTTP 200 with no `result`, which reads as "nothing found" |
 | [SRA's ESummary buries its accessions](esummary-sra-buries-accessions-in-expxml.md) | NCBI | Every accession is inside an XML string in the JSON; reading fields finds none |
-| [An IDF does not declare its ENA study](ae-idf-missing-secondary-accession.md) | EBI | 551 of 20,693 ArrayExpress studies with an ENA link name none in the IDF |
+| [An IDF does not declare its ENA study](ae-idf-missing-secondary-accession.md) | EBI | 10 of 20,693 ArrayExpress studies with an ENA link name none, and give it as a related experiment: E-MTAB-13231's 345 runs are all in ERP133516. Counted as 551 until 2026-10-28, when 540 turned out to be this project's reader |
 | [BioStudies lists 25 files by default](biostudies-silent-25-item-default.md) | EBI | A study with 43 files appears to register 25, unless `pagination.total` is read |
 | [A series' BioProject holds more than the series](experiments-outside-the-series-bioproject.md) | NCBI | 77 series get 5,115 experiments their SOFT file does not name, by asking for their project |
 | [One EFetch stops at 10,000 runs](efetch-returns-fewer-runs-than-esearch-counts.md) | NCBI | PRJEB14362's 46,468 runs come back as 5,387 from one request, with HTTP 200; the reason ENA once held "111,665 runs efetch never returns" |
