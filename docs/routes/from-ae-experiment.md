@@ -90,5 +90,11 @@ changing as it was measured. These four are 4 of the route's 320 empties. On 202
 four resolved.
 
 Nothing in a cut file says it was cut. The route cannot tell it from an IDF that names no runs
-without asking for the registered size, a second request. This is recorded, not worked around: it
-is not the range reader's, and it reaches every route that reads an IDF.
+without asking for the registered size, a second request. Every IDF and SDRF read now makes that
+request for a body of exactly 4,096 bytes, and for no other: `biostudies.study_file` asks the
+study's file listing what size it registers for the file, and if it is more than 4,096, the read
+fails. A cut IDF is now one of the route's failures, which `--retry-failed` asks again, and not one
+of its empties, which nothing does. The request is made for 16 of the 39,647 IDFs and SDRFs of
+`arrayexpress-ena` served on 2026-10-28 and 29, and 11 of the 16 are files that are 4,096 bytes
+long. How often a file is cut, and why the reader checks that one length rather than every body,
+is on [the pathology page](../pathologies/biostudies-serves-a-file-cut-at-4096-bytes.md).
