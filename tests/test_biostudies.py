@@ -28,7 +28,7 @@ from fetch_series.providers.biostudies import (
 )
 from fetch_series.survey.client import (
     Limits,
-    MalformedResponseError,
+    ServedCutError,
     ServedDirectoryError,
     SurveyClient,
     is_retryable,
@@ -360,10 +360,24 @@ class TestCutAt4096:
         ):
             return await sdrf_raw_rows(client, cls.STUDY, 10)
 
-    async def test_a_cut_fails_the_read_and_can_be_retried(self):
-        with pytest.raises(MalformedResponseError, match="served 4,096 of its 30,836") as caught:
+    async def test_a_cut_fails_the_read_and_is_not_retryable(self):
+        """E-MTAB-9791's SDRF was cut on every request for at least 46 minutes."""
+        with pytest.raises(ServedCutError, match="served 4,096 of its 30,836") as caught:
             await self._call(self._handler([], served=4096, registered=30_836))
-        assert is_retryable(caught.value)
+        assert not is_retryable(caught.value)
+
+    async def test_a_cut_is_asked_for_once(self):
+        """A retry would wait 15 seconds to ask a throttling mirror, or a memo, again."""
+        seen: list[str] = []
+        async with (
+            httpx.AsyncClient(
+                transport=httpx.MockTransport(self._handler(seen, served=4096, registered=30_836))
+            ) as http,
+            SurveyClient(Limits(rps=0), client=http) as client,
+        ):
+            with pytest.raises(ServedCutError):
+                await client.with_retry(lambda timeout: sdrf_raw_rows(client, self.STUDY, timeout))
+        assert sum(url.startswith("https://www.ebi.ac.uk/biostudies/files/") for url in seen) == 1
 
     async def test_a_file_that_is_4096_bytes_is_read(self):
         """E-MTAB-7492's IDF is 4,096 bytes registered, served and in the legacy copy."""
@@ -389,7 +403,7 @@ class TestCutAt4096:
     def test_the_sync_helper_checks_too(self, monkeypatch):
         handler = self._handler([], served=4096, registered=30_836)
         monkeypatch.setattr(core, "transport", httpx.MockTransport(handler))
-        with pytest.raises(MalformedResponseError):
+        with pytest.raises(ServedCutError):
             core._sdrf_text(self.STUDY)
 
 

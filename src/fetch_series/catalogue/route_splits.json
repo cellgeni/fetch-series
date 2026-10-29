@@ -271,8 +271,8 @@
      "source": "ae_experiment",
      "target": "study_ebi",
      "queried": 20693,
-     "resolved": 20676,
-     "empty": 11,
+     "resolved": 20677,
+     "empty": 10,
      "failed": 6,
      "reached": 9861,
      "distinct": 9855
@@ -281,11 +281,11 @@
      "source": "ae_experiment",
      "target": "study_ncbi",
      "queried": 20693,
-     "resolved": 20676,
-     "empty": 11,
+     "resolved": 20677,
+     "empty": 10,
      "failed": 6,
-     "reached": 10815,
-     "distinct": 10831
+     "reached": 10816,
+     "distinct": 10832
     }
    ]
   },

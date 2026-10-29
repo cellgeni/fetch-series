@@ -18,7 +18,7 @@ from typing import Any
 import httpx
 
 from fetch_series.accession import try_parse
-from fetch_series.survey.client import MalformedResponseError, ServedDirectoryError, SurveyClient
+from fetch_series.survey.client import ServedCutError, ServedDirectoryError, SurveyClient
 
 FILES = "https://www.ebi.ac.uk/biostudies/files"
 API = "https://www.ebi.ac.uk/biostudies/api/v1"
@@ -103,15 +103,15 @@ async def _not_cut(
     """``response``, unless it is a file served cut off at ``CUT_LENGTH`` bytes.
 
     Only a body of exactly that length costs a request, to the study's file
-    listing: 5 of the 5,796 IDFs and SDRFs of ``sample:3000@arrayexpress-ena``
-    served on 2026-10-28, of which one was cut and four are 4,096-byte files.
+    listing: 16 of the 39,647 IDFs and SDRFs of ``arrayexpress-ena`` served on
+    2026-10-28 and 29, of which 5 were cut and 11 are 4,096-byte files.
     Comparing every body with its registered size would cost a request per read
-    and fail two whole IDFs whose registered size is stale (E-MTAB-11506's is
+    and fail three whole IDFs whose registered size is stale (E-MTAB-11506's is
     served as a later version than the size BioStudies registers for it).
 
-    A cut is retryable: E-MTAB-15453's IDF was cut at 08:27 UTC and whole by
-    09:00. One that persists fails the read rather than answering from part of
-    a file.
+    A cut fails the read rather than answering from part of a file, and is not
+    retried: it lasts far longer than a retry waits
+    (:class:`~fetch_series.survey.client.ServedCutError`).
     """
     if len(response.content) == CUT_LENGTH:
         registered = await registered_size(client, accession, name, timeout)
@@ -168,7 +168,7 @@ def size_in_listing(payload: Any, name: str) -> int | None:
 def check_not_cut(accession: str, name: str, body: bytes, registered: int | None) -> None:
     """Raise if ``body`` is a file cut off at ``CUT_LENGTH`` bytes; :func:`_not_cut`."""
     if len(body) == CUT_LENGTH and registered is not None and registered > CUT_LENGTH:
-        raise MalformedResponseError(
+        raise ServedCutError(
             f"{accession}/{name}: served {CUT_LENGTH:,} of its {registered:,} registered bytes"
         )
 

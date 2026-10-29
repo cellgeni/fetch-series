@@ -562,24 +562,26 @@ ROUTES: list[Route] = [
             surveyed_on=date(2026, 10, 28),
             accessions_queried=20_693,
             accessions_failed=6,
-            accessions_empty=11,
-            unique_results=20_687,
+            accessions_empty=10,
+            unique_results=20_688,
             notes=(
-                "20,676 resolved, 11 empty. The corpus is every ArrayExpress "
+                "20,677 resolved, 10 empty. The corpus is every ArrayExpress "
                 "study BioStudies records an ENA link for, so an empty is a "
                 "measurable recall failure rather than an unknown. Re-surveyed "
                 "once the IDF reader read every cell, quoted or not: on "
                 "2026-09-15 it read the first cell only, where an E-GEOD import "
                 "names its GEO series, and nothing from a quoted IDF, and found "
-                "20,137 resolved, 551 empty, 20,138 distinct. 540 of the 551 now "
-                "resolve; over the 551 alone (arrayexpress-no-secondary) 541 do. "
-                "10 empties name no SecondaryAccession and give the study as a "
-                "RelatedExperiment (E-MTAB-13231). E-GEOD-35315 resolved over the "
-                "551 the same afternoon. E-MTAB-11257 was recorded EMPTY at 16:00 "
-                "UTC, and its IDF was served as an empty directory listing at "
-                "17:32; a listing now fails the read, and re-asked at 21:34 UTC it "
-                "resolved to ERP133806. Of 6 failures, 5 register no files, "
-                "and E-MTAB-17542 is no longer accessible."
+                "20,137 resolved, 551 empty, 20,138 distinct. 541 of the 551 now "
+                "resolve, as over the 551 alone (arrayexpress-no-secondary). "
+                "The 10 empties name no SecondaryAccession and give the study as a "
+                "RelatedExperiment (E-MTAB-13231). Two empties were IDFs served "
+                "wrong, recorded before a cut or a listing failed the read, and "
+                "were asked again. E-MTAB-11257's IDF was served as an empty "
+                "directory listing at 17:32 UTC; re-asked at 21:34 it resolved to "
+                "ERP133806. E-GEOD-35315 was recorded EMPTY at 15:15 from a body "
+                "not kept; re-asked at 10:45 UTC on 2026-10-29, the one verdict "
+                "dated after the survey, it resolved to SRP010570. Of 6 failures, "
+                "5 register no files, and E-MTAB-17542 is no longer accessible."
             ),
         ),
         known_pathologies=(

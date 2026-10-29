@@ -80,7 +80,9 @@ files it was served, E-MTAB-11257's IDF included.
 - **The re-survey kept no bodies**, so it is known only through what a listing does to its
   verdict. A listing reads as EMPTY, and 12 IDFs read so. Ten name no study, and read the same
   again afterwards. E-MTAB-11257's was the listing. E-GEOD-35315's resolved that afternoon,
-  and what it was served at 15:15 was not kept.
+  and what it was served at 15:15 was not kept: a listing or
+  [a cut](biostudies-serves-a-file-cut-at-4096-bytes.md) would each lose its row. Asked again at
+  10:45 UTC on 2026-10-29, it resolved.
 - **The second census** flags a listing whatever its size (`directory_index`), and records each
   body's `Content-Type`. All 39,647 bodies were `text/plain`.
   `scripts/biostudies_served_size_census.py` wrote it to
@@ -139,7 +141,7 @@ for Apache's listing title, `<title>Index of /`, in its first kilobyte, and rais
 before the check for [a cut](biostudies-serves-a-file-cut-at-4096-bytes.md). The read fails
 rather than answering EMPTY.
 
-It is **not retryable**, and so not the cut's `MalformedResponseError`, which always is. A retry
+It is **not retryable**, and so not a `MalformedResponseError`, which always is. A retry
 is worth making when asking again soon can succeed. `SurveyClient` waits 15 seconds in all across
 its four retries, and a listing lasts far longer: E-MTAB-11257's was the answer to every
 one of 96 requests from 00:33 to 01:25 UTC. Four more requests would ask the same server the same question,
@@ -147,9 +149,9 @@ and the verdict would be FAILED either way. The file is served at other hours, s
 `--retry-failed` is the retry that can succeed, and it asks every failure again whatever its type.
 The verdict's `error_class` then names what went wrong.
 
-The same evidence bears on the cut. E-MTAB-9791's SDRF was cut on every request for at least 46
-minutes, and the cut is retryable on the strength of one IDF that was whole half an hour after it
-was cut. That is a decision for the cut's page, and is not changed here.
+The same evidence bears on the cut, and the cut is not retried either: E-MTAB-9791's SDRF was cut
+on every request for at least 46 minutes. It raises `survey.client.ServedCutError`, for the reasons
+[the cut's page](biostudies-serves-a-file-cut-at-4096-bytes.md#why-a-cut-is-not-retried) gives.
 
 `core._study_file` does the same.
 
