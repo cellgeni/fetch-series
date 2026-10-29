@@ -70,6 +70,21 @@ class ServedDirectoryError(Exception):
     """
 
 
+class ServedCutError(Exception):
+    """An archive served a file's first 4,096 bytes as if they were all of it.
+
+    Not a :class:`MalformedResponseError`, for the reason a listing is not: a
+    retry cannot outlast it. BioStudies' mirror served E-MTAB-9791's SDRF,
+    registered at 30,836 bytes, as its first 4,096 on every request one at a
+    time from 13:43 to at least 14:29 UTC on 2026-10-28; no cut has been seen
+    whole again sooner than half an hour later. Every cut seen was met while the
+    mirror was refusing requests with a 403, so four retries in 15 seconds would
+    ask a throttling host again. And a cut is a 200, so under a
+    :class:`MemoClient` every retry is answered from memory with the same cut.
+    A later ``--retry-failed`` asks again.
+    """
+
+
 def is_retryable(exc: BaseException) -> bool:
     """Whether an exception is worth another attempt.
 

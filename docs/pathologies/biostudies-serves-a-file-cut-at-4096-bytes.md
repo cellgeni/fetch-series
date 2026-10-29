@@ -12,7 +12,7 @@ title: BioStudies serves a file cut off at 4,096 bytes
 `biostudies_idf` and `biostudies_sdrf_comments` routes
 [from an ArrayExpress experiment](../routes/from-ae-experiment.md)
 **Status:** intermittent; worked around by asking for the registered size of any body exactly
-4,096 bytes long, and failing a read that was cut
+4,096 bytes long, and failing a read that was cut, without retrying it
 **Measured:** 2026-10-28 and 29: every IDF and SDRF of `sample:3000@arrayexpress-ena`, then of all
 20,693 studies of `arrayexpress-ena`
 
@@ -234,11 +234,36 @@ So the reader takes the second.
 1. Read the file as before (`served_file`: the front door, or the mirror where it 404s).
 2. If the body is exactly 4,096 bytes, ask the study's file listing for that one file
    (`files?search=<name>`).
-3. If the listing registers more than 4,096 bytes, raise `MalformedResponseError`. It is
-   retryable: E-MTAB-15453's IDF was cut at 08:27 UTC and whole by 09:00. A cut that outlasts the
-   retries fails the read. It is not answered from part of the file.
+3. If the listing registers more than 4,096 bytes, raise `survey.client.ServedCutError`. The read
+   fails, and is not answered from part of the file.
 
 `core._study_file` does the same.
+
+### Why a cut is not retried
+
+A cut is **not retryable**, as [a directory listing](biostudies-serves-a-directory-listing-for-a-file.md#workaround)
+is not. Until 2026-10-29 it raised `MalformedResponseError`, which is, on the strength of
+E-MTAB-15453's IDF, cut at 08:27 UTC and whole by 09:00. That is a cut that healed in half an
+hour, and `SurveyClient` waits 15 seconds in all across its four retries. Three things say a
+retry that soon cannot succeed, and costs something to try:
+
+- **No cut has been seen to heal in minutes.** E-MTAB-9791's SDRF was cut on every request, two
+  seconds apart, for at least 46 minutes, and E-GEOD-43366's at 14:26 and again at 14:29. Every
+  cut seen whole again was seen so half an hour or more later. Nothing has measured a cut over
+  15 seconds: no log records the check firing on a retry.
+- **A cut is met while the mirror is refusing requests**
+  ([above](#when-while-the-mirror-was-refusing-requests)). Four more requests for the file, and
+  four for the listing, go to a host that is already throttling.
+- **Most readers would not ask the mirror again at all.** A cut is HTTP 200, so a `MemoClient`
+  keeps it, and every retry is answered from memory with the same 4,096 bytes. `fetch survey
+  promote`, `fetch catalogue survey` and every command that resolves an accession, `fetch links`
+  among them, read through one. A cut that would have been whole on the second request failed
+  there after 15 seconds and five listing requests, against a mock server. Only `fetch survey run`
+  asked the mirror again.
+
+So the read fails at once, and a survey's `--retry-failed`, which asks every failure again whatever
+its type, is the retry: it comes minutes or hours later, which is when a cut has been seen whole.
+The verdict's `error_class` names it, `ServedCutError`.
 
 The legacy ArrayExpress copy is not used instead. It is whole for both cut SDRFs and for
 E-GEOD-58432, but it is an older version where the two differ: E-MTAB-11506's names other runs.
@@ -255,8 +280,8 @@ that file healed, which reads as the archive fixing the behaviour when it has no
 reason.
 
 What is tested, offline, is the workaround: `tests/test_biostudies.py::TestCutAt4096`. A 4,096-byte
-body registered larger fails the read and is retryable; a file that is 4,096 bytes is read; a body
-of any other length costs no request; the synchronous helper checks too.
+body registered larger fails the read, is not retryable, and is asked for once; a file that is
+4,096 bytes is read; a body of any other length costs no request; the synchronous helper checks too.
 
 To measure it again, run the census, over the 3,000 in about an hour or the whole corpus in about
 three, at concurrency 4 at most:
