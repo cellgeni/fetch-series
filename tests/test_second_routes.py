@@ -106,7 +106,7 @@ class TestCompare:
         verdicts = {
             r: {a: _verdict(a, r, (f"{a}1",)) for a in self.ACCESSIONS} for r in ("one", "two")
         }
-        found = directions.compare(RUN, STUDY, "draw", self.ACCESSIONS, verdicts)
+        found = directions.compare(RUN, STUDY, "draw", self.ACCESSIONS, verdicts, declared=["one"])
         assert found.agree == 4
         assert all(s.adds_values == s.sole == 0 for s in found.routes)
         assert not any(s.earns(found.compared) for s in found.routes)
@@ -119,7 +119,7 @@ class TestCompare:
                 for a in self.ACCESSIONS
             },
         }
-        found = directions.compare(RUN, STUDY, "draw", self.ACCESSIONS, verdicts)
+        found = directions.compare(RUN, STUDY, "draw", self.ACCESSIONS, verdicts, declared=["one"])
         two = next(s for s in found.routes if s.route_id == "two")
         assert (two.adds_values, two.added_values, two.sole) == (1, 2, 0)
 
@@ -133,10 +133,12 @@ class TestCompare:
             },
             "two": {a: _verdict(a, "two", (a.lower(),)) for a in self.ACCESSIONS},
         }
-        found = directions.compare(RUN, STUDY, "draw", self.ACCESSIONS, verdicts)
+        found = directions.compare(RUN, STUDY, "draw", self.ACCESSIONS, verdicts, declared=["one"])
         two = next(s for s in found.routes if s.route_id == "two")
         assert two.sole == 2
         assert two.adds_values == 2
+        # B's sole resolution was over route one's failure; A's over its empty.
+        assert (two.sole_over_failure, two.adds_over_failure) == (1, 1)
 
     def test_an_accession_a_route_never_answered_is_not_compared(self):
         """Absence is not emptiness: it would credit the other route with a sole find."""
@@ -144,7 +146,7 @@ class TestCompare:
             "one": {a: _verdict(a, "one", ("x",)) for a in self.ACCESSIONS[:3]},
             "two": {a: _verdict(a, "two", ("x",)) for a in self.ACCESSIONS},
         }
-        found = directions.compare(RUN, STUDY, "draw", self.ACCESSIONS, verdicts)
+        found = directions.compare(RUN, STUDY, "draw", self.ACCESSIONS, verdicts, declared=["one"])
         assert found.compared == 3
         assert found.missing == {"one": 1, "two": 0}
         assert all(s.sole == 0 for s in found.routes)
@@ -154,7 +156,7 @@ class TestCompare:
             "ena": {"A": _verdict("A", "ena", ("ftp.sra.ebi.ac.uk/vol1/run/A_1.fastq.gz",))},
             "ebi": {"A": _verdict("A", "ebi", ("https://www.ebi.ac.uk/files/E-1/A_1.fastq.gz",))},
         }
-        found = directions.compare(RUN, FILE, "draw", ("A",), verdicts)
+        found = directions.compare(RUN, FILE, "draw", ("A",), verdicts, declared=["ena"])
         assert all(s.adds_values == 0 for s in found.routes)
 
     @pytest.mark.parametrize(("adds", "compared", "earns"), [(3, 3000, True), (2, 3000, False)])
@@ -241,3 +243,163 @@ class TestBuckets:
     )
     def test_a_declared_route_is_paced_under_its_providers_bucket(self, provider, bucket):
         assert promote.bucket_of(_route("r", RUN, STUDY, provider)) == bucket
+
+
+class TestCandidatesAgainstTheDeclared:
+    """A candidate is measured against the routes it would join, not its rivals."""
+
+    ACCESSIONS = tuple("ABCDEFGHIJ")
+
+    def _verdicts(self, **routes: dict[str, tuple[str, ...]]):
+        return {
+            route: {a: _verdict(a, route, found.get(a, ())) for a in self.ACCESSIONS}
+            for route, found in routes.items()
+        }
+
+    def test_two_candidates_finding_the_same_thing_do_not_cancel_out(self):
+        same = {a: ("x", "new") for a in "ABC"}
+        verdicts = self._verdicts(
+            declared={a: ("x",) for a in self.ACCESSIONS}, one=same, two=dict(same)
+        )
+        found = directions.compare(
+            RUN, STUDY, "draw", self.ACCESSIONS, verdicts, declared=["declared"]
+        )
+        by_id = {s.route_id: s for s in found.routes}
+        # Ten compared: the bar is 0.01, so one accession clears it.
+        assert by_id["one"].accepted == 1
+        assert by_id["two"].accepted is None
+        assert by_id["two"].adds_values == 0
+
+    def test_the_candidate_adding_most_is_accepted_first(self):
+        verdicts = self._verdicts(
+            declared={a: ("x",) for a in self.ACCESSIONS},
+            few={"A": ("x", "A")},
+            many={a: ("x", a) for a in "ABCD"},
+        )
+        found = directions.compare(
+            RUN, STUDY, "draw", self.ACCESSIONS, verdicts, declared=["declared"]
+        )
+        by_id = {s.route_id: s for s in found.routes}
+        assert by_id["many"].accepted == 1
+        assert (by_id["few"].accepted, by_id["few"].adds_values) == (None, 0)
+
+    def test_a_declared_route_is_measured_against_the_declared_only(self):
+        verdicts = self._verdicts(
+            one={a: ("x",) for a in self.ACCESSIONS},
+            two={a: ("x", "y") for a in self.ACCESSIONS},
+            rival={a: ("x", "y") for a in self.ACCESSIONS},
+        )
+        found = directions.compare(
+            RUN, STUDY, "draw", self.ACCESSIONS, verdicts, declared=["one", "two"]
+        )
+        by_id = {s.route_id: s for s in found.routes}
+        assert by_id["two"].adds_values == 10
+        assert by_id["rival"].adds_values == 0
+
+
+class TestConfirmedAdditions:
+    """With a confirmation, only a candidate's confirmed additions count."""
+
+    ACCESSIONS = tuple("ABCDEFGHIJ")
+
+    def _verdicts(self, **routes: dict[str, tuple[str, ...]]):
+        return {
+            route: {a: _verdict(a, route, found.get(a, ())) for a in self.ACCESSIONS}
+            for route, found in routes.items()
+        }
+
+    def test_a_wrong_candidate_no_longer_takes_the_right_ones_place(self):
+        """ELink and esummary both add PRJNA904346's experiments; only ELink also
+        adds its siblings', so unconfirmed it was accepted first and esummary
+        was credited nothing."""
+        verdicts = self._verdicts(
+            declared={a: ("x",) for a in self.ACCESSIONS},
+            elink={"A": ("x", "own", "sib1", "sib2"), "B": ("x", "sib3")},
+            esummary={"A": ("x", "own")},
+        )
+        confirmed = {"elink": [("A", "own")], "esummary": [("A", "own")]}
+        found = directions.compare(
+            RUN,
+            STUDY,
+            "draw",
+            self.ACCESSIONS,
+            verdicts,
+            declared=["declared"],
+            confirmed=confirmed,
+        )
+        by_id = {s.route_id: s for s in found.routes}
+        assert by_id["esummary"].accepted == 1
+        assert by_id["elink"].accepted is None
+        assert (by_id["elink"].adds_values, by_id["elink"].unconfirmed) == (0, 3)
+
+    def test_a_sole_resolution_of_unconfirmed_values_is_not_one(self):
+        verdicts = self._verdicts(declared={}, guess={"A": ("y",)})
+        found = directions.compare(
+            RUN, STUDY, "draw", self.ACCESSIONS, verdicts, declared=["declared"], confirmed={}
+        )
+        guess = next(s for s in found.routes if s.route_id == "guess")
+        assert (guess.sole, guess.adds_values) == (0, 0)
+
+    def test_a_declared_route_is_never_filtered(self):
+        verdicts = self._verdicts(one={"A": ("x",)}, two={"A": ("x", "y")})
+        found = directions.compare(
+            RUN, STUDY, "draw", self.ACCESSIONS, verdicts, declared=["one", "two"], confirmed={}
+        )
+        assert next(s for s in found.routes if s.route_id == "two").adds_values == 1
+
+    def test_a_file_is_confirmed_by_its_name(self):
+        verdicts = {
+            "ena": {"A": _verdict("A", "ena", ("ftp://x/A_1.fastq.gz",))},
+            "lite": {"A": _verdict("A", "lite", ("https://y/A.lite.1",))},
+        }
+        found = directions.compare(
+            RUN,
+            FILE,
+            "draw",
+            ("A",),
+            verdicts,
+            declared=["ena"],
+            confirmed={"lite": [("A", "https://elsewhere/A.lite.1")]},
+        )
+        assert next(s for s in found.routes if s.route_id == "lite").adds_values == 1
+
+
+class TestRefusedForWrongData:
+    """A candidate adding another accession's data at the bar is never accepted."""
+
+    ACCESSIONS = tuple("ABCDEFGHIJ")
+
+    def test_more_right_files_do_not_buy_in_other_runs_files(self):
+        """efetch_sra_files confirms 2,978 files of their own runs and adds 37,604
+        of other runs'; sdl_lite confirms 2,936 and adds nothing wrong."""
+        verdicts = {
+            "sdl": {a: _verdict(a, "sdl", (f"{a}",)) for a in self.ACCESSIONS},
+            "efetch": {
+                a: _verdict(a, "efetch", (f"{a}.lite.1", f"{a}.extra", "Z.lite.1"))
+                for a in self.ACCESSIONS
+            },
+            "lite": {a: _verdict(a, "lite", (f"{a}.lite.1",)) for a in self.ACCESSIONS},
+        }
+        confirmed = {
+            "efetch": [(a, v) for a in self.ACCESSIONS for v in (f"{a}.lite.1", f"{a}.extra")],
+            "lite": [(a, f"{a}.lite.1") for a in self.ACCESSIONS],
+        }
+        found = directions.compare(
+            RUN,
+            FILE,
+            "draw",
+            self.ACCESSIONS,
+            verdicts,
+            declared=["sdl"],
+            confirmed=confirmed,
+            contradicted={"efetch": 10, "lite": 0},
+        )
+        by_id = {s.route_id: s for s in found.routes}
+        assert by_id["efetch"].refused(found.compared)
+        assert by_id["efetch"].accepted is None
+        assert by_id["lite"].accepted == 1
+
+    def test_below_the_bar_a_wrong_value_does_not_refuse(self):
+        share = directions.RouteShare("r", False, 0, 0, 0, 0, 3, 3, 0, None, None, contradicted=2)
+        assert not share.refused(3000)
+        assert share.earns(3000)

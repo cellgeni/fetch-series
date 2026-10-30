@@ -290,10 +290,11 @@ class TestPlan:
 
     def test_an_estimate_counts_the_checks_on_found_files(self):
         built = corpora._build("x", "", "", [f"DRR{i}" for i in range(10)])
-        (unit,) = units_of(select_links(mechanism="ena_filereport_bam", source="run_ddbj"))
+        # sdl_original from a DDBJ run reads three formats: two HEADs each.
+        (unit,) = units_of(select_links(mechanism="sdl_original", source="run_ddbj"))
         (job,) = plan([unit], lambda u: ["x"], load=lambda name: built).jobs
         cost = estimate(job)
-        assert cost["ena_portal"] == 10 and cost["files"] == 20
+        assert cost[job.bucket] == 10 and cost["files"] == 60
 
 
 class TestGatePassed:

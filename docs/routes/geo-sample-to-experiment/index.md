@@ -75,6 +75,26 @@ identically on it:
 
 The same 3 failures in each case — one record, one fetch, one outcome.
 
+### Measured again on `sample:3000`, 2026-10-28
+
+Two second routes joined this page's directions in A6: `geo_sample->biosample:esummary_sra`
+and `geo_sample->experiment:sra_be_runinfo`
+([when a second route earns its place](../../decisions/when-a-second-route-earns-its-place.md)).
+They were measured on `sample:3000@reprocessed-sample`. `ranked()` compares distinct results,
+so `acc_cgi` would have ranked behind them on the size of its draw: 822 results against
+2,303. So `acc_cgi` was surveyed on the same draw, and its evidence in those two directions now
+cites that survey:
+
+| Route | Resolved | Empty | Failed | Unique results |
+|---|---:|---:|---:|---:|
+| `geo_sample->experiment:acc_cgi` | 2,472 | 4 | 3 | 2,472 |
+| `geo_sample->biosample:acc_cgi` | 2,473 | 3 | 3 | 2,471 |
+
+These are 2,479 GEO samples out of the 3,000 drawn. The survey ran beside 47 others, and the
+experiment route's 27 failures were asked once more at low concurrency, of which 24 answered.
+`acc_cgi` ranks first in both directions. The GEO-series route keeps its `sample:1000`
+evidence, since no second route joined it.
+
 **849 series for 822 samples.** 27 samples belong to more than one series, which
 is the [multi-series membership](#a-sample-can-belong-to-several-series) case
 above measured rather than asserted: 3.3% of samples, common enough that code

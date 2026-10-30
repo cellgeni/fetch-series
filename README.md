@@ -15,11 +15,13 @@ where getting the wrong file list means reprocessing the wrong data.
 ## Status
 
 The accession graph, the file layer, parity with the incumbent, and the assay layer are all in.
-**All 214 routes across five archives now carry measured evidence** — a census where one was
+**All 220 routes across five archives now carry measured evidence** — a census where one was
 affordable, a named seeded draw where it was not, and a knowledge-base page for every one.
-Forty were written by hand. The other 174 are catalogue links promoted to routes on
-2026-10-27, each surveyed as a route over 3,000 accessions, so every direction a surveyed
-link answers now has a measured route ([the full matrix](docs/routes/index.md)).
+Forty were written by hand. The other 180 are catalogue links promoted to routes, each
+surveyed as a route over 3,000 accessions, so every direction a surveyed link answers has a
+measured route ([the full matrix](docs/routes/index.md)). Six of them are second routes into a
+direction that already had one, declared because they add values another provider confirms
+([the rule](docs/decisions/when-a-second-route-earns-its-place.md)).
 
 Newest: [`fetch inspect`](docs/inspect.md), which reads the first 100,000 reads of every copy
 of a run and says which 10x kit made them and whether they are usable. ENA's fastq of a

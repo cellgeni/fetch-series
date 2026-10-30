@@ -151,15 +151,17 @@ class TestRecordedProbes:
 
     def test_the_10x_findings_still_stand(self):
         """The probe families were chosen for these; a re-probe that loses one says so."""
-        lite = PROBES["run_ebi->sra_lite:sdl_lite"]
-        assert ("complete", False) in lite.checks  # ERR4265292's SRA object lost its barcode read
         assert dict(PROBES["run_ncbi->fastq:sdl_original"].checks)["downloadable"] is False
         assert (
             dict(PROBES["run_ncbi->sra_lite:sra_be_runinfo_download"].checks)["verifiable"] is False
         )
-        # Once a probe; measured since by experiment->file:ena_filereport_fastq.
+        # Once probes; measured since by routes. ERR4265292's SRA Lite object
+        # lost its barcode read: run->file:sdl_lite has measured that link
+        # since A6 (2026-10-29), and the probe that showed it is pruned.
         fastq = CATALOGUE.split(CATALOGUE.link("experiment_ncbi->fastq:ena_filereport_fastq"))
         assert fastq is not None and fastq.resolved > 0
+        lite = CATALOGUE.split(CATALOGUE.link("run_ebi->sra_lite:sdl_lite"))
+        assert lite is not None and lite.resolved > 0
 
 
 MEASURED_LINK = "bioproject->run_ncbi:ena_filereport"

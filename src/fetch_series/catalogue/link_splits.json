@@ -657,44 +657,6 @@
     "checks": {}
    }
   ],
-  "bioproject->biosample:ddbj_dblink": [
-   {
-    "corpus": "node:bioproject/ddbj@reprocessed-prj",
-    "queried": 137,
-    "resolved": 137,
-    "empty": 0,
-    "failed": 0,
-    "reached": 137,
-    "usable": 137,
-    "distinct": 1754,
-    "surveyed_on": "2026-10-19",
-    "checks": {}
-   },
-   {
-    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
-    "queried": 300,
-    "resolved": 297,
-    "empty": 3,
-    "failed": 0,
-    "reached": 297,
-    "usable": 297,
-    "distinct": 35945,
-    "surveyed_on": "2026-10-19",
-    "checks": {}
-   },
-   {
-    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
-    "queried": 300,
-    "resolved": 299,
-    "empty": 1,
-    "failed": 0,
-    "reached": 299,
-    "usable": 299,
-    "distinct": 6360,
-    "surveyed_on": "2026-10-19",
-    "checks": {}
-   }
-  ],
   "bioproject->biosample:ena_filereport_analysis": [
    {
     "corpus": "node:bioproject/ddbj@reprocessed-prj",
@@ -847,44 +809,6 @@
     "checks": {}
    }
   ],
-  "bioproject->experiment_ddbj:ddbj_dblink": [
-   {
-    "corpus": "node:bioproject/ddbj@reprocessed-prj",
-    "queried": 137,
-    "resolved": 137,
-    "empty": 0,
-    "failed": 0,
-    "reached": 137,
-    "usable": 137,
-    "distinct": 1826,
-    "surveyed_on": "2026-10-19",
-    "checks": {}
-   },
-   {
-    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
-    "queried": 300,
-    "resolved": 0,
-    "empty": 300,
-    "failed": 0,
-    "reached": 0,
-    "usable": 0,
-    "distinct": 0,
-    "surveyed_on": "2026-10-19",
-    "checks": {}
-   },
-   {
-    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
-    "queried": 300,
-    "resolved": 0,
-    "empty": 300,
-    "failed": 0,
-    "reached": 0,
-    "usable": 0,
-    "distinct": 0,
-    "surveyed_on": "2026-10-19",
-    "checks": {}
-   }
-  ],
   "bioproject->experiment_ddbj:elink_bioproject_sra_all": [
    {
     "corpus": "node:bioproject/ddbj@reprocessed-prj",
@@ -1021,44 +945,6 @@
     "reached": 0,
     "usable": 0,
     "distinct": 0,
-    "surveyed_on": "2026-10-19",
-    "checks": {}
-   },
-   {
-    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
-    "queried": 300,
-    "resolved": 0,
-    "empty": 300,
-    "failed": 0,
-    "reached": 0,
-    "usable": 0,
-    "distinct": 0,
-    "surveyed_on": "2026-10-19",
-    "checks": {}
-   }
-  ],
-  "bioproject->experiment_ebi:ddbj_dblink": [
-   {
-    "corpus": "node:bioproject/ddbj@reprocessed-prj",
-    "queried": 137,
-    "resolved": 0,
-    "empty": 137,
-    "failed": 0,
-    "reached": 0,
-    "usable": 0,
-    "distinct": 0,
-    "surveyed_on": "2026-10-19",
-    "checks": {}
-   },
-   {
-    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
-    "queried": 300,
-    "resolved": 297,
-    "empty": 3,
-    "failed": 0,
-    "reached": 297,
-    "usable": 297,
-    "distinct": 124698,
     "surveyed_on": "2026-10-19",
     "checks": {}
    },
@@ -1261,44 +1147,6 @@
     "reached": 0,
     "usable": 0,
     "distinct": 0,
-    "surveyed_on": "2026-10-19",
-    "checks": {}
-   }
-  ],
-  "bioproject->experiment_ncbi:ddbj_dblink": [
-   {
-    "corpus": "node:bioproject/ddbj@reprocessed-prj",
-    "queried": 137,
-    "resolved": 0,
-    "empty": 137,
-    "failed": 0,
-    "reached": 0,
-    "usable": 0,
-    "distinct": 0,
-    "surveyed_on": "2026-10-19",
-    "checks": {}
-   },
-   {
-    "corpus": "sample:300@node:bioproject/ebi@reprocessed-prj",
-    "queried": 300,
-    "resolved": 0,
-    "empty": 300,
-    "failed": 0,
-    "reached": 0,
-    "usable": 0,
-    "distinct": 0,
-    "surveyed_on": "2026-10-19",
-    "checks": {}
-   },
-   {
-    "corpus": "sample:300@node:bioproject/ncbi@reprocessed-prj",
-    "queried": 300,
-    "resolved": 299,
-    "empty": 1,
-    "failed": 0,
-    "reached": 299,
-    "usable": 299,
-    "distinct": 6543,
     "surveyed_on": "2026-10-19",
     "checks": {}
    }
@@ -6695,20 +6543,6 @@
     "checks": {}
    }
   ],
-  "geo_sample->biosample:esummary_sra": [
-   {
-    "corpus": "sample:300@node:geo_sample@reprocessed-sample",
-    "queried": 300,
-    "resolved": 286,
-    "empty": 14,
-    "failed": 0,
-    "reached": 286,
-    "usable": 286,
-    "distinct": 286,
-    "surveyed_on": "2026-10-19",
-    "checks": {}
-   }
-  ],
   "geo_sample->biosample:sra_be_runinfo": [
    {
     "corpus": "sample:300@node:geo_sample@reprocessed-sample",
@@ -6761,20 +6595,6 @@
     "reached": 300,
     "usable": 300,
     "distinct": 300,
-    "surveyed_on": "2026-10-19",
-    "checks": {}
-   }
-  ],
-  "geo_sample->experiment_ncbi:sra_be_runinfo": [
-   {
-    "corpus": "sample:300@node:geo_sample@reprocessed-sample",
-    "queried": 300,
-    "resolved": 285,
-    "empty": 15,
-    "failed": 0,
-    "reached": 285,
-    "usable": 285,
-    "distinct": 285,
     "surveyed_on": "2026-10-19",
     "checks": {}
    }
@@ -7459,28 +7279,6 @@
     "checks": {}
    }
   ],
-  "run_ddbj->bam:ena_filereport_bam": [
-   {
-    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
-    "queried": 300,
-    "resolved": 0,
-    "empty": 296,
-    "failed": 4,
-    "reached": 0,
-    "usable": 0,
-    "distinct": 0,
-    "surveyed_on": "2026-10-19",
-    "checks": {},
-    "screened": {
-     "reads": 100000,
-     "inspected": 0,
-     "fit": 0,
-     "unfit": 0,
-     "undetermined": 0,
-     "layouts": {}
-    }
-   }
-  ],
   "run_ddbj->bam:sdl_original": [
    {
     "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
@@ -7869,50 +7667,6 @@
     }
    }
   ],
-  "run_ddbj->sra_lite:sdl_lite": [
-   {
-    "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
-    "queried": 300,
-    "resolved": 297,
-    "empty": 3,
-    "failed": 0,
-    "reached": 297,
-    "usable": 286,
-    "distinct": 297,
-    "surveyed_on": "2026-10-19",
-    "checks": {
-     "complete": {
-      "passed": 286,
-      "failed": 4,
-      "undetermined": 7
-     },
-     "downloadable": {
-      "passed": 297,
-      "failed": 0,
-      "undetermined": 0
-     },
-     "verifiable": {
-      "passed": 297,
-      "failed": 0,
-      "undetermined": 0
-     }
-    },
-    "screened": {
-     "reads": 100000,
-     "inspected": 297,
-     "fit": 262,
-     "unfit": 4,
-     "undetermined": 31,
-     "layouts": {
-      "10x_3p_v2": 12,
-      "10x_3p_v3_family": 223,
-      "10x_3p_v4_gemx": 12,
-      "10x_5p_v1_v2": 43,
-      "10x_multiome_arc_gex": 1
-     }
-    }
-   }
-  ],
   "run_ddbj->sra_lite:sra_be_runinfo_download": [
    {
     "corpus": "sample:300@node:run_ddbj@reprocessed-srr",
@@ -8113,49 +7867,6 @@
     "distinct": 0,
     "surveyed_on": "2026-10-19",
     "checks": {}
-   }
-  ],
-  "run_ebi->bam:ena_filereport_bam": [
-   {
-    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
-    "queried": 300,
-    "resolved": 79,
-    "empty": 221,
-    "failed": 0,
-    "reached": 79,
-    "usable": 79,
-    "distinct": 79,
-    "surveyed_on": "2026-10-19",
-    "checks": {
-     "complete": {
-      "passed": 79,
-      "failed": 0,
-      "undetermined": 0
-     },
-     "downloadable": {
-      "passed": 79,
-      "failed": 0,
-      "undetermined": 0
-     },
-     "verifiable": {
-      "passed": 79,
-      "failed": 0,
-      "undetermined": 0
-     }
-    },
-    "screened": {
-     "reads": 100000,
-     "inspected": 79,
-     "fit": 53,
-     "unfit": 4,
-     "undetermined": 22,
-     "layouts": {
-      "10x_3p_v2": 4,
-      "10x_3p_v3_family": 47,
-      "10x_5p_v1_v2": 16,
-      "10x_multiome_arc_gex": 1
-     }
-    }
    }
   ],
   "run_ebi->bam:sdl_original": [
@@ -8556,49 +8267,6 @@
     }
    }
   ],
-  "run_ebi->sra_lite:sdl_lite": [
-   {
-    "corpus": "sample:300@node:run_ebi@reprocessed-srr",
-    "queried": 300,
-    "resolved": 298,
-    "empty": 2,
-    "failed": 0,
-    "reached": 298,
-    "usable": 283,
-    "distinct": 298,
-    "surveyed_on": "2026-10-19",
-    "checks": {
-     "complete": {
-      "passed": 283,
-      "failed": 9,
-      "undetermined": 6
-     },
-     "downloadable": {
-      "passed": 298,
-      "failed": 0,
-      "undetermined": 0
-     },
-     "verifiable": {
-      "passed": 298,
-      "failed": 0,
-      "undetermined": 0
-     }
-    },
-    "screened": {
-     "reads": 100000,
-     "inspected": 298,
-     "fit": 234,
-     "unfit": 2,
-     "undetermined": 62,
-     "layouts": {
-      "10x_3p_v2": 48,
-      "10x_3p_v3_family": 151,
-      "10x_5p_v1_v2": 62,
-      "10x_multiome_arc_gex": 6
-     }
-    }
-   }
-  ],
   "run_ebi->sra_lite:sra_be_runinfo_download": [
    {
     "corpus": "sample:300@node:run_ebi@reprocessed-srr",
@@ -8810,28 +8478,6 @@
     "distinct": 0,
     "surveyed_on": "2026-10-19",
     "checks": {}
-   }
-  ],
-  "run_ncbi->bam:ena_filereport_bam": [
-   {
-    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
-    "queried": 300,
-    "resolved": 0,
-    "empty": 300,
-    "failed": 0,
-    "reached": 0,
-    "usable": 0,
-    "distinct": 0,
-    "surveyed_on": "2026-10-19",
-    "checks": {},
-    "screened": {
-     "reads": 100000,
-     "inspected": 0,
-     "fit": 0,
-     "unfit": 0,
-     "undetermined": 0,
-     "layouts": {}
-    }
    }
   ],
   "run_ncbi->bam:sdl_original": [
@@ -9215,51 +8861,6 @@
      "layouts": {
       "10x_3p_v2": 51,
       "10x_3p_v3_family": 166,
-      "10x_3p_v4_gemx": 1,
-      "10x_5p_v1_v2": 39,
-      "10x_5p_v3_gemx": 1,
-      "10x_multiome_arc_gex": 10
-     }
-    }
-   }
-  ],
-  "run_ncbi->sra_lite:sdl_lite": [
-   {
-    "corpus": "sample:300@node:run_ncbi@reprocessed-srr",
-    "queried": 300,
-    "resolved": 292,
-    "empty": 8,
-    "failed": 0,
-    "reached": 292,
-    "usable": 285,
-    "distinct": 292,
-    "surveyed_on": "2026-10-19",
-    "checks": {
-     "complete": {
-      "passed": 285,
-      "failed": 5,
-      "undetermined": 2
-     },
-     "downloadable": {
-      "passed": 292,
-      "failed": 0,
-      "undetermined": 0
-     },
-     "verifiable": {
-      "passed": 292,
-      "failed": 0,
-      "undetermined": 0
-     }
-    },
-    "screened": {
-     "reads": 100000,
-     "inspected": 292,
-     "fit": 242,
-     "unfit": 6,
-     "undetermined": 44,
-     "layouts": {
-      "10x_3p_v2": 51,
-      "10x_3p_v3_family": 167,
       "10x_3p_v4_gemx": 1,
       "10x_5p_v1_v2": 39,
       "10x_5p_v3_gemx": 1,

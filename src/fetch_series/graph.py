@@ -869,18 +869,22 @@ ROUTES: list[Route] = [
         summary="!Sample_relation = SRA: from GEO's own record for the sample.",
         kb_page="routes/geo-sample-to-experiment/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
+        # Measured again on sample:3000 during A6, the draw the second routes
+        # into this direction were measured on. Ranked against them on its
+        # sample:1000 numbers, it came second on 822 results against 2,306:
+        # the size of the draw, not the route.
         evidence=RouteEvidence(
-            corpus="sample:1000@reprocessed-sample",
-            surveyed_on=date(2026, 9, 15),
-            accessions_queried=825,
+            corpus="sample:3000@reprocessed-sample",
+            surveyed_on=date(2026, 10, 28),
+            accessions_queried=2_479,
             accessions_failed=3,
-            accessions_empty=0,
-            unique_results=822,
+            accessions_empty=4,
+            unique_results=2_472,
             notes=(
-                "822 resolved, 0 empty. 825 of the 1,000 drawn are GEO samples; "
-                "the other 175 are INSDC samples this route cannot accept. "
-                "Replaces a run recorded against the bare corpus name, which "
-                "did not say how many accessions it drew."
+                "2,472 resolved, 4 empty. 2,479 of the 3,000 drawn are GEO samples. "
+                "Surveyed beside 47 units at once; its 27 failures were asked once "
+                "more at concurrency 3, and 24 answered. On sample:1000 (2026-09-15): "
+                "822 of 825."
             ),
         ),
     ),
@@ -892,14 +896,19 @@ ROUTES: list[Route] = [
         summary="!Sample_relation = BioSample: from GEO's own record for the sample.",
         kb_page="routes/geo-sample-to-experiment/index.md",
         cost=RouteCost(requests=1, rate_limit_rps=NCBI_FTP_RPS),
+        # Measured again on sample:3000 during A6, for the same reason as the
+        # experiment route above.
         evidence=RouteEvidence(
-            corpus="sample:1000@reprocessed-sample",
-            surveyed_on=date(2026, 9, 15),
-            accessions_queried=825,
+            corpus="sample:3000@reprocessed-sample",
+            surveyed_on=date(2026, 10, 28),
+            accessions_queried=2_479,
             accessions_failed=3,
-            accessions_empty=0,
-            unique_results=822,
-            notes="822 resolved, 0 empty. 825 of the 1,000 drawn are GEO samples; the other 175 are INSDC samples this route cannot accept.",
+            accessions_empty=3,
+            unique_results=2_471,
+            notes=(
+                "2,473 resolved, 3 empty. 2,479 of the 3,000 drawn are GEO samples. "
+                "On sample:1000 (2026-09-15): 822 of 825."
+            ),
         ),
     ),
     Route(
@@ -1295,10 +1304,9 @@ class Promoted:
 # .seq.sdrf.txt), retried again once those were read (2026-10-27), and 2
 # register no files at all.
 # The bare-term search (esearch_sra_runinfo) is declared only where it is a
-# candidate like any other; in BioProject -> run, experiment, study and
-# BioSample it returned what efetch_direct's [GPRJ] does (162,808 runs against
-# 162,854 over the same 3,000, and PRJNA66167's same 5,499), so it would only
-# repeat an existing route's request.
+# candidate like any other. In BioProject -> run, experiment, study and
+# BioSample, everything it adds over [GPRJ] that another provider can place is
+# another project's (A6, 2026-10-29), so it stays a link.
 PROMOTED: tuple[Promoted, ...] = (
     Promoted(
         mechanism="ena_browser_xml",
@@ -4659,6 +4667,137 @@ PROMOTED: tuple[Promoted, ...] = (
             accessions_empty=767,
             unique_results=98_546,
             notes="2,231 resolved, 767 empty. A catalogue mechanism surveyed as a route.",
+        ),
+    ),
+    # Second routes in directions a declared route already covers (A6): each
+    # adds, on its own draw, values no declared route returns, every one of
+    # them confirmed by a route on another provider or, for a file, by its own
+    # run's name; none adds another accession's data as often as the bar
+    # (docs/decisions/when-a-second-route-earns-its-place.md, 2026-10-29).
+    Promoted(
+        mechanism="ddbj_dblink",
+        source=EntityType.BIOPROJECT,
+        target=EntityType.BIOSAMPLE,
+        provider="ddbj",
+        requests=1,
+        rate_limit_rps=1.5,
+        source_archives=(),
+        known_pathologies=(),
+        evidence=RouteEvidence(
+            corpus="sample:3000@reprocessed-prj",
+            surveyed_on=date(2026, 10, 28),
+            accessions_queried=3_000,
+            accessions_failed=0,
+            accessions_empty=2,
+            unique_results=88_065,
+            notes=(
+                "2,998 resolved, 2 empty. A second route: 64 BioSamples of 13 projects no declared route returns, each tied to its project by NCBI; none has a run."
+            ),
+        ),
+    ),
+    Promoted(
+        mechanism="ddbj_dblink",
+        source=EntityType.BIOPROJECT,
+        target=EntityType.EXPERIMENT,
+        provider="ddbj",
+        requests=1,
+        rate_limit_rps=1.5,
+        source_archives=(),
+        known_pathologies=(),
+        evidence=RouteEvidence(
+            corpus="sample:3000@reprocessed-prj",
+            surveyed_on=date(2026, 10, 28),
+            accessions_queried=3_000,
+            accessions_failed=0,
+            accessions_empty=6,
+            unique_results=106_877,
+            notes=(
+                "2,994 resolved, 6 empty. A second route: 25 experiments of 3 projects ENA does not hold (PRJNA904346, PRJNA869921, PRJNA624085), confirmed by sra-db-be."
+            ),
+        ),
+    ),
+    Promoted(
+        mechanism="esummary_sra",
+        source=EntityType.GEO_SAMPLE,
+        target=EntityType.BIOSAMPLE,
+        provider="eutils",
+        requests=2,
+        rate_limit_rps=10.0,
+        source_archives=(Archive.GEO,),
+        known_pathologies=("esummary-500-uid-limit", "esummary-sra-buries-accessions-in-expxml"),
+        evidence=RouteEvidence(
+            corpus="sample:3000@reprocessed-sample",
+            surveyed_on=date(2026, 10, 28),
+            accessions_queried=2_479,
+            accessions_failed=0,
+            accessions_empty=176,
+            unique_results=2_303,
+            notes=(
+                "2,303 resolved, 176 empty. A second route: 3 BioSamples no declared route returns, 2 of them where acc_cgi fails."
+            ),
+        ),
+    ),
+    Promoted(
+        mechanism="sra_be_runinfo",
+        source=EntityType.GEO_SAMPLE,
+        target=EntityType.EXPERIMENT,
+        provider="ncbi_web",
+        requests=1,
+        rate_limit_rps=10.0,
+        source_archives=(Archive.GEO,),
+        known_pathologies=("sra-be-history-caps-at-5000-runs",),
+        evidence=RouteEvidence(
+            corpus="sample:3000@reprocessed-sample",
+            surveyed_on=date(2026, 10, 28),
+            accessions_queried=2_479,
+            accessions_failed=0,
+            accessions_empty=176,
+            unique_results=2_306,
+            notes=(
+                "2,303 resolved, 176 empty. A second route: 7 experiments of 6 samples no declared route returns, 2 where acc_cgi fails."
+            ),
+        ),
+    ),
+    Promoted(
+        mechanism="ena_filereport_bam",
+        source=EntityType.RUN,
+        target=EntityType.FILE,
+        provider="ena_portal",
+        requests=1,
+        rate_limit_rps=15.0,
+        source_archives=(Archive.EBI,),
+        known_pathologies=(),
+        evidence=RouteEvidence(
+            corpus="sample:3000@reprocessed-srr",
+            surveyed_on=date(2026, 10, 28),
+            accessions_queried=3_000,
+            accessions_failed=0,
+            accessions_empty=2_939,
+            unique_results=61,
+            notes=(
+                "61 resolved, 2,939 empty. A second route: the BAM ENA holds for 61 runs, a copy no declared route offers."
+            ),
+        ),
+    ),
+    Promoted(
+        mechanism="sdl_lite",
+        source=EntityType.RUN,
+        target=EntityType.FILE,
+        provider="ncbi_web",
+        requests=1,
+        rate_limit_rps=10.0,
+        source_archives=(Archive.DDBJ, Archive.EBI, Archive.NCBI),
+        known_pathologies=(),
+        evidence=RouteEvidence(
+            corpus="sample:3000@reprocessed-srr",
+            surveyed_on=date(2026, 10, 28),
+            accessions_queried=3_000,
+            accessions_failed=0,
+            accessions_empty=64,
+            unique_results=2_936,
+            notes=(
+                "2,936 resolved, 64 empty. A second route: the SRA Lite object of 2,936 runs, a copy no declared route offers."
+            ),
         ),
     ),
 )
