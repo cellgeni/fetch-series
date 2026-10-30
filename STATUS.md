@@ -31,16 +31,16 @@ Behind it:
 
 | | |
 |---|---|
-| Routes declared, implemented and **measured** | **214 / 214 / 214**: 40 written by hand, 174 promoted from the link catalogue, in 88 source → target directions ([the matrix](docs/routes/index.md)) |
+| Routes declared, implemented and **measured** | **220 / 220 / 220**: 40 written by hand, 180 promoted from the link catalogue, in 88 source → target directions; 6 of them second routes, declared under [the second-route rule](docs/decisions/when-a-second-route-earns-its-place.md) ([the matrix](docs/routes/index.md)) |
 | Archives covered | GEO, SRA, ENA, ArrayExpress/BioStudies, DDBJ |
-| Link catalogue | **1,144** one-hop links between 39 nodes: **528 measured** by a route's survey (461 answering, 67 never), 555 surveyed by a link survey of their own (375 answering usably, 180 never), 31 confirmed by one live probe, 30 unconfirmed; none ranked. 127 more lines run out of the metadata documents, each the second half of the request that fetched the document ([the catalogue](docs/graph/catalogue.md), [link survey results](docs/graph/link-survey-results.md)) |
+| Link catalogue | **1,144** one-hop links between 39 nodes: **540 measured** by a route's survey (471 answering, 69 never), 543 surveyed by a link survey of their own (365 answering usably, 178 never), 31 confirmed by one live probe, 30 unconfirmed; none ranked. 127 more lines run out of the metadata documents, each the second half of the request that fetched the document ([the catalogue](docs/graph/catalogue.md), [link survey results](docs/graph/link-survey-results.md)) |
 | Read classifier | 10x kits from the first 100,000 reads: **0 errors in 66 held-out HIGH calls**, 0 in 28 MEDIUM ([benchmark](docs/benchmarks/inspect-2026-10.md)) |
 | Content survey | every run-to-reads link's files read for 1,400 runs ([results](docs/benchmarks/content-survey-2026-10.md)) |
 | Mapping block | classifier 0.4.0, set beside the reprocessing pipeline's own STARsolo runs on a fresh draw of 300 held-out samples: the pipeline's whitelist in **404 of 404** blocks, its strand in **386 of 386** that name one; 7 left ambiguous, down from 32 ([comparison](docs/benchmarks/inspect-vs-starsolo-2026-10.md)) |
 | Metadata kit call | names one kit for **964 of 5,465** samples the pipeline mapped; its list is the pipeline's for 900, its strand for 946 of 948; where it and the reads disagree, **the pipeline sides with the reads 20 of 20** ([comparison](docs/benchmarks/metadata-vs-reads-2026-10.md)) |
 | Other technologies | Parse, BD Rhapsody, inDrop and others named from their constants; **no non-10x run called 10x** on the held-out half ([benchmark](docs/benchmarks/technologies-2026-10.md)) |
-| Survey verdicts recorded and committed | **1,254,873** across 3,972 files in `data/surveys/` |
-| Offline tests | **1,294** collected by `uv run pytest` (plus integration, pathology and slow suites) |
+| Survey verdicts recorded and committed | **1,492,142** across 4,053 files in `data/surveys/` |
+| Offline tests | **1,323** collected by `uv run pytest` (plus integration, pathology and slow suites) |
 | Knowledge-base pages | every measured route (the promoted ones on one generated page per source type), 25 pathologies, 7 upstream drafts |
 
 The governing rule held throughout: **no fallback order, ranking or heuristic
@@ -99,7 +99,7 @@ only 6 recommended sets are a lone ENA fastq
 | **M6** | metadata layer: harvest, rule normalisation, ontology grounding | **tiers 0–2 complete** |
 | **M7** | link surveys: every unmeasured catalogue link over seeded draws | **complete** (six waves) |
 | **M8** | `fetch inspect`: reads, classifier, content survey, refusal path | **complete** |
-| **M9** | catalogue links promoted to routes: every direction a surveyed link answers | **complete**, 174 routes |
+| **M9** | catalogue links promoted to routes: every direction a surveyed link answers, then second routes that add confirmed values | **complete**, 180 routes |
 
 **M3 parity:** 14 of 14 of the incumbent's own nf-test cases, 422 snapshot rows (400 distinct runs), no
 differences ([the record](docs/fetch10xmeta-parity.md)). Getting there required
@@ -216,13 +216,15 @@ history is not part of it.
    names exactly one of the two. The other 85 abstentions have metadata naming
    neither kit, or both, and still get no block.
 
-8. **A second route in a direction that already has one is not decided.** 176 surveyed
-   links answer in directions a measured route already covers, mostly re-reading the
-   runinfo or filereport answer the route reads. (The other 199 surveyed links no route
-   uses end at a submission, analysis, platform or document, which stay links by design.) The promoted-route surveys recorded what
-   they return. Which of them return what the measured route misses, and so earn a place,
-   is a decision still to be argued from those numbers. The bare-accession ESearch is one:
-   over 3,000 BioProjects it returned what `[GPRJ]` does (162,808 runs against 162,854).
+8. **Declared routes that add nothing are measured, and still all asked.** A second route is
+   declared only when it adds confirmed values over the bar, and refused when it adds another
+   accession's data that often ([the decision page](docs/decisions/when-a-second-route-earns-its-place.md),
+   2026-10-29). 80 candidates were surveyed: six are declared, ten were refused, and the bare-term
+   ESearch stays a link. The other half is open. 64 declared routes in 16 directions add nothing
+   over the others, and run → study, run → sample and run → bioproject agree on all 3,000 runs at
+   five requests per resolve. Skipping them, or `Mode.FIRST` where every route agrees, is a
+   resolver change still to be argued. `sdl_original`, the only route offering some runs' index
+   reads, cannot be confirmed by its file names and needs a test of its own.
 
 ### Deliberately dropped, with the reasons recorded
 

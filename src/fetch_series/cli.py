@@ -1035,6 +1035,13 @@ def survey_promote(
     out: Annotated[
         Path | None, typer.Option(help="With --compare: write one row per route to this CSV.")
     ] = None,
+    confirmed: Annotated[
+        Path | None,
+        typer.Option(
+            help="With --compare: count a candidate's addition only where this check "
+            "(scripts/second_routes_roundtrip.py) confirmed it."
+        ),
+    ] = None,
     cache_path: Annotated[Path, typer.Option("--cache", help="SQLite store.")] = DEFAULT_CACHE_PATH,
 ) -> None:
     """Survey surveyed catalogue links as routes, at sample:3000 of their source.
@@ -1056,7 +1063,9 @@ def survey_promote(
     load_dotenv()
     if compare:
         with SurveyCache(cache_path) as cache:
-            _compare_directions(cache, candidates(covered=True), source, out)
+            _compare_directions(
+                cache, candidates(covered=True), source, out, _confirmations(confirmed)
+            )
         return
     chosen = [
         c
@@ -1175,8 +1184,33 @@ def survey_promote(
         asyncio.run(main())
 
 
+def _confirmations(
+    path: Path | None,
+) -> tuple[dict[str, list[tuple[str, str]]], dict[str, int]] | None:
+    """Per candidate route, the (accession, value) pairs the round-trip check confirmed,
+    and how many accessions it was found adding another accession's data to."""
+    if path is None:
+        return None
+    checked = json.loads(path.read_text())
+    confirmed = {
+        route: [
+            (row["source"], row["added"]) for row in found["rows"] if row["verdict"] == "confirmed"
+        ]
+        for route, found in checked.items()
+    }
+    contradicted = {
+        route: len({row["source"] for row in found["rows"] if row["verdict"] == "contradicted"})
+        for route, found in checked.items()
+    }
+    return confirmed, contradicted
+
+
 def _compare_directions(
-    cache: SurveyCache, pool: list[Candidate], source: str | None, out: Path | None
+    cache: SurveyCache,
+    pool: list[Candidate],
+    source: str | None,
+    out: Path | None,
+    confirmation: tuple[dict[str, list[tuple[str, str]]], dict[str, int]] | None = None,
 ) -> None:
     """Every direction with two routes or more on its draw: what each adds over the rest."""
     from fetch_series.survey import directions, promote
@@ -1203,7 +1237,20 @@ def _compare_directions(
         }
         if len(verdicts) < 2:
             continue
-        direction = directions.compare(s, t, corpus, accessions, verdicts, declared=declared)
+        confirmed, contradicted = confirmation if confirmation is not None else (None, None)
+        direction = directions.compare(
+            s,
+            t,
+            corpus,
+            accessions,
+            verdicts,
+            declared=declared,
+            confirmed=confirmed,
+            contradicted=contradicted,
+        )
+        if confirmed is not None:
+            for unchecked in sorted(set(verdicts) - set(declared) - set(confirmed)):
+                typer.echo(f"  not checked, so counted as adding nothing: {unchecked}")
         for line in directions.report(direction):
             typer.echo(line)
         for unsurveyed in sorted(set(route_ids) - set(verdicts)):
@@ -1226,7 +1273,12 @@ def _compare_directions(
                     share.adds_values,
                     share.added_values,
                     share.sole,
-                    share.earns(direction.compared),
+                    share.adds_over_failure,
+                    share.sole_over_failure,
+                    share.unconfirmed,
+                    share.contradicted,
+                    share.accepted is not None
+                    or (share.declared and share.earns(direction.compared)),
                     share.first,
                     share.last,
                 ]
@@ -1250,6 +1302,10 @@ def _compare_directions(
                     "adds_values",
                     "added_values",
                     "sole",
+                    "adds_over_failure",
+                    "sole_over_failure",
+                    "unconfirmed",
+                    "contradicted",
                     "earns",
                     "first",
                     "last",

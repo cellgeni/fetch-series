@@ -768,28 +768,6 @@
    "error": null
   },
   {
-   "link": "bioproject->biosample:ddbj_dblink",
-   "accession": "PRJNA258286",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SAMN02991530",
-    "SAMN02991531",
-    "SAMN02991532",
-    "SAMN02991533",
-    "SAMN02991534",
-    "SAMN02991535",
-    "SAMN02991536",
-    "SAMN02991537",
-    "SAMN02991538",
-    "SAMN02991539",
-    "SAMN02991540",
-    "SAMN02991541"
-   ],
-   "error": null
-  },
-  {
    "link": "bioproject->biosample:ena_filereport_analysis",
    "accession": "PRJEB44468",
    "checked_on": "2026-10-16",
@@ -918,28 +896,6 @@
    "error": null
   },
   {
-   "link": "bioproject->experiment_ddbj:ddbj_dblink",
-   "accession": "PRJDB9974",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 14,
-   "found": [
-    "DRX221998",
-    "DRX221999",
-    "DRX222000",
-    "DRX222001",
-    "DRX222002",
-    "DRX222003",
-    "DRX222004",
-    "DRX222005",
-    "DRX222006",
-    "DRX222007",
-    "DRX222008",
-    "DRX222009"
-   ],
-   "error": null
-  },
-  {
    "link": "bioproject->experiment_ddbj:elink_bioproject_sra_all",
    "accession": "PRJDB9974",
    "checked_on": "2026-10-16",
@@ -1046,28 +1002,6 @@
     "DRX222007",
     "DRX222008",
     "DRX222009"
-   ],
-   "error": null
-  },
-  {
-   "link": "bioproject->experiment_ebi:ddbj_dblink",
-   "accession": "PRJEB15401",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 3514,
-   "found": [
-    "ERX1700346",
-    "ERX1700347",
-    "ERX1700348",
-    "ERX1700349",
-    "ERX1700350",
-    "ERX1700351",
-    "ERX1700352",
-    "ERX1700353",
-    "ERX1700354",
-    "ERX1700355",
-    "ERX1700356",
-    "ERX1700357"
    ],
    "error": null
   },
@@ -1200,28 +1134,6 @@
     "ERX1700355",
     "ERX1700356",
     "ERX1700357"
-   ],
-   "error": null
-  },
-  {
-   "link": "bioproject->experiment_ncbi:ddbj_dblink",
-   "accession": "PRJNA258286",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 12,
-   "found": [
-    "SRX681985",
-    "SRX681986",
-    "SRX681987",
-    "SRX681988",
-    "SRX681989",
-    "SRX681990",
-    "SRX681991",
-    "SRX681992",
-    "SRX681993",
-    "SRX681994",
-    "SRX681995",
-    "SRX681996"
    ],
    "error": null
   },
@@ -3967,17 +3879,6 @@
    "error": null
   },
   {
-   "link": "geo_sample->biosample:esummary_sra",
-   "accession": "GSM1480291",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SAMN02991530"
-   ],
-   "error": null
-  },
-  {
    "link": "geo_sample->biosample:sra_be_runinfo",
    "accession": "GSM1480291",
    "checked_on": "2026-10-16",
@@ -4012,17 +3913,6 @@
   },
   {
    "link": "geo_sample->experiment_ncbi:gds_esummary_sample",
-   "accession": "GSM1480291",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "SRX681985"
-   ],
-   "error": null
-  },
-  {
-   "link": "geo_sample->experiment_ncbi:sra_be_runinfo",
    "accession": "GSM1480291",
    "checked_on": "2026-10-16",
    "outcome": "resolved",
@@ -4629,15 +4519,6 @@
    "error": null
   },
   {
-   "link": "run_ddbj->bam:ena_filereport_bam",
-   "accession": "DRR345778",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
    "link": "run_ddbj->bam:sdl_original",
    "accession": "DRR345778",
    "checked_on": "2026-10-16",
@@ -4916,32 +4797,6 @@
    "checked": "DRR345778: 1 file"
   },
   {
-   "link": "run_ddbj->sra_lite:sdl_lite",
-   "accession": "DRR345778",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos9/sra-pub-zq-924/DRR000/345/DRR345778/DRR345778.lite.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "DRR345778: 1 file"
-  },
-  {
    "link": "run_ddbj->sra_lite:sra_be_runinfo_download",
    "accession": "DRR345778",
    "checked_on": "2026-10-16",
@@ -5066,15 +4921,6 @@
   {
    "link": "run_ebi->analysis_ebi:ddbj_dblink",
    "accession": "ERR1630015",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "run_ebi->bam:ena_filereport_bam",
-   "accession": "ERR4265292",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
@@ -5351,32 +5197,6 @@
    "checked": "ERR4265292: 1 file"
   },
   {
-   "link": "run_ebi->sra_lite:sdl_lite",
-   "accession": "ERR4265292",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos9/sra-pub-zq-924/ERR004/4265/ERR4265292/ERR4265292.lite.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     false
-    ]
-   ],
-   "checked": "ERR4265292: 1 file"
-  },
-  {
    "link": "run_ebi->sra_lite:sra_be_runinfo_download",
    "accession": "ERR4265292",
    "checked_on": "2026-10-16",
@@ -5511,15 +5331,6 @@
   {
    "link": "run_ncbi->analysis_ncbi:ddbj_dblink",
    "accession": "SRR1552444",
-   "checked_on": "2026-10-16",
-   "outcome": "empty",
-   "found_count": 0,
-   "found": [],
-   "error": null
-  },
-  {
-   "link": "run_ncbi->bam:ena_filereport_bam",
-   "accession": "SRR25056225",
    "checked_on": "2026-10-16",
    "outcome": "empty",
    "found_count": 0,
@@ -5791,32 +5602,6 @@
   },
   {
    "link": "run_ncbi->sra_lite:efetch_sra_files",
-   "accession": "SRR25056225",
-   "checked_on": "2026-10-16",
-   "outcome": "resolved",
-   "found_count": 1,
-   "found": [
-    "https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos13/sra-pub-zq-1307/SRR025/25056/SRR25056225/SRR25056225.lite.1"
-   ],
-   "error": null,
-   "checks": [
-    [
-     "downloadable",
-     true
-    ],
-    [
-     "verifiable",
-     true
-    ],
-    [
-     "complete",
-     true
-    ]
-   ],
-   "checked": "SRR25056225: 1 file"
-  },
-  {
-   "link": "run_ncbi->sra_lite:sdl_lite",
    "accession": "SRR25056225",
    "checked_on": "2026-10-16",
    "outcome": "resolved",

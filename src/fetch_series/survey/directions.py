@@ -18,8 +18,8 @@ Nothing here changes ranking, union mode or ``--explain``. It measures.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass, field
+from collections.abc import Collection, Iterable, Mapping, Sequence
+from dataclasses import dataclass, field, replace
 from datetime import date, datetime
 from pathlib import Path
 
@@ -105,6 +105,22 @@ class RouteShare:
     sole: int
     first: date | None
     last: date | None
+    #: Of ``adds_values``, and of ``sole``: how many were over another route's
+    #: failure. Counted by the rule, and reported apart, because a failure in a
+    #: survey running dozens of routes at once may be the survey's load, not the
+    #: route.
+    adds_over_failure: int = 0
+    sole_over_failure: int = 0
+    #: For a candidate the rule accepted, its place in the order of acceptance.
+    accepted: int | None = None
+    #: With a confirmation, the values it adds that were not confirmed.
+    unconfirmed: int = 0
+    #: With a confirmation, accessions it adds another accession's data to.
+    contradicted: int = 0
+
+    def refused(self, compared: int) -> bool:
+        """It adds another accession's data as often as the bar: never accepted."""
+        return compared > 0 and self.contradicted >= ADDS_SHARE * compared
 
     def earns(self, compared: int) -> bool:
         bar = ADDS_SHARE * compared
@@ -140,12 +156,34 @@ def compare(
     verdicts: Mapping[str, Mapping[str, RouteResult]],
     *,
     declared: Iterable[str] = (),
+    confirmed: Mapping[str, Collection[tuple[str, str]]] | None = None,
+    contradicted: Mapping[str, int] | None = None,
 ) -> Direction:
     """What each route of the direction adds over the accessions every route answered.
 
     Only those: an accession one route was never asked is not one it answered
     empty, and treating absence as emptiness would credit every other route with
     a sole resolution it may not have.
+
+    A declared route is measured against the direction's other declared routes.
+    A candidate is measured against the declared routes and the candidates
+    already accepted, never against those still waiting: two candidates that
+    find the same thing would otherwise cancel out, and neither would be
+    credited with what both add. Candidates are accepted one at a time, the
+    one adding most first, until the best left adds nothing over the bar, so
+    two never join for the same values.
+
+    With ``confirmed``, a candidate's addition counts only where its
+    ``(accession, value)`` is listed for it, and a candidate not listed counts
+    nothing. Counted unconfirmed, ELink from a project passed on 154 experiments
+    of its siblings' (PRJNA1033389 gained 72), and ``efetch_sra_files`` on
+    other runs' files. Declared routes are never filtered: what they return is
+    the baseline, not a claim being tested.
+
+    ``contradicted`` gives, per candidate, how many accessions it adds another
+    accession's data to. A candidate at the bar or over is refused whatever it
+    adds that is right: ``efetch_sra_files`` confirms 2,978 files of their own
+    runs and adds 37,604 of other runs', and union mode would serve both.
     """
     files = target is EntityType.FILE
     declared_ids = set(declared)
@@ -167,35 +205,76 @@ def compare(
         for a in compared
     )
 
-    shares = []
-    for r in route_ids:
-        others = [o for o in route_ids if o != r]
-        adds_values = added_values = sole = 0
+    checked = (
+        {r: {(a, comparable(v, files)) for a, v in pairs} for r, pairs in confirmed.items()}
+        if confirmed is not None
+        else None
+    )
+
+    def share(r: str, others: list[str]) -> RouteShare:
+        adds_values = added_values = sole = adds_over_failure = sole_over_failure = 0
+        unconfirmed = 0
         for a, mine in values[r].items():
             theirs = set().union(*(values[o].get(a, set()) for o in others))
             extra = mine - theirs
-            if extra:
+            if checked is not None and r not in declared_ids:
+                kept = {v for v in extra if (a, v) in checked.get(r, set())}
+                unconfirmed += len(extra - kept) if others else 0
+                extra = kept
+                if not extra:
+                    # A sole resolution made only of unconfirmed values is not one.
+                    continue
+            over_failure = any(verdicts[o][a].outcome is Outcome.FAILED for o in others)
+            if extra and others:
                 adds_values += 1
                 added_values += len(extra)
+                adds_over_failure += over_failure
             if others and not any(a in values[o] for o in others):
                 sole += 1
+                sole_over_failure += over_failure
         outcomes = [verdicts[r][a].outcome for a in compared]
         dates = [verdicts[r][a].fetched_at for a in compared]
-        shares.append(
-            RouteShare(
-                route_id=r,
-                declared=r in declared_ids,
-                resolved=outcomes.count(Outcome.RESOLVED),
-                empty=outcomes.count(Outcome.EMPTY),
-                failed=outcomes.count(Outcome.FAILED),
-                distinct=len({v for found in values[r].values() for v in found}),
-                adds_values=adds_values,
-                added_values=added_values,
-                sole=sole,
-                first=_day(min(dates)) if dates else None,
-                last=_day(max(dates)) if dates else None,
-            )
+        return RouteShare(
+            route_id=r,
+            declared=r in declared_ids,
+            resolved=outcomes.count(Outcome.RESOLVED),
+            empty=outcomes.count(Outcome.EMPTY),
+            failed=outcomes.count(Outcome.FAILED),
+            distinct=len({v for found in values[r].values() for v in found}),
+            adds_values=adds_values,
+            added_values=added_values,
+            sole=sole,
+            first=_day(min(dates)) if dates else None,
+            last=_day(max(dates)) if dates else None,
+            adds_over_failure=adds_over_failure,
+            sole_over_failure=sole_over_failure,
+            unconfirmed=unconfirmed,
+            contradicted=(contradicted or {}).get(r, 0) if r not in declared_ids else 0,
         )
+
+    standing = [r for r in route_ids if r in declared_ids]
+    shares = [share(r, [o for o in standing if o != r]) for r in standing]
+    waiting = [r for r in route_ids if r not in declared_ids]
+    accepted = 0
+    refused = [share(r, standing) for r in waiting if share(r, standing).refused(len(compared))]
+    shares.extend(refused)
+    waiting = [r for r in waiting if r not in {s.route_id for s in refused}]
+    while waiting:
+        offers = sorted(
+            (share(r, standing) for r in waiting),
+            # Among equals, the one adding least that is unconfirmed: ELink and
+            # esummary add PRJNA904346's 18 experiments alike, and only ELink
+            # adds its siblings' too.
+            key=lambda s: (-max(s.adds_values, s.sole), -s.adds_values, s.unconfirmed, s.route_id),
+        )
+        best = offers[0]
+        if not best.earns(len(compared)):
+            shares.extend(offers)
+            break
+        accepted += 1
+        shares.append(replace(best, accepted=accepted))
+        standing.append(best.route_id)
+        waiting.remove(best.route_id)
     return Direction(
         source=source,
         target=target,
@@ -212,6 +291,14 @@ def _day(when: datetime) -> date:
     return when.date()
 
 
+def _verdict(share: RouteShare, compared: int) -> str:
+    if share.accepted is not None:
+        return f"EARNS #{share.accepted}"
+    if not share.declared and share.refused(compared):
+        return "REFUSED"
+    return "earns" if share.declared and share.earns(compared) else "-"
+
+
 def report(direction: Direction) -> list[str]:
     """A direction as the lines ``fetch survey promote --compare`` prints."""
     d = direction
@@ -224,8 +311,9 @@ def report(direction: Direction) -> list[str]:
         lines.append(
             f"  {'declared ' if share.declared else 'candidate'} {share.route_id:58s} "
             f"r={share.resolved:<5} e={share.empty:<5} f={share.failed:<4} "
-            f"adds={share.adds_values:<4} (+{share.added_values:,}) sole={share.sole:<4} "
-            f"{'EARNS' if share.earns(d.compared) else '-':5s} {span}"
+            f"adds={share.adds_values:<4} (+{share.added_values:,}; {share.adds_over_failure} "
+            f"over a failure) sole={share.sole:<4} ({share.sole_over_failure}) "
+            f"{_verdict(share, d.compared):9s} {span}"
         )
     for route_id, count in sorted(d.missing.items()):
         if count:

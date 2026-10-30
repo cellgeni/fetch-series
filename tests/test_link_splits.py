@@ -35,7 +35,8 @@ from fetch_series.survey.export import write_export
 from fetch_series.units import link_unit
 
 UNMEASURED = CATALOGUE.link("run_ebi->submission_ebi:ena_filereport")
-READS = CATALOGUE.link("run_ddbj->bam:ena_filereport_bam")
+# Unmeasured: run_ddbj->bam:ena_filereport_bam was this until A6 promoted it.
+READS = CATALOGUE.link("run_ddbj->bam:sdl_original")
 MEASURED = next(link for link in CATALOGUE if CATALOGUE.split(link) is not None)
 DECLARED = {link.id: link for link in CATALOGUE}
 MEASURED_IDS = {link.id for link in CATALOGUE if CATALOGUE.split(link) is not None}
